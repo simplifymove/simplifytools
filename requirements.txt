@@ -1,0 +1,10 @@
+# Core Python Image Processing Libraries
+opencv-python==4.8.1.78
+Pillow==10.0.0
+numpy==1.24.3
+
+# Optional: For advanced image processing
+scikit-image==0.21.0
+
+# Utilities
+python-dotenv==1.0.0
