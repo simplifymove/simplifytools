@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FileText, Image, Video, PenTool, File, ArrowRight, Database, Code2, Volume2 } from 'lucide-react';
+import { FileText, Image, Video, PenTool, File, ArrowRight, Database, Code2, Volume2, Brackets } from 'lucide-react';
 
 export default function Home() {
   const categories = [
@@ -62,15 +62,15 @@ export default function Home() {
       featured: 'CSV to Excel'
     },
     {
-      id: 'code-minifier',
-      title: 'Code Minifier',
-      subtitle: 'Reduce File Size',
-      count: '3 formats',
-      description: 'Minify JavaScript, CSS, and HTML code',
-      icon: Code2,
-      color: 'from-gray-600 to-gray-700',
-      link: '/tools/code-minifier',
-      featured: 'JS Minifier'
+      id: 'code',
+      title: 'Code Tools',
+      subtitle: 'Developer Utilities',
+      count: '44 tools',
+      description: 'Format, validate, convert, and generate code',
+      icon: Brackets,
+      color: 'from-green-600 to-green-700',
+      link: '/tools/code',
+      featured: 'JSON Formatter'
     },
     {
       id: 'text-to-speech',
