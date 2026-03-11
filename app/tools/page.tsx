@@ -1,14 +1,25 @@
 'use client';
 
 import React, { useState, useMemo, Suspense } from 'react';
-import { Search, Clock } from 'lucide-react';
+import { Search, Clock, ChevronRight, Filter, Sparkles, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ToolCard } from '@/app/components/ToolCard';
 import { allTools } from '@/app/data/tools';
+import { motion } from 'framer-motion';
+
+const categoryColors: Record<string, { bg: string; gradient: string; text: string }> = {
+  'Image': { bg: 'bg-orange-50', gradient: 'from-orange-500 to-orange-600', text: 'text-orange-600' },
+  'PDF': { bg: 'bg-purple-50', gradient: 'from-purple-500 to-purple-600', text: 'text-purple-600' },
+  'Video': { bg: 'bg-pink-50', gradient: 'from-pink-500 to-pink-600', text: 'text-pink-600' },
+  'AI Write': { bg: 'bg-blue-50', gradient: 'from-blue-500 to-blue-600', text: 'text-blue-600' },
+  'File': { bg: 'bg-indigo-50', gradient: 'from-indigo-500 to-indigo-600', text: 'text-indigo-600' },
+};
 
 function ToolsContent() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('default');
+  const [showFilters, setShowFilters] = useState(false);
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
 
@@ -39,8 +50,13 @@ function ToolsContent() {
       );
     }
 
+    // Sort
+    if (sortBy === 'name') {
+      results.sort((a, b) => a.title.localeCompare(b.title));
+    }
+
     return results;
-  }, [searchTerm, categoryParam, isComingSoon]);
+  }, [searchTerm, categoryParam, isComingSoon, sortBy]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,52 +66,136 @@ function ToolsContent() {
     return tool.route || '#';
   };
 
+  const categories = ['Image', 'PDF', 'Video', 'AI Write', 'File'];
+  const uniqueCategories = [...new Set(allTools.map(t => t.category))];
+
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 py-12 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-4">
-            <Link href="/" className="text-blue-600 hover:text-blue-700 font-medium">
-              ← Back Home
-            </Link>
+    <main className="min-h-screen bg-slate-50">
+      {/* Premium Header */}
+      <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 py-16 px-4 md:px-8 overflow-hidden">
+        {/* Animated background shapes */}
+        <motion.div
+          className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={{ x: [0, 30, -20, 0], y: [0, -30, 20, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={{ x: [0, -30, 20, 0], y: [0, 30, -20, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
+            <Link href="/" className="hover:text-white transition">Home</Link>
+            <ChevronRight size={16} />
+            <span>{categoryParam ? `${categoryParam} Tools` : 'All Tools'}</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
+
+          <motion.h1 
+            className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             {categoryParam 
               ? `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)} Tools`
               : 'All Tools'
             }
-          </h1>
-          <p className="text-lg text-gray-600">
+          </motion.h1>
+          <motion.p 
+            className="text-lg text-white/90 max-w-2xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
             {categoryParam 
-              ? `Browse our collection of ${categoryParam} tools`
-              : 'Browse all available tools'
+              ? `Discover our powerful collection of ${categoryParam.toLowerCase()} tools`
+              : 'Browse our complete collection of free online tools'
             }
-          </p>
+          </motion.p>
         </div>
       </div>
 
-      {/* Search Section */}
-      <div className="bg-white border-b border-gray-200 py-8 px-4 md:px-8">
+      {/* Search & Filter Section */}
+      <div className="py-8 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                placeholder={categoryParam ? `Search ${categoryParam} tools...` : "Search tools..."}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+          <motion.form 
+            onSubmit={handleSearch} 
+            className="space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            {/* Search Bar */}
+            <div className="flex gap-2 flex-col sm:flex-row">
+              <div className="flex-1 relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-600 transition">
+                  <Search className="w-5 h-5" />
+                </div>
+                <input
+                  type="text"
+                  placeholder={categoryParam ? `Search ${categoryParam} tools...` : "Search 200+ tools..."}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-gray-200 hover:border-purple-300 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 bg-white"
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <Search className="w-4 h-4" />
+                Search
+              </button>
             </div>
-            <button
-              type="submit"
-              className="px-8 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+
+            {/* Filter & Sort Controls */}
+            <div className="flex gap-4 flex-wrap items-center justify-between">
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="px-4 py-2 rounded-full border-2 border-gray-300 hover:border-purple-500 text-gray-700 hover:text-purple-600 font-medium transition-all flex items-center gap-2"
+                >
+                  <Filter size={16} />
+                  Filters
+                </button>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-4 py-2 rounded-full border-2 border-gray-300 focus:outline-none focus:border-purple-500 bg-white font-medium transition-all"
+                >
+                  <option value="default">Default</option>
+                  <option value="name">A-Z</option>
+                </select>
+              </div>
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold text-gray-900">{filteredTools.length}</span> tools found
+              </div>
+            </div>
+          </motion.form>
+
+          {/* Category Pills */}
+          {!categoryParam && (
+            <motion.div
+              className="flex gap-2 flex-wrap mt-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <Search className="w-4 h-4" />
-              Search
-            </button>
-          </form>
+              <span className="text-sm font-semibold text-gray-700">Quick categories:</span>
+              {uniqueCategories.map((cat) => (
+                <Link
+                  key={cat}
+                  href={`/tools?category=${cat}`}
+                  className="px-4 py-2 rounded-full bg-white border-2 border-gray-200 hover:border-purple-500 text-gray-700 hover:text-purple-600 font-medium transition-all hover:shadow-md text-sm"
+                >
+                  {cat}
+                </Link>
+              ))}
+            </motion.div>
+          )}
         </div>
       </div>
 
@@ -103,46 +203,61 @@ function ToolsContent() {
       <div className="py-12 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           {isDataTools ? (
-            <div className="flex flex-col items-center justify-center py-32">
-              <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-md">
+            <motion.div 
+              className="flex flex-col items-center justify-center py-32"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-md border-2 border-gray-100">
                 <div className="flex justify-center mb-6">
                   <span className="text-6xl">📊</span>
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Data Conversion Tools</h2>
                 <p className="text-gray-600 text-lg mb-8">
-                  Redirecting to our data conversion tools...
+                  Powerful tools for converting and transforming your data.
                 </p>
                 <Link
                   href="/tools/data"
-                  className="inline-block px-8 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-colors"
+                  className="inline-block px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full hover:shadow-lg transition-all"
                 >
                   Go to Data Tools
                 </Link>
               </div>
-            </div>
+            </motion.div>
           ) : isPdfTools ? (
-            <div className="flex flex-col items-center justify-center py-32">
-              <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-md">
+            <motion.div 
+              className="flex flex-col items-center justify-center py-32"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-md border-2 border-gray-100">
                 <div className="flex justify-center mb-6">
                   <span className="text-6xl">📄</span>
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">PDF Tools</h2>
                 <p className="text-gray-600 text-lg mb-8">
-                  Redirecting to our PDF tools...
+                  Professional PDF conversion, editing, and manipulation tools.
                 </p>
                 <Link
                   href="/tools/pdf"
-                  className="inline-block px-8 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-colors"
+                  className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-full hover:shadow-lg transition-all"
                 >
                   Go to PDF Tools
                 </Link>
               </div>
-            </div>
+            </motion.div>
           ) : isComingSoon ? (
-            <div className="flex flex-col items-center justify-center py-32">
-              <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-md">
+            <motion.div 
+              className="flex flex-col items-center justify-center py-32"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-md border-2 border-gray-100">
                 <div className="flex justify-center mb-6">
-                  <Clock className="w-16 h-16 text-blue-600" />
+                  <Clock className="w-16 h-16 text-indigo-600" />
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Coming Soon</h2>
                 <p className="text-gray-600 text-lg mb-8">
@@ -150,41 +265,93 @@ function ToolsContent() {
                 </p>
                 <Link
                   href="/"
-                  className="inline-block px-8 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-colors"
+                  className="inline-block px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full hover:shadow-lg transition-all"
                 >
-                  Back to Home
+                  Back Home
                 </Link>
               </div>
-            </div>
-          ) : filteredTools.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-lg text-gray-500">
-                No tools found matching "{searchTerm}"
-              </p>
-            </div>
+            </motion.div>
           ) : (
-            <>
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  {categoryParam 
-                    ? `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)} Tools`
-                    : 'All Tools'
-                  } ({filteredTools.length})
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {filteredTools.map((tool) => (
-                    <ToolCard
-                      key={tool.id}
-                      icon={tool.icon}
-                      title={tool.title}
-                      description={tool.description}
-                      category={tool.category}
-                      href={getToolHref(tool)}
-                    />
-                  ))}
-                </div>
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ staggerChildren: 0.05, delayChildren: 0.3 }}
+            >
+              {filteredTools.map((tool, idx) => (
+                <motion.div
+                  key={tool.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Link href={getToolHref(tool)}>
+                    <motion.div
+                      className="h-full rounded-2xl bg-white border-2 border-gray-200 hover:border-gray-300 p-6 hover:shadow-xl transition-all group relative overflow-hidden"
+                      whileHover={{ y: -8 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {/* Hover gradient background */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100"
+                        transition={{ duration: 0.3 }}
+                      />
+
+                      <div className="relative z-10">
+                        {/* Header with Icon & Category */}
+                        <div className="flex items-start justify-between mb-4">
+                          <motion.div
+                            className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center group-hover:from-indigo-200 group-hover:to-purple-200 transition"
+                            whileHover={{ scale: 1.2, rotate: 12 }}
+                          >
+                            {tool.icon && <tool.icon className="w-6 h-6 text-indigo-600" />}
+                          </motion.div>
+                          <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-full group-hover:bg-purple-100 group-hover:text-purple-700 transition">
+                            {tool.category}
+                          </span>
+                        </div>
+
+                        {/* Content */}
+                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition">{tool.title}</h3>
+                        <p className="text-sm text-gray-600 line-clamp-2 mb-4">{tool.description}</p>
+                        <motion.div
+                          className="flex items-center gap-1 text-purple-600 font-medium text-sm"
+                          whileHover={{ gap: 8 }}
+                        >
+                          Open tool
+                          <motion.div whileHover={{ x: 2 }}>
+                            <ChevronRight size={16} />
+                          </motion.div>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* No Results */}
+          {!isComingSoon && !isDataTools && !isPdfTools && filteredTools.length === 0 && (
+            <motion.div
+              className="flex flex-col items-center justify-center py-32"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="text-center">
+                <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-6" />
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">No tools found</h2>
+                <p className="text-gray-600 text-lg mb-8">
+                  Try adjusting your search or filters to find what you're looking for.
+                </p>
+                <Link
+                  href="/tools"
+                  className="inline-block px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full hover:shadow-lg transition-all"
+                >
+                  Clear Filters
+                </Link>
               </div>
-            </>
+            </motion.div>
           )}
         </div>
       </div>
@@ -194,7 +361,7 @@ function ToolsContent() {
 
 export default function ToolsPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
       <ToolsContent />
     </Suspense>
   );

@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { dataTools } from '@/app/lib/data-tools';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function DataToolsPage() {
   const router = useRouter();
@@ -20,115 +22,157 @@ export default function DataToolsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-12 px-8">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">Data Conversion Tools</h1>
-          <p className="text-blue-100 text-lg">
-            Convert between different file formats effortlessly
-          </p>
+    <main className="min-h-screen bg-slate-50">
+      {/* Premium Header */}
+      <div className="relative bg-gradient-to-r from-teal-600 via-emerald-600 to-green-600 py-16 px-4 md:px-8 overflow-hidden">
+        {/* Animated background shapes */}
+        <motion.div
+          className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={{ x: [0, 30, -20, 0], y: [0, -30, 20, 0] }}
+          transition={{ duration: 10, repeat: Infinity }}
+        />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
+            <Link href="/" className="hover:text-white transition">Home</Link>
+            <ChevronRight size={16} />
+            <span>Data Conversion Tools</span>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">📊 Data Conversion Tools</h1>
+            <p className="text-lg text-white/90 max-w-2xl">
+              Convert between different file formats, merge files, split documents, and transform your data effortlessly
+            </p>
+          </motion.div>
         </div>
       </div>
 
       {/* Tools Grid */}
-      <div className="max-w-6xl mx-auto px-8 py-12">
-        {Object.entries(toolsByCategory).map(([category, tools]) => (
-          <div key={category} className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 capitalize">
-              {category === 'conversion' ? 'File Conversions' : 'File Splitting'}
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        {Object.entries(toolsByCategory).map(([category, tools], catIdx) => (
+          <motion.div 
+            key={category} 
+            className="mb-14"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: catIdx * 0.1 }}
+          >
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 capitalize">
+              {category === 'conversion' ? '🔄 File Conversions' : '✂️ File Splitting'}
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ staggerChildren: 0.05, delayChildren: 0.2 }}
+            >
               {tools.map((tool) => (
-                <div
+                <motion.div
                   key={tool.id}
-                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition duration-300 p-6 cursor-pointer group"
-                  onClick={() => router.push(`/tools/data/${tool.id}`)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
                 >
-                  {/* Icon */}
-                  <div className="mb-4 text-4xl">📄</div>
+                  <motion.div
+                    className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 group border-2 border-gray-100 hover:border-gray-200 cursor-pointer overflow-hidden"
+                    onClick={() => router.push(`/tools/data/${tool.id}`)}
+                    whileHover={{ y: -8 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {/* Hover gradient */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-green-500/5 opacity-0 group-hover:opacity-100"
+                      transition={{ duration: 0.3 }}
+                    />
 
-                  {/* Title */}
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition">
-                    {tool.title}
-                  </h3>
+                    <div className="relative z-10">
+                      {/* Icon */}
+                      <div className="mb-4 text-4xl group-hover:scale-110 transition-transform">📄</div>
 
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {tool.description}
-                  </p>
+                      {/* Title */}
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-teal-600 transition line-clamp-2">
+                        {tool.title}
+                      </h3>
 
-                  {/* Input/Output Formats */}
-                  <div className="mb-4 space-y-1 text-xs">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <span className="font-medium">Input:</span>
-                      <span className="text-blue-600 font-mono">
-                        {tool.accepts.join(', ')}
-                      </span>
+                      {/* Description */}
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {tool.description}
+                      </p>
+
+                      {/* Input/Output Formats */}
+                      <div className="mb-4 space-y-2 text-xs bg-gray-50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-700">Input:</span>
+                          <span className="text-teal-600 font-mono font-medium">{tool.accepts.join(', ')}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-700">Output:</span>
+                          <span className="text-green-600 font-mono font-medium">.{tool.output}</span>
+                        </div>
+                      </div>
+
+                      {/* Engine Badge */}
+                      <div className="mb-4 inline-block px-3 py-1 bg-gradient-to-r from-teal-100 to-green-100 text-teal-700 text-xs font-bold rounded-full">
+                        {tool.engine}
+                      </div>
+
+                      {/* CTA */}
+                      <motion.div
+                        className="flex items-center gap-2 text-teal-600 font-medium text-sm group-hover:gap-3"
+                        whileHover={{ gap: 12 }}
+                      >
+                        Use Tool
+                        <ChevronRight className="w-4 h-4" />
+                      </motion.div>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <span className="font-medium">Output:</span>
-                      <span className="text-green-600 font-mono">
-                        .{tool.output}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Engine Info */}
-                  <div className="mb-4 inline-block px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
-                    {tool.engine}
-                  </div>
-
-                  {/* CTA */}
-                  <div className="flex items-center gap-2 text-blue-600 font-medium text-sm group-hover:gap-3 transition">
-                    Use Tool
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         ))}
       </div>
 
       {/* Feature Highlight */}
-      <div className="max-w-6xl mx-auto px-8 py-8 mb-12">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Why Use Our Conversion Tools?
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 py-12 pb-20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <motion.div 
+          className="bg-gradient-to-r from-teal-600 to-green-600 rounded-2xl shadow-xl p-12 text-white"
+          whileHover={{ y: -4 }}
+        >
+          <h2 className="text-3xl font-bold mb-8">
+            Why Use Our Data Conversion Tools?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <div className="text-3xl mb-3">⚡</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Fast Processing
-              </h3>
-              <p className="text-gray-600">
-                Optimized conversion engines handle files up to 100MB
-              </p>
-            </div>
-            <div>
-              <div className="text-3xl mb-3">🔒</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Secure
-              </h3>
-              <p className="text-gray-600">
-                Files are processed securely and deleted after conversion
-              </p>
-            </div>
-            <div>
-              <div className="text-3xl mb-3">📊</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Multiple Formats
-              </h3>
-              <p className="text-gray-600">
-                Support for CSV, Excel, JSON, XML, PDF and more
-              </p>
-            </div>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <div className="text-4xl mb-4">⚡</div>
+              <h3 className="text-lg font-semibold mb-2">Fast Processing</h3>
+              <p className="text-white/90">Optimized conversion engines handle files up to 100MB with blazing speed</p>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <div className="text-4xl mb-4">🔒</div>
+              <h3 className="text-lg font-semibold mb-2">Secure & Private</h3>
+              <p className="text-white/90">Files are processed securely and automatically deleted after conversion</p>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <div className="text-4xl mb-4">📊</div>
+              <h3 className="text-lg font-semibold mb-2">Multiple Formats</h3>
+              <p className="text-white/90">Support for CSV, Excel, JSON, XML, PDF and many more formats</p>
+            </motion.div>
           </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </main>
   );
 }
