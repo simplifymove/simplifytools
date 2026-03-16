@@ -214,7 +214,7 @@ export default function RemoveBackgroundPage() {
                   </motion.div>
                 )}
               </div>
-            </div>
+            </motion.div>
 
             {/* Right: Result */}
             <motion.div
