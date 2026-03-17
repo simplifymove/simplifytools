@@ -120,9 +120,9 @@ export default function AIWriteToolPage() {
           transition={{ duration: 0.5 }}
           className="relative z-10 flex items-center gap-2 text-white text-sm mb-6"
         >
-          <Link href="/" className="hover:opacity-80">Tools</Link>
+          <Link href="/" className="hover:opacity-80">Home</Link>
           <ChevronRight size={16} />
-          <Link href="/tools" className="hover:opacity-80">AI Write</Link>
+          <Link href="/tools/ai-write" className="hover:opacity-80">AI Write</Link>
           <ChevronRight size={16} />
           <span className="opacity-90">{tool.title}</span>
         </motion.div>

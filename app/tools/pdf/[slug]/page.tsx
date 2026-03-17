@@ -131,9 +131,7 @@ export default function PdfToolPage({ params }: PageProps) {
           <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
             <Link href="/" className="hover:text-white transition">Home</Link>
             <ChevronRight size={16} />
-            <Link href="/tools" className="hover:text-white transition">Tools</Link>
-            <ChevronRight size={16} />
-            <Link href="/tools?category=PDF" className="hover:text-white transition">PDF</Link>
+            <Link href="/tools/pdf" className="hover:text-white transition">PDF Tools</Link>
             <ChevronRight size={16} />
             <span className="text-white">{tool.title}</span>
           </div>

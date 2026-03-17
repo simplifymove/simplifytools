@@ -82,8 +82,6 @@ export default function PngToJpgPage() {
             <ChevronRight size={16} />
             <Link href="/tools" className="hover:text-white transition">Tools</Link>
             <ChevronRight size={16} />
-            <Link href="/tools?category=Image" className="hover:text-white transition">Image Tools</Link>
-            <ChevronRight size={16} />
             <span className="text-white">PNG to JPG</span>
           </div>
 

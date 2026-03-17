@@ -152,7 +152,7 @@ export default function DataToolPage() {
           transition={{ duration: 0.5 }}
           className="relative z-10 flex items-center gap-2 text-white text-sm mb-6"
         >
-          <Link href="/" className="hover:opacity-80">Tools</Link>
+          <Link href="/" className="hover:opacity-80">Home</Link>
           <ChevronRight size={16} />
           <Link href="/tools/data" className="hover:opacity-80">Data Conversion</Link>
           <ChevronRight size={16} />

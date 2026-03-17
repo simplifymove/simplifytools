@@ -133,9 +133,9 @@ export default function VideoToolPage({ params }: PageProps) {
           transition={{ duration: 0.5 }}
           className="relative z-10 flex items-center gap-2 text-white text-sm mb-6"
         >
-          <Link href="/" className="hover:opacity-80 transition">Tools</Link>
+          <Link href="/" className="hover:opacity-80 transition">Home</Link>
           <ChevronRight size={16} />
-          <Link href="/tools" className="hover:opacity-80 transition">Video Tools</Link>
+          <Link href="/tools/video" className="hover:opacity-80 transition">Video Tools</Link>
           <ChevronRight size={16} />
           <span className="opacity-90">{tool.title}</span>
         </motion.div>
