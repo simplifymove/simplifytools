@@ -457,6 +457,8 @@ export default function DataToolPage() {
         </motion.div>
         </div>
       </div>
+        </div>
+      </main>
       <Footer />
     </>
   );
