@@ -150,10 +150,10 @@ export default function VideoToolPage({ params }: PageProps) {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">{tool.title}</h1>
           <p className="text-white text-lg opacity-95 max-w-2xl">{tool.description}</p>
           <div className="mt-4 flex items-center gap-3">
-            <span className="inline-block bg-white bg-opacity-20 text-white text-xs font-semibold px-4 py-1.5 rounded-full">
+            <span className="inline-block bg-pink-900 bg-opacity-20 text-white text-xs font-semibold px-4 py-1.5 rounded-full">
               {tool.category}
             </span>
-            <span className="inline-block bg-white bg-opacity-20 text-white text-xs font-semibold px-4 py-1.5 rounded-full">
+            <span className="inline-block bg-pink-900 bg-opacity-20 text-white text-xs font-semibold px-4 py-1.5 rounded-full">
               Engine: {tool.engine}
             </span>
           </div>
