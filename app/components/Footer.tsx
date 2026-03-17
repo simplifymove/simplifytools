@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Github, Twitter, Linkedin, MapPin, Phone } from 'lucide-react';
+import { Mail, Github, Twitter, Linkedin, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function Footer() {

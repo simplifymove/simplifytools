@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { Menu, X, Search, LogOut, User } from 'lucide-react';
@@ -13,7 +13,7 @@ export function Header() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);

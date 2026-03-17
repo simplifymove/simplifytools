@@ -125,16 +125,16 @@ export default function VideoToolPage({ params }: PageProps) {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    }>
-      <Header />
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="flex-1
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <Header />
+      <main className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1">
       {/* Animated Gradient Header */}
       <div className="relative bg-gradient-to-r from-pink-600 via-rose-600 to-pink-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
@@ -466,9 +466,7 @@ export default function VideoToolPage({ params }: PageProps) {
                 <div className="mb-4 flex justify-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full flex items-center justify-center">
                     <feature.icon size={24} className="text-pink-600" />
-      </div>
-      <Footer />
-    </         </div>
+                  </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600 text-sm">{feature.description}</p>
@@ -477,7 +475,10 @@ export default function VideoToolPage({ params }: PageProps) {
           </div>
         </motion.div>
       </div>
-    </div>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }
 
