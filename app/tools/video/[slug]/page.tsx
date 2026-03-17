@@ -315,7 +315,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 duration-0"
                   >
                     {loading ? (
                       <>
@@ -395,7 +395,7 @@ export default function VideoToolPage({ params }: PageProps) {
                         element.click();
                         document.body.removeChild(element);
                       }}
-                      className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 font-medium"
+                      className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 font-medium duration-0"
                     >
                       Download Text
                     </button>
