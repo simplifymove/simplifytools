@@ -83,8 +83,6 @@ export default function DataToolsPage() {
                   <motion.div
                     className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 group border-2 border-gray-100 hover:border-gray-200 cursor-pointer overflow-hidden"
                     onClick={() => router.push(`/tools/data/${tool.id}`)}
-                    whileHover={{ y: -8 }}
-                    transition={{ duration: 0.3 }}
                   >
                     {/* Hover gradient */}
                     <motion.div
@@ -94,7 +92,7 @@ export default function DataToolsPage() {
 
                     <div className="relative z-10">
                       {/* Icon */}
-                      <div className="mb-4 text-4xl group-hover:scale-110 transition-transform">📄</div>
+                      <div className="mb-4 text-4xl">📄</div>
 
                       {/* Title */}
                       <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-teal-600 transition line-clamp-2">
@@ -124,13 +122,12 @@ export default function DataToolsPage() {
                       </div>
 
                       {/* CTA */}
-                      <motion.div
-                        className="flex items-center gap-2 text-teal-600 font-medium text-sm group-hover:gap-3"
-                        whileHover={{ gap: 12 }}
+                      <div
+                        className="flex items-center gap-2 text-teal-600 font-medium text-sm"
                       >
                         Use Tool
                         <ChevronRight className="w-4 h-4" />
-                      </motion.div>
+                      </div>
                     </div>
                   </motion.div>
                 </motion.div>
