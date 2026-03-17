@@ -52,14 +52,7 @@ export default function AIWriteToolsPage() {
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Premium Header */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 py-16 px-4 md:px-8 overflow-hidden">
-        {/* Animated background shapes */}
-        <motion.div
-          className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
-          animate={{ x: [0, 30, -20, 0], y: [0, -30, 20, 0] }}
-          transition={{ duration: 10, repeat: Infinity }}
-        />
-
+      <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
@@ -173,7 +166,7 @@ export default function AIWriteToolsPage() {
 
       {/* CTA Section */}
       <motion.div 
-        className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-16 px-4"
+        className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white py-16 px-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
