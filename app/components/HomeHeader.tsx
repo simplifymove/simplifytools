@@ -298,7 +298,7 @@ export function HomeHeader() {
       </header>
 
       {signInModalOpen && (
-        <SignInModal onClose={() => setSignInModalOpen(false)} />
+        <SignInModal isOpen={signInModalOpen} onClose={() => setSignInModalOpen(false)} />
       )}
     </>
   );

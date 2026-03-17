@@ -462,7 +462,6 @@ export default function TextToSpeech() {
           </div>
         </motion.div>
       </motion.div>
-        </div>
       </div>
     </main>
     <Footer />

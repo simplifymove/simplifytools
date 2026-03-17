@@ -32,7 +32,7 @@ export default function PdfToolPage({ params }: PageProps) {
   if (!tool) {
     return (
       <>
-        <Header />
+        <HomeHeader />
         <main className="min-h-screen bg-slate-50 flex flex-col">
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">

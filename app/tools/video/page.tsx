@@ -43,10 +43,17 @@ export default function VideoToolsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">🎬 Video Tools</h1>
-            <p className="text-lg text-white/90 max-w-2xl">
-              Powerful video processing tools to compress, convert, edit, and transform your videos effortlessly
-            </p>
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">🎬</span>
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Video Tools</h1>
+                <p className="text-lg text-white/90 max-w-2xl">
+                  Powerful video processing tools to compress, convert, edit, and transform your videos effortlessly
+                </p>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>

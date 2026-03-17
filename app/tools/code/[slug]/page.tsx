@@ -191,15 +191,21 @@ export default function CodeToolPage() {
           transition={{ duration: 0.6 }}
           className="relative z-10"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 flex items-center gap-3">
-            <span className="text-3xl">{tool.icon}</span>
-            {tool.title}
-          </h1>
-          <p className="text-white text-lg opacity-95 max-w-2xl">{tool.description}</p>
-          <div className="mt-4 flex items-center gap-3">
-            <span className="inline-block text-white text-xs font-semibold px-4 py-1.5 rounded-full" style={{ backgroundColor: '#16A34A' }}>
-              Code Tool
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl">{tool.icon}</span>
+            </div>
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                {tool.title}
+              </h1>
+              <p className="text-white text-lg opacity-95 max-w-2xl">{tool.description}</p>
+              <div className="mt-4 flex items-center gap-3">
+                <span className="inline-block text-white text-xs font-semibold px-4 py-1.5 rounded-full" style={{ backgroundColor: '#16A34A' }}>
+                Code Tool
             </span>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -359,7 +365,7 @@ export default function CodeToolPage() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 text-gray-700">
                   <CheckCircle size={16} className="text-indigo-600 flex-shrink-0" />
-                  <span>Tool Type: {tool.category}</span>
+                  <span>Engine: {tool.engine}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <CheckCircle size={16} className="text-indigo-600 flex-shrink-0" />
