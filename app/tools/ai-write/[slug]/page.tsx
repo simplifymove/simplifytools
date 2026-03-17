@@ -112,7 +112,7 @@ export default function AIWriteToolPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Animated Gradient Header */}
-      <div className="relative bg-gradient-to-r from-pink-600 via-rose-600 to-pink-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -162,7 +162,7 @@ export default function AIWriteToolPage() {
             <div className="sticky top-4 space-y-6">
               {/* Input Card */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-pink-50 to-rose-50 px-6 py-4 border-b border-gray-200">
+                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-4 border-b border-gray-200">
                   <h2 className="text-lg font-semibold text-gray-900">Configure</h2>
                 </div>
 
@@ -183,7 +183,7 @@ export default function AIWriteToolPage() {
                             onChange={(e) => handleInputChange(field.name, e.target.value)}
                             placeholder={field.placeholder}
                             maxLength={field.validation?.maxLength}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm resize-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                             rows={3}
                           />
                         )}
@@ -196,7 +196,7 @@ export default function AIWriteToolPage() {
                             onChange={(e) => handleInputChange(field.name, e.target.value)}
                             placeholder={field.placeholder}
                             maxLength={field.validation?.maxLength}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           />
                         )}
 
@@ -205,7 +205,7 @@ export default function AIWriteToolPage() {
                             name={field.name}
                             value={inputs[field.name] || ''}
                             onChange={(e) => handleInputChange(field.name, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm bg-white"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
                           >
                             {field.options?.map(option => (
                               <option key={option.value} value={option.value}>
@@ -235,7 +235,7 @@ export default function AIWriteToolPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-pink-600 hover:bg-pink-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 duration-0"
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 duration-0"
                   >
                     {loading ? (
                       <>
@@ -264,7 +264,7 @@ export default function AIWriteToolPage() {
             {/* Info Box */}
             <motion.div
               whileHover={{ y: -4 }}
-              className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200 rounded-xl p-6"
+              className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6"
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">About this tool</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -272,11 +272,11 @@ export default function AIWriteToolPage() {
               </p>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 text-gray-700">
-                  <CheckCircle size={16} className="text-pink-600 flex-shrink-0" />
+                  <CheckCircle size={16} className="text-blue-600 flex-shrink-0" />
                   <span>Category: {tool.category}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
-                  <CheckCircle size={16} className="text-pink-600 flex-shrink-0" />
+                  <CheckCircle size={16} className="text-blue-600 flex-shrink-0" />
                   <span>Quick & Easy</span>
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function AIWriteToolPage() {
                 className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle size={20} className="text-pink-600" />
+                  <CheckCircle size={20} className="text-blue-600" />
                   <h2 className="text-xl font-bold text-gray-900">Output</h2>
                 </div>
 
@@ -314,7 +314,7 @@ export default function AIWriteToolPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={copyToClipboard}
-                    className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 font-medium duration-0 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium duration-0 flex items-center justify-center gap-2"
                   >
                     <Copy size={16} />
                     {copied ? 'Copied!' : 'Copy'}
@@ -322,7 +322,7 @@ export default function AIWriteToolPage() {
 
                   <button
                     onClick={downloadResult}
-                    className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 font-medium duration-0 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium duration-0 flex items-center justify-center gap-2"
                   >
                     <Download size={16} />
                     Download
@@ -339,8 +339,8 @@ export default function AIWriteToolPage() {
                 className="bg-white rounded-xl shadow-lg border border-gray-200 p-12 text-center"
               >
                 <div className="mb-4 flex justify-center">
-                  <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center">
-                    <Zap size={32} className="text-pink-600" />
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Zap size={32} className="text-blue-600" />
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to generate</h3>
@@ -376,8 +376,8 @@ export default function AIWriteToolPage() {
                 className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition"
               >
                 <div className="mb-4 flex justify-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full flex items-center justify-center">
-                    <feature.icon size={24} className="text-pink-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center">
+                    <feature.icon size={24} className="text-blue-600" />
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
