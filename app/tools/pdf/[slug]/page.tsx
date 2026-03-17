@@ -7,7 +7,7 @@ import { getPdfToolById } from '@/app/lib/pdf-tools';
 import { validatePdfInput } from '@/app/lib/pdf-validation';
 import type { PdfToolConfig } from '@/app/lib/pdf-tools';
 import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, Shield } from 'lucide-react';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 interface PageProps {
@@ -29,7 +29,9 @@ export default function PdfToolPage({ params }: PageProps) {
   const [result, setResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!>
+  if (!tool) {
+    return (
+      <>
         <Header />
         <main className="min-h-screen bg-slate-50 flex flex-col">
           <div className="flex-1 flex items-center justify-center">
@@ -40,9 +42,7 @@ export default function PdfToolPage({ params }: PageProps) {
           </div>
         </main>
         <Footer />
-      </p className="text-gray-600">The requested PDF tool could not be found.</p>
-        </div>
-      </div>
+      </>
     );
   }
 
@@ -113,16 +113,16 @@ export default function PdfToolPage({ params }: PageProps) {
       setResult({ type: 'file', message: 'File processed successfully!' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    }>
-      <Header />
-      <main className="min-h-screen bg-slate-50 flex flex-col">
-        <div className="flex-1
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1">
       {/* Premium Header */}
       <div className="relative bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 py-12 px-4 md:px-8 overflow-hidden">
         {/* Animated background shapes */}

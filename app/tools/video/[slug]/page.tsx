@@ -7,7 +7,7 @@ import { ChevronRight, Zap, Shield, CheckCircle, Loader } from 'lucide-react';
 import { getToolById } from '@/app/lib/video-tools';
 import { validateToolInput } from '@/app/lib/media-validation';
 import type { VideoTool } from '@/app/lib/video-tools';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 interface PageProps {
@@ -30,7 +30,7 @@ export default function VideoToolPage({ params }: PageProps) {
   if (!tool) {
     return (
       <>
-        <Header />
+        <HomeHeader />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center flex flex-col">
           <div className="flex-1 flex items-center justify-center w-full">
             <div className="text-center">
@@ -132,7 +132,7 @@ export default function VideoToolPage({ params }: PageProps) {
 
   return (
     <>
-      <Header />
+      <HomeHeader />
       <main className="min-h-screen bg-gray-50 flex flex-col">
         <div className="flex-1">
       {/* Animated Gradient Header */}

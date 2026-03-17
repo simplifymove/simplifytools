@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { aiWriteTools, type ToolCategory } from '@/app/lib/ai-tools';
 import { ArrowRight, Sparkles, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 const categoryLabels: Record<ToolCategory, string> = {
@@ -53,7 +53,7 @@ export default function AIWriteToolsPage() {
 
   return (
     <>
-      <Header />
+      <HomeHeader />
       <main className="min-h-screen bg-slate-50 flex flex-col">
         <div className="flex-1">
       {/* Premium Header */}

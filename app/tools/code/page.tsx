@@ -4,7 +4,7 @@ import { getAllTools } from '@/app/lib/code-tools';
 import Link from 'next/link';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 export default function CodeToolsPage() {
@@ -47,7 +47,7 @@ export default function CodeToolsPage() {
 
   return (
     <>
-      <Header />
+      <HomeHeader />
       <main className="min-h-screen bg-slate-50 flex flex-col">
         <div className="flex-1">
       {/* Premium Header */}

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { dataTools, getDataToolById } from '@/app/lib/data-tools';
 import { Download, AlertCircle, CheckCircle, Loader2, Upload, ChevronRight, Zap, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 interface FormData {
@@ -30,7 +30,7 @@ export default function DataToolPage() {
   if (!tool) {
     return (
       <>
-        <Header />
+        <HomeHeader />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 flex flex-col">
           <div className="flex-1 flex items-center justify-center w-full">
             <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
@@ -151,7 +151,7 @@ export default function DataToolPage() {
 
   return (
     <>
-      <Header />
+      <HomeHeader />
       <main className="min-h-screen bg-gray-50 flex flex-col">
         <div className="flex-1">
       {/* Animated Gradient Header */}

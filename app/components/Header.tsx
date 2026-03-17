@@ -1,166 +1,237 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
-import { Menu, X, Search, LogOut, User } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { ChevronDown, Search, Menu, X, FileText, Image, Video, PenTool, Database, Code2, Volume2 } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
-  const { data: session } = useSession();
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const query = formData.get('search') as string;
-    if (query.trim()) {
-      router.push(`/tools?search=${encodeURIComponent(query)}`);
+    if (searchQuery.trim()) {
+      router.push(`/tools?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery('');
       setMobileMenuOpen(false);
     }
   };
 
+  const categories = [
+    {
+      id: 'pdf',
+      title: 'PDF Tools',
+      icon: FileText,
+      color: 'from-purple-500 to-purple-700',
+      count: '47+',
+      link: '/tools/pdf',
+    },
+    {
+      id: 'image',
+      title: 'Image Tools',
+      icon: Image,
+      color: 'from-orange-500 to-orange-700',
+      count: '30+',
+      link: '/tools?category=Image',
+    },
+    {
+      id: 'video',
+      title: 'Video Tools',
+      icon: Video,
+      color: 'from-pink-500 to-pink-700',
+      count: '10+',
+      link: '/tools?category=video',
+    },
+    {
+      id: 'ai',
+      title: 'AI Write',
+      icon: PenTool,
+      color: 'from-blue-500 to-blue-700',
+      count: '50+',
+      link: '/tools/ai-write',
+    },
+    {
+      id: 'data',
+      title: 'Data Conversion',
+      icon: Database,
+      color: 'from-teal-500 to-teal-700',
+      count: '12',
+      link: '/tools/data',
+    },
+    {
+      id: 'code',
+      title: 'Code Tools',
+      icon: Code2,
+      color: 'from-green-500 to-green-700',
+      count: '44',
+      link: '/tools/code',
+    },
+    {
+      id: 'text-to-speech',
+      title: 'Text to Speech',
+      icon: Volume2,
+      color: 'from-indigo-500 to-indigo-700',
+      count: 'Multi',
+      link: '/tools/text-to-speech',
+    },
+  ];
+
+  const navItems = [
+    { label: 'Image', href: '/tools?category=Image' },
+    { label: 'Video', href: '/tools?category=video' },
+    { label: 'AI Write', href: '/tools/ai-write' },
+    { label: 'Data', href: '/tools/data' },
+  ];
+
   return (
-    <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isHeaderScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-lg'
-          : 'bg-white'
-      }`}
-    >
-      <nav className="max-w-7xl mx-auto px-4 md:px-8">
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <nav className="max-w-7xl mx-auto px-4 md:px-8 py-0">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">TT</span>
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">SC</span>
             </div>
-            <span className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition hidden sm:inline">
-              TinyTools
+            <span className="font-bold text-lg text-gray-900 hidden sm:inline">
+              SimplifyConvert
             </span>
           </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link
-              href="/tools"
-              className="text-gray-700 hover:text-blue-600 font-medium transition"
-            >
-              All Tools
-            </Link>
-            <a
-              href="#features"
-              className="text-gray-700 hover:text-blue-600 font-medium transition"
-            >
-              Features
-            </a>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-8 flex-1 ml-8">
+            {/* All Tools Dropdown */}
+            <div className="relative group pb-2">
+              <button className="flex items-center gap-1 text-gray-700 hover:text-orange-500 font-medium transition relative py-2 px-1">
+                All Tools
+                <ChevronDown size={16} className="group-hover:rotate-90 transition-transform" />
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
+              </button>
+
+              {/* Dropdown Menu */}
+              <div className="absolute left-0 top-full w-96 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-4 pointer-events-none group-hover:pointer-events-auto">
+                <div className="grid grid-cols-2 gap-3">
+                  {categories.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <Link key={cat.id} href={cat.link}>
+                        <div className="p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-all group/item hover:scale-105">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`p-1.5 bg-gradient-to-br ${cat.color} rounded-md shrink-0`}>
+                              <Icon className="w-3.5 h-3.5 text-white" />
+                            </div>
+                            <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition whitespace-nowrap overflow-hidden text-ellipsis">{cat.title}</p>
+                          </div>
+                          <p className="text-xs text-gray-500">{cat.count} tools</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Nav Items */}
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="text-gray-700 hover:text-orange-500 font-medium transition"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
 
-          {/* Search Bar (Desktop) */}
-          <form onSubmit={handleSearch} className="hidden md:block">
-            <div className="relative">
+          {/* Search Bar - Desktop */}
+          <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-xs mx-4">
+            <div className="relative w-full">
+              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
-                type="search"
-                name="search"
+                type="text"
                 placeholder="Search tools..."
-                className="pl-4 pr-10 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:outline-none text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
               />
-              <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
             </div>
           </form>
 
-          {/* Auth Section (Desktop) */}
-          <div className="hidden md:flex items-center gap-4">
-            {session ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-700">
-                  Welcome, <span className="font-semibold">{session.user?.name}</span>
-                </span>
-                <button
-                  onClick={() => signOut()}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition duration-0"
-                >
-                  <LogOut size={16} /> Logout
-                </button>
-              </div>
-            ) : (
-              <Link
-                href="/api/auth/signin"
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-0"
-              >
-                <User size={16} /> Sign In
-              </Link>
-            )}
+          {/* Right Actions - Desktop */}
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/tools"
+              className="px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 transition duration-0"
+            >
+              Browse Tools
+            </Link>
+            <Link
+              href="/auth/signin"
+              className="px-6 py-2 border-2 border-orange-500 text-orange-500 font-medium rounded-full hover:bg-orange-50 transition duration-0"
+            >
+              Sign In
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition"
+            className="md:hidden flex items-center text-gray-700"
           >
-            {mobileMenuOpen ? (
-              <X size={24} className="text-gray-900" />
-            ) : (
-              <Menu size={24} className="text-gray-900" />
-            )}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="md:hidden pb-4 border-t border-gray-200"
-          >
-            <form onSubmit={handleSearch} className="mt-4 mb-4">
-              <div className="relative">
+          <div className="md:hidden pb-4 border-t border-gray-200">
+            {/* Search Bar - Mobile */}
+            <form onSubmit={handleSearch} className="mb-4 mt-4 px-2">
+              <div className="relative w-full">
+                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
-                  type="search"
-                  name="search"
+                  type="text"
                   placeholder="Search tools..."
-                  className="w-full pl-4 pr-10 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:outline-none text-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                 />
-                <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
               </div>
             </form>
-            <Link
-              href="/tools"
-              className="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              All Tools
-            </Link>
-            {session ? (
-              <button
-                onClick={() => {
-                  signOut();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition font-medium flex items-center gap-2"
-              >
-                <LogOut size={16} /> Logout
-              </button>
-            ) : (
+
+            {/* Mobile Nav Items */}
+            <div className="flex flex-col gap-2 px-2">
+              <Link href="/tools" className="px-4 py-2 text-gray-700 hover:text-orange-500 font-medium">
+                All Tools
+              </Link>
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="px-4 py-2 text-gray-700 hover:text-orange-500 font-medium"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile Action Buttons */}
+            <div className="flex flex-col gap-2 mt-4 px-2">
               <Link
-                href="/api/auth/signin"
-                className="block px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-lg transition font-medium"
-                onClick={() => setMobileMenuOpen(false)}
+                href="/tools"
+                className="w-full px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition text-center"
+              >
+                Browse Tools
+              </Link>
+              <Link
+                href="/auth/signin"
+                className="w-full px-4 py-2 border-2 border-orange-500 text-orange-500 font-medium rounded-lg hover:bg-orange-50 transition text-center"
               >
                 Sign In
               </Link>
-            )}
-          </motion.div>
+            </div>
+          </div>
         )}
       </nav>
     </header>

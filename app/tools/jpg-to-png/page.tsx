@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Download, ChevronRight, Zap, Shield, CheckCircle, Loader } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 export default function JpgToPngPage() {
@@ -62,7 +62,7 @@ export default function JpgToPngPage() {
 
   return (
     <>
-      <Header />
+      <HomeHeader />
       <main className="min-h-screen bg-slate-50 flex flex-col">
         <div className="flex-1">
       {/* Premium Header */}
@@ -268,12 +268,12 @@ export default function JpgToPngPage() {
           </h3>
           <p className="text-sm text-gray-600">
             PNG format preserves image quality with transparency and lossless compression.
-        </div>
-      </main>
-      <Footer />
-    </</p>
+          </p>
         </motion.div>
       </motion.div>
-    </main>
-  );
+    </div>
+  </main>
+  <Footer />
+  </>
+);
 }

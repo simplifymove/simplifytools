@@ -6,7 +6,7 @@ import { Search, ChevronRight } from 'lucide-react';
 import { getAllPdfTools } from '@/app/lib/pdf-tools';
 import { ToolCard } from '@/app/components/ToolCard';
 import { motion } from 'framer-motion';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 export default function PdfToolsPage() {
@@ -41,7 +41,7 @@ export default function PdfToolsPage() {
 
   return (
     <>
-      <Header />
+      <HomeHeader />
       <main className="min-h-screen bg-slate-50 flex flex-col">
         <div className="flex-1">
       {/* Premium Header */}
@@ -211,7 +211,8 @@ export default function PdfToolsPage() {
             </motion.div>
           )}
         </div>
-      </div>
-    </main>
+      </div>        </div>    </main>
+    <Footer />
+    </>
   );
 }

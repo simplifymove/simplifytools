@@ -4,7 +4,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Play, Pause, Download, Volume2, Heart, Loader, ChevronRight, Sparkles, Zap, Shield, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 export default function TextToSpeech() {
@@ -187,7 +187,7 @@ export default function TextToSpeech() {
 
   return (
     <>
-      <Header />
+      <HomeHeader />
       <main className="min-h-screen bg-slate-50 flex flex-col">
         <div className="flex-1">
       {/* Premium Header */}
@@ -459,12 +459,13 @@ export default function TextToSpeech() {
                 <p className="text-white/90 text-sm">Generate and download high-quality MP3 files instantly</p>
               </div>
             </motion.div>
-        </div>
-      </main>
-      <Footer />
-    </</div>
+          </div>
         </motion.div>
       </motion.div>
+        </div>
+      </div>
     </main>
+    <Footer />
+    </>
   );
 }

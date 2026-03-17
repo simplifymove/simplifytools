@@ -5,7 +5,7 @@ import { videoTools } from '@/app/lib/video-tools';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 export default function VideoToolsPage() {
@@ -25,7 +25,7 @@ export default function VideoToolsPage() {
 
   return (
     <>
-      <Header />
+      <HomeHeader />
       <main className="min-h-screen bg-slate-50 flex flex-col">
         <div className="flex-1">
       {/* Premium Header */}

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getToolBySlug, CodeTool } from '@/app/lib/code-tools';
 import { Copy, Download, RotateCcw, Play, ChevronRight, Zap, Shield, CheckCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Header } from '@/app/components/Header';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 interface ToolOption {
@@ -142,12 +142,12 @@ export default function CodeToolPage() {
   if (!tool) {
     return (
       <>
-        <Header />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 flex flex-col">
-          <div className="flex-1 flex items-center justifycenter w-full">
+        <HomeHeader />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="flex-1 flex items-center justify-center w-full">
             <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {error || 'Tool Not Found'}
+                Tool Not Found
               </h1>
               <p className="text-gray-600 mb-6">The requested tool does not exist.</p>
               <Link
@@ -159,17 +159,16 @@ export default function CodeToolPage() {
             </div>
           </div>
         </div>
-     >
-      <Header />
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="flex-1
+        <Footer />
       </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Animated Gradient Header */}
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1">
       <div className="relative bg-gradient-to-r from-green-600 to-emerald-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <motion.div
@@ -450,9 +449,7 @@ export default function CodeToolPage() {
                 <div className="mb-4 flex justify-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
                     <feature.icon size={24} className="text-green-600" />
-      </div>
-      <Footer />
-    </         </div>
+                  </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600 text-sm">{feature.description}</p>
@@ -460,7 +457,10 @@ export default function CodeToolPage() {
             ))}
           </div>
         </motion.div>
+        </div>
       </div>
-    </div>
+    </main>
+    <Footer />
+  </>
   );
 }
