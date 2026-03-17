@@ -126,18 +126,6 @@ export default function VideoToolPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Animated Gradient Header */}
       <div className="relative bg-gradient-to-r from-pink-600 via-rose-600 to-pink-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
-        {/* Animated Background Shapes */}
-        <motion.div
-          animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-10 left-10 w-72 h-72 bg-white opacity-5 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ x: [0, -80, 0], y: [0, 60, 0] }}
-          transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-          className="absolute bottom-10 right-10 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl"
-        />
-
         {/* Breadcrumb */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
