@@ -315,7 +315,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 duration-0"
+                    className="w-full bg-pink-600 hover:bg-pink-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 duration-0"
                   >
                     {loading ? (
                       <>
