@@ -147,7 +147,7 @@ export default function CodeToolPage() {
           <p className="text-gray-600 mb-6">The requested tool does not exist.</p>
           <Link
             href="/tools/code"
-            className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition duration-0 font-medium"
+            className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-0 font-medium"
           >
             Back to Tools
           </Link>
@@ -159,7 +159,7 @@ export default function CodeToolPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Animated Gradient Header */}
-      <div className="relative bg-gradient-to-r from-indigo-600 to-violet-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-gradient-to-r from-green-600 to-emerald-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -187,7 +187,7 @@ export default function CodeToolPage() {
           </h1>
           <p className="text-white text-lg opacity-95 max-w-2xl">{tool.description}</p>
           <div className="mt-4 flex items-center gap-3">
-            <span className="inline-block text-white text-xs font-semibold px-4 py-1.5 rounded-full" style={{ backgroundColor: '#4F46E5' }}>
+            <span className="inline-block text-white text-xs font-semibold px-4 py-1.5 rounded-full" style={{ backgroundColor: '#16A34A' }}>
               Code Tool
             </span>
           </div>
@@ -212,7 +212,7 @@ export default function CodeToolPage() {
             <div className="sticky top-4 space-y-6">
               {/* Input Card */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-50 to-violet-50 px-6 py-4 border-b border-gray-200">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
                   <h2 className="text-lg font-semibold text-gray-900">Configure</h2>
                 </div>
 
@@ -224,7 +224,7 @@ export default function CodeToolPage() {
                         Input
                       </label>
                       <textarea
-                        className="w-full h-40 p-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                        className="w-full h-40 p-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                         placeholder={`Enter ${tool.title.toLowerCase()} input...`}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
@@ -244,7 +244,7 @@ export default function CodeToolPage() {
 
                           {option.type === 'select' && option.choices ? (
                             <select
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-white"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm bg-white"
                               value={options[option.name] || option.default || ''}
                               onChange={(e) =>
                                 handleOptionChange(option.name, e.target.value)
@@ -259,7 +259,7 @@ export default function CodeToolPage() {
                           ) : option.type === 'number' ? (
                             <input
                               type="number"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                               value={options[option.name] || option.default || 0}
                               onChange={(e) =>
                                 handleOptionChange(
@@ -271,7 +271,7 @@ export default function CodeToolPage() {
                           ) : option.type === 'checkbox' ? (
                             <input
                               type="checkbox"
-                              className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                              className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
                               checked={options[option.name] || false}
                               onChange={(e) =>
                                 handleOptionChange(option.name, e.target.checked)
@@ -280,7 +280,7 @@ export default function CodeToolPage() {
                           ) : (
                             <input
                               type="text"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                               value={options[option.name] || ''}
                               onChange={(e) =>
                                 handleOptionChange(option.name, e.target.value)
@@ -301,7 +301,7 @@ export default function CodeToolPage() {
 
                   {/* Execute Button */}
                   <button
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 duration-0"
+                    className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 duration-0"
                     onClick={handleExecute}
                     disabled={loading}
                   >
@@ -340,7 +340,7 @@ export default function CodeToolPage() {
             {/* Info Box */}
             <motion.div
               whileHover={{ y: -4 }}
-              className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-200 rounded-xl p-6"
+              className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6"
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">About this tool</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -366,12 +366,12 @@ export default function CodeToolPage() {
               className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
             >
               <div className="flex items-center gap-2 mb-4">
-                <CheckCircle size={20} className="text-indigo-600" />
+                <CheckCircle size={20} className="text-green-600" />
                 <h2 className="text-xl font-bold text-gray-900">Output</h2>
               </div>
 
               <textarea
-                className="w-full h-80 p-4 border border-gray-300 rounded-lg font-mono text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                className="w-full h-80 p-4 border border-gray-300 rounded-lg font-mono text-sm bg-gray-50 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                 readOnly
                 value={output}
                 placeholder="Output will appear here..."
@@ -380,7 +380,7 @@ export default function CodeToolPage() {
               {output && (
                 <div className="mt-4 flex gap-3">
                   <button
-                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium duration-0 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium duration-0 flex items-center justify-center gap-2"
                     onClick={handleCopy}
                   >
                     <Copy size={16} />
@@ -388,7 +388,7 @@ export default function CodeToolPage() {
                   </button>
 
                   <button
-                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium duration-0 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium duration-0 flex items-center justify-center gap-2"
                     onClick={handleDownload}
                   >
                     <Download size={16} />
@@ -437,8 +437,8 @@ export default function CodeToolPage() {
                 className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition"
               >
                 <div className="mb-4 flex justify-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-violet-100 rounded-full flex items-center justify-center">
-                    <feature.icon size={24} className="text-indigo-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
+                    <feature.icon size={24} className="text-green-600" />
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
