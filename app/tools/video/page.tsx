@@ -5,6 +5,8 @@ import { videoTools } from '@/app/lib/video-tools';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 export default function VideoToolsPage() {
   const router = useRouter();
@@ -22,7 +24,10 @@ export default function VideoToolsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <>
+      <Header />
+      <main className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1">
       {/* Premium Header */}
       <div className="relative bg-gradient-to-r from-pink-600 via-rose-600 to-pink-700 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
@@ -167,6 +172,9 @@ export default function VideoToolsPage() {
           </div>
         </motion.div>
       </motion.div>
-    </main>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

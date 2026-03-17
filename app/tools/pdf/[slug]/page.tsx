@@ -7,6 +7,8 @@ import { getPdfToolById } from '@/app/lib/pdf-tools';
 import { validatePdfInput } from '@/app/lib/pdf-validation';
 import type { PdfToolConfig } from '@/app/lib/pdf-tools';
 import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, Shield } from 'lucide-react';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 interface PageProps {
   params: Promise<{
@@ -27,12 +29,18 @@ export default function PdfToolPage({ params }: PageProps) {
   const [result, setResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!tool) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
-          <p className="text-gray-600">The requested PDF tool could not be found.</p>
+  if (!>
+        <Header />
+        <main className="min-h-screen bg-slate-50 flex flex-col">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
+              <p className="text-gray-600">The requested PDF tool could not be found.</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </p className="text-gray-600">The requested PDF tool could not be found.</p>
         </div>
       </div>
     );
@@ -105,7 +113,10 @@ export default function PdfToolPage({ params }: PageProps) {
       setResult({ type: 'file', message: 'File processed successfully!' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
+    }>
+      <Header />
+      <main className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1
       setLoading(false);
     }
   };
@@ -443,6 +454,9 @@ export default function PdfToolPage({ params }: PageProps) {
           </p>
         </motion.div>
       </motion.div>
-    </main>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

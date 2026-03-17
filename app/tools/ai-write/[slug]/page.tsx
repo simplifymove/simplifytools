@@ -7,6 +7,8 @@ import { Copy, RefreshCw, Download, ArrowLeft, Loader, ChevronRight, Zap, Shield
 import { motion } from 'framer-motion';
 import { getToolById } from '@/app/lib/ai-tools';
 import type { AIWriteTool } from '@/app/lib/ai-tools';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 export default function AIWriteToolPage() {
   const params = useParams();
@@ -110,7 +112,10 @@ export default function AIWriteToolPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <Header />
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1">
       {/* Animated Gradient Header */}
       <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
@@ -386,7 +391,9 @@ export default function AIWriteToolPage() {
             ))}
           </div>
         </motion.div>
+        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

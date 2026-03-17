@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { getToolBySlug, CodeTool } from '@/app/lib/code-tools';
 import { Copy, Download, RotateCcw, Play, ChevronRight, Zap, Shield, CheckCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 interface ToolOption {
   name: string;
@@ -139,20 +141,29 @@ export default function CodeToolPage() {
 
   if (!tool) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {error || 'Tool Not Found'}
-          </h1>
-          <p className="text-gray-600 mb-6">The requested tool does not exist.</p>
-          <Link
-            href="/tools/code"
-            className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-0 font-medium"
-          >
-            Back to Tools
-          </Link>
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 flex flex-col">
+          <div className="flex-1 flex items-center justifycenter w-full">
+            <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                {error || 'Tool Not Found'}
+              </h1>
+              <p className="text-gray-600 mb-6">The requested tool does not exist.</p>
+              <Link
+                href="/tools/code"
+                className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-0 font-medium"
+              >
+                Back to Tools
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
+     >
+      <Header />
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1
+      </>
     );
   }
 
@@ -439,7 +450,9 @@ export default function CodeToolPage() {
                 <div className="mb-4 flex justify-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
                     <feature.icon size={24} className="text-green-600" />
-                  </div>
+      </div>
+      <Footer />
+    </         </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600 text-sm">{feature.description}</p>

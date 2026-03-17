@@ -5,6 +5,8 @@ import { dataTools } from '@/app/lib/data-tools';
 import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 export default function DataToolsPage() {
   const router = useRouter();
@@ -22,7 +24,10 @@ export default function DataToolsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <>
+      <Header />
+      <main className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1">
       {/* Premium Header */}
       <div className="relative bg-gradient-to-r from-teal-600 via-emerald-600 to-green-600 py-16 px-4 md:px-8 overflow-hidden">
         {/* Animated background shapes */}
@@ -170,6 +175,9 @@ export default function DataToolsPage() {
           </div>
         </motion.div>
       </motion.div>
-    </main>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

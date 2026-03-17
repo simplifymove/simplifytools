@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { dataTools, getDataToolById } from '@/app/lib/data-tools';
 import { Download, AlertCircle, CheckCircle, Loader2, Upload, ChevronRight, Zap, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 interface FormData {
   [key: string]: string | number | boolean;
@@ -27,19 +29,25 @@ export default function DataToolPage() {
 
   if (!tool) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
-          <p className="text-gray-600 mb-6">The requested tool "{slug}" does not exist.</p>
-          <Link
-            href="/tools/data"
-            className="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition duration-0 font-medium"
-          >
-            Back to Tools
-          </Link>
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 flex flex-col">
+          <div className="flex-1 flex items-center justify-center w-full">
+            <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
+              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
+              <p className="text-gray-600 mb-6">The requested tool "{slug}" does not exist.</p>
+              <Link
+                href="/tools/data"
+                className="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition duration-0 font-medium"
+              >
+                Back to Tools
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
@@ -136,7 +144,10 @@ export default function DataToolPage() {
       document.body.removeChild(a);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Conversion failed');
-    } finally {
+    }>
+      <Header />
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1
       setLoading(false);
     }
   };
@@ -444,7 +455,9 @@ export default function DataToolPage() {
             ))}
           </div>
         </motion.div>
+        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

@@ -4,6 +4,8 @@ import { getAllTools } from '@/app/lib/code-tools';
 import Link from 'next/link';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 export default function CodeToolsPage() {
   const tools = getAllTools();
@@ -44,7 +46,10 @@ export default function CodeToolsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <>
+      <Header />
+      <main className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1">
       {/* Premium Header */}
       <div className="relative bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 py-16 px-4 md:px-8 overflow-hidden">
         {/* Animated background shapes */}
@@ -190,6 +195,9 @@ export default function CodeToolsPage() {
           </div>
         </div>
       </motion.div>
-    </main>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

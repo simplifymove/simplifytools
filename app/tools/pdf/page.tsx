@@ -6,6 +6,8 @@ import { Search, ChevronRight } from 'lucide-react';
 import { getAllPdfTools } from '@/app/lib/pdf-tools';
 import { ToolCard } from '@/app/components/ToolCard';
 import { motion } from 'framer-motion';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 export default function PdfToolsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,7 +40,10 @@ export default function PdfToolsPage() {
   }, [searchTerm, selectedCategory]);
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <>
+      <Header />
+      <main className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1">
       {/* Premium Header */}
       <div className="relative bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 py-16 px-4 md:px-8 overflow-hidden">
         {/* Animated background shapes */}

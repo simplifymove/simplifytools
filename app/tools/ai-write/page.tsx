@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { aiWriteTools, type ToolCategory } from '@/app/lib/ai-tools';
 import { ArrowRight, Sparkles, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 const categoryLabels: Record<ToolCategory, string> = {
   generate: '✨ Generate',
@@ -50,7 +52,10 @@ export default function AIWriteToolsPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <>
+      <Header />
+      <main className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1">
       {/* Premium Header */}
       <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
@@ -183,6 +188,9 @@ export default function AIWriteToolsPage() {
           </p>
         </div>
       </motion.div>
-    </main>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

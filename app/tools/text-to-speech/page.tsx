@@ -4,6 +4,8 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Play, Pause, Download, Volume2, Heart, Loader, ChevronRight, Sparkles, Zap, Shield, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 export default function TextToSpeech() {
   // Voice map definition BEFORE any hooks
@@ -184,7 +186,10 @@ export default function TextToSpeech() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <>
+      <Header />
+      <main className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1">
       {/* Premium Header */}
       <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
@@ -454,7 +459,10 @@ export default function TextToSpeech() {
                 <p className="text-white/90 text-sm">Generate and download high-quality MP3 files instantly</p>
               </div>
             </motion.div>
-          </div>
+        </div>
+      </main>
+      <Footer />
+    </</div>
         </motion.div>
       </motion.div>
     </main>

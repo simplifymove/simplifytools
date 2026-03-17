@@ -7,6 +7,8 @@ import { ChevronRight, Zap, Shield, CheckCircle, Loader } from 'lucide-react';
 import { getToolById } from '@/app/lib/video-tools';
 import { validateToolInput } from '@/app/lib/media-validation';
 import type { VideoTool } from '@/app/lib/video-tools';
+import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 interface PageProps {
   params: Promise<{
@@ -27,12 +29,18 @@ export default function VideoToolPage({ params }: PageProps) {
 
   if (!tool) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
-          <p className="text-gray-600">The requested tool could not be found.</p>
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center flex flex-col">
+          <div className="flex-1 flex items-center justify-center w-full">
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
+              <p className="text-gray-600">The requested tool could not be found.</p>
+            </div>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
@@ -117,7 +125,10 @@ export default function VideoToolPage({ params }: PageProps) {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
+    }>
+      <Header />
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1
       setLoading(false);
     }
   };
@@ -455,7 +466,9 @@ export default function VideoToolPage({ params }: PageProps) {
                 <div className="mb-4 flex justify-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full flex items-center justify-center">
                     <feature.icon size={24} className="text-pink-600" />
-                  </div>
+      </div>
+      <Footer />
+    </         </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600 text-sm">{feature.description}</p>
