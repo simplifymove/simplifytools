@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useMemo } from 'react';
-import { Play, Pause, Download, Volume2, Heart, Loader } from 'lucide-react';
+import { Play, Pause, Download, Volume2, Heart, Loader, ChevronRight, Sparkles, Zap, Shield, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function TextToSpeech() {
   // Voice map definition BEFORE any hooks
@@ -182,176 +184,279 @@ export default function TextToSpeech() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Volume2 className="text-blue-600" size={32} />
-            <h1 className="text-4xl font-bold text-gray-900">Text to Speech</h1>
-          </div>
-          <p className="text-gray-600 mb-8">🎤 Neural voices in 20+ languages - Choose professional speakers for better pronunciation! Edge TTS delivers natural, fluent speech.</p>
-
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-600 p-4 mb-8 rounded">
-              <p className="text-sm text-red-900">❌ {error}</p>
-            </div>
-          )}
-
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">📢 Intro Text (Optional)</label>
-            <input
-              type="text"
-              value={introText}
-              onChange={(e) => setIntroText(e.target.value)}
-              placeholder=""
-              className="w-full p-3 border-2 border-green-300 rounded-lg focus:border-green-500 focus:outline-none text-sm bg-green-50"
-            />
-            <p className="text-xs text-green-700 mt-1">This will be spoken BEFORE your main text</p>
+    <main className="min-h-screen bg-slate-50">
+      {/* Premium Header */}
+      <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 py-16 px-4 md:px-8 overflow-hidden">
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
+            <Link href="/" className="hover:text-white transition">Home</Link>
+            <ChevronRight size={16} />
+            <Link href="/tools/ai-write" className="hover:text-white transition">AI Tools</Link>
+            <ChevronRight size={16} />
+            <span>Text to Speech</span>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">📝 Main Text</label>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Type or paste the text you want to convert to speech..."
-              className="w-full h-48 p-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
-            />
-            <div className="mt-2 text-sm text-gray-600">
-              Characters: <span className="font-semibold">{text.length}</span>
-            </div>
-          </div>
-
-          <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-2">🎯 Outro/Ending Text (Optional)</label>
-            <input
-              type="text"
-              value={outroText}
-              onChange={(e) => setOutroText(e.target.value)}
-              placeholder=""
-              className="w-full p-3 border-2 border-orange-300 rounded-lg focus:border-orange-500 focus:outline-none text-sm bg-orange-50"
-            />
-            <p className="text-xs text-orange-700 mt-1">This will be spoken AFTER your main text</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">🌍 Language</label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-              >
-                {languageOptions.map((opt) => (
-                  <option key={opt.code} value={opt.code}>
-                    {opt.flag} {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">🎤 Voice</label>
-              <select
-                value={voice}
-                onChange={(e) => setVoice(e.target.value)}
-                className="w-full p-3 border-2 border-purple-300 rounded-lg focus:border-purple-500 focus:outline-none text-sm bg-purple-50 font-medium"
-              >
-                {availableVoices.map((v) => (
-                  <option key={v.code} value={v.code}>
-                    {v.name}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-purple-700 mt-1">✨ Better pronunciation</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-                <Heart size={16} className="text-red-500" /> Emotion
-              </label>
-              <select
-                value={emotion}
-                onChange={(e) => setEmotion(e.target.value)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-              >
-                {Object.entries(emotionSettings).map(([key, config]) => (
-                  <option key={key} value={key}>
-                    {config.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Speed: {speed.toFixed(1)}x</label>
-              <input
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value={speed}
-                onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Pitch: {pitch.toFixed(1)}x</label>
-              <input
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value={pitch}
-                onChange={(e) => setPitch(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-          </div>
-
-          <div className="bg-purple-50 border-l-4 border-purple-600 p-4 mb-8 rounded">
-            <p className="text-sm text-purple-900">
-              <strong>Current Settings:</strong> {emotionSettings[emotion].name} - 
-              Speed: {(speed * emotionSettings[emotion].speed).toFixed(1)}x, 
-              Pitch: {(pitch * emotionSettings[emotion].pitch).toFixed(1)}x
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 flex items-center gap-3">
+              🎤 Text to Speech
+            </h1>
+            <p className="text-lg text-white/90 max-w-2xl">
+              Convert text to natural speech with neural voices in 20+ languages. Perfect for podcasts, presentations, and more
             </p>
-          </div>
-
-          <div className="flex gap-4 flex-wrap mb-8">
-            <button
-              onClick={handleSpeak}
-              disabled={!text.trim() || isLoading}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <Loader size={20} className="animate-spin" /> Generating...
-                </>
-              ) : (
-                <>
-                  <Volume2 size={20} /> {isPlaying ? 'Pause' : 'Play'}
-                </>
-              )}
-            </button>
-            {isPlaying && (
-              <button
-                onClick={handleStop}
-                className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-md"
-              >
-                Stop
-              </button>
-            )}
-            <button
-              onClick={handleDownload}
-              disabled={!text.trim() || isLoading}
-              className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download size={20} /> Download Audio
-            </button>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+
+      {/* Content Layout */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Sticky Sidebar Form */}
+          <motion.div
+            className="lg:sticky lg:top-4 h-fit"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <Sparkles size={20} className="text-blue-600" />
+                Voice Settings
+              </h2>
+
+              {/* Language */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">🌍 Language</label>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:outline-none text-sm bg-blue-50"
+                >
+                  {languageOptions.map((opt) => (
+                    <option key={opt.code} value={opt.code}>
+                      {opt.flag} {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Voice */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">🎤 Voice</label>
+                <select
+                  value={voice}
+                  onChange={(e) => setVoice(e.target.value)}
+                  className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:outline-none text-sm bg-cyan-50"
+                >
+                  {availableVoices.map((v) => (
+                    <option key={v.code} value={v.code}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Emotion */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                  <Heart size={16} className="text-blue-600" /> Emotion
+                </label>
+                <select
+                  value={emotion}
+                  onChange={(e) => setEmotion(e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+                >
+                  {Object.entries(emotionSettings).map(([key, config]) => (
+                    <option key={key} value={key}>
+                      {config.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Speed */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">⚡ Speed: {speed.toFixed(1)}x</label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={speed}
+                  onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+
+              {/* Pitch */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">🎵 Pitch: {pitch.toFixed(1)}x</label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={pitch}
+                  onChange={(e) => setPitch(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+
+              {/* Current Settings */}
+              <div className="bg-blue-50 border-2 border-blue-200 p-4 rounded-lg mb-6">
+                <p className="text-xs font-semibold text-blue-900">
+                  <span className="block mb-1">Current Settings:</span>
+                  <span className="text-blue-700">{emotionSettings[emotion].name}</span>
+                  <span className="block text-blue-700">Speed: {(speed * emotionSettings[emotion].speed).toFixed(1)}x</span>
+                  <span className="block text-blue-700">Pitch: {(pitch * emotionSettings[emotion].pitch).toFixed(1)}x</span>
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2">
+                <button
+                  onClick={handleSpeak}
+                  disabled={!text.trim() || isLoading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg duration-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader size={18} className="animate-spin" /> Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 size={18} /> {isPlaying ? 'Pause' : 'Play'}
+                    </>
+                  )}
+                </button>
+                {isPlaying && (
+                  <button
+                    onClick={handleStop}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg duration-0 shadow-lg"
+                  >
+                    Stop
+                  </button>
+                )}
+                <button
+                  onClick={handleDownload}
+                  disabled={!text.trim() || isLoading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg duration-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  <Download size={18} /> Download
+                </button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Main Content */}
+          <motion.div
+            className="lg:col-span-2 space-y-6"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-600 p-4 rounded-lg">
+                <p className="text-sm text-red-900 font-medium">❌ {error}</p>
+              </div>
+            )}
+
+            {/* Intro Text */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">📢 Intro Text (Optional)</label>
+              <input
+                type="text"
+                value={introText}
+                onChange={(e) => setIntroText(e.target.value)}
+                placeholder="Example: 'Welcome to my podcast'"
+                className="w-full p-3 border-2 border-green-200 rounded-lg focus:border-green-500 focus:outline-none text-sm bg-green-50"
+              />
+              <p className="text-xs text-green-700 mt-2">This will be spoken BEFORE your main text</p>
+            </div>
+
+            {/* Main Text */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">📝 Main Text</label>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Type or paste the text you want to convert to speech..."
+                className="w-full h-48 p-4 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none text-sm"
+              />
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-xs text-gray-600">Characters: <span className="font-bold text-blue-600">{text.length}</span></span>
+              </div>
+            </div>
+
+            {/* Outro Text */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">🎯 Outro/Ending Text (Optional)</label>
+              <input
+                type="text"
+                value={outroText}
+                onChange={(e) => setOutroText(e.target.value)}
+                placeholder="Example: 'Thanks for listening!'"
+                className="w-full p-3 border-2 border-orange-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm bg-orange-50"
+              />
+              <p className="text-xs text-orange-700 mt-2">This will be spoken AFTER your main text</p>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Feature Highlight */}
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 py-16"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <motion.div 
+          className="bg-gradient-to-r from-blue-600 to-cyan-700 rounded-2xl shadow-xl p-12 text-white"
+          whileHover={{ y: -4 }}
+        >
+          <h2 className="text-3xl font-bold mb-8">Why Use Our Text-to-Speech?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <motion.div className="flex gap-4" whileHover={{ x: 5 }}>
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-blue-500/30">
+                  <Zap size={24} className="text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Natural Speech</h3>
+                <p className="text-white/90 text-sm">Neural voices with natural pronunciation in 20+ languages</p>
+              </div>
+            </motion.div>
+            <motion.div className="flex gap-4" whileHover={{ x: 5 }}>
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-cyan-500/30">
+                  <Shield size={24} className="text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Emotion Control</h3>
+                <p className="text-white/90 text-sm">Adjust emotions, speed, and pitch for perfect tone</p>
+              </div>
+            </motion.div>
+            <motion.div className="flex gap-4" whileHover={{ x: 5 }}>
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-blue-400/30">
+                  <CheckCircle size={24} className="text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Easy Download</h3>
+                <p className="text-white/90 text-sm">Generate and download high-quality MP3 files instantly</p>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </main>
   );
 }
