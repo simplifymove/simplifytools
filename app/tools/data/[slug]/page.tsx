@@ -144,16 +144,16 @@ export default function DataToolPage() {
       document.body.removeChild(a);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Conversion failed');
-    }>
-      <Header />
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="flex-1
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <Header />
+      <main className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1">
       {/* Animated Gradient Header */}
       <div className="relative bg-gradient-to-r from-teal-600 to-emerald-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
