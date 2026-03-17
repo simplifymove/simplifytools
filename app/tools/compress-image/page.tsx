@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, ChevronRight, Zap, Lock, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { ImageUploader } from '../../components/ImageUploader';
 import { compressImage } from '../../lib/imageTools';
@@ -63,15 +63,18 @@ export default function CompressImagePage() {
   const reduction = originalSize > 0 ? (((originalSize - compressedSize) / originalSize) * 100).toFixed(1) : 0;
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 py-8 px-4 md:px-8">
+    <main className="min-h-screen bg-slate-50">
+      <div className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 py-12 px-4 md:px-8 text-white">
         <div className="max-w-4xl mx-auto">
-          <Link href="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Tools
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Image Compressor</h1>
-          <p className="text-gray-600 mt-2">Reduce image file size while maintaining quality</p>
+          <div className="flex items-center gap-2 text-white text-sm mb-6">
+            <Link href="/" className="hover:text-white transition">Home</Link>
+            <ChevronRight size={16} />
+            <Link href="/tools" className="hover:text-white transition">Tools</Link>
+            <ChevronRight size={16} />
+            <span className="text-white">Image Compressor</span>
+          </div>
+          <h1 className="text-4xl font-bold mb-2">Image Compressor</h1>
+          <p className="text-lg text-white">Reduce image file size while maintaining quality</p>
         </div>
       </div>
 
@@ -164,6 +167,35 @@ export default function CompressImagePage() {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Features */}
+      <div className="bg-white border-t border-gray-100 py-12 px-4 md:px-8">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-xl bg-blue-50 border border-blue-200 border-l-4 border-l-blue-600">
+            <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-blue-600" />
+              Lightning Fast
+            </h3>
+            <p className="text-sm text-gray-600">Compress instantly without waiting</p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-indigo-50 border border-indigo-200 border-l-4 border-l-indigo-600">
+            <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <Lock className="w-5 h-5 text-indigo-600" />
+              Fully Secure
+            </h3>
+            <p className="text-sm text-gray-600">All processing happens locally</p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-blue-50 border border-blue-200 border-l-4 border-l-blue-700">
+            <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-blue-700" />
+              High Quality
+            </h3>
+            <p className="text-sm text-gray-600">Smart compression maintains quality</p>
           </div>
         </div>
       </div>

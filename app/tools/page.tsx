@@ -22,6 +22,14 @@ function ToolsContent() {
   const [showFilters, setShowFilters] = useState(false);
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
+  const searchParam = searchParams.get('search');
+
+  // Initialize searchTerm from URL parameter
+  React.useEffect(() => {
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+  }, [searchParam]);
 
   // Check if category is coming soon or is data tools
   const isDataTools = categoryParam && ['data', 'Data'].includes(categoryParam);
@@ -72,7 +80,7 @@ function ToolsContent() {
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Premium Header */}
-      <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 py-16 px-4 md:px-8 overflow-hidden">
+      <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
         {/* Animated background shapes */}
         <motion.div
           className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
@@ -144,7 +152,7 @@ function ToolsContent() {
               </div>
               <button
                 type="submit"
-                className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all whitespace-nowrap flex items-center justify-center gap-2"
+                className="px-8 py-3 bg-orange-500 text-white rounded-full font-medium hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all whitespace-nowrap flex items-center justify-center gap-2"
               >
                 <Search className="w-4 h-4" />
                 Search
@@ -219,7 +227,7 @@ function ToolsContent() {
                 </p>
                 <Link
                   href="/tools/data"
-                  className="inline-block px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full hover:shadow-lg transition-all"
+                  className="inline-block px-8 py-3 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 hover:shadow-lg transition-all"
                 >
                   Go to Data Tools
                 </Link>
@@ -242,7 +250,7 @@ function ToolsContent() {
                 </p>
                 <Link
                   href="/tools/pdf"
-                  className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-full hover:shadow-lg transition-all"
+                  className="inline-block px-8 py-3 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 hover:shadow-lg transition-all"
                 >
                   Go to PDF Tools
                 </Link>
@@ -265,7 +273,7 @@ function ToolsContent() {
                 </p>
                 <Link
                   href="/"
-                  className="inline-block px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full hover:shadow-lg transition-all"
+                  className="inline-block px-8 py-3 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 hover:shadow-lg transition-all"
                 >
                   Back Home
                 </Link>
@@ -293,7 +301,7 @@ function ToolsContent() {
                     >
                       {/* Hover gradient background */}
                       <motion.div
-                        className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100"
+                        className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover:opacity-100"
                         transition={{ duration: 0.3 }}
                       />
 
@@ -301,7 +309,7 @@ function ToolsContent() {
                         {/* Header with Icon & Category */}
                         <div className="flex items-start justify-between mb-4">
                           <motion.div
-                            className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center group-hover:from-indigo-200 group-hover:to-purple-200 transition"
+                            className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition"
                             whileHover={{ scale: 1.2, rotate: 12 }}
                           >
                             {tool.icon && <tool.icon className="w-6 h-6 text-indigo-600" />}
@@ -346,7 +354,7 @@ function ToolsContent() {
                 </p>
                 <Link
                   href="/tools"
-                  className="inline-block px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full hover:shadow-lg transition-all"
+                  className="inline-block px-8 py-3 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 hover:shadow-lg transition-all"
                 >
                   Clear Filters
                 </Link>

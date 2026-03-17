@@ -35,6 +35,7 @@ export interface Tool {
   category: 'Image' | 'PDF' | 'Video' | 'AI Write' | 'File';
   icon: any;
   route?: string;
+  headerColor?: string; // Tailwind gradient color (e.g., "from-orange-400 via-orange-500 to-orange-600")
 }
 
 const aiEditingTools: Tool[] = [
@@ -45,6 +46,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Wand2,
     route: '/tools/ai-image-generator',
+    headerColor: 'from-purple-400 via-indigo-400 to-purple-500',
   },
   {
     id: 'remove-bg',
@@ -53,6 +55,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Eraser,
     route: '/tools/remove-background',
+    headerColor: 'from-teal-800 via-emerald-800 to-teal-900',
   },
   {
     id: 'upscale',
@@ -61,6 +64,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Zap,
     route: '/tools/upscale-image',
+    headerColor: 'from-amber-400 via-yellow-400 to-amber-500',
   },
   {
     id: 'remove-watermark',
@@ -69,6 +73,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Droplets,
     route: '/tools/remove-watermark',
+    headerColor: 'from-blue-400 via-cyan-400 to-blue-500',
   },
   {
     id: 'remove-objects',
@@ -77,6 +82,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Scissors,
     route: '/tools/remove-object',
+    headerColor: 'from-rose-400 via-pink-400 to-rose-500',
   },
   {
     id: 'profile-photo',
@@ -85,6 +91,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: User,
     route: '/tools/profile-photo-maker',
+    headerColor: 'from-orange-400 via-red-400 to-orange-500',
   },
   {
     id: 'blur-bg',
@@ -93,6 +100,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Eye,
     route: '/tools/blur-background',
+    headerColor: 'from-indigo-400 via-blue-400 to-indigo-500',
   },
   {
     id: 'remove-person',
@@ -108,6 +116,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Zap,
     route: '/tools/unblur-image',
+    headerColor: 'from-amber-400 via-yellow-400 to-amber-500',
   },
   {
     id: 'cleanup',
@@ -242,6 +251,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/rotate-image',
+    headerColor: 'from-emerald-400 via-green-400 to-emerald-500',
   },
   {
     id: 'resize',
@@ -250,6 +260,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Mountain,
     route: '/tools/resize-image',
+    headerColor: 'from-amber-600 via-orange-500 to-amber-600',
   },
   {
     id: 'grayscale',
@@ -258,6 +269,7 @@ const aiEditingTools: Tool[] = [
     category: 'Image',
     icon: Palette,
     route: '/tools/grayscale-image',
+    headerColor: 'from-gray-400 via-slate-400 to-gray-500',
   },
 ];
 
@@ -269,6 +281,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: FileImage,
     route: '/tools/converters/pdf-to-jpg',
+    headerColor: 'from-orange-400 via-red-400 to-orange-500',
   },
   {
     id: 'image-to-text',
@@ -277,6 +290,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: FileText,
     route: '/tools/converters/image-to-text',
+    headerColor: 'from-blue-400 via-indigo-400 to-blue-500',
   },
   {
     id: 'pdf-to-text',
@@ -285,6 +299,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: FileText,
     route: '/tools/converters/pdf-to-text',
+    headerColor: 'from-blue-400 via-indigo-400 to-blue-500',
   },
   {
     id: 'compress',
@@ -293,6 +308,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: Package,
     route: '/tools/compress-image',
+    headerColor: 'from-purple-400 via-pink-400 to-purple-500',
   },
   {
     id: 'heic-jpg',
@@ -301,6 +317,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/heic-to-jpg',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'webp-jpg',
@@ -309,6 +326,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/webp-to-jpg',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'png-jpg',
@@ -317,6 +335,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/png-to-jpg',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'webp-png',
@@ -325,6 +344,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/webp-to-png',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'jpg-png',
@@ -333,6 +353,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/jpg-to-png',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'png-webp',
@@ -341,6 +362,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/png-to-webp',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'jpg-webp',
@@ -349,6 +371,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/jpg-to-webp',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'png-svg',
@@ -357,6 +380,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: Mountain,
     route: '/tools/converters/png-to-svg',
+    headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
   },
   {
     id: 'jpg-svg',
@@ -365,6 +389,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: Mountain,
     route: '/tools/converters/jpg-to-svg',
+    headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
   },
   {
     id: 'heic-png',
@@ -373,6 +398,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/heic-to-png',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'edit-png',
@@ -388,6 +414,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: FileAudio,
     route: '/tools/converters/gif-to-mp4',
+    headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
     id: 'mp4-gif',
@@ -396,6 +423,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: FileAudio,
     route: '/tools/converters/mp4-to-gif',
+    headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
     id: 'jpg-gif',
@@ -512,6 +540,7 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/png-to-tiff',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'eps-svg',

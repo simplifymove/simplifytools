@@ -2,19 +2,39 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { 
   FileText, Image, Video, PenTool, Database, Code2, Volume2, Brackets,
   ArrowRight, Search, Menu, X, Zap, Lock, Smartphone, Sparkles,
-  BarChart3, CheckCircle, ChevronRight, ArrowUpRight
+  BarChart3, CheckCircle, ChevronRight, ArrowUpRight, Eraser, Combine,
+  FileImage, Mountain, Wand2, Package, LogOut
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { aiEditingTools, converterTools, aiWriteTools, videoTools } from './data/tools';
+import { SignInModal } from './components/SignInModal';
 
 export default function Home() {
+  const router = useRouter();
+  const { data: session } = useSession();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [signInModalOpen, setSignInModalOpen] = useState(false);
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      router.push(`/tools?search=${encodeURIComponent(query)}`);
+    }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch((e.target as HTMLInputElement).value);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
@@ -170,6 +190,74 @@ export default function Home() {
     }
   };
 
+  // Popular actions/tools that users commonly use
+  const popularActions = [
+    {
+      title: 'Remove Background',
+      description: 'Remove image backgrounds automatically',
+      icon: Eraser,
+      category: 'Image',
+      color: 'from-orange-500 to-orange-600',
+      link: '/tools/remove-background'
+    },
+    {
+      title: 'Merge PDF',
+      description: 'Combine multiple PDFs into one',
+      icon: Combine,
+      category: 'PDF',
+      color: 'from-purple-500 to-purple-600',
+      link: '/tools/pdf'
+    },
+    {
+      title: 'Compress Image',
+      description: 'Reduce image file size without quality loss',
+      icon: Zap,
+      category: 'Image', 
+      color: 'from-orange-500 to-orange-600',
+      link: '/tools/compress-image'
+    },
+    {
+      title: 'JPG to PNG',
+      description: 'Convert JPG images to PNG format',
+      icon: FileImage,
+      category: 'Image',
+      color: 'from-orange-500 to-orange-600',
+      link: '/tools/bmp-to-png'
+    },
+    {
+      title: 'Upscale Image',
+      description: 'Enhance and enlarge images without quality loss',
+      icon: Mountain,
+      category: 'Image',
+      color: 'from-orange-500 to-orange-600',
+      link: '/tools/upscale-image'
+    },
+    {
+      title: 'AI Image Generator',
+      description: 'Generate images from text descriptions',
+      icon: Wand2,
+      category: 'AI',
+      color: 'from-blue-500 to-blue-600',
+      link: '/tools/ai-image-generator'
+    },
+    {
+      title: 'Compress PDF',
+      description: 'Reduce PDF file size easily',
+      icon: FileText,
+      category: 'PDF',
+      color: 'from-purple-500 to-purple-600',
+      link: '/tools/pdf'
+    },
+    {
+      title: 'AI Write',
+      description: 'AI-powered writing and content creation',
+      icon: PenTool,
+      category: 'AI',
+      color: 'from-blue-500 to-blue-600',
+      link: '/tools/ai-write'
+    }
+  ];
+
   return (
     <main className="min-h-screen bg-white overflow-hidden">
       {/* NAVBAR */}
@@ -186,7 +274,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-2xl text-gray-900 hover:opacity-80 transition">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
               SC
             </div>
             <span className="hidden sm:inline">SimplifyConvert</span>
@@ -194,7 +282,48 @@ export default function Home() {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-8">
-            {['PDF', 'Image', 'Video', 'AI Write', 'Data', 'Code'].map((item) => (
+            {/* All Tools Dropdown */}
+            <div className="relative group pb-2">
+              <motion.a 
+                href="/#categories"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative flex items-center gap-1 py-2 px-1"
+                whileHover={{ y: -2 }}
+              >
+                All Tools
+                <ChevronRight size={16} className="group-hover:rotate-90 transition-transform" />
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
+              </motion.a>
+
+              {/* Dropdown Menu */}
+              <div
+                className="absolute left-0 top-full w-80 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-4 pointer-events-none group-hover:pointer-events-auto"
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  {categories.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <Link key={cat.id} href={cat.link}>
+                        <motion.div
+                          className="p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-all group/item"
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          <div className={`flex items-center gap-2 mb-2`}>
+                            <div className={`p-1.5 bg-linear-to-br ${cat.color} rounded-md shrink-0`}>
+                              <Icon className="w-3.5 h-3.5 text-white" />
+                            </div>
+                            <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition whitespace-nowrap overflow-hidden text-ellipsis">{cat.title}</p>
+                          </div>
+                          <p className="text-xs text-gray-500">{cat.count} tools</p>
+                        </motion.div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Other Navigation Items */}
+            {['Image', 'Video', 'AI Write', 'Data'].map((item) => (
               <motion.a 
                 key={item} 
                 href="#" 
@@ -202,7 +331,7 @@ export default function Home() {
                 whileHover={{ y: -2 }}
               >
                 {item}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 group-hover:w-full transition-all duration-300" />
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
               </motion.a>
             ))}
           </nav>
@@ -210,7 +339,7 @@ export default function Home() {
           {/* Search & CTA */}
           <div className="flex items-center gap-4">
             <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-              searchActive ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border border-purple-200 shadow-lg shadow-purple-500/10' : 'bg-gray-50 border border-gray-200'
+              searchActive ? 'bg-orange-50 border border-orange-200 shadow-lg shadow-orange-500/10' : 'bg-gray-50 border border-gray-200'
             }`}>
               <Search size={18} className="text-gray-400" />
               <input
@@ -219,19 +348,68 @@ export default function Home() {
                 className="bg-transparent outline-none text-sm w-32 text-gray-900 placeholder-gray-400"
                 onFocus={() => setSearchActive(true)}
                 onBlur={() => setSearchActive(false)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
               />
             </div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                href="/tools"
-                className="hidden sm:inline-block px-6 py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-medium rounded-full hover:shadow-lg hover:shadow-purple-500/40 transition-all"
-              >
-                Browse Tools
-              </Link>
-            </motion.div>
+
+            {session?.user ? (
+              <>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    href="/tools"
+                    className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
+                  >
+                    Explore Tools
+                  </Link>
+                </motion.div>
+                
+                <motion.button
+                  onClick={() => setSignInModalOpen(true)}
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {session.user.image && (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || 'User'}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  )}
+                  <span className="text-sm font-medium text-gray-700 truncate max-w-xs">
+                    {session.user.name?.split(' ')[0]}
+                  </span>
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    href="/tools"
+                    className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
+                  >
+                    Browse Tools
+                  </Link>
+                </motion.div>
+
+                <motion.button
+                  onClick={() => setSignInModalOpen(true)}
+                  className="hidden sm:inline-block px-6 py-2 border-2 border-orange-500 text-orange-600 font-medium rounded-full hover:bg-orange-50 transition-all"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Sign In
+                </motion.button>
+              </>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -256,7 +434,7 @@ export default function Home() {
                   {item}
                 </a>
               ))}
-              <Link href="/tools" className="px-4 py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-medium rounded-full text-center">
+              <Link href="/tools" className="px-4 py-2 bg-orange-500 text-white font-medium rounded-full text-center hover:bg-orange-600 transition-all">
                 Browse Tools
               </Link>
             </div>
@@ -264,8 +442,24 @@ export default function Home() {
         )}
       </motion.header>
 
+      {/* TAG LINE */}
+      <section className="px-4 md:px-8 py-3 bg-orange-50 border-b border-orange-100">
+        <div className="max-w-7xl mx-auto text-center">
+          <motion.p
+            className="text-sm md:text-base font-semibold text-indigo-700 flex items-center justify-center gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Sparkles size={16} />
+            Convert Files • Edit Images • Process Videos • AI Tools
+            <Sparkles size={16} />
+          </motion.p>
+        </div>
+      </section>
+
       {/* HERO SECTION */}
-      <section className="relative px-4 md:px-8 py-16 md:py-24 overflow-hidden">
+      <section className="relative px-4 md:px-8 py-16 md:py-28 overflow-hidden">
         {/* Enhanced Animated Background Elements */}
         <motion.div
           className="absolute top-10 left-5 w-80 h-80 bg-gradient-to-br from-indigo-400 to-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-15"
@@ -283,120 +477,279 @@ export default function Home() {
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <motion.h1
-            className="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-900 mb-6 leading-tight"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            Free Tools to Make<br />
-            <motion.span
-              className="relative inline-block"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <span className="absolute -inset-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg blur-lg opacity-50" />
-              <span className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Your Work Simple
-              </span>
-            </motion.span>
-          </motion.h1>
-
-          <motion.p
-            className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto font-medium"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            Convert, transform, and create with our 200+ online tools. PDF, Image, Video, AI Write, Data, Code, and more.
-          </motion.p>
-
-          {/* Stats with Counter Animation */}
-          <motion.div
-            className="grid grid-cols-3 gap-4 md:gap-8 mb-12 max-w-lg mx-auto"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {[
-              { label: '200', suffix: '+', value: 'Tools' },
-              { label: '7', suffix: '', value: 'Categories' },
-              { label: '100', suffix: '%', value: 'Free' }
-            ].map((stat) => (
-              <motion.div key={stat.value} className="text-center group" variants={itemVariants}>
-                <div className="text-3xl md:text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text">
-                  {stat.label}
-                  <span className="text-2xl md:text-3xl">{stat.suffix}</span>
-                </div>
-                <div className="text-sm text-gray-600 mt-1 group-hover:text-gray-900 transition">{stat.value}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Enhanced CTAs */}
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* LEFT SIDE - TEXT CONTENT */}
             <motion.div
-              whileHover={{ scale: 1.05, y: -4 }}
-              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
             >
-              <Link 
-                href="/tools" 
-                className="px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold rounded-full hover:shadow-2xl hover:shadow-purple-500/40 transition-all flex items-center justify-center gap-2 group"
+              <motion.h1
+                className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
               >
-                Explore All Tools 
+                Convert, Edit, and Optimize<br />
                 <motion.span
-                  animate={{ x: [0, 4, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="relative inline-block"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
                 >
-                  <ArrowRight size={20} />
+                  <span className="absolute -inset-3 bg-orange-500/20 rounded-lg blur-lg opacity-50" />
+                  <span className="relative text-orange-500 font-bold">
+                    Files in Seconds
+                  </span>
                 </motion.span>
-              </Link>
+              </motion.h1>
+
+              <motion.p
+                className="text-lg md:text-xl text-gray-600 mb-8 font-medium"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                Free online tools for PDF, Image, Video, AI writing, and more. No signup required.
+              </motion.p>
+
+              {/* Search Bar with Suggestions */}
+              <motion.div
+                className="mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+              >
+                <div className="relative group mb-4">
+                  <div className="absolute inset-0 bg-orange-500/20 rounded-full blur opacity-30 group-hover:opacity-50 transition duration-300" />
+                  <div className="relative flex items-center gap-3 px-6 py-4 bg-white rounded-full shadow-lg border border-gray-200">
+                    <Search size={20} className="text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search tools... (e.g., Remove background, Merge PDF)"
+                      className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500 font-medium"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyPress={handleSearchKeyPress}
+                    />
+                  </div>
+                </div>
+                <motion.div
+                  className="flex flex-wrap gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  {['Remove background', 'Merge PDF', 'Convert JPG to PNG', 'Compress video'].map((tag, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSearch(tag)}
+                      className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-indigo-100 hover:text-indigo-700 transition"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </motion.div>
+              </motion.div>
+
+              {/* Stats with Counter Animation */}
+              <motion.div
+                className="grid grid-cols-3 gap-4 md:gap-6"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {[
+                  { label: '200', suffix: '+', value: 'Tools' },
+                  { label: '7', suffix: '', value: 'Categories' },
+                  { label: '100', suffix: '%', value: 'Free' }
+                ].map((stat) => (
+                  <motion.div key={stat.value} className="text-center group" variants={itemVariants}>
+                    <div className="text-2xl md:text-3xl font-bold text-orange-500">
+                      {stat.label}
+                      <span className="text-lg md:text-xl">{stat.suffix}</span>
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1 group-hover:text-gray-900 transition">{stat.value}</div>
+                  </motion.div>
+                ))}
+              </motion.div>
             </motion.div>
-            <motion.button 
-              className="px-8 py-4 border-2 border-gray-300 text-gray-900 font-semibold rounded-full hover:border-purple-500 hover:bg-purple-50 transition-all"
-              whileHover={{ scale: 1.05, y: -4 }}
-              whileTap={{ scale: 0.95 }}
+
+            {/* RIGHT SIDE - CATEGORIES */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="hidden lg:block"
             >
-              View Popular Tools
-            </motion.button>
-          </motion.div>
+              <motion.div
+                className="grid grid-cols-2 gap-4"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {categories.slice(0, 6).map((cat) => {
+                  const Icon = cat.icon;
+                  return (
+                    <motion.div key={cat.id} variants={itemVariants}>
+                      <Link href={cat.link}>
+                        <motion.div
+                          className={`group h-full rounded-xl border-2 border-gray-200 bg-white cursor-pointer hover:border-gray-300 transition-all overflow-hidden`}
+                          whileHover={{ scale: 1.05, y: -4, boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <div className="p-4 space-y-3 h-full flex flex-col justify-between">
+                            <div>
+                              <div className={`p-2.5 bg-gradient-to-br ${cat.color} rounded-lg group-hover:shadow-lg transition-all w-fit mb-2`}>
+                                <Icon className="w-5 h-5 text-white" />
+                              </div>
+                              <h4 className="font-bold text-gray-900 text-sm leading-tight">{cat.title}</h4>
+                            </div>
+                            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100">
+                                <span className={`bg-gradient-to-r ${cat.color} bg-clip-text text-transparent font-bold`}>
+                                  {cat.count}
+                                </span>
+                              </span>
+                              <motion.div
+                                animate={{ x: 0 }}
+                                whileHover={{ x: 2 }}
+                              >
+                                <ArrowRight size={14} className="text-gray-400 group-hover:text-gray-600 transition" />
+                              </motion.div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+              
+              {/* View All Categories Link */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 1 }}
+                className="mt-6 text-center"
+              >
+                <Link href="/tools" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all">
+                  View All Categories
+                  <ArrowRight size={18} />
+                </Link>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* CATEGORY CARDS STRIP */}
-      <section className="px-4 md:px-8 py-12 md:py-16 bg-gradient-to-b from-white to-gray-50">
+      {/* POPULAR ACTIONS SECTION - THE MOST IMPORTANT */}
+      <section className="px-4 md:px-8 py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto">
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
+              Popular Actions
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              The most common tasks users perform. Start with what you need.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
           >
-            {categories.slice(0, 5).map((cat) => {
+            {popularActions.map((action, index) => {
+              const Icon = action.icon;
+              return (
+                <motion.div key={index} variants={itemVariants}>
+                  <Link href={action.link}>
+                    <motion.div
+                      className="group h-full p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-transparent hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
+                      whileHover={{ y: -12, scale: 1.02 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className={`inline-flex p-3 mb-4 bg-gradient-to-br ${action.color} rounded-xl shadow-lg`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition">
+                        {action.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {action.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
+                          {action.category}
+                        </span>
+                        <motion.div
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          <ArrowRight size={16} className="text-gray-400 group-hover:text-purple-600 transition" />
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CATEGORY CARDS SECTION */}
+      <section id="categories" className="px-4 md:px-8 py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Explore Categories
+            </h2>
+            <p className="text-lg text-gray-600">
+              Browse tools by category and discover everything we offer
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {categories.map((cat) => {
               const Icon = cat.icon;
               return (
                 <motion.div key={cat.id} variants={itemVariants}>
                   <Link href={cat.link}>
                     <motion.div 
-                      className={`group h-full rounded-xl overflow-hidden bg-gradient-to-br ${cat.color} p-1 cursor-pointer hover:shadow-2xl transition-all`}
-                      whileHover={{ scale: 1.05, y: -8 }}
+                      className={`group h-full rounded-2xl border-2 border-gray-200 bg-white cursor-pointer hover:border-gray-300 hover:shadow-2xl transition-all overflow-hidden`}
+                      whileHover={{ scale: 1.06, y: -8 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="bg-white rounded-[10px] p-6 h-full space-y-4 group-hover:bg-gray-50 transition">
+                      <div className="p-6 h-full space-y-4 group-hover:bg-gray-50 transition">
                         <div className="flex items-start justify-between">
-                          <div className={`p-3 bg-gradient-to-br ${cat.color} rounded-lg group-hover:shadow-lg transition-all`}>
+                          <div className={`p-3 bg-gradient-to-br ${cat.color} rounded-xl group-hover:shadow-lg transition-all`}>
                             <Icon className="w-6 h-6 text-white" />
                           </div>
                           <motion.div
-                            className="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-600"
+                            className="text-xs font-bold px-2.5 py-1.5 rounded-full bg-red-100 text-red-600"
                             animate={{ y: [0, -2, 0] }}
                             transition={{ duration: 3, repeat: Infinity }}
                           >
@@ -421,6 +774,102 @@ export default function Home() {
                 </motion.div>
               );
             })}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS SECTION */}
+      <section className="px-4 md:px-8 py-16 md:py-24 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              How It Works
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Simple 3-step process to convert, edit, and optimize your files
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {[
+              {
+                step: 1,
+                title: 'Upload File',
+                description: 'Choose and upload your file from your device or drag and drop',
+                icon: Package
+              },
+              {
+                step: 2,
+                title: 'Choose Tool',
+                description: 'Select the tool or conversion you want to apply to your file',
+                icon: Wand2
+              },
+              {
+                step: 3,
+                title: 'Download Result',
+                description: 'Your processed file is ready to download instantly',
+                icon: ArrowUpRight
+              }
+            ].map((item, index) => (
+              <motion.div
+                key={item.step}
+                variants={itemVariants}
+                className="relative"
+              >
+                <div className="flex flex-col items-center text-center group">
+                  {/* Step Circle */}
+                  <motion.div
+                    className="relative mb-6 w-20 h-20 md:w-24 md:h-24 flex items-center justify-center"
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-blue-600 rounded-full opacity-0 group-hover:opacity-20 transition duration-300 blur-xl" />
+                    <div className="relative w-full h-full flex items-center justify-center bg-white rounded-full border-2 border-gradient-to-br from-indigo-200 via-purple-200 to-pink-200 shadow-lg group-hover:shadow-xl transition">
+                      <div className="text-center">
+                        <div className="text-sm font-bold text-gray-600 mb-1">Step</div>
+                        <div className="text-2xl md:text-3xl font-bold text-orange-500">
+                          {item.step}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Connector Line */}
+                  {index < 2 && (
+                    <div className="hidden md:block absolute top-12 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-1 bg-gradient-to-r from-transparent via-purple-300 to-transparent" />
+                  )}
+
+                  {/* Icon */}
+                  <motion.div
+                    className="p-4 bg-white rounded-2xl mb-6 shadow-md group-hover:shadow-xl transition inline-flex"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, delay: index * 0.3 }}
+                  >
+                    <item.icon className="w-8 h-8 text-purple-600" />
+                  </motion.div>
+
+                  {/* Title & Description */}
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -453,7 +902,7 @@ export default function Home() {
                 >
                   {stat.icon}
                 </motion.div>
-                <div className="text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text mb-2">
+                <div className="text-4xl font-bold text-orange-500 mb-2">
                   {stat.value}
                   <span className="text-2xl">{stat.suffix}</span>
                 </div>
@@ -464,102 +913,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED CATEGORIES */}
-      <section className="px-4 md:px-8 py-16 md:py-24 bg-gradient-to-b from-gray-50 via-white to-gray-50">
+      {/* POPULAR TOOLS SHOWCASE */}
+      <section className="px-4 md:px-8 py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Explore Every Category
-            </h2>
-            <p className="text-xl text-gray-600">
-              Choose your tool category and get started instantly
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {categories.map((cat, idx) => {
-              const Icon = cat.icon;
-              return (
-                <motion.div key={cat.id} variants={itemVariants}>
-                  <Link href={cat.link}>
-                    <motion.div 
-                      className={`group h-full rounded-2xl overflow-hidden bg-white border border-gray-200 hover:border-gray-300 transition-all hover:shadow-2xl ${cat.glowColor}`}
-                      whileHover={{ y: -12, scale: 1.02 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {/* Gradient Header */}
-                      <div className={`bg-gradient-to-br ${cat.color} p-8 relative overflow-hidden h-40 flex flex-col justify-between`}>
-                        {/* Animated background shapes */}
-                        <motion.div
-                          className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity"
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                        >
-                          <div className="absolute top-2 right-2 w-20 h-20 bg-white/30 rounded-full" />
-                        </motion.div>
-
-                        <div className="space-y-4 relative z-10">
-                          <motion.div 
-                            className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-all"
-                            whileHover={{ scale: 1.15, rotate: 10 }}
-                          >
-                            <Icon className="w-8 h-8 text-white" />
-                          </motion.div>
-                          <div>
-                            <h3 className="text-xl font-bold text-white">{cat.title}</h3>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-6 space-y-4">
-                        <p className="text-sm text-gray-600 line-clamp-2 group-hover:text-gray-900 transition">{cat.description}</p>
-                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                          <span className="text-xs font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-full group-hover:bg-gradient-to-r group-hover:from-blue-100 group-hover:to-purple-100 transition">
-                            {cat.count} tools
-                          </span>
-                          <motion.div
-                            animate={{ x: 0 }}
-                            whileHover={{ x: 4 }}
-                          >
-                            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-900 transition-all" />
-                          </motion.div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* POPULAR TOOLS */}
-      <section className="px-4 md:px-8 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
               Popular Tools
             </h2>
-            <p className="text-xl text-gray-600">
-              Start converting, editing, and creating right now
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Get started with the most-used tools that thousands of users love
             </p>
           </motion.div>
 
@@ -576,7 +944,7 @@ export default function Home() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-full font-medium transition-all relative overflow-hidden ${
                   selectedCategory === cat
-                    ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/40'
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40 hover:bg-orange-600'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -609,14 +977,14 @@ export default function Home() {
                     >
                       {/* Hover Glow Background */}
                       <motion.div
-                        className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100"
+                        className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover:opacity-100"
                         transition={{ duration: 0.3 }}
                       />
 
                       <div className="relative z-10">
                         <div className="flex items-start justify-between mb-4">
                           <motion.div 
-                            className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center group-hover:from-indigo-200 group-hover:to-purple-200 transition"
+                            className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition"
                             whileHover={{ scale: 1.2, rotate: 12 }}
                           >
                             <Icon className="w-6 h-6 text-indigo-600" />
@@ -644,19 +1012,20 @@ export default function Home() {
       </section>
 
       {/* WHY CHOOSE US */}
-      <section className="px-4 md:px-8 py-16 md:py-24 bg-gray-50">
+      <section className="px-4 md:px-8 py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
               Why Choose SimplifyConvert?
             </h2>
-            <p className="text-xl text-gray-600">
-              Experience the fastest and most reliable online tools platform
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              The most trusted platform for file conversion and editing with millions of happy users worldwide
             </p>
           </motion.div>
 
@@ -704,7 +1073,7 @@ export default function Home() {
       <section className="relative px-4 md:px-8 py-16 md:py-24 overflow-hidden">
         {/* Animated gradient background */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 opacity-95"
+          className="absolute inset-0 bg-orange-500 opacity-95\"
           animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -833,7 +1202,7 @@ export default function Home() {
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
                   SC
                 </div>
                 <span>SimplifyConvert</span>
@@ -875,11 +1244,17 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-white mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                {['About', 'Privacy Policy', 'Terms of Service', 'Contact', 'Blog'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
+                {[
+                  { label: 'About', href: '/about' },
+                  { label: 'Privacy Policy', href: '/privacy' },
+                  { label: 'Terms of Service', href: '/tos' },
+                  { label: 'Contact', href: '/contact' },
+                  { label: 'Blog', href: '/blog' }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -888,11 +1263,14 @@ export default function Home() {
 
           <div className="border-t border-gray-800 pt-8">
             <p className="text-center text-sm text-gray-400">
-              © 2024 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
+              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
             </p>
           </div>
         </div>
       </footer>
+
+      {/* Sign In Modal */}
+      <SignInModal isOpen={signInModalOpen} onClose={() => setSignInModalOpen(false)} />
     </main>
   );
 }

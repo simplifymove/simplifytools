@@ -135,7 +135,6 @@ export default function ConverterPage({
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Controls */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Settings</h2>
 
