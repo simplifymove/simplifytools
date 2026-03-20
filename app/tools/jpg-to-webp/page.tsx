@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
 import Link from 'next/link';
+import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 
@@ -12,9 +12,11 @@ export default function JpgToWebpPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [quality, setQuality] = useState(90);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
+    setError(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -26,17 +28,19 @@ export default function JpgToWebpPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
+    setError(null);
   };
 
   const handleConvert = async () => {
     if (!file) return;
     
     setProcessing(true);
+    setError(null);
     try {
       const result = await convertImageFormat(file, 'image/webp');
       setResult(result.blob);
-    } catch (error) {
-      alert('Error converting image: ' + (error as Error).message);
+    } catch (err) {
+      setError((err as Error).message || 'Error converting image');
     } finally {
       setProcessing(false);
     }
@@ -55,72 +59,122 @@ export default function JpgToWebpPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 py-8 px-4 md:px-8">
-        <div className="max-w-4xl mx-auto">
-          <Link href="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Tools
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">JPG to WebP Converter</h1>
-          <p className="text-gray-600 mt-2">Convert JPG to WebP for smaller file sizes and better quality</p>
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+      {/* Hero Header */}
+      <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
+        <div className="max-w-6xl mx-auto relative z-10">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
+            <Link href="/" className="hover:text-white transition">Home</Link>
+            <ChevronRight size={16} />
+            <Link href="/tools" className="hover:text-white transition">Tools</Link>
+            <ChevronRight size={16} />
+            <span>JPG to WebP</span>
+          </div>
+
+          {/* Title Section */}
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-white/20 rounded-lg">
+              <Image size={32} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to WebP Converter</h1>
+              <p className="text-lg text-white/90">Convert JPG images to WebP format for smaller file sizes without losing quality. Perfect for web optimization.</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="py-12 px-4 md:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Step 1: Upload JPG</h2>
-              <ImageUploader
-                onFileSelect={handleFileSelect}
-                preview={preview}
-                onClearPreview={handleClearPreview}
-                accept="image/jpeg"
-              />
+      {/* Main Content */}
+      <div className="flex-1 py-12 px-4 md:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Upload Section - Left (2 cols) */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload JPG Image</h2>
+                <ImageUploader
+                  onFileSelect={handleFileSelect}
+                  preview={preview}
+                  onClearPreview={handleClearPreview}
+                  accept="image/jpeg"
+                />
+                {error && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
+            {/* Controls - Right (sticky sidebar) */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Step 2: Settings</h2>
-              
-              <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    WebP Quality: {quality}%
-                  </label>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-4">
+                <h3 className="text-lg font-bold text-gray-900 mb-6">Conversion Settings</h3>
+
+                {/* Quality Slider */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-sm font-medium text-gray-700">Quality</label>
+                    <span className="text-sm font-semibold text-orange-600">{quality}%</span>
+                  </div>
                   <input
                     type="range"
                     min="10"
                     max="100"
                     value={quality}
                     onChange={(e) => setQuality(parseInt(e.target.value))}
-                    className="w-full"
+                    disabled={processing}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                   />
-                  <p className="text-xs text-gray-500 mt-2">
-                    WebP offers superior compression compared to JPG
-                  </p>
+                  <p className="text-xs text-gray-500 mt-2">Higher quality = larger file size</p>
                 </div>
 
+                {/* Image Preview */}
+                <div className="mb-6">
+                  {result ? (
+                    <div className="space-y-4">
+                      <img
+                        src={result as any}
+                        alt="Converted"
+                        className="w-full rounded-lg border border-gray-200 object-cover"
+                      />
+                      <button
+                        onClick={handleDownload}
+                        className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Download size={18} />
+                        Download
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="h-48 bg-orange-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                      <div className="text-center">
+                        <p className="text-gray-500 text-sm">Preview will appear here</p>
+                        <p className="text-gray-400 text-xs mt-1">Click "Convert" to process</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Convert Button */}
                 <button
                   onClick={handleConvert}
                   disabled={!file || processing}
-                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  className="w-full px-6 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
-                  {processing ? 'Converting...' : 'Convert to WebP'}
+                  {processing ? (
+                    <>
+                      <Loader size={18} className="animate-spin" />
+                      Converting...
+                    </>
+                  ) : (
+                    <>
+                      <Image size={18} />
+                      Convert to WebP
+                    </>
+                  )}
                 </button>
-
-                {result && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-sm text-green-800 font-medium mb-3">✓ Conversion Complete!</p>
-                    <button
-                      onClick={handleDownload}
-                      className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2 transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download WebP
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>

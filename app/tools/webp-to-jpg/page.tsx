@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
 import Link from 'next/link';
+import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 
@@ -12,9 +12,11 @@ export default function WebpToJpgPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [quality, setQuality] = useState(90);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
+    setError(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -26,17 +28,19 @@ export default function WebpToJpgPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
+    setError(null);
   };
 
   const handleConvert = async () => {
     if (!file) return;
     
     setProcessing(true);
+    setError(null);
     try {
       const result = await convertImageFormat(file, 'image/jpeg');
       setResult(result.blob);
-    } catch (error) {
-      alert('Error converting image: ' + (error as Error).message);
+    } catch (err) {
+      setError((err as Error).message || 'Error converting image');
     } finally {
       setProcessing(false);
     }
