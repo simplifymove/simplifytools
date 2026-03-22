@@ -634,7 +634,7 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 1 }}
                 className="mt-6 text-center"
               >
-                <Link href="/tools" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all">
+                <Link href="/#categories" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all">
                   View All Categories
                   <ArrowRight size={18} />
                 </Link>
@@ -806,15 +806,15 @@ export default function Home() {
             {[
               {
                 step: 1,
-                title: 'Upload File',
-                description: 'Choose and upload your file from your device or drag and drop',
-                icon: Package
-              },
-              {
-                step: 2,
                 title: 'Choose Tool',
                 description: 'Select the tool or conversion you want to apply to your file',
                 icon: Wand2
+              },
+              {
+                step: 2,
+                title: 'Upload File',
+                description: 'Choose and upload your file from your device or drag and drop',
+                icon: Package
               },
               {
                 step: 3,
@@ -868,45 +868,6 @@ export default function Home() {
                     {item.description}
                   </p>
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ENHANCED STATS SECTION */}
-      <section className="px-4 md:px-8 py-12 md:py-16 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {[
-              { icon: '📥', label: 'Files Processed', value: '2.5M', suffix: '+' },
-              { icon: '⚡', label: 'Conversions', value: '10M', suffix: '+' },
-              { icon: '🛠️', label: 'Online Tools', value: '200', suffix: '+' },
-              { icon: '✨', label: 'Premium Users', value: '50k', suffix: '+' }
-            ].map((stat, idx) => (
-              <motion.div
-                key={stat.label}
-                variants={itemVariants}
-                className="text-center group"
-              >
-                <motion.div
-                  className="text-5xl mb-3 inline-block group-hover:scale-125 transition-transform"
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, delay: idx * 0.2 }}
-                >
-                  {stat.icon}
-                </motion.div>
-                <div className="text-4xl font-bold text-orange-500 mb-2">
-                  {stat.value}
-                  <span className="text-2xl">{stat.suffix}</span>
-                </div>
-                <p className="text-gray-600 font-medium">{stat.label}</p>
               </motion.div>
             ))}
           </motion.div>

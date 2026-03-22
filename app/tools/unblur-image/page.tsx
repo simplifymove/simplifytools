@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, ChangeEvent, FormEvent } from 'react';
-import { Upload, Download, Loader2 } from 'lucide-react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
+import Link from 'next/link';
+import { Download, ChevronRight, Loader, Upload, SparklesIcon } from 'lucide-react';
+import { HomeHeader } from '../../components/HomeHeader';
 
 export default function UnblurImagePage() {
   const [image, setImage] = useState<string | null>(null);
@@ -39,6 +41,13 @@ export default function UnblurImagePage() {
     reader.readAsDataURL(file);
   };
 
+  const handleClearPreview = () => {
+    setImage(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+  };
+
   const handleProcess = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!image) {
@@ -50,11 +59,9 @@ export default function UnblurImagePage() {
     setError(null);
 
     try {
-      // Convert data URL to blob
       const response = await fetch(image);
       const blob = await response.blob();
 
-      // Create FormData
       const formData = new FormData();
       formData.append('image', blob, 'image.jpg');
       formData.append('mode', mode);
@@ -70,7 +77,6 @@ export default function UnblurImagePage() {
         formData.append('iterations', iterations.toString());
       }
 
-      // Process
       const processResponse = await fetch('/api/unblur-image', {
         method: 'POST',
         body: formData,
@@ -82,7 +88,6 @@ export default function UnblurImagePage() {
         throw new Error(data.error || 'Processing failed');
       }
 
-      // Set result
       const resultDataUrl = `data:image/jpeg;base64,${data.image}`;
       setResult(resultDataUrl);
     } catch (err) {
@@ -106,346 +111,388 @@ export default function UnblurImagePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
-            Unblur Image
-          </h1>
-          <p className="text-lg text-gray-600">
-            Enhance and clarify blurry images using AI-powered enhancement or motion deblur
-          </p>
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Hero Header */}
+        <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
+          <div className="max-w-6xl mx-auto relative z-10">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
+              <Link href="/" className="hover:text-white transition">Home</Link>
+              <ChevronRight size={16} />
+              <Link href="/tools" className="hover:text-white transition">Tools</Link>
+              <ChevronRight size={16} />
+              <span>Unblur Image</span>
+            </div>
+
+            {/* Title Section */}
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-white/20 rounded-lg">
+                <SparklesIcon size={32} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Unblur Image</h1>
+                <p className="text-lg text-white/90">Enhance and clarify blurry images using AI-powered enhancement or motion deblur technology.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Controls */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Settings</h2>
-
-            <form onSubmit={handleProcess} className="space-y-6">
-              {/* Image Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Upload Image
-                </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    disabled={processing}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="block w-full p-4 border-2 border-dashed border-indigo-300 rounded-lg cursor-pointer hover:border-indigo-500 transition text-center"
-                  >
-                    <Upload className="w-8 h-8 mx-auto text-indigo-500 mb-2" />
-                    <span className="text-sm font-medium text-gray-700">
-                      {image ? 'Image selected' : 'Click to upload image'}
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Mode Selection */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Processing Mode
-                </label>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-indigo-50 transition" onClick={() => setMode('enhance')}>
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="enhance"
-                      checked={mode === 'enhance'}
-                      onChange={(e) => setMode('enhance')}
-                      disabled={processing}
-                      className="w-4 h-4 text-indigo-600"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">Enhancement Pipeline</p>
-                      <p className="text-xs text-gray-500">Denoise + contrast + sharpening</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-indigo-50 transition" onClick={() => setMode('motion')}>
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="motion"
-                      checked={mode === 'motion'}
-                      onChange={(e) => setMode('motion')}
-                      disabled={processing}
-                      className="w-4 h-4 text-indigo-600"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">Motion Deblur</p>
-                      <p className="text-xs text-gray-500">Richardson-Lucy deconvolution</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Enhancement Mode Parameters */}
-              {mode === 'enhance' && (
-                <div className="space-y-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-                  <h3 className="font-semibold text-gray-900">Enhancement Parameters</h3>
+        {/* Main Content */}
+        <div className="flex-1 py-12 px-4 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Upload Section - Left (2 cols) */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
                   
-                  {/* Denoise */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Denoise Strength
-                      </label>
-                      <span className="text-lg font-bold text-indigo-600">{denoise.toFixed(1)}</span>
-                    </div>
+                  <div className="relative mb-6">
                     <input
-                      type="range"
-                      min="0"
-                      max="30"
-                      step="1"
-                      value={denoise}
-                      onChange={(e) => setDenoise(parseFloat(e.target.value))}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
                       disabled={processing}
-                      className="w-full"
+                      className="hidden"
+                      id="image-upload"
                     />
-                    <p className="text-xs text-gray-500 mt-1">0 = off, 10 = balanced, 20+ = heavy</p>
-                  </div>
-
-                  {/* Sharpening Strength */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Sharpening Strength
-                      </label>
-                      <span className="text-lg font-bold text-indigo-600">{strength.toFixed(2)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="2"
-                      step="0.1"
-                      value={strength}
-                      onChange={(e) => setStrength(parseFloat(e.target.value))}
-                      disabled={processing}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">0.5 = subtle, 1.2 = balanced, 2.0 = aggressive</p>
-                  </div>
-
-                  {/* CLAHE Contrast */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Local Contrast (CLAHE)
-                      </label>
-                      <span className="text-lg font-bold text-indigo-600">{clahe.toFixed(2)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="5"
-                      step="0.5"
-                      value={clahe}
-                      onChange={(e) => setClahe(parseFloat(e.target.value))}
-                      disabled={processing}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">0 = off, 2 = balanced, 5 = maximum</p>
-                  </div>
-
-                  {/* Edge Preservation */}
-                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
-                    <input
-                      type="checkbox"
-                      id="edge-preserve"
-                      checked={edgePreserve}
-                      onChange={(e) => setEdgePreserve(e.target.checked)}
-                      disabled={processing}
-                      className="w-4 h-4 text-indigo-600 rounded"
-                    />
-                    <label htmlFor="edge-preserve" className="text-sm font-medium text-gray-700">
-                      Edge Preservation Filter
+                    <label
+                      htmlFor="image-upload"
+                      className="block w-full p-8 border-2 border-dashed border-orange-300 rounded-lg cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition text-center"
+                    >
+                      <Upload className="w-8 h-8 mx-auto text-orange-500 mb-3" />
+                      <span className="text-sm font-medium text-gray-700">
+                        {image ? '✓ Image selected' : 'Click to upload image'}
+                      </span>
                     </label>
                   </div>
+
+                  {/* Preview */}
+                  {preview && (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Original Preview</h3>
+                      <img
+                        src={preview}
+                        alt="Original"
+                        className="w-full h-64 object-cover rounded-lg border border-gray-200"
+                      />
+                      <button
+                        onClick={handleClearPreview}
+                        className="mt-3 text-sm text-gray-600 hover:text-gray-900 underline"
+                      >
+                        Clear &amp; upload different image
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Result */}
+                  {result && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Unblurred Result</h3>
+                      <img
+                        src={result}
+                        alt="Result"
+                        className="w-full h-64 object-cover rounded-lg border border-blue-300 mb-3"
+                      />
+                    </div>
+                  )}
+
+                  {/* Error */}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-900 font-semibold">Error</p>
+                      <p className="text-red-700 text-sm">{error}</p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {/* Motion Deblur Mode Parameters */}
-              {mode === 'motion' && (
-                <div className="space-y-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-                  <h3 className="font-semibold text-gray-900">Motion Deblur Parameters</h3>
-                  
-                  {/* Motion Length */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Motion Length (pixels)
-                      </label>
-                      <span className="text-lg font-bold text-indigo-600">{motionLength}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="5"
-                      max="50"
-                      step="1"
-                      value={motionLength}
-                      onChange={(e) => setMotionLength(parseInt(e.target.value))}
-                      disabled={processing}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Length of motion blur kernel</p>
+              {/* Controls - Right (sticky sidebar) */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-4 space-y-4">
+                  {/* Mode Selection */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-4">Processing Mode</h3>
+                    
+                    <label className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer mb-3 border-2 border-gray-200 hover:border-orange-300 transition">
+                      <input
+                        type="radio"
+                        name="mode"
+                        value="enhance"
+                        checked={mode === 'enhance'}
+                        onChange={() => setMode('enhance')}
+                        disabled={processing}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-sm">Enhancement Pipeline</p>
+                        <p className="text-xs text-gray-500">Denoise + contrast + sharpening</p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-orange-300 transition">
+                      <input
+                        type="radio"
+                        name="mode"
+                        value="motion"
+                        checked={mode === 'motion'}
+                        onChange={() => setMode('motion')}
+                        disabled={processing}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-sm">Motion Deblur</p>
+                        <p className="text-xs text-gray-500">Richardson-Lucy deconvolution</p>
+                      </div>
+                    </label>
                   </div>
 
-                  {/* Motion Angle */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Motion Angle (degrees)
-                      </label>
-                      <span className="text-lg font-bold text-indigo-600">{motionAngle}°</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="180"
-                      step="5"
-                      value={motionAngle}
-                      onChange={(e) => setMotionAngle(parseInt(e.target.value))}
-                      disabled={processing}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Direction of motion blur</p>
-                  </div>
+                  {/* Enhancement Mode Parameters */}
+                  {mode === 'enhance' && (
+                    <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+                      <h3 className="font-semibold text-gray-900">Enhancement Settings</h3>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-medium text-gray-700">Denoise</label>
+                          <span className="text-sm font-semibold text-orange-600">{denoise.toFixed(1)}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="30"
+                          step="1"
+                          value={denoise}
+                          onChange={(e) => setDenoise(parseFloat(e.target.value))}
+                          disabled={processing}
+                          className="w-full"
+                        />
+                      </div>
 
-                  {/* Iterations */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Iterations
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-medium text-gray-700">Sharpening</label>
+                          <span className="text-sm font-semibold text-orange-600">{strength.toFixed(2)}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="2"
+                          step="0.1"
+                          value={strength}
+                          onChange={(e) => setStrength(parseFloat(e.target.value))}
+                          disabled={processing}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-medium text-gray-700">Contrast (CLAHE)</label>
+                          <span className="text-sm font-semibold text-orange-600">{clahe.toFixed(2)}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="5"
+                          step="0.5"
+                          value={clahe}
+                          onChange={(e) => setClahe(parseFloat(e.target.value))}
+                          disabled={processing}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={edgePreserve}
+                          onChange={(e) => setEdgePreserve(e.target.checked)}
+                          disabled={processing}
+                          className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Edge Preservation</span>
                       </label>
-                      <span className="text-lg font-bold text-indigo-600">{iterations}</span>
                     </div>
-                    <input
-                      type="range"
-                      min="10"
-                      max="200"
-                      step="10"
-                      value={iterations}
-                      onChange={(e) => setIterations(parseInt(e.target.value))}
-                      disabled={processing}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">50 = fast/good, 100+ = slow/better</p>
+                  )}
+
+                  {/* Motion Deblur Mode Parameters */}
+                  {mode === 'motion' && (
+                    <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+                      <h3 className="font-semibold text-gray-900">Motion Settings</h3>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-medium text-gray-700">Motion Length</label>
+                          <span className="text-sm font-semibold text-orange-600">{motionLength}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="5"
+                          max="50"
+                          step="1"
+                          value={motionLength}
+                          onChange={(e) => setMotionLength(parseInt(e.target.value))}
+                          disabled={processing}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-medium text-gray-700">Motion Angle</label>
+                          <span className="text-sm font-semibold text-orange-600">{motionAngle}°</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="180"
+                          step="5"
+                          value={motionAngle}
+                          onChange={(e) => setMotionAngle(parseInt(e.target.value))}
+                          disabled={processing}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-medium text-gray-700">Iterations</label>
+                          <span className="text-sm font-semibold text-orange-600">{iterations}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="10"
+                          max="200"
+                          step="10"
+                          value={iterations}
+                          onChange={(e) => setIterations(parseInt(e.target.value))}
+                          disabled={processing}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Process Button */}
+                  <form onSubmit={handleProcess}>
+                    <button
+                      type="submit"
+                      disabled={processing || !image}
+                      className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader size={20} className="animate-spin" />
+                          {mode === 'enhance' ? 'Enhancing...' : 'Deblurring...'}
+                        </>
+                      ) : (
+                        `Apply ${mode === 'enhance' ? 'Enhancement' : 'Motion Deblur'}`
+                      )}
+                    </button>
+                  </form>
+
+                  {/* Download Button */}
+                  {result && (
+                    <button
+                      onClick={downloadResult}
+                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                      <Download size={20} />
+                      Download Result
+                    </button>
+                  )}
+
+                  {/* Info Box */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-900 mb-2">About</h3>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• AI-powered enhancement</li>
+                      <li>• Motion deblur support</li>
+                      <li>• Multiple parameters</li>
+                      <li>• Processing: 30-120s</li>
+                    </ul>
                   </div>
                 </div>
-              )}
-
-              {/* Process Button */}
-              <button
-                type="submit"
-                disabled={processing || !image}
-                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                {processing ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    {mode === 'enhance' ? 'Enhancing...' : 'Deblurring...'}
-                  </span>
-                ) : (
-                  `Apply ${mode === 'enhance' ? 'Enhancement' : 'Motion Deblur'}`
-                )}
-              </button>
-            </form>
-          </div>
-
-          {/* Preview */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
-
-            {/* Original Preview */}
-            {preview && (
-              <div className="mb-6">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Original</p>
-                <img
-                  src={preview}
-                  alt="Original"
-                  className="w-full h-64 object-cover rounded-lg border border-gray-200"
-                />
               </div>
-            )}
-
-            {/* Result Preview */}
-            {result && (
-              <div>
-                <p className="text-sm font-semibold text-gray-700 mb-2">Result</p>
-                <img
-                  src={result}
-                  alt="Result"
-                  className="w-full h-64 object-cover rounded-lg border border-indigo-300 shadow-md"
-                />
-                <button
-                  onClick={downloadResult}
-                  className="w-full mt-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
-                >
-                  <Download className="w-5 h-5" />
-                  Download Result
-                </button>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-700 font-semibold">Error</p>
-                <p className="text-red-600 text-sm">{error}</p>
-              </div>
-            )}
-
-            {!preview && !result && !error && (
-              <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <p className="text-gray-400 text-center">
-                  Upload an image to see preview
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
+      </main>
+      {/* FOOTER */}
+      <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
+                  SC
+                </div>
+                <span>SimplifyConvert</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                Free online tools for PDF, Image, Video, AI Write, Data, Code, and Text to Speech conversion.
+              </p>
+            </div>
 
-        {/* Info */}
-        <div className="mt-8 bg-white rounded-xl shadow-lg p-6 grid md:grid-cols-3 gap-6">
-          <div>
-            <h3 className="font-bold text-gray-900 mb-2">📸 Enhancement Mode</h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>✓ Denoise (removes noise)</li>
-              <li>✓ Local contrast enhancement</li>
-              <li>✓ Unsharp mask sharpening</li>
-              <li>✓ Best for: general blur</li>
-            </ul>
+            {/* Categories */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Categories</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Popular Tools */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Popular</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                {[
+                  { label: 'About', href: '/about' },
+                  { label: 'Privacy Policy', href: '/privacy' },
+                  { label: 'Terms of Service', href: '/tos' },
+                  { label: 'Contact', href: '/contact' },
+                  { label: 'Blog', href: '/blog' }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-gray-900 mb-2">🎯 Motion Deblur Mode</h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>✓ Richardson-Lucy deconvolution</li>
-              <li>✓ Motion blur specific</li>
-              <li>✓ Adjustable direction/magnitude</li>
-              <li>✓ Best for: motion blur</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-900 mb-2">⚡ Pro Tips</h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Enhancement: default settings work well</li>
-              <li>• Motion: match kernel length to blur</li>
-              <li>• More iterations = better quality</li>
-              <li>• Processing may take 30-120 seconds</li>
-            </ul>
+
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-center text-sm text-gray-400">
+              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
+            </p>
           </div>
         </div>
-      </div>
-    </div>
+      </footer>
+    </>
   );
 }

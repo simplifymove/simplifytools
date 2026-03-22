@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Download, Loader, Undo2, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import { Download, ChevronRight, Loader, Undo2, RotateCcw, Eye, EyeOff, Wand2 } from 'lucide-react';
+import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 
 export default function RemoveWatermarkPage() {
@@ -308,249 +309,393 @@ export default function RemoveWatermarkPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 py-8 px-4 md:px-8">
-        <div className="max-w-6xl mx-auto">
-          <Link href="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Remove Watermark & Objects</h1>
-          <p className="text-gray-600 mt-2">Mark and remove watermarks, logos, timestamps, and unwanted objects</p>
-        </div>
-      </div>
-
-      <div className="py-12 px-4 md:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Left: Controls */}
-            <div className="lg:col-span-1">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Controls</h2>
-              <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-5 sticky top-4">
-                {/* Upload */}
-                <ImageUploader 
-                  onFileSelect={handleFileSelect}
-                  preview={preview}
-                  onClearPreview={handleClearPreview}
-                />
-
-                {preview && (
-                  <>
-                    {/* Brush Size */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Brush Size: {brushSize}px
-                      </label>
-                      <input
-                        type="range"
-                        min="5"
-                        max="150"
-                        value={brushSize}
-                        onChange={(e) => setBrushSize(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                      />
-                    </div>
-
-                    {/* Undo/Reset */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={undo}
-                        disabled={drawHistory.length <= 1}
-                        className="flex-1 px-3 py-2 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      >
-                        <Undo2 className="w-4 h-4" />
-                        Undo
-                      </button>
-                      <button
-                        onClick={reset}
-                        className="flex-1 px-3 py-2 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300 flex items-center justify-center gap-2"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                        Reset
-                      </button>
-                    </div>
-
-                    {/* Toggle Mask Preview */}
-                    <button
-                      onClick={() => setShowMaskPreview(!showMaskPreview)}
-                      className="w-full px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-medium hover:bg-purple-200 flex items-center justify-center gap-2"
-                    >
-                      {showMaskPreview ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                      {showMaskPreview ? 'Hide' : 'Show'} Marked Areas
-                    </button>
-
-                    {/* Mode Selection */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Processing Mode
-                      </label>
-                      <div className="flex gap-2">
-                        {(['fast', 'quality'] as const).map((m) => (
-                          <button
-                            key={m}
-                            onClick={() => setMode(m)}
-                            className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
-                              mode === m
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            {m === 'fast' ? 'Fast' : 'Quality'}
-                          </button>
-                        ))}
-                      </div>
-                      <p className="text-xs text-gray-600 mt-2">
-                        {mode === 'fast' ? 'Faster, decent results' : 'Slower, better results'}
-                      </p>
-                    </div>
-
-                    {/* Output Format */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Output Format
-                      </label>
-                      <select
-                        value={outputFormat}
-                        onChange={(e) => setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp')}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="png">PNG (best quality)</option>
-                        <option value="webp">WebP (balanced)</option>
-                        <option value="jpg">JPEG (smaller size)</option>
-                      </select>
-                    </div>
-
-                    {/* Terms */}
-                    <div className="flex items-start gap-2 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                      <input
-                        type="checkbox"
-                        id="terms"
-                        checked={termsAccepted}
-                        onChange={(e) => setTermsAccepted(e.target.checked)}
-                        className="w-4 h-4 cursor-pointer mt-0.5"
-                      />
-                      <label htmlFor="terms" className="flex-1 cursor-pointer text-xs text-gray-700">
-                        I have rights/permission to edit this image
-                      </label>
-                    </div>
-
-                    {/* Process Button */}
-                    <button
-                      onClick={removeObjects}
-                      disabled={processing || !termsAccepted}
-                      className="w-full px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2"
-                    >
-                      {processing ? (
-                        <>
-                          <Loader className="w-4 h-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        'Remove Objects'
-                      )}
-                    </button>
-
-                    {/* Processing Time */}
-                    {processingTime !== null && (
-                      <div className="text-xs text-gray-600 text-center bg-gray-50 p-2 rounded">
-                        Processed in {processingTime}ms
-                      </div>
-                    )}
-
-                    {/* Error Message */}
-                    {error && (
-                      <div className="text-sm text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
-                        {error}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Hero Header */}
+        <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
+          <div className="max-w-6xl mx-auto relative z-10">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
+              <Link href="/" className="hover:text-white transition">Home</Link>
+              <ChevronRight size={16} />
+              <Link href="/tools" className="hover:text-white transition">Tools</Link>
+              <ChevronRight size={16} />
+              <span>Remove Watermark</span>
             </div>
 
-            {/* Right: Canvas & Result */}
-            <div className="lg:col-span-3">
-              <div className="space-y-6">
-                {/* Canvas for drawing mask - ALWAYS render, just hide until ready */}
+            {/* Title Section */}
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Wand2 size={32} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Remove Watermark &amp; Objects</h1>
+                <p className="text-lg text-white/90">Mark and remove watermarks, logos, timestamps, and unwanted objects from your images.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 py-12 px-4 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main Content - Left (2 cols) */}
+              <div className="lg:col-span-2">
+                {/* Step 1: Upload */}
+                {!preview && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
+                    <ImageUploader 
+                      onFileSelect={handleFileSelect}
+                      preview={preview}
+                      onClearPreview={handleClearPreview}
+                    />
+                  </div>
+                )}
+
+                {/* Step 2: Canvas & Drawing */}
                 {preview && (
-                  <div>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 2: Mark Areas</h2>
+                    
                     {!imageReady && (
-                      <div className="text-center py-4">
-                        <Loader className="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
-                        <p className="text-gray-600 text-sm">Loading image...</p>
+                      <div className="text-center py-12">
+                        <Loader className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-3" />
+                        <p className="text-gray-600">Loading image...</p>
                       </div>
                     )}
+
                     {imageReady && (
                       <>
-                        <h3 className="text-sm font-medium text-gray-900 mb-3">
-                          Mark regions to remove (brush over watermark/object)
-                        </h3>
+                        <p className="text-sm text-gray-700 mb-4">
+                          Drag your brush over the watermark or object you want to remove. The marked areas will appear in red.
+                        </p>
+                        <div className="bg-gray-50 rounded-lg border-2 border-gray-200 overflow-auto" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', maxHeight: '600px' }}>
+                          {/* Display canvas - shows image + red marks */}
+                          <canvas
+                            ref={canvasRef}
+                            onMouseDown={startDrawing}
+                            onMouseMove={draw}
+                            onMouseUp={stopDrawing}
+                            onMouseLeave={stopDrawing}
+                            style={{
+                              cursor: 'crosshair',
+                              display: imageReady && !showMaskPreview ? 'block' : 'none',
+                              pointerEvents: imageReady && !showMaskPreview ? 'auto' : 'none',
+                              touchAction: 'none',
+                              border: 'none',
+                              maxWidth: '100%',
+                              maxHeight: '600px',
+                            }}
+                          />
+                          {/* Mask canvas - shows what will actually be removed (white = remove) */}
+                          <canvas
+                            ref={maskCanvasRef}
+                            style={{
+                              display: imageReady && showMaskPreview ? 'block' : 'none',
+                              border: 'none',
+                              backgroundColor: '#000',
+                              maxWidth: '100%',
+                              maxHeight: '600px',
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-600 mt-3">
+                          ✓ Use the brush size and tools in the sidebar to mark watermark regions.
+                        </p>
                       </>
-                    )}
-                    <div className="bg-white rounded-lg border-2 border-gray-300" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-                      {/* Display canvas - shows image + red marks */}
-                      <canvas
-                        ref={canvasRef}
-                        onMouseDown={startDrawing}
-                        onMouseMove={draw}
-                        onMouseUp={stopDrawing}
-                        onMouseLeave={stopDrawing}
-                        style={{
-                          cursor: 'crosshair',
-                          display: imageReady && !showMaskPreview ? 'block' : 'none',
-                          pointerEvents: imageReady && !showMaskPreview ? 'auto' : 'none',
-                          touchAction: 'none',
-                          border: 'none',
-                        }}
-                      />
-                      {/* Mask canvas - shows what will actually be removed (white = remove) */}
-                      <canvas
-                        ref={maskCanvasRef}
-                        style={{
-                          display: imageReady && showMaskPreview ? 'block' : 'none',
-                          border: 'none',
-                          backgroundColor: '#000',
-                        }}
-                      />
-                    </div>
-                    {imageReady && (
-                      <p className="text-xs text-gray-600 mt-2">
-                        ✓ Drag your mouse over the watermark to mark it. Use Undo/Reset as needed.
-                      </p>
                     )}
                   </div>
                 )}
 
                 {/* Result */}
                 {result && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Result</h3>
-                    <div className="bg-white rounded-lg border border-gray-200 p-4 overflow-auto" style={{ maxHeight: '650px' }}>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Result</h2>
+                    <div className="flex justify-center mb-6">
                       <img
                         src={result}
                         alt="result"
-                        className="w-full h-auto rounded"
+                        className="rounded-lg shadow-lg max-w-full"
+                        style={{ maxWidth: '100%', maxHeight: '600px' }}
                       />
                     </div>
-                    <button
-                      onClick={handleDownload}
-                      className="w-full mt-4 px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download {outputFormat.toUpperCase()}
-                    </button>
+                    {processingTime !== null && (
+                      <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded-lg mb-4">
+                        Processed in {(processingTime / 1000).toFixed(1)}s • {outputFormat.toUpperCase()} format
+                      </p>
+                    )}
                   </div>
                 )}
 
                 {!preview && (
-                  <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
-                    <p className="text-gray-600 text-sm">Upload an image to begin</p>
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-green-900 mb-3">How it Works:</h3>
+                    <ol className="text-sm text-green-800 space-y-2">
+                      <li>1. Upload an image with watermarks or unwanted objects</li>
+                      <li>2. Use the brush to mark the areas you want removed</li>
+                      <li>3. Use undo/reset to fix mistakes as needed</li>
+                      <li>4. Select your processing mode and output format</li>
+                      <li>5. Click "Remove" to process the image</li>
+                      <li>6. Download your cleaned image</li>
+                    </ol>
                   </div>
                 )}
+              </div>
+
+              {/* Settings Sidebar - Right (1 col sticky) */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-4 space-y-4">
+                  {/* Brush Controls */}
+                  {preview && imageReady && (
+                    <div className="bg-white rounded-lg border border-gray-200 p-4">
+                      <h3 className="font-semibold text-gray-900 mb-4">Drawing Tools</h3>
+
+                      {/* Brush Size */}
+                      <div className="mb-4">
+                        <label className="text-sm font-medium text-gray-700 block mb-2">
+                          Brush Size: {brushSize}px
+                        </label>
+                        <input
+                          type="range"
+                          min="5"
+                          max="150"
+                          value={brushSize}
+                          onChange={(e) => setBrushSize(parseInt(e.target.value))}
+                          className="w-full"
+                        />
+                      </div>
+
+                      {/* Undo/Reset Buttons */}
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                        <button
+                          onClick={undo}
+                          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition flex items-center justify-center gap-1"
+                        >
+                          <Undo2 size={16} />
+                          Undo
+                        </button>
+                        <button
+                          onClick={reset}
+                          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition flex items-center justify-center gap-1"
+                        >
+                          <RotateCcw size={16} />
+                          Reset
+                        </button>
+                      </div>
+
+                      {/* Toggle Mask Preview */}
+                      <button
+                        onClick={() => setShowMaskPreview(!showMaskPreview)}
+                        className="w-full px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-medium text-sm transition flex items-center justify-center gap-2"
+                      >
+                        {showMaskPreview ? <Eye size={16} /> : <EyeOff size={16} />}
+                        {showMaskPreview ? 'Hide' : 'Show'} Mask
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Processing Settings */}
+                  {preview && imageReady && (
+                    <div className="bg-white rounded-lg border border-gray-200 p-4">
+                      <h3 className="font-semibold text-gray-900 mb-4">Processing</h3>
+
+                      {/* Mode Selection */}
+                      <div className="mb-4">
+                        <label className="text-sm font-medium text-gray-700 block mb-2">Mode</label>
+                        <div className="flex gap-2">
+                          {(['fast', 'quality'] as const).map((m) => (
+                            <button
+                              key={m}
+                              onClick={() => setMode(m)}
+                              className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition ${
+                                mode === m
+                                  ? 'bg-orange-500 text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {m === 'fast' ? 'Fast' : 'Quality'}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {mode === 'fast' ? 'Faster results' : 'Better quality results'}
+                        </p>
+                      </div>
+
+                      {/* Output Format */}
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 block mb-2">Output Format</label>
+                        <select
+                          value={outputFormat}
+                          onChange={(e) => setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp')}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        >
+                          <option value="png">PNG (best quality)</option>
+                          <option value="webp">WebP (balanced)</option>
+                          <option value="jpg">JPEG (smaller size)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Terms Acceptance */}
+                  {preview && imageReady && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          id="terms"
+                          checked={termsAccepted}
+                          onChange={(e) => setTermsAccepted(e.target.checked)}
+                          className="w-4 h-4 cursor-pointer mt-1"
+                        />
+                        <label htmlFor="terms" className="flex-1 cursor-pointer text-xs text-gray-700">
+                          I have rights/permission to edit this image
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Error Message */}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-900 font-semibold text-sm">Error</p>
+                      <p className="text-red-700 text-xs mt-1">{error}</p>
+                    </div>
+                  )}
+
+                  {/* Process Button */}
+                  {preview && imageReady && (
+                    <button
+                      onClick={removeObjects}
+                      disabled={processing || !termsAccepted}
+                      className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader size={20} className="animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        'Remove Objects'
+                      )}
+                    </button>
+                  )}
+
+                  {/* Download Button */}
+                  {result && (
+                    <button
+                      onClick={handleDownload}
+                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                      <Download size={20} />
+                      Download {outputFormat.toUpperCase()}
+                    </button>
+                  )}
+
+                  {/* Features */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-900 mb-2">Features</h3>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Remove watermarks easily</li>
+                      <li>• Smart inpainting algorithms</li>
+                      <li>• Multiple output formats</li>
+                      <li>• Fast &amp; quality modes</li>
+                    </ul>
+                  </div>
+
+                  {/* Use Cases */}
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-indigo-900 mb-2">Perfect for:</h3>
+                    <ul className="text-sm text-indigo-800 space-y-1">
+                      <li>• Removing watermarks</li>
+                      <li>• Deleting logos</li>
+                      <li>• Removing timestamps</li>
+                      <li>• Cleaning photos</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+      {/* FOOTER */}
+      <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
+                  SC
+                </div>
+                <span>SimplifyConvert</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                Free online tools for PDF, Image, Video, AI Write, Data, Code, and Text to Speech conversion.
+              </p>
+            </div>
+
+            {/* Categories */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Categories</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Popular Tools */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Popular</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                {[
+                  { label: 'About', href: '/about' },
+                  { label: 'Privacy Policy', href: '/privacy' },
+                  { label: 'Terms of Service', href: '/tos' },
+                  { label: 'Contact', href: '/contact' },
+                  { label: 'Blog', href: '/blog' }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-center text-sm text-gray-400">
+              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }

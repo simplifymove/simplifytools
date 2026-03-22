@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Loader } from 'lucide-react';
 import Link from 'next/link';
+import { Download, ChevronRight, Loader, Upload, Trash2 } from 'lucide-react';
+import { HomeHeader } from '../../components/HomeHeader';
 import { CanvasMask } from '../../components/CanvasMask';
 
 export default function RemoveObjectPage() {
@@ -12,8 +13,8 @@ export default function RemoveObjectPage() {
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [method, setMethod] = useState<'telea' | 'ns'>('ns'); // Default to Navier-Stokes for better quality
-  const [radius, setRadius] = useState(5); // Increased default radius for better inpainting
+  const [method, setMethod] = useState<'telea' | 'ns'>('ns');
+  const [radius, setRadius] = useState(5);
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [brushSize, setBrushSize] = useState(10);
@@ -113,192 +114,319 @@ export default function RemoveObjectPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 py-8 px-4 md:px-8">
-        <div className="max-w-6xl mx-auto">
-          <Link href="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Remove Objects</h1>
-          <p className="text-gray-600 mt-2">Remove unwanted objects from photos using inpainting</p>
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Hero Header */}
+        <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
+          <div className="max-w-6xl mx-auto relative z-10">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
+              <Link href="/" className="hover:text-white transition">Home</Link>
+              <ChevronRight size={16} />
+              <Link href="/tools" className="hover:text-white transition">Tools</Link>
+              <ChevronRight size={16} />
+              <span>Remove Objects</span>
+            </div>
+
+            {/* Title Section */}
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Trash2 size={32} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Remove Objects</h1>
+                <p className="text-lg text-white/90">Remove unwanted objects from images using AI-powered inpainting.</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="py-12 px-4 md:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Left: Settings */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4 sticky top-4">
-                <h2 className="text-lg font-semibold text-gray-900">Inpaint Settings</h2>
+        {/* Main Content */}
+        <div className="flex-1 py-12 px-4 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main Content - Left (2 cols) */}
+              <div className="lg:col-span-2">
+                {/* Step 1: Upload Image */}
+                {!imagePreview && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
+                    <div
+                      className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
+                        imagePreview ? 'border-orange-300 bg-orange-50' : 'border-gray-300 hover:border-orange-500 hover:bg-orange-50'
+                      }`}
+                      onClick={() => document.getElementById('imageInput')?.click()}
+                    >
+                      {imagePreview ? (
+                        <div>
+                          <p className="text-xs text-orange-600 font-medium truncate mb-3">{imageFile?.name}</p>
+                          <img src={imagePreview} alt="preview" className="w-full h-64 object-cover rounded-lg" />
+                        </div>
+                      ) : (
+                        <div>
+                          <Upload className="w-12 h-12 mx-auto text-orange-500 mb-3" />
+                          <p className="text-sm font-medium text-gray-700">Click to upload image</p>
+                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP up to 10MB</p>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      id="imageInput"
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0])}
+                    />
+                  </div>
+                )}
 
-                {/* Image Upload */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Image</label>
-                  <div 
-                    className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
-                      imagePreview ? 'border-blue-300 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                    onClick={() => document.getElementById('imageInput')?.click()}
-                  >
-                    {imagePreview ? (
-                      <div>
-                        <div className="text-xs text-blue-600 font-medium truncate">{imageFile?.name}</div>
-                        <img src={imagePreview} alt="preview" className="w-full h-20 object-cover rounded mt-2" />
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-xs text-gray-600">Click to upload</p>
-                      </div>
+                {/* Step 2: Mask Editor */}
+                {imagePreview && imageDimensions && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 2: Paint Mask</h2>
+                    <CanvasMask
+                      imageUrl={imagePreview}
+                      imageWidth={imageDimensions.width}
+                      imageHeight={imageDimensions.height}
+                      onMaskGenerated={handleMaskGenerated}
+                      brushSize={brushSize}
+                      setBrushSize={setBrushSize}
+                    />
+                  </div>
+                )}
+
+                {/* Result */}
+                {result && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Result</h2>
+                    <div className="flex justify-center mb-6">
+                      <img
+                        src={result}
+                        alt="result"
+                        className="rounded-lg shadow-lg max-w-full"
+                        style={{ maxWidth: '600px', maxHeight: '600px' }}
+                      />
+                    </div>
+                    {processingTime !== null && (
+                      <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded-lg">
+                        Processed in {(processingTime / 1000).toFixed(1)}s
+                      </p>
                     )}
                   </div>
-                  <input 
-                    id="imageInput" 
-                    type="file" 
-                    accept="image/*" 
-                    hidden 
-                    onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0])}
-                  />
-                </div>
+                )}
 
-                {/* Method Selection */}
-                {imageFile && (
-                  <>
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">Method</label>
-                      <select
-                        value={method}
-                        onChange={(e) => setMethod(e.target.value as 'telea' | 'ns')}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      >
-                        <option value="telea">Telea (Fast)</option>
-                        <option value="ns">Navier-Stokes (Smoother)</option>
-                      </select>
+                {/* Getting Started */}
+                {!imagePreview && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-green-900 mb-3">How it Works:</h3>
+                    <ol className="text-sm text-green-800 space-y-2">
+                      <li>1. Upload an image with objects to remove</li>
+                      <li>2. Use the brush to paint the areas you want removed</li>
+                      <li>3. Use the eraser to fix any mistakes</li>
+                      <li>4. Click "Use This Mask" when done</li>
+                      <li>5. Adjust settings and click "Remove Object"</li>
+                      <li>6. Download your cleaned image</li>
+                    </ol>
+                  </div>
+                )}
+              </div>
+
+              {/* Settings Sidebar - Right (1 col sticky) */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-4 space-y-4">
+                  {/* Upload Section (when not editing) */}
+                  {!imagePreview && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-blue-900 mb-3">Features</h3>
+                      <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• Smart inpainting algorithms</li>
+                        <li>• Multiple removing methods</li>
+                        <li>• Adjustable parameters</li>
+                        <li>• Real-time preview</li>
+                        <li>• Fast processing</li>
+                      </ul>
                     </div>
+                  )}
 
-                    {/* Radius Selection */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Inpaint Radius: {radius}px
-                      </label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="15"
-                        value={radius}
-                        onChange={(e) => setRadius(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500">Higher = smoother results (5-10 recommended)</p>
+                  {/* Settings (when image selected) */}
+                  {imageFile && imagePreview && (
+                    <div className="bg-white rounded-lg border border-gray-200 p-4">
+                      <h3 className="font-semibold text-gray-900 mb-4">Remove Settings</h3>
+
+                      {/* Method Selection */}
+                      <div className="mb-4">
+                        <label className="text-sm font-medium text-gray-700 block mb-2">Algorithm</label>
+                        <select
+                          value={method}
+                          onChange={(e) => setMethod(e.target.value as 'telea' | 'ns')}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        >
+                          <option value="telea">Telea (Fast)</option>
+                          <option value="ns">Navier-Stokes (Smoother)</option>
+                        </select>
+                      </div>
+
+                      {/* Radius Slider */}
+                      <div className="mb-4">
+                        <label className="text-sm font-medium text-gray-700 block mb-2">
+                          Inpaint Radius: {radius}px
+                        </label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="15"
+                          value={radius}
+                          onChange={(e) => setRadius(parseInt(e.target.value))}
+                          className="w-full"
+                        />
+                        <p className="text-xs text-gray-600 mt-1">Higher = smoother results (5-10 recommended)</p>
+                      </div>
+
+                      {/* Mask Status */}
+                      <div className={`p-3 rounded-lg border mb-4 ${maskFile ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                        <p className="text-xs font-semibold">
+                          {maskFile ? (
+                            <span className="text-green-700">✓ Mask ready to process</span>
+                          ) : (
+                            <span className="text-yellow-700">⚠ Paint areas to remove above</span>
+                          )}
+                        </p>
+                      </div>
                     </div>
+                  )}
 
-                    {/* Mask Status */}
-                    <div className={`p-3 rounded-lg border ${maskFile ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-                      <p className="text-xs font-medium">
-                        {maskFile ? (
-                          <span className="text-green-700">✓ Mask ready</span>
-                        ) : (
-                          <span className="text-yellow-700">Paint mask in editor →</span>
-                        )}
-                      </p>
+                  {/* Error Message */}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-900 font-semibold text-sm">Error</p>
+                      <p className="text-red-700 text-xs mt-1">{error}</p>
                     </div>
+                  )}
 
-                    {/* Process Button */}
+                  {/* Process Button */}
+                  {imageFile && maskFile && (
                     <button
                       onClick={removeObject}
-                      disabled={!imageFile || !maskFile || processing}
-                      className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2"
+                      disabled={processing}
+                      className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       {processing ? (
                         <>
-                          <Loader className="w-4 h-4 animate-spin" />
+                          <Loader size={20} className="animate-spin" />
                           Processing...
                         </>
                       ) : (
                         'Remove Object'
                       )}
                     </button>
+                  )}
 
-                    {/* Processing Time */}
-                    {processingTime !== null && (
-                      <div className="text-xs text-gray-600 text-center bg-gray-50 p-2 rounded">
-                        Processed in {processingTime}ms
-                      </div>
-                    )}
-
-                    {/* Error Message */}
-                    {error && (
-                      <div className="text-sm text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
-                        {error}
-                      </div>
-                    )}
-
-                    {/* Clear Button */}
-                    {(imageFile || maskFile || result) && (
-                      <button
-                        onClick={handleClearImages}
-                        className="w-full px-4 py-2 text-gray-700 bg-gray-100 rounded-lg font-medium hover:bg-gray-200"
-                      >
-                        Clear All
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Right: Canvas & Result */}
-            <div className="lg:col-span-3 space-y-6">
-              {/* Canvas Editor */}
-              {imagePreview && imageDimensions && (
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Paint Mask</h2>
-                  <CanvasMask
-                    imageUrl={imagePreview}
-                    imageWidth={imageDimensions.width}
-                    imageHeight={imageDimensions.height}
-                    onMaskGenerated={handleMaskGenerated}
-                    brushSize={brushSize}
-                    setBrushSize={setBrushSize}
-                  />
-                </div>
-              )}
-
-              {/* Result */}
-              {result && (
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Result</h2>
-                  <div className="space-y-4">
-                    <img src={result} alt="result" className="w-full h-auto rounded-lg" />
+                  {/* Download Button */}
+                  {result && (
                     <button
                       onClick={handleDownload}
-                      className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2"
+                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
-                      <Download className="w-4 h-4" />
-                      Download Result
+                      <Download size={20} />
+                      Download
                     </button>
+                  )}
+
+                  {/* Clear Button */}
+                  {imageFile && (
+                    <button
+                      onClick={handleClearImages}
+                      className="w-full py-2 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition"
+                    >
+                      Clear All
+                    </button>
+                  )}
+
+                  {/* Supported Formats */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-amber-900 mb-2">Supported Formats</h3>
+                    <p className="text-sm text-amber-800">JPG, PNG, WebP and all common image formats</p>
                   </div>
                 </div>
-              )}
-
-              {/* Initial Instructions */}
-              {!imagePreview && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-blue-900 mb-2">Getting Started:</h3>
-                  <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
-                    <li>Click the image upload area to select a photo</li>
-                    <li>Use the brush to paint areas you want to remove</li>
-                    <li>Use the eraser to correct unwanted strokes</li>
-                    <li>Click "Use This Mask" when done painting</li>
-                    <li>Adjust inpainting settings if needed</li>
-                    <li>Click "Remove Object" to process</li>
-                  </ol>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+      {/* FOOTER */}
+      <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
+                  SC
+                </div>
+                <span>SimplifyConvert</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                Free online tools for PDF, Image, Video, AI Write, Data, Code, and Text to Speech conversion.
+              </p>
+            </div>
+
+            {/* Categories */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Categories</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Popular Tools */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Popular</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                {[
+                  { label: 'About', href: '/about' },
+                  { label: 'Privacy Policy', href: '/privacy' },
+                  { label: 'Terms of Service', href: '/tos' },
+                  { label: 'Contact', href: '/contact' },
+                  { label: 'Blog', href: '/blog' }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-center text-sm text-gray-400">
+              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }

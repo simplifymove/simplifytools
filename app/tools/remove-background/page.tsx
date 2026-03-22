@@ -2,22 +2,16 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, ChevronRight, Loader, Zap } from 'lucide-react';
+import { Download, ChevronRight, Loader, Upload, Eraser } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
-import { ImageUploader } from '../../components/ImageUploader';
 
-export default function UpscaleImagePage() {
+export default function RemoveBackgroundPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  
-  // Upscale options
-  const [scale, setScale] = useState<2 | 4>(4);
-  const [mode, setMode] = useState<'auto' | 'photo' | 'anime'>('auto');
-  const [faceEnhance, setFaceEnhance] = useState(false);
+  const [hqMode, setHqMode] = useState(false);
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
-  
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,15 +22,19 @@ export default function UpscaleImagePage() {
       setPreview(e.target?.result as string);
     };
     reader.readAsDataURL(selectedFile);
+    setError(null);
+    setResult(null);
   };
 
   const handleClearPreview = () => {
     setFile(null);
     setPreview(null);
     setResult(null);
+    setError(null);
+    setProcessingTime(null);
   };
 
-  const upscaleImage = async () => {
+  const removeBackground = async () => {
     if (!file) {
       setError('Please select an image first');
       return;
@@ -47,22 +45,21 @@ export default function UpscaleImagePage() {
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('image', file);
+      formData.append('hq', hqMode ? 'true' : 'false');
+      formData.append('format', outputFormat);
 
       const startTime = Date.now();
-      const response = await fetch(
-        `/api/upscale?scale=${scale}&mode=${mode}&face_enhance=${faceEnhance}&format=${outputFormat}`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      const response = await fetch('/api/bg-remove', {
+        method: 'POST',
+        body: formData,
+      });
 
       const processingTimeMs = Date.now() - startTime;
       setProcessingTime(processingTimeMs);
 
       if (!response.ok) {
-        let errorMessage = 'Failed to upscale image';
+        let errorMessage = 'Failed to remove background';
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -92,7 +89,7 @@ export default function UpscaleImagePage() {
     if (!result) return;
     const link = document.createElement('a');
     link.href = result;
-    link.download = `upscaled-${scale}x-${Date.now()}.${outputFormat}`;
+    link.download = `no-background-${Date.now()}.${outputFormat}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -111,17 +108,17 @@ export default function UpscaleImagePage() {
               <ChevronRight size={16} />
               <Link href="/tools" className="hover:text-white transition">Tools</Link>
               <ChevronRight size={16} />
-              <span>Upscale Image</span>
+              <span>Remove Background</span>
             </div>
 
             {/* Title Section */}
             <div className="flex items-start gap-4">
               <div className="p-3 bg-white/20 rounded-lg">
-                <Zap size={32} className="text-white" />
+                <Eraser size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Upscale Image</h1>
-                <p className="text-lg text-white/90">Enlarge your images up to 4x with AI-powered quality enhancement.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Remove Background</h1>
+                <p className="text-lg text-white/90">Automatically remove backgrounds from images with AI-powered technology.</p>
               </div>
             </div>
           </div>
@@ -131,16 +128,27 @@ export default function UpscaleImagePage() {
         <div className="flex-1 py-12 px-4 md:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Main Content - Left (2 cols) */}
+              {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">
                 {/* Step 1: Upload */}
                 {!preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                    <ImageUploader 
-                      onFileSelect={handleFileSelect}
-                      preview={preview}
-                      onClearPreview={handleClearPreview}
+                    
+                    <div
+                      className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition hover:border-orange-500 hover:bg-orange-50"
+                      onClick={() => document.getElementById('imageInput')?.click()}
+                    >
+                      <Upload className="w-12 h-12 mx-auto text-orange-500 mb-3" />
+                      <p className="text-sm font-medium text-gray-700">Click to upload image</p>
+                      <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP up to 20MB</p>
+                    </div>
+                    <input
+                      id="imageInput"
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                     />
                   </div>
                 )}
@@ -163,17 +171,17 @@ export default function UpscaleImagePage() {
                 {/* Result */}
                 {result && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Upscaled Result ({scale}×)</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Background Removed</h2>
                     <div className="flex justify-center mb-6">
                       <img
                         src={result}
-                        alt="upscaled"
+                        alt="result"
                         className="rounded-lg shadow-lg max-w-full"
-                        style={{ maxHeight: '600px', maxWidth: '100%' }}
+                        style={{ maxHeight: '500px', maxWidth: '100%' }}
                       />
                     </div>
                     {processingTime !== null && (
-                      <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded-lg mb-4">
+                      <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded-lg">
                         Processed in {(processingTime / 1000).toFixed(1)}s • {outputFormat.toUpperCase()} format
                       </p>
                     )}
@@ -182,14 +190,13 @@ export default function UpscaleImagePage() {
 
                 {!preview && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-                    <h3 className="font-semibold text-green-900 mb-3">How to Upscale:</h3>
+                    <h3 className="font-semibold text-green-900 mb-3">How it Works:</h3>
                     <ol className="text-sm text-green-800 space-y-2">
-                      <li>1. Upload an image you want to enlarge</li>
-                      <li>2. Choose upscale factor (2× or 4×)</li>
-                      <li>3. Select image type (auto-detect or specific)</li>
-                      <li>4. Optional: Enable face enhancement</li>
-                      <li>5. Pick output format (PNG/JPG/WebP)</li>
-                      <li>6. Click "Upscale" and download result</li>
+                      <li>1. Upload an image with a background</li>
+                      <li>2. Our AI automatically detects and removes it</li>
+                      <li>3. Choose your processing mode and output format</li>
+                      <li>4. Download the result with transparent background</li>
+                      <li>5. Use it in designs, websites, or other projects</li>
                     </ol>
                   </div>
                 )}
@@ -202,11 +209,11 @@ export default function UpscaleImagePage() {
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <h3 className="font-semibold text-blue-900 mb-3">Features</h3>
                       <ul className="text-sm text-blue-800 space-y-1">
-                        <li>• 2× or 4× upscaling</li>
-                        <li>• AI-powered enhancement</li>
+                        <li>• AI-powered detection</li>
+                        <li>• Automatic background removal</li>
                         <li>• Multiple output formats</li>
-                        <li>• Face enhancement mode</li>
-                        <li>• Auto image detection</li>
+                        <li>• High quality mode</li>
+                        <li>• Fast processing</li>
                       </ul>
                     </div>
                   )}
@@ -214,77 +221,34 @@ export default function UpscaleImagePage() {
                   {/* Settings */}
                   {preview && (
                     <div className="bg-white rounded-lg border border-gray-200 p-4">
-                      <h3 className="font-semibold text-gray-900 mb-4">Upscale Settings</h3>
-
-                      {/* Scale Selection */}
-                      <div className="mb-4">
-                        <label className="text-sm font-medium text-gray-700 block mb-2">Upscale Factor</label>
-                        <div className="flex gap-2">
-                          {[2, 4].map((s) => (
-                            <button
-                              key={s}
-                              onClick={() => setScale(s as 2 | 4)}
-                              className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition ${
-                                scale === s
-                                  ? 'bg-orange-500 text-white'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              }`}
-                            >
-                              {s}×
-                            </button>
-                          ))}
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {scale === 2 ? 'Faster, good for web' : 'Maximum quality'}
-                        </p>
-                      </div>
-
-                      {/* Image Type */}
-                      <div className="mb-4">
-                        <label className="text-sm font-medium text-gray-700 block mb-2">Image Type</label>
-                        <select
-                          value={mode}
-                          onChange={(e) => setMode(e.target.value as 'auto' | 'photo' | 'anime')}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        >
-                          <option value="auto">Auto Detect</option>
-                          <option value="photo">Photo / Real Image</option>
-                          <option value="anime">Anime / Illustration</option>
-                        </select>
-                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-4">Export Settings</h3>
 
                       {/* Output Format */}
                       <div className="mb-4">
                         <label className="text-sm font-medium text-gray-700 block mb-2">Output Format</label>
-                        <div className="flex gap-2">
-                          {(['png', 'jpg', 'webp'] as const).map((fmt) => (
-                            <button
-                              key={fmt}
-                              onClick={() => setOutputFormat(fmt)}
-                              className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition ${
-                                outputFormat === fmt
-                                  ? 'bg-orange-500 text-white'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              }`}
-                            >
-                              {fmt === 'jpg' ? 'JPG' : fmt.toUpperCase()}
-                            </button>
-                          ))}
-                        </div>
+                        <select
+                          value={outputFormat}
+                          onChange={(e) => setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp')}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        >
+                          <option value="png">PNG (transparent background)</option>
+                          <option value="webp">WebP (modern)</option>
+                          <option value="jpg">JPEG (opaque)</option>
+                        </select>
                       </div>
 
-                      {/* Face Enhancement */}
+                      {/* HQ Mode */}
                       <div className="flex items-start gap-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
                         <input
                           type="checkbox"
-                          id="faceEnhance"
-                          checked={faceEnhance}
-                          onChange={(e) => setFaceEnhance(e.target.checked)}
+                          id="hqMode"
+                          checked={hqMode}
+                          onChange={(e) => setHqMode(e.target.checked)}
                           className="w-4 h-4 cursor-pointer mt-0.5"
                         />
-                        <label htmlFor="faceEnhance" className="flex-1 cursor-pointer">
-                          <div className="text-sm font-medium text-gray-900">Enhance Faces</div>
-                          <div className="text-xs text-gray-600">Sharpen facial details</div>
+                        <label htmlFor="hqMode" className="flex-1 cursor-pointer">
+                          <div className="text-sm font-medium text-gray-900">High Quality Mode</div>
+                          <div className="text-xs text-gray-600">Better results (slower)</div>
                         </label>
                       </div>
                     </div>
@@ -298,20 +262,20 @@ export default function UpscaleImagePage() {
                     </div>
                   )}
 
-                  {/* Upscale Button */}
+                  {/* Process Button */}
                   {preview && (
                     <button
-                      onClick={upscaleImage}
-                      disabled={!file || processing}
+                      onClick={removeBackground}
+                      disabled={processing}
                       className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       {processing ? (
                         <>
                           <Loader size={20} className="animate-spin" />
-                          Upscaling...
+                          Processing...
                         </>
                       ) : (
-                        'Upscale Image'
+                        'Remove Background'
                       )}
                     </button>
                   )}
@@ -327,25 +291,37 @@ export default function UpscaleImagePage() {
                     </button>
                   )}
 
-                  {/* Speed Comparison */}
+                  {/* Clear Button */}
+                  {preview && (
+                    <button
+                      onClick={handleClearPreview}
+                      className="w-full py-2 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition"
+                    >
+                      Clear &amp; Upload New
+                    </button>
+                  )}
+
+                  {/* Use Cases */}
                   {preview && (
                     <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-indigo-900 mb-2">Scale Comparison</h3>
+                      <h3 className="font-semibold text-indigo-900 mb-2">Perfect for:</h3>
                       <ul className="text-sm text-indigo-800 space-y-1">
-                        <li>• <span className="font-medium">2×</span> Web-ready</li>
-                        <li>• <span className="font-medium">4×</span> Best quality</li>
+                        <li>• e-Commerce product photos</li>
+                        <li>• Profile pictures</li>
+                        <li>• Design projects</li>
+                        <li>• Website graphics</li>
                       </ul>
                     </div>
                   )}
 
-                  {/* Format Tips */}
+                  {/* Format Info */}
                   {preview && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                       <h3 className="font-semibold text-amber-900 mb-2">Format Tips</h3>
                       <ul className="text-xs text-amber-800 space-y-1">
-                        <li>• PNG: Best quality</li>
-                        <li>• WebP: Balanced</li>
-                        <li>• JPG: Smallest file</li>
+                        <li>• PNG: Transparent bg</li>
+                        <li>• WebP: Modern, smaller</li>
+                        <li>• JPEG: Solid background</li>
                       </ul>
                     </div>
                   )}

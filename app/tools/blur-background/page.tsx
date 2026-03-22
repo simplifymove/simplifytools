@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, ChangeEvent, FormEvent } from 'react';
-import { Upload, Download, Loader2, ChevronRight, Sparkles } from 'lucide-react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { Download, ChevronRight, Loader, Upload, Sparkles } from 'lucide-react';
+import { HomeHeader } from '../../components/HomeHeader';
 
 export default function BlurBackgroundPage() {
   const [image, setImage] = useState<string | null>(null);
@@ -31,6 +31,13 @@ export default function BlurBackgroundPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleClearPreview = () => {
+    setImage(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+  };
+
   const handleProcess = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!image) {
@@ -42,18 +49,15 @@ export default function BlurBackgroundPage() {
     setError(null);
 
     try {
-      // Convert data URL to blob
       const response = await fetch(image);
       const blob = await response.blob();
 
-      // Create FormData
       const formData = new FormData();
       formData.append('image', blob, 'image.jpg');
       formData.append('blurStrength', blurStrength.toString());
       formData.append('featherRadius', featherRadius.toString());
       formData.append('portraitMode', portraitMode.toString());
 
-      // Process
       const processResponse = await fetch('/api/blur-background', {
         method: 'POST',
         body: formData,
@@ -65,7 +69,6 @@ export default function BlurBackgroundPage() {
         throw new Error(data.error || 'Processing failed');
       }
 
-      // Set result
       const resultDataUrl = `data:image/jpeg;base64,${data.image}`;
       setResult(resultDataUrl);
     } catch (err) {
@@ -89,284 +92,289 @@ export default function BlurBackgroundPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* Premium Header */}
-      <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 py-12 px-4 md:px-8 overflow-hidden">
-        {/* Animated background shapes */}
-        <motion.div
-          className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
-          animate={{ x: [0, 30, -20, 0], y: [0, -30, 20, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Hero Header */}
+        <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
+          <div className="max-w-6xl mx-auto relative z-10">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
+              <Link href="/" className="hover:text-white transition">Home</Link>
+              <ChevronRight size={16} />
+              <Link href="/tools" className="hover:text-white transition">Tools</Link>
+              <ChevronRight size={16} />
+              <span>Blur Background</span>
+            </div>
 
-        <div className="max-w-6xl mx-auto relative z-10">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
-            <Link href="/" className="hover:text-white transition">Home</Link>
-            <ChevronRight size={16} />
-            <Link href="/tools" className="hover:text-white transition">Tools</Link>
-            <ChevronRight size={16} />
-            <span>Blur Background</span>
+            {/* Title Section */}
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Sparkles size={32} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Blur Background</h1>
+                <p className="text-lg text-white/90">Professional portrait mode effect with sharp subject and blurred background. Create stunning depth effect photos.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 py-12 px-4 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Upload Section - Left (2 cols) */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
+                  
+                  <div className="relative mb-6">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={processing}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="block w-full p-8 border-2 border-dashed border-orange-300 rounded-lg cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition text-center"
+                    >
+                      <Upload className="w-8 h-8 mx-auto text-orange-500 mb-3" />
+                      <span className="text-sm font-medium text-gray-700">
+                        {image ? '✓ Image selected' : 'Click to upload image'}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP up to 10MB</p>
+                    </label>
+                  </div>
+
+                  {/* Preview */}
+                  {preview && (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Original Preview</h3>
+                      <img
+                        src={preview}
+                        alt="Original"
+                        className="w-full h-64 object-cover rounded-lg border border-gray-200"
+                      />
+                      <button
+                        onClick={handleClearPreview}
+                        className="mt-3 text-sm text-gray-600 hover:text-gray-900 underline"
+                      >
+                        Clear &amp; upload different image
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Result */}
+                  {result && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Blur Background Result</h3>
+                      <img
+                        src={result}
+                        alt="Result"
+                        className="w-full h-64 object-cover rounded-lg border border-blue-300 mb-3"
+                      />
+                    </div>
+                  )}
+
+                  {/* Error */}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-900 font-semibold">Error</p>
+                      <p className="text-red-700 text-sm">{error}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Controls - Right (sticky sidebar) */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-4 space-y-4">
+                  {/* Options */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-4">Blur Settings</h3>
+                    
+                    {/* Blur Strength */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-sm font-medium text-gray-700">Blur Strength</label>
+                        <span className="text-sm font-semibold text-orange-600">{blurStrength}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="15"
+                        max="51"
+                        step="2"
+                        value={blurStrength}
+                        onChange={(e) => setBlurStrength(parseInt(e.target.value))}
+                        disabled={processing}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {blurStrength <= 25 ? 'Natural blur' : blurStrength <= 35 ? 'Balanced portrait' : 'Strong effect'}
+                      </p>
+                    </div>
+
+                    {/* Feather Radius */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-sm font-medium text-gray-700">Edge Feathering</label>
+                        <span className="text-sm font-semibold text-orange-600">{featherRadius}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="3"
+                        max="7"
+                        step="1"
+                        value={featherRadius}
+                        onChange={(e) => setFeatherRadius(parseInt(e.target.value))}
+                        disabled={processing}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Softer edges, smoother transitions</p>
+                    </div>
+
+                    {/* Portrait Mode */}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={portraitMode}
+                        onChange={(e) => setPortraitMode(e.target.checked)}
+                        disabled={processing}
+                        className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Portrait Mode</span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-2">Darkens background for depth effect</p>
+                  </div>
+
+                  {/* Process Button */}
+                  <form onSubmit={handleProcess}>
+                    <button
+                      type="submit"
+                      disabled={processing || !image}
+                      className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader size={20} className="animate-spin" />
+                          Processing (30-60s)...
+                        </>
+                      ) : (
+                        '✨ Apply Blur Background'
+                      )}
+                    </button>
+                  </form>
+
+                  {/* Download Button */}
+                  {result && (
+                    <button
+                      onClick={downloadResult}
+                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                      <Download size={20} />
+                      Download Result
+                    </button>
+                  )}
+
+                  {/* Info Box */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-900 mb-2">About</h3>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Professional portrait mode</li>
+                      <li>• Adjustable blur strength</li>
+                      <li>• Edge feathering control</li>
+                      <li>• Portrait mode option</li>
+                    </ul>
+                  </div>
+
+                  {/* Speed Info */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-amber-900 mb-1">⚡ Processing Time</h3>
+                    <p className="text-xs text-amber-800">First run: 30-60s. Subsequent runs: 10-20s.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      {/* FOOTER */}
+      <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
+                  SC
+                </div>
+                <span>SimplifyConvert</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                Free online tools for PDF, Image, Video, AI Write, Data, Code, and Text to Speech conversion.
+              </p>
+            </div>
+
+            {/* Categories */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Categories</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Popular Tools */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Popular</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                {[
+                  { label: 'About', href: '/about' },
+                  { label: 'Privacy Policy', href: '/privacy' },
+                  { label: 'Terms of Service', href: '/tos' },
+                  { label: 'Contact', href: '/contact' },
+                  { label: 'Blog', href: '/blog' }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          {/* Title */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-              Blur Background
-            </h1>
-            <p className="text-lg text-white/90 max-w-2xl">
-              Professional portrait mode effect with sharp subject and blurred background. Perfect for creating stunning photos with depth effect.
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-center text-sm text-gray-400">
+              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
             </p>
-          </motion.div>
+          </div>
         </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-12">
-        <motion.div 
-          className="grid md:grid-cols-2 gap-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
-        >
-          {/* Controls Panel */}
-          <motion.div 
-            className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-all"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">⚙️</span>
-              Settings
-            </h2>
-
-            <form onSubmit={handleProcess} className="space-y-6">
-              {/* Image Upload */}
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Upload Image
-                </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    disabled={processing}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="block w-full p-6 border-2 border-dashed border-purple-300 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all group"
-                  >
-                    <Upload className="w-8 h-8 mx-auto text-purple-500 mb-3 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-semibold text-gray-700">
-                      {image ? '✓ Image selected' : 'Click to upload image'}
-                    </span>
-                    <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP up to 10MB</p>
-                  </label>
-                </div>
-              </motion.div>
-
-              {/* Blur Strength */}
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Blur Strength
-                  </label>
-                  <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{blurStrength}</span>
-                </div>
-                <input
-                  type="range"
-                  min="15"
-                  max="51"
-                  step="2"
-                  value={blurStrength}
-                  onChange={(e) => setBlurStrength(parseInt(e.target.value))}
-                  disabled={processing}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                />
-                <p className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
-                  {blurStrength <= 25
-                    ? '🎯 Natural, subtle blur'
-                    : blurStrength <= 35
-                    ? '📸 Balanced portrait mode'
-                    : '✨ Strong, dramatic effect'}
-                </p>
-              </motion.div>
-
-              {/* Feather Radius */}
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Edge Feathering
-                  </label>
-                  <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{featherRadius}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="3"
-                  max="7"
-                  step="1"
-                  value={featherRadius}
-                  onChange={(e) => setFeatherRadius(parseInt(e.target.value))}
-                  disabled={processing}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                />
-                <p className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
-                  Higher = softer, smoother edges (avoids cutout look)
-                </p>
-              </motion.div>
-
-              {/* Portrait Mode */}
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                transition={{ delay: 0.4 }}
-                className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 hover:border-purple-300 transition-all"
-              >
-                <input
-                  type="checkbox"
-                  id="portrait-mode"
-                  checked={portraitMode}
-                  onChange={(e) => setPortraitMode(e.target.checked)}
-                  disabled={processing}
-                  className="w-5 h-5 text-purple-600 rounded accent-purple-600 cursor-pointer"
-                />
-                <label htmlFor="portrait-mode" className="text-sm font-semibold text-gray-700 cursor-pointer">
-                  Portrait Mode (darkens background for depth effect)
-                </label>
-              </motion.div>
-
-              {/* Process Button */}
-              <motion.button
-                type="submit"
-                disabled={processing || !image}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-purple-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                {processing ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing... (30-60 seconds first time)
-                  </span>
-                ) : (
-                  '✨ Apply Blur Background'
-                )}
-              </motion.button>
-            </form>
-          </motion.div>
-
-          {/* Preview Panel */}
-          <motion.div 
-            className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-all"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">👁</span>
-              Preview
-            </h2>
-
-            {/* Original Preview */}
-            {preview && (
-              <motion.div 
-                className="mb-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                <p className="text-sm font-semibold text-gray-700 mb-3">Original</p>
-                <img
-                  src={preview}
-                  alt="Original"
-                  className="w-full h-64 object-cover rounded-xl border-2 border-gray-200 hover:shadow-md transition-all"
-                />
-              </motion.div>
-            )}
-
-            {/* Result Preview */}
-            {result && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                <p className="text-sm font-semibold text-gray-700 mb-3">Result</p>
-                <img
-                  src={result}
-                  alt="Result"
-                  className="w-full h-64 object-cover rounded-xl border-2 border-purple-300 shadow-lg hover:shadow-xl transition-all"
-                />
-                <motion.button
-                  onClick={downloadResult}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full mt-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-green-600/30 transition-all flex items-center justify-center gap-2"
-                >
-                  <Download className="w-5 h-5" />
-                  Download Result
-                </motion.button>
-              </motion.div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="p-4 bg-red-50 border-2 border-red-200 rounded-xl"
-              >
-                <p className="text-red-700 font-semibold">✗ Error</p>
-                <p className="text-red-600 text-sm mt-1">{error}</p>
-              </motion.div>
-            )}
-
-            {!preview && !result && !error && (
-              <div className="h-64 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
-                <p className="text-gray-400 text-center font-medium">
-                  Upload an image to see preview
-                </p>
-              </div>
-            )}
-          </motion.div>
-        </motion.div>
-
-        {/* Info Section */}
-        <motion.div 
-          className="mt-12 grid md:grid-cols-3 gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <motion.div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-indigo-600 hover:shadow-xl transition-all" whileHover={{ y: -4 }}>
-            <h3 className="font-bold text-gray-900 mb-3 text-lg">🎯 Recommended Settings</h3>
-            <ul className="text-sm text-gray-600 space-y-2">
-              <li><strong className="text-gray-900">Natural:</strong> Blur 25, Feather 5</li>
-              <li><strong className="text-gray-900">Portrait:</strong> Blur 45, Feather 5</li>
-              <li><strong className="text-gray-900">Professional:</strong> Blur 35 + Portrait Mode</li>
-            </ul>
-          </motion.div>
-          <motion.div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-purple-600 hover:shadow-xl transition-all" whileHover={{ y: -4 }}>
-            <h3 className="font-bold text-gray-900 mb-3 text-lg">⚡ Processing Speed</h3>
-            <p className="text-sm text-gray-600">
-              First run takes 30-60 seconds (downloads AI model). Subsequent runs are significantly faster—typically 10-20 seconds.
-            </p>
-          </motion.div>
-          <motion.div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-pink-600 hover:shadow-xl transition-all" whileHover={{ y: -4 }}>
-            <h3 className="font-bold text-gray-900 mb-3 text-lg">📸 Best Use Cases</h3>
-            <p className="text-sm text-gray-600">
-              Perfect for portraits, headshots, selfies, professional photos, and creating social media content with depth effect.
-            </p>
-          </motion.div>
-        </motion.div>
-      </div>
-    </main>
+      </footer>
+    </>
   );
 }

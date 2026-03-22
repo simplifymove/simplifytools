@@ -1,221 +1,277 @@
 'use client';
 
-import { useState, ChangeEvent, FormEvent } from 'react';
-import { Upload, Download, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
+import { ImageUploader } from '../../../components/ImageUploader';
+import { convertImageFormat } from '../../../lib/imageTools';
+import { HomeHeader } from '../../../components/HomeHeader';
 
 export default function Mp4ToGifPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [result, setResult] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [options, setOptions] = useState({
-    fps: 10,
-    scale: 512,
-  });
+  const [fps, setFps] = useState(10);
+  const [scale, setScale] = useState(512);
 
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = e.target.files?.[0];
-    if (!uploadedFile) return;
-
+  const handleFileSelect = (selectedFile: File) => {
+    setFile(selectedFile);
     setError(null);
-    setResult(null);
-    setFile(uploadedFile);
-
     const reader = new FileReader();
-    reader.onload = (event) => {
-      setPreview(event.target?.result as string);
+    reader.onload = (e) => {
+      setPreview(e.target?.result as string);
     };
-    reader.readAsDataURL(uploadedFile);
+    reader.readAsDataURL(selectedFile);
   };
 
-  const handleProcess = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleClearPreview = () => {
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+  };
 
-    if (!file) {
-      setError('Please upload a file first');
-      return;
-    }
+  const handleConvert = async () => {
+    if (!file) return;
 
     setProcessing(true);
     setError(null);
-
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append(
-        'config',
-        JSON.stringify({
-          from_format: 'mp4',
-          to_format: 'gif',
-          options: { fps: options.fps, scale: options.scale },
-        })
-      );
-
-      const response = await fetch('/api/convert', {
-        method: 'POST',
-        body: formData,
+      const result = await convertImageFormat(file, 'image/gif', {
+        fps: fps,
+        scale: scale,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Conversion failed');
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      setResult(url);
+      setResult(result.blob);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Conversion failed';
-      setError(message);
+      setError((err as Error).message || 'Error converting file');
     } finally {
       setProcessing(false);
     }
   };
 
-  const downloadResult = () => {
+  const handleDownload = () => {
     if (!result) return;
+    const url = URL.createObjectURL(result);
     const link = document.createElement('a');
-    link.href = result;
+    link.href = url;
     link.download = 'converted.gif';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">MP4 to GIF Converter</h1>
-          <p className="text-lg text-gray-600">Convert MP4 videos to animated GIF format</p>
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Hero Header */}
+        <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
+          <div className="max-w-6xl mx-auto relative z-10">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
+              <Link href="/" className="hover:text-white transition">Home</Link>
+              <ChevronRight size={16} />
+              <Link href="/tools" className="hover:text-white transition">Tools</Link>
+              <ChevronRight size={16} />
+              <span>MP4 to GIF</span>
+            </div>
+
+            {/* Title Section */}
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-white/20 rounded-lg">
+                <FileUp size={32} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">MP4 to GIF Converter</h1>
+                <p className="text-lg text-white/90">Convert MP4 videos to animated GIF format with adjustable frame rate and resolution.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Settings</h2>
-
-            <form onSubmit={handleProcess} className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Upload MP4 File</label>
-                <div className="relative">
-                  <input
-                    type="file"
+        {/* Main Content */}
+        <div className="flex-1 py-12 px-4 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Upload Section - Left (2 cols) */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload MP4 File</h2>
+                  <ImageUploader
+                    onFileSelect={handleFileSelect}
+                    preview={preview}
+                    onClearPreview={handleClearPreview}
                     accept=".mp4,video/mp4"
-                    onChange={handleFileUpload}
-                    disabled={processing}
-                    className="hidden"
-                    id="file-upload"
                   />
-                  <label
-                    htmlFor="file-upload"
-                    className="block w-full p-4 border-2 border-dashed border-red-300 rounded-lg cursor-pointer hover:border-red-500 transition text-center"
+                  {error && (
+                    <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-600">{error}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Controls - Right (sticky sidebar) */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-4 space-y-4">
+                  {/* Options */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
+                    
+                    {/* FPS */}
+                    <div className="mb-6">
+                      <label className="text-sm font-medium text-gray-700 block mb-2">
+                        Frames Per Second: {fps}
+                      </label>
+                      <input
+                        type="range"
+                        min="5"
+                        max="30"
+                        step="1"
+                        value={fps}
+                        onChange={(e) => setFps(parseInt(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Higher FPS = smoother animation</p>
+                    </div>
+
+                    {/* Scale */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-2">
+                        Output Width: {scale}px
+                      </label>
+                      <input
+                        type="range"
+                        min="256"
+                        max="1024"
+                        step="64"
+                        value={scale}
+                        onChange={(e) => setScale(parseInt(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Larger dimensions = better quality</p>
+                    </div>
+                  </div>
+
+                  {/* Convert Button */}
+                  <button
+                    onClick={handleConvert}
+                    disabled={!file || processing}
+                    className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                   >
-                    <Upload className="w-8 h-8 mx-auto text-red-500 mb-2" />
-                    <span className="text-sm font-medium text-gray-700">
-                      {file ? `${file.name}` : 'Click to upload MP4'}
-                    </span>
-                  </label>
-                </div>
-              </div>
+                    {processing ? (
+                      <>
+                        <Loader size={20} className="animate-spin" />
+                        Converting...
+                      </>
+                    ) : (
+                      'Convert to GIF'
+                    )}
+                  </button>
 
-              <div className="p-4 bg-red-50 rounded-lg border border-red-200 space-y-4">
-                <h3 className="font-semibold text-gray-900">Options</h3>
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-semibold text-gray-700">Frames Per Second</label>
-                    <span className="text-lg font-bold text-red-600">{options.fps}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={5}
-                    max={30}
-                    step={1}
-                    value={options.fps}
-                    onChange={(e) => setOptions({ ...options, fps: parseInt(e.target.value) })}
-                    disabled={processing}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-semibold text-gray-700">Output Width (pixels)</label>
-                    <span className="text-lg font-bold text-red-600">{options.scale}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={256}
-                    max={1024}
-                    step={64}
-                    value={options.scale}
-                    onChange={(e) => setOptions({ ...options, scale: parseInt(e.target.value) })}
-                    disabled={processing}
-                    className="w-full"
-                  />
-                </div>
-              </div>
+                  {/* Download Button */}
+                  {result && (
+                    <button
+                      onClick={handleDownload}
+                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                      <Download size={20} />
+                      Download GIF
+                    </button>
+                  )}
 
-              <button
-                type="submit"
-                disabled={processing || !file}
-                className="w-full py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition"
-              >
-                {processing ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Converting...
-                  </span>
-                ) : (
-                  'Convert to GIF'
-                )}
-              </button>
-            </form>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
-
-            {preview && (
-              <div className="mb-6">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Original Video</p>
-                <video src={preview} className="w-full h-64 object-cover rounded-lg border border-gray-200" controls />
-              </div>
-            )}
-
-            {result && (
-              <div>
-                <p className="text-sm font-semibold text-gray-700 mb-2">Result GIF</p>
-                <img src={result} alt="Result" className="w-full h-64 object-cover rounded-lg border border-pink-300 shadow-md" />
-                <button
-                  onClick={downloadResult}
-                  className="w-full mt-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
-                >
-                  <Download className="w-5 h-5" />
-                  Download GIF
-                </button>
-              </div>
-            )}
-
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-red-700 font-semibold">Error</p>
-                    <p className="text-red-600 text-sm">{error}</p>
+                  {/* Info Box */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-900 mb-2">About</h3>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Instant conversion in your browser</li>
+                      <li>• Adjustable frame rate and resolution</li>
+                      <li>• Supports MP4 format</li>
+                      <li>• Secure - files never uploaded</li>
+                    </ul>
                   </div>
                 </div>
               </div>
-            )}
-
-            {!preview && !result && !error && (
-              <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <p className="text-gray-400 text-center">Upload an MP4 to see preview</p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </main>
+      {/* FOOTER */}
+      <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
+                  SC
+                </div>
+                <span>SimplifyConvert</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                Free online tools for PDF, Image, Video, AI Write, Data, Code, and Text to Speech conversion.
+              </p>
+            </div>
+
+            {/* Categories */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Categories</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Popular Tools */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Popular</h4>
+              <ul className="space-y-2 text-sm">
+                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                {[
+                  { label: 'About', href: '/about' },
+                  { label: 'Privacy Policy', href: '/privacy' },
+                  { label: 'Terms of Service', href: '/tos' },
+                  { label: 'Contact', href: '/contact' },
+                  { label: 'Blog', href: '/blog' }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-center text-sm text-gray-400">
+              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }
