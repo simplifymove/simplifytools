@@ -58,3 +58,4 @@ export function validatePdfInput(
 
   return { valid: true };
 }
+

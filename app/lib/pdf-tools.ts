@@ -1363,3 +1363,4 @@ export function getPdfToolsByEngine(
 ): PdfToolConfig[] {
   return Object.values(pdfTools).filter((tool) => tool.engine === engine);
 }
+

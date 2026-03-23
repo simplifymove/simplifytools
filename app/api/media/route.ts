@@ -179,3 +179,4 @@ function getContentType(filePath: string): string {
   };
   return contentTypes[ext] || 'application/octet-stream';
 }
+

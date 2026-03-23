@@ -9,27 +9,27 @@ export function Footer() {
 
   const footerLinks = {
     Product: [
-      { label: 'All Tools', href: '/tools' },
-      { label: 'AI Writing', href: '/tools/ai-write' },
-      { label: 'PDF Tools', href: '/tools/pdf' },
-      { label: 'Image Tools', href: '/tools' },
+      { label: 'All Tools', href: '/all-tools' },
+      { label: 'AI Writing', href: '/all-tools/ai-tools' },
+      { label: 'PDF Tools', href: '/all-tools/pdf-tools' },
+      { label: 'Image Tools', href: '/all-tools/image-tools' },
     ],
     Resources: [
-      { label: 'Documentation', href: '#' },
-      { label: 'Blog', href: '#' },
-      { label: 'Support', href: '#' },
-      { label: 'FAQ', href: '#' },
+      { label: 'Documentation', href: '/docs' },
+      { label: 'Blog', href: '/blog' },
+      { label: 'Support', href: '/contact' },
+      { label: 'FAQ', href: '/faq' },
     ],
     Company: [
-      { label: 'About Us', href: '#' },
-      { label: 'Privacy Policy', href: '#' },
-      { label: 'Terms of Service', href: '#' },
-      { label: 'Contact Us', href: '#' },
+      { label: 'About Us', href: '/about' },
+      { label: 'Privacy Policy', href: '/privacy' },
+      { label: 'Terms of Service', href: '/tos' },
+      { label: 'Contact Us', href: '/contact' },
     ],
   };
 
   const socialLinks = [
-    { icon: Mail, href: 'mailto:support@tinytools.com', label: 'Email' },
+    { icon: Mail, href: 'mailto:support@simplifyconvert.com', label: 'Email' },
     { icon: Github, href: '#', label: 'GitHub' },
     { icon: Twitter, href: '#', label: 'Twitter' },
     { icon: Linkedin, href: '#', label: 'LinkedIn' },
@@ -48,10 +48,10 @@ export function Footer() {
             viewport={{ once: true }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">TT</span>
+              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center font-bold text-white shadow-md shadow-orange-500/40 text-sm">
+                SC
               </div>
-              <span className="font-bold text-lg text-white">TinyTools</span>
+              <span className="font-bold text-lg text-white">SimplifyConvert</span>
             </div>
             <p className="text-sm text-gray-400 mb-4">
               Your all-in-one toolkit for PDF, images, video, data, and more conversion and processing.
@@ -63,8 +63,8 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-400">
                 <Mail size={16} />
-                <a href="mailto:support@tinytools.com" className="hover:text-white transition">
-                  support@tinytools.com
+                <a href="mailto:support@simplifyconvert.com" className="hover:text-white transition">
+                  support@simplifyconvert.com
                 </a>
               </div>
             </div>
@@ -174,7 +174,7 @@ export function Footer() {
           className="flex flex-col md:flex-row items-center justify-between"
         >
           <p className="text-sm text-gray-400 text-center md:text-left">
-            © {currentYear} TinyTools. All rights reserved.
+            © {currentYear} SimplifyConvert. All rights reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link href="#" className="text-sm text-gray-400 hover:text-white transition">
@@ -192,3 +192,6 @@ export function Footer() {
     </footer>
   );
 }
+
+
+

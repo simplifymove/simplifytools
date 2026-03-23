@@ -45,7 +45,7 @@ const aiEditingTools: Tool[] = [
     description: 'Generate images from text descriptions using AI',
     category: 'Image',
     icon: Wand2,
-    route: '/tools/ai-image-generator',
+    route: '/all-tools/ai-image-generator',
     headerColor: 'from-purple-400 via-indigo-400 to-purple-500',
   },
   {
@@ -54,7 +54,7 @@ const aiEditingTools: Tool[] = [
     description: 'Remove backgrounds from images automatically',
     category: 'Image',
     icon: Eraser,
-    route: '/tools/converters/remove-background',
+    route: '/all-tools/converters/remove-background',
     headerColor: 'bg-orange-500',
   },
   {
@@ -63,7 +63,7 @@ const aiEditingTools: Tool[] = [
     description: 'Enhance and enlarge images without quality loss',
     category: 'Image',
     icon: Zap,
-    route: '/tools/upscale-image',
+    route: '/all-tools/upscale-image',
     headerColor: 'from-amber-400 via-yellow-400 to-amber-500',
   },
   {
@@ -72,7 +72,7 @@ const aiEditingTools: Tool[] = [
     description: 'Remove watermarks and text from images',
     category: 'Image',
     icon: Droplets,
-    route: '/tools/remove-watermark',
+    route: '/all-tools/remove-watermark',
     headerColor: 'from-blue-400 via-cyan-400 to-blue-500',
   },
   {
@@ -81,7 +81,7 @@ const aiEditingTools: Tool[] = [
     description: 'Remove unwanted objects from photos',
     category: 'Image',
     icon: Scissors,
-    route: '/tools/remove-object',
+    route: '/all-tools/remove-object',
     headerColor: 'from-rose-400 via-pink-400 to-rose-500',
   },
   {
@@ -90,7 +90,7 @@ const aiEditingTools: Tool[] = [
     description: 'Create professional profile photos',
     category: 'Image',
     icon: User,
-    route: '/tools/profile-photo-maker',
+    route: '/all-tools/profile-photo-maker',
     headerColor: 'from-orange-400 via-red-400 to-orange-500',
   },
   {
@@ -99,7 +99,7 @@ const aiEditingTools: Tool[] = [
     description: 'Blur backgrounds in images easily',
     category: 'Image',
     icon: Eye,
-    route: '/tools/blur-background',
+    route: '/all-tools/blur-background',
     headerColor: 'from-indigo-400 via-blue-400 to-indigo-500',
   },
   {
@@ -108,7 +108,7 @@ const aiEditingTools: Tool[] = [
     description: 'Remove people from photos effortlessly',
     category: 'Image',
     icon: Package,
-    route: '/tools/converters/remove-person',
+    route: '/all-tools/converters/remove-person',
     headerColor: 'bg-orange-500',
   },
   {
@@ -117,7 +117,7 @@ const aiEditingTools: Tool[] = [
     description: 'Enhance and clarify blurry images',
     category: 'Image',
     icon: Zap,
-    route: '/tools/unblur-image',
+    route: '/all-tools/unblur-image',
     headerColor: 'from-amber-400 via-yellow-400 to-amber-500',
   },
   {
@@ -126,7 +126,7 @@ const aiEditingTools: Tool[] = [
     description: 'Clean up and enhance image quality',
     category: 'Image',
     icon: Eraser,
-    route: '/tools/converters/cleanup-picture',
+    route: '/all-tools/converters/cleanup-picture',
     headerColor: 'bg-orange-500',
   },
   {
@@ -135,7 +135,7 @@ const aiEditingTools: Tool[] = [
     description: 'Add color to black and white photos',
     category: 'Image',
     icon: Palette,
-    route: '/tools/converters/colorize-photo',
+    route: '/all-tools/converters/colorize-photo',
     headerColor: 'bg-orange-500',
   },
   {
@@ -144,7 +144,7 @@ const aiEditingTools: Tool[] = [
     description: 'Merge multiple images together',
     category: 'Image',
     icon: Combine,
-    route: '/tools/converters/combine-images',
+    route: '/all-tools/converters/combine-images',
     headerColor: 'bg-orange-500',
   },
   {
@@ -153,7 +153,7 @@ const aiEditingTools: Tool[] = [
     description: 'Create transparent backgrounds instantly',
     category: 'Image',
     icon: Eye,
-    route: '/tools/converters/make-background-transparent',
+    route: '/all-tools/converters/make-background-transparent',
     headerColor: 'bg-orange-500',
   },
   {
@@ -162,7 +162,7 @@ const aiEditingTools: Tool[] = [
     description: 'Crop and resize images precisely',
     category: 'Image',
     icon: Scissors,
-    route: '/tools/converters/crop-image',
+    route: '/all-tools/converters/crop-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -171,7 +171,7 @@ const aiEditingTools: Tool[] = [
     description: 'Convert images to circular shape',
     category: 'Image',
     icon: Circle,
-    route: '/tools/converters/make-round-image',
+    route: '/all-tools/converters/make-round-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -187,7 +187,7 @@ const aiEditingTools: Tool[] = [
     description: 'Convert images to black and white',
     category: 'Image',
     icon: Palette,
-    route: '/tools/converters/black-white',
+    route: '/all-tools/converters/black-white',
     headerColor: 'bg-orange-500',
   },
   {
@@ -196,7 +196,7 @@ const aiEditingTools: Tool[] = [
     description: 'Split images into parts',
     category: 'Image',
     icon: Grid,
-    route: '/tools/converters/image-splitter',
+    route: '/all-tools/converters/image-splitter',
     headerColor: 'bg-orange-500',
   },
   {
@@ -205,7 +205,7 @@ const aiEditingTools: Tool[] = [
     description: 'Add multiple images to a canvas',
     category: 'Image',
     icon: Image,
-    route: '/tools/converters/add-images',
+    route: '/all-tools/converters/add-images',
     headerColor: 'bg-orange-500',
   },
   {
@@ -214,7 +214,7 @@ const aiEditingTools: Tool[] = [
     description: 'Add decorative borders to images',
     category: 'Image',
     icon: Square,
-    route: '/tools/converters/add-border',
+    route: '/all-tools/converters/add-border',
     headerColor: 'bg-orange-500',
   },
   {
@@ -223,7 +223,7 @@ const aiEditingTools: Tool[] = [
     description: 'Translate text within images',
     category: 'Image',
     icon: Globe,
-    route: '/tools/converters/translate-image',
+    route: '/all-tools/converters/translate-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -232,7 +232,7 @@ const aiEditingTools: Tool[] = [
     description: 'Reverse or mirror images',
     category: 'Image',
     icon: RotateCcw,
-    route: '/tools/converters/reverse-image',
+    route: '/all-tools/converters/reverse-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -241,7 +241,7 @@ const aiEditingTools: Tool[] = [
     description: 'Create image collages easily',
     category: 'Image',
     icon: Combine,
-    route: '/tools/converters/collage-maker',
+    route: '/all-tools/converters/collage-maker',
     headerColor: 'bg-orange-500',
   },
   {
@@ -250,7 +250,7 @@ const aiEditingTools: Tool[] = [
     description: 'Flip images horizontally or vertically',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/flip-image',
+    route: '/all-tools/converters/flip-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -259,7 +259,7 @@ const aiEditingTools: Tool[] = [
     description: 'View and edit image metadata',
     category: 'Image',
     icon: FileJson,
-    route: '/tools/converters/view-metadata',
+    route: '/all-tools/converters/view-metadata',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -268,7 +268,7 @@ const aiEditingTools: Tool[] = [
     description: 'Create data visualizations and charts',
     category: 'Image',
     icon: BarChart3,
-    route: '/tools/converters/chart-maker',
+    route: '/all-tools/converters/chart-maker',
     headerColor: 'from-green-400 via-emerald-400 to-green-500',
   },
   {
@@ -277,7 +277,7 @@ const aiEditingTools: Tool[] = [
     description: 'Convert Font Awesome icons to PNG',
     category: 'Image',
     icon: Code,
-    route: '/tools/converters/font-awesome-to-png',
+    route: '/all-tools/converters/font-awesome-to-png',
     headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
@@ -286,7 +286,7 @@ const aiEditingTools: Tool[] = [
     description: 'Rotate your images by any angle',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/rotate-image',
+    route: '/all-tools/rotate-image',
     headerColor: 'from-emerald-400 via-green-400 to-emerald-500',
   },
   {
@@ -295,7 +295,7 @@ const aiEditingTools: Tool[] = [
     description: 'Resize images with aspect ratio control',
     category: 'Image',
     icon: Mountain,
-    route: '/tools/resize-image',
+    route: '/all-tools/resize-image',
     headerColor: 'from-amber-600 via-orange-500 to-amber-600',
   },
   {
@@ -304,7 +304,7 @@ const aiEditingTools: Tool[] = [
     description: 'Convert images to black and white',
     category: 'Image',
     icon: Palette,
-    route: '/tools/grayscale-image',
+    route: '/all-tools/grayscale-image',
     headerColor: 'from-gray-400 via-slate-400 to-gray-500',
   },
 ];
@@ -316,7 +316,7 @@ const converterTools: Tool[] = [
     description: 'Convert PDF pages to JPG images',
     category: 'Image',
     icon: FileImage,
-    route: '/tools/converters/pdf-to-jpg',
+    route: '/all-tools/converters/pdf-to-jpg',
     headerColor: 'from-orange-400 via-red-400 to-orange-500',
   },
   {
@@ -325,7 +325,7 @@ const converterTools: Tool[] = [
     description: 'Extract text from images',
     category: 'Image',
     icon: FileText,
-    route: '/tools/converters/image-to-text',
+    route: '/all-tools/converters/image-to-text',
     headerColor: 'from-blue-400 via-indigo-400 to-blue-500',
   },
   {
@@ -334,7 +334,7 @@ const converterTools: Tool[] = [
     description: 'Extract text from PDF documents',
     category: 'Image',
     icon: FileText,
-    route: '/tools/converters/pdf-to-text',
+    route: '/all-tools/converters/pdf-to-text',
     headerColor: 'from-blue-400 via-indigo-400 to-blue-500',
   },
   {
@@ -343,7 +343,7 @@ const converterTools: Tool[] = [
     description: 'Reduce image file size without quality loss',
     category: 'Image',
     icon: Package,
-    route: '/tools/compress-image',
+    route: '/all-tools/compress-image',
     headerColor: 'from-purple-400 via-pink-400 to-purple-500',
   },
   {
@@ -352,7 +352,7 @@ const converterTools: Tool[] = [
     description: 'Convert HEIC images to JPG format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/heic-to-jpg',
+    route: '/all-tools/converters/heic-to-jpg',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -361,7 +361,7 @@ const converterTools: Tool[] = [
     description: 'Convert WebP to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/webp-to-jpg',
+    route: '/all-tools/converters/webp-to-jpg',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -370,7 +370,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG images to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/png-to-jpg',
+    route: '/all-tools/converters/png-to-jpg',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -379,7 +379,7 @@ const converterTools: Tool[] = [
     description: 'Convert WebP to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/webp-to-png',
+    route: '/all-tools/converters/webp-to-png',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -388,7 +388,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to PNG format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/jpg-to-png',
+    route: '/all-tools/converters/jpg-to-png',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -397,7 +397,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to WebP format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/png-to-webp',
+    route: '/all-tools/png-to-webp',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -406,7 +406,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to WebP format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/jpg-to-webp',
+    route: '/all-tools/converters/jpg-to-webp',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -415,7 +415,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG images to scalable SVG',
     category: 'Image',
     icon: Mountain,
-    route: '/tools/converters/png-to-svg',
+    route: '/all-tools/converters/png-to-svg',
     headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
   },
   {
@@ -424,7 +424,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to SVG format',
     category: 'Image',
     icon: Mountain,
-    route: '/tools/converters/jpg-to-svg',
+    route: '/all-tools/converters/jpg-to-svg',
     headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
   },
   {
@@ -433,7 +433,7 @@ const converterTools: Tool[] = [
     description: 'Convert HEIC to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/heic-to-png',
+    route: '/all-tools/converters/heic-to-png',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -442,7 +442,7 @@ const converterTools: Tool[] = [
     description: 'Convert various formats to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/edit-to-png',
+    route: '/all-tools/converters/edit-to-png',
     headerColor: 'from-sky-400 via-blue-400 to-sky-500',
   },
   {
@@ -451,7 +451,7 @@ const converterTools: Tool[] = [
     description: 'Convert animated GIF to MP4',
     category: 'Image',
     icon: FileAudio,
-    route: '/tools/converters/gif-to-mp4',
+    route: '/all-tools/converters/gif-to-mp4',
     headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
@@ -460,7 +460,7 @@ const converterTools: Tool[] = [
     description: 'Convert MP4 videos to animated GIF',
     category: 'Image',
     icon: FileAudio,
-    route: '/tools/converters/mp4-to-gif',
+    route: '/all-tools/converters/mp4-to-gif',
     headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
@@ -469,7 +469,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to animated GIF',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/jpg-to-gif',
+    route: '/all-tools/converters/jpg-to-gif',
   },
   {
     id: 'tiff-jpg',
@@ -477,7 +477,7 @@ const converterTools: Tool[] = [
     description: 'Convert TIFF images to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/tiff-to-jpg',
+    route: '/all-tools/converters/tiff-to-jpg',
   },
   {
     id: 'webp-gif',
@@ -485,7 +485,7 @@ const converterTools: Tool[] = [
     description: 'Convert WebP to animated GIF',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/webp-to-gif',
+    route: '/all-tools/converters/webp-to-gif',
   },
   {
     id: 'png-eps',
@@ -493,7 +493,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to EPS vector format',
     category: 'Image',
     icon: Mountain,
-    route: '/tools/converters/png-to-eps',
+    route: '/all-tools/converters/png-to-eps',
     headerColor: 'from-emerald-400 via-teal-400 to-emerald-500',
   },
   {
@@ -502,7 +502,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to TIFF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/png-to-tiff',
+    route: '/all-tools/converters/png-to-tiff',
   },
   {
     id: 'jpg-tif',
@@ -510,7 +510,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to TIFF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/jpg-to-tiff',
+    route: '/all-tools/converters/jpg-to-tiff',
   },
   {
     id: 'eps-png',
@@ -518,7 +518,7 @@ const converterTools: Tool[] = [
     description: 'Convert EPS vector to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/eps-to-png',
+    route: '/all-tools/converters/eps-to-png',
     headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
   },
   {
@@ -527,7 +527,7 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop to Illustrator format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/psd-to-ai',
+    route: '/all-tools/converters/psd-to-ai',
     headerColor: 'from-violet-400 via-purple-400 to-violet-500',
   },
   {
@@ -536,7 +536,7 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop files to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/psd-to-jpg',
+    route: '/all-tools/converters/psd-to-jpg',
   },
   {
     id: 'psd-png',
@@ -544,7 +544,7 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop files to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/psd-to-png',
+    route: '/all-tools/converters/psd-to-png',
   },
   {
     id: 'gif-jpg',
@@ -552,7 +552,7 @@ const converterTools: Tool[] = [
     description: 'Convert GIF images to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/gif-to-jpg',
+    route: '/all-tools/converters/gif-to-jpg',
   },
   {
     id: 'tiff-png',
@@ -560,7 +560,7 @@ const converterTools: Tool[] = [
     description: 'Convert TIFF to PNG format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/tiff-to-png',
+    route: '/all-tools/converters/tiff-to-png',
   },
   {
     id: 'gif-png',
@@ -568,7 +568,7 @@ const converterTools: Tool[] = [
     description: 'Convert GIF to PNG format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/gif-to-png',
+    route: '/all-tools/converters/gif-to-png',
   },
   {
     id: 'eps-jpg',
@@ -583,7 +583,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to TIFF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/png-to-tiff',
+    route: '/all-tools/converters/png-to-tiff',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -599,21 +599,21 @@ const converterTools: Tool[] = [
     description: 'Extract text from TIFF images (OCR)',
     category: 'Image',
     icon: FileText,
-    route: '/tools/converters/tiff-to-text',
+    route: '/all-tools/converters/tiff-to-text',
   },
   {
     id: 'gif-apng',
     title: 'GIF to APNG',
     description: 'Convert GIF to animated PNG',
     category: 'Image',
-    icon: RefreshCw,    route: '/tools/converters/gif-to-png',  },
+    icon: RefreshCw,    route: '/all-tools/converters/gif-to-png',  },
   {
     id: 'jpg-avif',
     title: 'JPG to AVIF',
     description: 'Convert JPG to modern AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/jpg-to-avif',
+    route: '/all-tools/converters/jpg-to-avif',
   },
   {
     id: 'vsd-pdf',
@@ -621,7 +621,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio diagrams to PDF',
     category: 'Image',
     icon: FileArchive,
-    route: '/tools/converters/vsd-to-pdf',
+    route: '/all-tools/converters/vsd-to-pdf',
   },
   {
     id: 'png-avif',
@@ -629,7 +629,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to modern AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/png-to-avif',
+    route: '/all-tools/converters/png-to-avif',
   },
   {
     id: 'psd-svg',
@@ -637,7 +637,7 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop to SVG vector',
     category: 'Image',
     icon: Mountain,
-    route: '/tools/converters/psd-to-svg',
+    route: '/all-tools/converters/psd-to-svg',
   },
   {
     id: 'tiff-svg',
@@ -645,7 +645,7 @@ const converterTools: Tool[] = [
     description: 'Convert TIFF to scalable SVG',
     category: 'Image',
     icon: Mountain,
-    route: '/tools/converters/tiff-to-svg',
+    route: '/all-tools/converters/tiff-to-svg',
   },
   {
     id: 'vsdx-pdf',
@@ -653,7 +653,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio VSDX to PDF',
     category: 'Image',
     icon: FileArchive,
-    route: '/tools/converters/vsdx-to-pdf',
+    route: '/all-tools/converters/vsdx-to-pdf',
   },
   {
     id: 'vsdx-pptx',
@@ -661,7 +661,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio to PowerPoint',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/vsdx-to-pptx',
+    route: '/all-tools/converters/vsdx-to-pptx',
   },
   {
     id: 'vsdx-docx',
@@ -669,7 +669,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio to Word document',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/vsdx-to-docx',
+    route: '/all-tools/converters/vsdx-to-docx',
   },
   {
     id: 'vsd-docx',
@@ -677,7 +677,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio diagram to Word',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/vsd-to-docx',
+    route: '/all-tools/converters/vsd-to-docx',
   },
   {
     id: 'webp-avif',
@@ -685,7 +685,7 @@ const converterTools: Tool[] = [
     description: 'Convert WebP to AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/webp-to-avif',
+    route: '/all-tools/converters/webp-to-avif',
   },
   {
     id: 'vsdx-jpg',
@@ -693,7 +693,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio diagrams to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/vsdx-to-jpg',
+    route: '/all-tools/converters/vsdx-to-jpg',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -702,7 +702,7 @@ const converterTools: Tool[] = [
     description: 'Convert HEIC to AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/heic-to-avif',
+    route: '/all-tools/converters/heic-to-avif',
   },
   {
     id: 'tiff-avif',
@@ -710,7 +710,7 @@ const converterTools: Tool[] = [
     description: 'Convert TIFF to AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/tiff-to-avif',
+    route: '/all-tools/converters/tiff-to-avif',
   },
   {
     id: 'vsd-pptx',
@@ -718,7 +718,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio to PowerPoint',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/vsd-to-pptx',
+    route: '/all-tools/converters/vsd-to-pptx',
   },
   {
     id: 'bmp-jpg',
@@ -726,7 +726,7 @@ const converterTools: Tool[] = [
     description: 'Convert BMP images to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/bmp-to-jpg',
+    route: '/all-tools/converters/bmp-to-jpg',
   },
   {
     id: 'bmp-png',
@@ -734,7 +734,7 @@ const converterTools: Tool[] = [
     description: 'Convert BMP to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/tools/converters/bmp-to-png',
+    route: '/all-tools/converters/bmp-to-png',
   },
 ];
 
@@ -746,7 +746,7 @@ const aiWriteTools: Tool[] = [
     description: 'Generate well-crafted paragraphs',
     category: 'AI Write',
     icon: Type,
-    route: '/tools/ai-write/paragraph-writer',
+    route: '/all-tools/ai-tools/paragraph-writer',
   },
   {
     id: 'content-improver',
@@ -754,7 +754,7 @@ const aiWriteTools: Tool[] = [
     description: 'Enhance and improve content quality',
     category: 'AI Write',
     icon: Wand2,
-    route: '/tools/ai-write/content-improver',
+    route: '/all-tools/ai-tools/content-improver',
   },
   {
     id: 'grammar-fixer',
@@ -762,7 +762,7 @@ const aiWriteTools: Tool[] = [
     description: 'Fix grammar and punctuation',
     category: 'AI Write',
     icon: FileText,
-    route: '/tools/ai-write/grammar-fixer',
+    route: '/all-tools/ai-tools/grammar-fixer',
   },
   {
     id: 'content-summarizer',
@@ -770,7 +770,7 @@ const aiWriteTools: Tool[] = [
     description: 'Create concise summaries',
     category: 'AI Write',
     icon: BarChart3,
-    route: '/tools/ai-write/content-summarizer',
+    route: '/all-tools/ai-tools/content-summarizer',
   },
   {
     id: 'blog-post-generator',
@@ -778,7 +778,7 @@ const aiWriteTools: Tool[] = [
     description: 'Generate complete blog posts',
     category: 'AI Write',
     icon: FileImage,
-    route: '/tools/ai-write/blog-post-generator',
+    route: '/all-tools/ai-tools/blog-post-generator',
   },
   {
     id: 'essay-writer',
@@ -786,7 +786,7 @@ const aiWriteTools: Tool[] = [
     description: 'Write essays on any topic',
     category: 'AI Write',
     icon: Code,
-    route: '/tools/ai-write/essay-writer',
+    route: '/all-tools/ai-tools/essay-writer',
   },
   {
     id: 'story-generator',
@@ -794,7 +794,7 @@ const aiWriteTools: Tool[] = [
     description: 'Generate creative stories',
     category: 'AI Write',
     icon: Combine,
-    route: '/tools/ai-write/story-generator',
+    route: '/all-tools/ai-tools/story-generator',
   },
   {
     id: 'ai-write-all',
@@ -802,7 +802,7 @@ const aiWriteTools: Tool[] = [
     description: 'Access 50+ AI writing tools',
     category: 'AI Write',
     icon: Sparkles,
-    route: '/tools/ai-write',
+    route: '/all-tools/ai-tools',
   },
 ];
 
@@ -814,7 +814,7 @@ const videoTools: Tool[] = [
     description: 'Convert MP4 video to MP3 audio',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/mp4-to-mp3',
+    route: '/all-tools/video/mp4-to-mp3',
   },
   {
     id: 'mov-to-mp4',
@@ -822,7 +822,7 @@ const videoTools: Tool[] = [
     description: 'Convert MOV video to MP4 format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mov-to-mp4',
+    route: '/all-tools/video/mov-to-mp4',
   },
   {
     id: 'mp4-to-wav',
@@ -830,7 +830,7 @@ const videoTools: Tool[] = [
     description: 'Extract audio from MP4 as WAV format',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/mp4-to-wav',
+    route: '/all-tools/video/mp4-to-wav',
   },
   {
     id: 'avi-to-mp4',
@@ -838,7 +838,7 @@ const videoTools: Tool[] = [
     description: 'Convert AVI to MP4 format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/avi-to-mp4',
+    route: '/all-tools/video/avi-to-mp4',
   },
   {
     id: 'mkv-to-mp4',
@@ -846,7 +846,7 @@ const videoTools: Tool[] = [
     description: 'Convert MKV to MP4 format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mkv-to-mp4',
+    route: '/all-tools/video/mkv-to-mp4',
   },
   {
     id: 'webm-to-mp4',
@@ -854,7 +854,7 @@ const videoTools: Tool[] = [
     description: 'Convert WebM video to MP4 format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/webm-to-mp4',
+    route: '/all-tools/video/webm-to-mp4',
   },
   // Editing - Phase 1
   {
@@ -863,7 +863,7 @@ const videoTools: Tool[] = [
     description: 'Trim a video by start and end time',
     category: 'Video',
     icon: Scissors,
-    route: '/tools/video/trim-video',
+    route: '/all-tools/video/trim-video',
   },
   {
     id: 'resize-video',
@@ -871,7 +871,7 @@ const videoTools: Tool[] = [
     description: 'Resize video to specific width and height',
     category: 'Video',
     icon: Square,
-    route: '/tools/video/resize-video',
+    route: '/all-tools/video/resize-video',
   },
   {
     id: 'mute-video',
@@ -879,7 +879,7 @@ const videoTools: Tool[] = [
     description: 'Remove audio from a video file',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/mute-video',
+    route: '/all-tools/video/mute-video',
   },
   {
     id: 'extract-audio',
@@ -887,7 +887,7 @@ const videoTools: Tool[] = [
     description: 'Extract audio track from video as MP3 or WAV',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/extract-audio-from-video',
+    route: '/all-tools/video/extract-audio-from-video',
   },
   {
     id: 'video-to-gif',
@@ -895,7 +895,7 @@ const videoTools: Tool[] = [
     description: 'Convert video to animated GIF',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/video-to-gif',
+    route: '/all-tools/video/video-to-gif',
   },
   {
     id: 'compress-video',
@@ -903,7 +903,7 @@ const videoTools: Tool[] = [
     description: 'Reduce video file size with quality options',
     category: 'Video',
     icon: Package,
-    route: '/tools/video/compress-video',
+    route: '/all-tools/video/compress-video',
   },
   // Phase 2 - Compression & Web formats
   {
@@ -912,7 +912,7 @@ const videoTools: Tool[] = [
     description: 'Compress MOV file to reduce size',
     category: 'Video',
     icon: Package,
-    route: '/tools/video/compress-mov',
+    route: '/all-tools/video/compress-mov',
   },
   {
     id: 'compress-avi',
@@ -920,7 +920,7 @@ const videoTools: Tool[] = [
     description: 'Compress AVI file to reduce size',
     category: 'Video',
     icon: Package,
-    route: '/tools/video/compress-avi',
+    route: '/all-tools/video/compress-avi',
   },
   {
     id: 'compress-mkv',
@@ -928,7 +928,7 @@ const videoTools: Tool[] = [
     description: 'Compress MKV file to reduce size',
     category: 'Video',
     icon: Package,
-    route: '/tools/video/compress-mkv',
+    route: '/all-tools/video/compress-mkv',
   },
   {
     id: 'video-to-webp',
@@ -936,7 +936,7 @@ const videoTools: Tool[] = [
     description: 'Convert video to WebP animated format',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/video-to-webp',
+    route: '/all-tools/video/video-to-webp',
   },
   {
     id: 'mp4-to-webm',
@@ -944,7 +944,7 @@ const videoTools: Tool[] = [
     description: 'Convert MP4 to WebM format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mp4-to-webm',
+    route: '/all-tools/video/mp4-to-webm',
   },
   // Phase 3 - Transcription
   {
@@ -953,7 +953,7 @@ const videoTools: Tool[] = [
     description: 'Transcribe audio file to text',
     category: 'Video',
     icon: FileText,
-    route: '/tools/video/audio-to-text',
+    route: '/all-tools/video/audio-to-text',
   },
   {
     id: 'video-to-text',
@@ -961,7 +961,7 @@ const videoTools: Tool[] = [
     description: 'Extract audio and transcribe video to text',
     category: 'Video',
     icon: FileText,
-    route: '/tools/video/video-to-text',
+    route: '/all-tools/video/video-to-text',
   },
   {
     id: 'youtube-to-text',
@@ -969,7 +969,7 @@ const videoTools: Tool[] = [
     description: 'Download YouTube video and transcribe to text',
     category: 'Video',
     icon: FileText,
-    route: '/tools/video/youtube-to-text',
+    route: '/all-tools/video/youtube-to-text',
   },
   {
     id: 'youtube-transcript',
@@ -977,7 +977,7 @@ const videoTools: Tool[] = [
     description: 'Get transcript from YouTube video',
     category: 'Video',
     icon: FileText,
-    route: '/tools/video/youtube-transcript',
+    route: '/all-tools/video/youtube-transcript',
   },
   {
     id: 'transcribe-podcast',
@@ -985,7 +985,7 @@ const videoTools: Tool[] = [
     description: 'Transcribe podcast audio file',
     category: 'Video',
     icon: FileText,
-    route: '/tools/video/transcribe-podcast',
+    route: '/all-tools/video/transcribe-podcast',
   },
   // Phase 4 - Downloader tools
   {
@@ -994,7 +994,7 @@ const videoTools: Tool[] = [
     description: 'Download video from Instagram',
     category: 'Video',
     icon: Globe,
-    route: '/tools/video/instagram-download',
+    route: '/all-tools/video/instagram-download',
   },
   {
     id: 'tiktok-video-download',
@@ -1002,7 +1002,7 @@ const videoTools: Tool[] = [
     description: 'Download video from TikTok',
     category: 'Video',
     icon: Globe,
-    route: '/tools/video/tiktok-video-download',
+    route: '/all-tools/video/tiktok-video-download',
   },
   {
     id: 'twitter-download',
@@ -1010,7 +1010,7 @@ const videoTools: Tool[] = [
     description: 'Download video from Twitter/X',
     category: 'Video',
     icon: Globe,
-    route: '/tools/video/twitter-download',
+    route: '/all-tools/video/twitter-download',
   },
   {
     id: 'facebook-download',
@@ -1018,7 +1018,7 @@ const videoTools: Tool[] = [
     description: 'Download video from Facebook',
     category: 'Video',
     icon: Globe,
-    route: '/tools/video/facebook-download',
+    route: '/all-tools/video/facebook-download',
   },
   // Phase 5 - Summarization & Subtitles
   {
@@ -1027,7 +1027,7 @@ const videoTools: Tool[] = [
     description: 'Transcribe and summarize podcast audio',
     category: 'Video',
     icon: BarChart3,
-    route: '/tools/video/summarize-podcast',
+    route: '/all-tools/video/summarize-podcast',
   },
   {
     id: 'add-subtitles',
@@ -1035,7 +1035,7 @@ const videoTools: Tool[] = [
     description: 'Add subtitle file to video',
     category: 'Video',
     icon: Type,
-    route: '/tools/video/add-subtitles',
+    route: '/all-tools/video/add-subtitles',
   },
   // Additional Conversions
   {
@@ -1044,7 +1044,7 @@ const videoTools: Tool[] = [
     description: 'Convert MP4 to AVI format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mp4-to-avi',
+    route: '/all-tools/video/mp4-to-avi',
   },
   {
     id: 'mov-to-mp3',
@@ -1052,7 +1052,7 @@ const videoTools: Tool[] = [
     description: 'Extract audio from MOV as MP3',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/mov-to-mp3',
+    route: '/all-tools/video/mov-to-mp3',
   },
   {
     id: 'aac-to-mp3',
@@ -1060,7 +1060,7 @@ const videoTools: Tool[] = [
     description: 'Convert AAC audio to MP3',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/aac-to-mp3',
+    route: '/all-tools/video/aac-to-mp3',
   },
   {
     id: 'webm-to-mp3',
@@ -1068,7 +1068,7 @@ const videoTools: Tool[] = [
     description: 'Extract audio from WebM as MP3',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/webm-to-mp3',
+    route: '/all-tools/video/webm-to-mp3',
   },
   {
     id: 'ogg-to-wav',
@@ -1076,7 +1076,7 @@ const videoTools: Tool[] = [
     description: 'Convert OGG audio to WAV',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/ogg-to-wav',
+    route: '/all-tools/video/ogg-to-wav',
   },
   {
     id: 'avi-to-mov',
@@ -1084,7 +1084,7 @@ const videoTools: Tool[] = [
     description: 'Convert AVI to MOV format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/avi-to-mov',
+    route: '/all-tools/video/avi-to-mov',
   },
   {
     id: 'mkv-to-gif',
@@ -1092,7 +1092,7 @@ const videoTools: Tool[] = [
     description: 'Convert MKV video to GIF',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/mkv-to-gif',
+    route: '/all-tools/video/mkv-to-gif',
   },
   {
     id: 'avi-to-mkv',
@@ -1100,7 +1100,7 @@ const videoTools: Tool[] = [
     description: 'Convert AVI to MKV format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/avi-to-mkv',
+    route: '/all-tools/video/avi-to-mkv',
   },
   {
     id: 'aac-to-m4r',
@@ -1108,7 +1108,7 @@ const videoTools: Tool[] = [
     description: 'Convert AAC to M4R (iPhone ringtone)',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/aac-to-m4r',
+    route: '/all-tools/video/aac-to-m4r',
   },
   {
     id: 'mp4-to-mov',
@@ -1116,7 +1116,7 @@ const videoTools: Tool[] = [
     description: 'Convert MP4 to MOV format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mp4-to-mov',
+    route: '/all-tools/video/mp4-to-mov',
   },
   {
     id: 'mkv-to-mp3',
@@ -1124,7 +1124,7 @@ const videoTools: Tool[] = [
     description: 'Extract audio from MKV as MP3',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/mkv-to-mp3',
+    route: '/all-tools/video/mkv-to-mp3',
   },
   {
     id: 'mov-to-avi',
@@ -1132,7 +1132,7 @@ const videoTools: Tool[] = [
     description: 'Convert MOV to AVI format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mov-to-avi',
+    route: '/all-tools/video/mov-to-avi',
   },
   {
     id: 'avi-to-gif',
@@ -1140,7 +1140,7 @@ const videoTools: Tool[] = [
     description: 'Convert AVI video to animated GIF',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/avi-to-gif',
+    route: '/all-tools/video/avi-to-gif',
   },
   {
     id: 'aac-to-wav',
@@ -1148,7 +1148,7 @@ const videoTools: Tool[] = [
     description: 'Convert AAC audio to WAV',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/aac-to-wav',
+    route: '/all-tools/video/aac-to-wav',
   },
   {
     id: 'aac-to-flac',
@@ -1156,7 +1156,7 @@ const videoTools: Tool[] = [
     description: 'Convert AAC to FLAC lossless audio',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/aac-to-flac',
+    route: '/all-tools/video/aac-to-flac',
   },
   {
     id: 'mov-to-gif',
@@ -1164,7 +1164,7 @@ const videoTools: Tool[] = [
     description: 'Convert MOV video to animated GIF',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/mov-to-gif',
+    route: '/all-tools/video/mov-to-gif',
   },
   {
     id: 'gif-to-mov',
@@ -1172,7 +1172,7 @@ const videoTools: Tool[] = [
     description: 'Convert animated GIF to MOV video',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/gif-to-mov',
+    route: '/all-tools/video/gif-to-mov',
   },
   {
     id: 'm4a-to-mp4',
@@ -1180,7 +1180,7 @@ const videoTools: Tool[] = [
     description: 'Convert M4A audio to MP4 container',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/m4a-to-mp4',
+    route: '/all-tools/video/m4a-to-mp4',
   },
   {
     id: 'mkv-to-avi',
@@ -1188,7 +1188,7 @@ const videoTools: Tool[] = [
     description: 'Convert MKV to AVI format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mkv-to-avi',
+    route: '/all-tools/video/mkv-to-avi',
   },
   {
     id: 'avi-to-mp3',
@@ -1196,7 +1196,7 @@ const videoTools: Tool[] = [
     description: 'Extract audio from AVI as MP3',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/avi-to-mp3',
+    route: '/all-tools/video/avi-to-mp3',
   },
   {
     id: 'm4a-to-mp3',
@@ -1204,7 +1204,7 @@ const videoTools: Tool[] = [
     description: 'Convert M4A audio to MP3',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/m4a-to-mp3',
+    route: '/all-tools/video/m4a-to-mp3',
   },
   {
     id: 'mp4-to-gif',
@@ -1212,7 +1212,7 @@ const videoTools: Tool[] = [
     description: 'Convert MP4 video to animated GIF',
     category: 'Video',
     icon: FileAudio,
-    route: '/tools/video/mp4-to-gif',
+    route: '/all-tools/video/mp4-to-gif',
   },
   {
     id: 'ogg-to-mp3',
@@ -1220,7 +1220,7 @@ const videoTools: Tool[] = [
     description: 'Convert OGG audio to MP3',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/ogg-to-mp3',
+    route: '/all-tools/video/ogg-to-mp3',
   },
   {
     id: 'm4a-to-wav',
@@ -1228,7 +1228,7 @@ const videoTools: Tool[] = [
     description: 'Convert M4A audio to WAV',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/m4a-to-wav',
+    route: '/all-tools/video/m4a-to-wav',
   },
   {
     id: 'gif-to-webp',
@@ -1236,7 +1236,7 @@ const videoTools: Tool[] = [
     description: 'Convert animated GIF to WebP',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/gif-to-webp',
+    route: '/all-tools/video/gif-to-webp',
   },
   {
     id: 'webm-to-mov',
@@ -1244,7 +1244,7 @@ const videoTools: Tool[] = [
     description: 'Convert WebM video to MOV format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/webm-to-mov',
+    route: '/all-tools/video/webm-to-mov',
   },
   {
     id: 'mkv-to-mov',
@@ -1252,7 +1252,7 @@ const videoTools: Tool[] = [
     description: 'Convert MKV to MOV format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mkv-to-mov',
+    route: '/all-tools/video/mkv-to-mov',
   },
   {
     id: 'aac-to-mp4',
@@ -1260,7 +1260,7 @@ const videoTools: Tool[] = [
     description: 'Convert AAC audio to MP4 container',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/aac-to-mp4',
+    route: '/all-tools/video/aac-to-mp4',
   },
   {
     id: 'mp4-to-ogg',
@@ -1268,9 +1268,10 @@ const videoTools: Tool[] = [
     description: 'Convert MP4 audio to OGG format',
     category: 'Video',
     icon: RefreshCw,
-    route: '/tools/video/mp4-to-ogg',
+    route: '/all-tools/video/mp4-to-ogg',
   },
 ];
 
 export const allTools: Tool[] = [...aiEditingTools, ...converterTools, ...aiWriteTools, ...videoTools];
 export { aiEditingTools, converterTools, aiWriteTools, videoTools };
+

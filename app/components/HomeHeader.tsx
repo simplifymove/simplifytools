@@ -22,7 +22,7 @@ export function HomeHeader() {
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
-      router.push(`/tools?search=${encodeURIComponent(query)}`);
+      router.push(`/all-tools?search=${encodeURIComponent(query)}`);
     }
   };
 
@@ -47,7 +47,7 @@ export function HomeHeader() {
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
       count: '47+',
-      link: '/tools/pdf',
+      link: '/all-tools/pdf-tools',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
     {
@@ -58,7 +58,7 @@ export function HomeHeader() {
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
       count: '30+',
-      link: '/tools?category=Image',
+      link: '/all-tools/image-tools',
       glowColor: 'group-hover:shadow-orange-500/20'
     },
     {
@@ -69,7 +69,7 @@ export function HomeHeader() {
       color: 'from-pink-500 via-pink-600 to-pink-700',
       bgColor: 'bg-pink-50',
       count: '10+',
-      link: '/tools?category=video',
+      link: '/all-tools/video-tools',
       glowColor: 'group-hover:shadow-pink-500/20'
     },
     {
@@ -80,7 +80,7 @@ export function HomeHeader() {
       color: 'from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-50',
       count: '50+',
-      link: '/tools/ai-write',
+      link: '/all-tools/ai-tools',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
     {
@@ -91,7 +91,7 @@ export function HomeHeader() {
       color: 'from-teal-500 via-teal-600 to-teal-700',
       bgColor: 'bg-teal-50',
       count: '12',
-      link: '/tools/data',
+      link: '/all-tools/data-converter',
       glowColor: 'group-hover:shadow-teal-500/20'
     },
     {
@@ -102,7 +102,7 @@ export function HomeHeader() {
       color: 'from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-50',
       count: '44',
-      link: '/tools/code',
+      link: '/all-tools/code',
       glowColor: 'group-hover:shadow-green-500/20'
     },
     {
@@ -113,7 +113,7 @@ export function HomeHeader() {
       color: 'from-indigo-500 via-indigo-600 to-indigo-700',
       bgColor: 'bg-indigo-50',
       count: 'Multi',
-      link: '/tools/text-to-speech',
+      link: '/all-tools/text-to-speech',
       glowColor: 'group-hover:shadow-indigo-500/20'
     }
   ];
@@ -141,14 +141,14 @@ export function HomeHeader() {
           <nav className="hidden lg:flex items-center gap-8">
             {/* All Tools Dropdown */}
             <div className="relative group pb-2">
-              <a 
-                href="/#categories"
+              <Link 
+                href="/all-tools"
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative flex items-center gap-1 py-2 px-1"
               >
                 All Tools
                 <ChevronRight size={16} className="group-hover:rotate-90 transition-transform" />
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </a>
+              </Link>
 
               {/* Dropdown Menu */}
               <div
@@ -179,16 +179,34 @@ export function HomeHeader() {
             </div>
 
             {/* Other Navigation Items */}
-            {['Image', 'Video', 'AI Write', 'Data'].map((item) => (
-              <a 
-                key={item} 
-                href="#" 
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
-              >
-                {item}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </a>
-            ))}
+            <Link 
+              href="/all-tools/image-tools"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
+            >
+              Image
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
+            </Link>
+            <Link 
+              href="/all-tools/video-tools"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
+            >
+              Video
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
+            </Link>
+            <Link 
+              href="/all-tools/ai-tools"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
+            >
+              AI Write
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
+            </Link>
+            <Link 
+              href="/all-tools/data-converter"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
+            >
+              Data
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
+            </Link>
           </nav>
 
           {/* Search & CTA */}
@@ -216,7 +234,7 @@ export function HomeHeader() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Link
-                    href="/tools"
+                    href="/all-tools"
                     className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
                   >
                     Explore Tools
@@ -248,7 +266,7 @@ export function HomeHeader() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Link
-                    href="/tools"
+                    href="/all-tools"
                     className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
                   >
                     Browse Tools
@@ -284,12 +302,25 @@ export function HomeHeader() {
             animate={{ opacity: 1, height: 'auto' }}
           >
             <div className="flex flex-col gap-4">
-              {['PDF', 'Image', 'Video', 'AI Write', 'Data', 'Code'].map((item) => (
-                <a key={item} href="#" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                  {item}
-                </a>
-              ))}
-              <Link href="/tools" className="px-4 py-2 bg-orange-500 text-white font-medium rounded-full text-center hover:bg-orange-600 transition-all">
+              <Link href="/all-tools/pdf-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                PDF
+              </Link>
+              <Link href="/all-tools/image-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Image
+              </Link>
+              <Link href="/all-tools/video-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Video
+              </Link>
+              <Link href="/all-tools/ai-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                AI Write
+              </Link>
+              <Link href="/all-tools/data-converter" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Data
+              </Link>
+              <Link href="/all-tools/code-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Code
+              </Link>
+              <Link href="/all-tools" className="px-4 py-2 bg-orange-500 text-white font-medium rounded-full text-center hover:bg-orange-600 transition-all">
                 Browse Tools
               </Link>
             </div>
@@ -303,3 +334,6 @@ export function HomeHeader() {
     </>
   );
 }
+
+
+

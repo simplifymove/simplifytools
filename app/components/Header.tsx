@@ -13,7 +13,7 @@ export function Header() {
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/tools?search=${encodeURIComponent(searchQuery)}`);
+      router.push(`/all-tools?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
       setMobileMenuOpen(false);
     }
@@ -26,7 +26,7 @@ export function Header() {
       icon: FileText,
       color: 'from-purple-500 to-purple-700',
       count: '47+',
-      link: '/tools/pdf',
+      link: '/all-tools/pdf-tools',
     },
     {
       id: 'image',
@@ -34,7 +34,7 @@ export function Header() {
       icon: Image,
       color: 'from-orange-500 to-orange-700',
       count: '30+',
-      link: '/tools?category=Image',
+      link: '/all-tools/image-tools',
     },
     {
       id: 'video',
@@ -42,7 +42,7 @@ export function Header() {
       icon: Video,
       color: 'from-pink-500 to-pink-700',
       count: '10+',
-      link: '/tools?category=video',
+      link: '/all-tools/video-tools',
     },
     {
       id: 'ai',
@@ -50,7 +50,7 @@ export function Header() {
       icon: PenTool,
       color: 'from-blue-500 to-blue-700',
       count: '50+',
-      link: '/tools/ai-write',
+      link: '/all-tools/ai-tools',
     },
     {
       id: 'data',
@@ -58,7 +58,7 @@ export function Header() {
       icon: Database,
       color: 'from-teal-500 to-teal-700',
       count: '12',
-      link: '/tools/data',
+      link: '/all-tools/data-converter',
     },
     {
       id: 'code',
@@ -66,7 +66,7 @@ export function Header() {
       icon: Code2,
       color: 'from-green-500 to-green-700',
       count: '44',
-      link: '/tools/code',
+      link: '/all-tools/code',
     },
     {
       id: 'text-to-speech',
@@ -74,15 +74,15 @@ export function Header() {
       icon: Volume2,
       color: 'from-indigo-500 to-indigo-700',
       count: 'Multi',
-      link: '/tools/text-to-speech',
+      link: '/all-tools/text-to-speech',
     },
   ];
 
   const navItems = [
-    { label: 'Image', href: '/tools?category=Image' },
-    { label: 'Video', href: '/tools?category=video' },
-    { label: 'AI Write', href: '/tools/ai-write' },
-    { label: 'Data', href: '/tools/data' },
+    { label: 'Image', href: '/all-tools/image-tools' },
+    { label: 'Video', href: '/all-tools/video-tools' },
+    { label: 'AI Write', href: '/all-tools/ai-tools' },
+    { label: 'Data', href: '/all-tools/data-converter' },
   ];
 
   return (
@@ -103,11 +103,11 @@ export function Header() {
           <div className="hidden md:flex items-center gap-8 flex-1 ml-8">
             {/* All Tools Dropdown */}
             <div className="relative group pb-2">
-              <button className="flex items-center gap-1 text-gray-700 hover:text-orange-500 font-medium transition relative py-2 px-1">
+              <Link href="/all-tools" className="flex items-center gap-1 text-gray-700 hover:text-orange-500 font-medium transition relative py-2 px-1">
                 All Tools
                 <ChevronDown size={16} className="group-hover:rotate-90 transition-transform" />
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </button>
+              </Link>
 
               {/* Dropdown Menu */}
               <div className="absolute left-0 top-full w-96 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-4 pointer-events-none group-hover:pointer-events-auto">
@@ -202,7 +202,7 @@ export function Header() {
 
             {/* Mobile Nav Items */}
             <div className="flex flex-col gap-2 px-2">
-              <Link href="/tools" className="px-4 py-2 text-gray-700 hover:text-orange-500 font-medium">
+              <Link href="/all-tools" className="px-4 py-2 text-gray-700 hover:text-orange-500 font-medium">
                 All Tools
               </Link>
               {navItems.map((item) => (
@@ -219,7 +219,7 @@ export function Header() {
             {/* Mobile Action Buttons */}
             <div className="flex flex-col gap-2 mt-4 px-2">
               <Link
-                href="/tools"
+                href="/all-tools"
                 className="w-full px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition text-center"
               >
                 Browse Tools
@@ -237,3 +237,6 @@ export function Header() {
     </header>
   );
 }
+
+
+

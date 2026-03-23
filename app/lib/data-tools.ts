@@ -533,3 +533,4 @@ export function getToolsByEngine(engine: DataEngine): DataTool[] {
 export function getToolsByCategory(category: ToolCategory): DataTool[] {
   return Object.values(dataTools).filter(tool => tool.category === category);
 }
+

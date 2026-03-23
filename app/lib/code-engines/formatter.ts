@@ -426,3 +426,4 @@ function beautifySQL(code: string, indent: number): FormatterResult {
     throw error;
   }
 }
+

@@ -5,6 +5,7 @@
 
 export interface ConverterConfig {
   id: string;
+  title?: string;
   from: string;
   to: string;
   engine: string;
@@ -18,6 +19,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   // Raster conversions (Pillow)
   {
     id: 'jpg-to-png',
+    title: 'JPG to PNG',
     from: 'jpg',
     to: 'png',
     engine: 'raster',
@@ -28,6 +30,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'jpg-to-webp',
+    title: 'JPG to WebP',
     from: 'jpg',
     to: 'webp',
     engine: 'raster',
@@ -37,6 +40,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'png-to-jpg',
+    title: 'PNG to JPG',
     from: 'png',
     to: 'jpg',
     engine: 'raster',
@@ -46,6 +50,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'png-to-webp',
+    title: 'PNG to WebP',
     from: 'png',
     to: 'webp',
     engine: 'raster',
@@ -55,6 +60,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'webp-to-jpg',
+    title: 'WebP to JPG',
     from: 'webp',
     to: 'jpg',
     engine: 'raster',
@@ -64,6 +70,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'webp-to-png',
+    title: 'WebP to PNG',
     from: 'webp',
     to: 'png',
     engine: 'raster',
@@ -73,6 +80,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'heic-to-jpg',
+    title: 'HEIC to JPG',
     from: 'heic',
     to: 'jpg',
     engine: 'raster',
@@ -82,6 +90,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'bmp-to-jpg',
+    title: 'BMP to JPG',
     from: 'bmp',
     to: 'jpg',
     engine: 'raster',
@@ -89,10 +98,71 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     supportedOptions: ['quality'],
     maxFileSize: 100,
   },
+  {
+    id: 'bmp-to-png',
+    title: 'BMP to PNG',
+    from: 'bmp',
+    to: 'png',
+    engine: 'raster',
+    defaultOptions: { quality: 90 },
+    supportedOptions: ['quality'],
+    maxFileSize: 100,
+  },
+  {
+    id: 'heic-to-png',
+    title: 'HEIC to PNG',
+    from: 'heic',
+    to: 'png',
+    engine: 'raster',
+    defaultOptions: { quality: 90 },
+    supportedOptions: ['quality'],
+    maxFileSize: 100,
+  },
+  {
+    id: 'jpg-to-tiff',
+    title: 'JPG to TIFF',
+    from: 'jpg',
+    to: 'tiff',
+    engine: 'raster',
+    defaultOptions: { quality: 90 },
+    supportedOptions: ['quality'],
+    maxFileSize: 100,
+  },
+  {
+    id: 'png-to-tiff',
+    title: 'PNG to TIFF',
+    from: 'png',
+    to: 'tiff',
+    engine: 'raster',
+    defaultOptions: { quality: 90 },
+    supportedOptions: ['quality'],
+    maxFileSize: 100,
+  },
+  {
+    id: 'tiff-to-jpg',
+    title: 'TIFF to JPG',
+    from: 'tiff',
+    to: 'jpg',
+    engine: 'raster',
+    defaultOptions: { quality: 85 },
+    supportedOptions: ['quality'],
+    maxFileSize: 100,
+  },
+  {
+    id: 'webp-to-tiff',
+    title: 'WebP to TIFF',
+    from: 'webp',
+    to: 'tiff',
+    engine: 'raster',
+    defaultOptions: { quality: 90 },
+    supportedOptions: ['quality'],
+    maxFileSize: 100,
+  },
 
   // Vector/Document to Raster (Poppler/Ghostscript)
   {
     id: 'pdf-to-jpg',
+    title: 'PDF to JPG',
     from: 'pdf',
     to: 'jpg',
     engine: 'vector_render',
@@ -103,6 +173,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'pdf-to-png',
+    title: 'PDF to PNG',
     from: 'pdf',
     to: 'png',
     engine: 'vector_render',
@@ -112,6 +183,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'eps-to-jpg',
+    title: 'EPS to JPG',
     from: 'eps',
     to: 'jpg',
     engine: 'vector_render',
@@ -123,6 +195,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   // Animation (FFmpeg)
   {
     id: 'gif-to-mp4',
+    title: 'GIF to MP4',
     from: 'gif',
     to: 'mp4',
     engine: 'animation',
@@ -132,6 +205,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   },
   {
     id: 'mp4-to-gif',
+    title: 'MP4 to GIF',
     from: 'mp4',
     to: 'gif',
     engine: 'animation',
@@ -143,6 +217,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   // Vector Trace (Potrace) - Future
   {
     id: 'png-to-svg',
+    title: 'PNG to SVG',
     from: 'png',
     to: 'svg',
     engine: 'vector_trace',
@@ -154,6 +229,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   // OCR (Tesseract) - Future
   {
     id: 'image-to-text',
+    title: 'Image to Text',
     from: 'jpg',
     to: 'txt',
     engine: 'ocr',
@@ -165,6 +241,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
   // Document (LibreOffice) - Future
   {
     id: 'vsdx-to-pdf',
+    title: 'VSDX to PDF',
     from: 'vsdx',
     to: 'pdf',
     engine: 'document',
@@ -213,3 +290,4 @@ export function getConvertersFrom(format: string): ConverterConfig[] {
 export function getConvertersTo(format: string): ConverterConfig[] {
   return CONVERTER_ROUTES.filter((c) => c.to === format.toLowerCase());
 }
+

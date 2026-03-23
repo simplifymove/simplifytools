@@ -295,3 +295,4 @@ export async function adjustBrightnessContrast(
     reader.readAsDataURL(file);
   });
 }
+

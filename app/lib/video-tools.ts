@@ -1214,3 +1214,4 @@ export function getToolsByEngine(engine: VideoToolEngine): VideoTool[] {
 export function getToolsByCategory(category: string): VideoTool[] {
   return Object.values(videoTools).filter((tool) => tool.category === category);
 }
+

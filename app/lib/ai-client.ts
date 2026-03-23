@@ -196,3 +196,4 @@ function estimateSyllables(text: string): number {
 
   return totalSyllables;
 }
+

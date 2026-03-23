@@ -650,3 +650,4 @@ function isCorrectType(value: any, type: string): boolean {
   if (type === 'string') return typeof value === 'string';
   return false;
 }
+

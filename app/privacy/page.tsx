@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Menu, X, FileText, Image, Video, PenTool, Database, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Footer } from '@/app/components/Footer';
 
 const categories = [
-  { id: 'pdf', title: 'PDF Tools', icon: FileText, color: 'from-purple-500 via-purple-600 to-purple-700', count: '47+', link: '/tools/pdf' },
-  { id: 'image', title: 'Image Tools', icon: Image, color: 'from-orange-500 via-orange-600 to-orange-700', count: '30+', link: '/tools?category=Image' },
-  { id: 'video', title: 'Video Tools', icon: Video, color: 'from-pink-500 via-pink-600 to-pink-700', count: '10+', link: '/tools?category=video' },
-  { id: 'ai', title: 'AI Write', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '50+', link: '/tools/ai-write' },
-  { id: 'data', title: 'Data Conversion', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/tools/data' },
+  { id: 'pdf', title: 'PDF Tools', icon: FileText, color: 'from-purple-500 via-purple-600 to-purple-700', count: '47+', link: '/all-tools/pdf-tools' },
+  { id: 'image', title: 'Image Tools', icon: Image, color: 'from-orange-500 via-orange-600 to-orange-700', count: '30+', link: '/all-tools/image-tools' },
+  { id: 'video', title: 'Video Tools', icon: Video, color: 'from-pink-500 via-pink-600 to-pink-700', count: '10+', link: '/all-tools/video-tools' },
+  { id: 'ai', title: 'AI Write', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '50+', link: '/all-tools/ai-tools' },
+  { id: 'data', title: 'Data Conversion', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/all-tools/data-converter' },
   { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '15+', link: '/tools' }
 ];
 
@@ -24,7 +25,7 @@ export default function PrivacyPage() {
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
-      router.push(`/tools?search=${encodeURIComponent(query)}`);
+      router.push(`/all-tools?search=${encodeURIComponent(query)}`);
     }
   };
 
@@ -170,7 +171,7 @@ export default function PrivacyPage() {
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href="/tools"
+                href="/all-tools"
                 className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
               >
                 Browse Tools
@@ -273,78 +274,10 @@ export default function PrivacyPage() {
       </div>
 
       {/* FOOTER */}
-      <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            {/* Brand */}
-            <div>
-              <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
-                  SC
-                </div>
-                <span>SimplifyConvert</span>
-              </div>
-              <p className="text-sm text-gray-400">
-                Free online tools for PDF, Image, Video, AI Write, Data, Code, and Text to Speech conversion.
-              </p>
-            </div>
-
-            {/* Categories */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Categories</h4>
-              <ul className="space-y-2 text-sm">
-                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Popular Tools */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Popular</h4>
-              <ul className="space-y-2 text-sm">
-                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                {[
-                  { label: 'About', href: '/about' },
-                  { label: 'Privacy Policy', href: '/privacy' },
-                  { label: 'Terms of Service', href: '/tos' },
-                  { label: 'Contact', href: '/contact' },
-                  { label: 'Blog', href: '/blog' }
-                ].map((item) => (
-                  <li key={item.label}>
-                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-8">
-            <p className="text-center text-sm text-gray-400">
-              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }
+
+
+

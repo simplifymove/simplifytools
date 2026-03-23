@@ -91,7 +91,7 @@ export default function VideoToolsPage() {
                 >
                   <motion.div
                     className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 group border-2 border-gray-100 hover:border-gray-200 cursor-pointer overflow-hidden"
-                    onClick={() => router.push(`/tools/video/${tool.id}`)}
+                    onClick={() => router.push(`/all-tools/video/${tool.id}`)}
                   >
                     {/* Hover gradient */}
                     <motion.div

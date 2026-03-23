@@ -1679,3 +1679,4 @@ export function validateToolInputs(
 
   return { valid: errors.length === 0, errors };
 }
+
