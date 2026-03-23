@@ -54,8 +54,8 @@ const aiEditingTools: Tool[] = [
     description: 'Remove backgrounds from images automatically',
     category: 'Image',
     icon: Eraser,
-    route: '/tools/remove-background',
-    headerColor: 'from-teal-800 via-emerald-800 to-teal-900',
+    route: '/tools/converters/remove-background',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'upscale',
@@ -108,6 +108,8 @@ const aiEditingTools: Tool[] = [
     description: 'Remove people from photos effortlessly',
     category: 'Image',
     icon: Package,
+    route: '/tools/converters/remove-person',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'unblur',
@@ -124,6 +126,8 @@ const aiEditingTools: Tool[] = [
     description: 'Clean up and enhance image quality',
     category: 'Image',
     icon: Eraser,
+    route: '/tools/converters/cleanup-picture',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'colorize',
@@ -131,6 +135,8 @@ const aiEditingTools: Tool[] = [
     description: 'Add color to black and white photos',
     category: 'Image',
     icon: Palette,
+    route: '/tools/converters/colorize-photo',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'combine',
@@ -138,6 +144,8 @@ const aiEditingTools: Tool[] = [
     description: 'Merge multiple images together',
     category: 'Image',
     icon: Combine,
+    route: '/tools/converters/combine-images',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'transparent-bg',
@@ -145,6 +153,8 @@ const aiEditingTools: Tool[] = [
     description: 'Create transparent backgrounds instantly',
     category: 'Image',
     icon: Eye,
+    route: '/tools/converters/make-background-transparent',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'crop',
@@ -152,6 +162,8 @@ const aiEditingTools: Tool[] = [
     description: 'Crop and resize images precisely',
     category: 'Image',
     icon: Scissors,
+    route: '/tools/converters/crop-image',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'round-image',
@@ -159,6 +171,8 @@ const aiEditingTools: Tool[] = [
     description: 'Convert images to circular shape',
     category: 'Image',
     icon: Circle,
+    route: '/tools/converters/make-round-image',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'add-text',
@@ -173,6 +187,8 @@ const aiEditingTools: Tool[] = [
     description: 'Convert images to black and white',
     category: 'Image',
     icon: Palette,
+    route: '/tools/converters/black-white',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'splitter',
@@ -180,6 +196,8 @@ const aiEditingTools: Tool[] = [
     description: 'Split images into parts',
     category: 'Image',
     icon: Grid,
+    route: '/tools/converters/image-splitter',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'add-images',
@@ -187,6 +205,8 @@ const aiEditingTools: Tool[] = [
     description: 'Add multiple images to a canvas',
     category: 'Image',
     icon: Image,
+    route: '/tools/converters/add-images',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'add-border',
@@ -194,6 +214,8 @@ const aiEditingTools: Tool[] = [
     description: 'Add decorative borders to images',
     category: 'Image',
     icon: Square,
+    route: '/tools/converters/add-border',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'translate-img',
@@ -201,6 +223,8 @@ const aiEditingTools: Tool[] = [
     description: 'Translate text within images',
     category: 'Image',
     icon: Globe,
+    route: '/tools/converters/translate-image',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'reverse-img',
@@ -208,6 +232,8 @@ const aiEditingTools: Tool[] = [
     description: 'Reverse or mirror images',
     category: 'Image',
     icon: RotateCcw,
+    route: '/tools/converters/reverse-image',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'collage',
@@ -215,6 +241,8 @@ const aiEditingTools: Tool[] = [
     description: 'Create image collages easily',
     category: 'Image',
     icon: Combine,
+    route: '/tools/converters/collage-maker',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'flip',
@@ -222,6 +250,8 @@ const aiEditingTools: Tool[] = [
     description: 'Flip images horizontally or vertically',
     category: 'Image',
     icon: RefreshCw,
+    route: '/tools/converters/flip-image',
+    headerColor: 'bg-orange-500',
   },
   {
     id: 'metadata',
@@ -229,6 +259,8 @@ const aiEditingTools: Tool[] = [
     description: 'View and edit image metadata',
     category: 'Image',
     icon: FileJson,
+    route: '/tools/converters/view-metadata',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'chart-maker',
@@ -236,6 +268,8 @@ const aiEditingTools: Tool[] = [
     description: 'Create data visualizations and charts',
     category: 'Image',
     icon: BarChart3,
+    route: '/tools/converters/chart-maker',
+    headerColor: 'from-green-400 via-emerald-400 to-green-500',
   },
   {
     id: 'font-awesome',
@@ -243,6 +277,8 @@ const aiEditingTools: Tool[] = [
     description: 'Convert Font Awesome icons to PNG',
     category: 'Image',
     icon: Code,
+    route: '/tools/converters/font-awesome-to-png',
+    headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
     id: 'rotate',
@@ -406,6 +442,8 @@ const converterTools: Tool[] = [
     description: 'Convert various formats to PNG',
     category: 'Image',
     icon: RefreshCw,
+    route: '/tools/converters/edit-to-png',
+    headerColor: 'from-sky-400 via-blue-400 to-sky-500',
   },
   {
     id: 'gif-mp4',
@@ -455,6 +493,8 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to EPS vector format',
     category: 'Image',
     icon: Mountain,
+    route: '/tools/converters/png-to-eps',
+    headerColor: 'from-emerald-400 via-teal-400 to-emerald-500',
   },
   {
     id: 'png-tif',
@@ -478,6 +518,8 @@ const converterTools: Tool[] = [
     description: 'Convert EPS vector to PNG',
     category: 'Image',
     icon: RefreshCw,
+    route: '/tools/converters/eps-to-png',
+    headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
   },
   {
     id: 'psd-ai',
@@ -485,6 +527,8 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop to Illustrator format',
     category: 'Image',
     icon: RefreshCw,
+    route: '/tools/converters/psd-to-ai',
+    headerColor: 'from-violet-400 via-purple-400 to-violet-500',
   },
   {
     id: 'psd-jpg',
@@ -649,6 +693,8 @@ const converterTools: Tool[] = [
     description: 'Convert Visio diagrams to JPG',
     category: 'Image',
     icon: RefreshCw,
+    route: '/tools/converters/vsdx-to-jpg',
+    headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
     id: 'heic-avif',
@@ -673,13 +719,6 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/tools/converters/vsd-to-pptx',
-  },
-  {
-    id: 'webp-jpg2',
-    title: 'WebP to JPG',
-    description: 'Convert WebP format to JPG',
-    category: 'Image',
-    icon: RefreshCw,
   },
   {
     id: 'bmp-jpg',

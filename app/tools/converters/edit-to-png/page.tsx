@@ -3,17 +3,16 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
-import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
-import { HomeHeader } from '../../components/HomeHeader';
+import { ImageUploader } from '../../../components/ImageUploader';
+import { convertImageFormat } from '../../../lib/imageTools';
+import { HomeHeader } from '../../../components/HomeHeader';
 
-export default function WebpToJpgPage() {
+export default function EditToPngPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [quality, setQuality] = useState(85);
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
@@ -38,9 +37,7 @@ export default function WebpToJpgPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/jpeg', {
-        quality: quality,
-      });
+      const result = await convertImageFormat(file, 'image/png');
       setResult(result.blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
@@ -54,7 +51,7 @@ export default function WebpToJpgPage() {
     const url = URL.createObjectURL(result);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'converted.jpg';
+    link.download = 'converted.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -74,7 +71,7 @@ export default function WebpToJpgPage() {
               <ChevronRight size={16} />
               <Link href="/tools" className="hover:text-white transition">Tools</Link>
               <ChevronRight size={16} />
-              <span>WebP to JPG</span>
+              <span>Edit to PNG</span>
             </div>
 
             {/* Title Section */}
@@ -83,8 +80,8 @@ export default function WebpToJpgPage() {
                 <FileUp size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">WebP to JPG Converter</h1>
-                <p className="text-lg text-white/90">Convert WebP images to JPG format with adjustable quality for compatibility with older systems.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Convert to PNG</h1>
+                <p className="text-lg text-white/90">Convert various image formats to PNG with support for JPG, BMP, GIF, TIFF, WebP, and more.</p>
               </div>
             </div>
           </div>
@@ -97,12 +94,12 @@ export default function WebpToJpgPage() {
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload WebP File</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image File</h2>
                   <ImageUploader
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
-                    accept=".webp"
+                    accept="image/*"
                   />
                   {error && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -115,28 +112,6 @@ export default function WebpToJpgPage() {
               {/* Controls - Right (sticky sidebar) */}
               <div className="lg:col-span-1">
                 <div className="sticky top-4 space-y-4">
-                  {/* Options */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
-                    {/* Quality */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Output Quality: {quality}%
-                      </label>
-                      <input
-                        type="range"
-                        min="60"
-                        max="95"
-                        step="5"
-                        value={quality}
-                        onChange={(e) => setQuality(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
-                    </div>
-                  </div>
-
                   {/* Convert Button */}
                   <button
                     onClick={handleConvert}
@@ -149,7 +124,7 @@ export default function WebpToJpgPage() {
                         Converting...
                       </>
                     ) : (
-                      'Convert to JPG'
+                      'Convert to PNG'
                     )}
                   </button>
 
@@ -160,19 +135,30 @@ export default function WebpToJpgPage() {
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
-                      Download JPG
+                      Download PNG
                     </button>
                   )}
 
                   {/* Info Box */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-blue-900 mb-2">About</h3>
+                    <h3 className="font-semibold text-blue-900 mb-2">Supported Formats</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Adjustable quality settings</li>
-                      <li>• Perfect for older system compatibility</li>
-                      <li>• Supports WebP format</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• JPG, JPEG</li>
+                      <li>• BMP, GIF</li>
+                      <li>• TIFF, WebP</li>
+                      <li>• And more...</li>
+                      <li>• Instant conversion</li>
+                    </ul>
+                  </div>
+
+                  {/* Additional Info */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-amber-900 mb-2">Why PNG?</h3>
+                    <ul className="text-sm text-amber-800 space-y-1">
+                      <li>• Lossless compression</li>
+                      <li>• Supports transparency</li>
+                      <li>• Best for web</li>
+                      <li>• Perfect quality</li>
                     </ul>
                   </div>
                 </div>

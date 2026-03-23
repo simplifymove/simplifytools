@@ -12,7 +12,8 @@ export interface ImageToolResult {
 // Convert image to different format
 export async function convertImageFormat(
   file: File,
-  targetFormat: 'image/png' | 'image/jpeg' | 'image/webp'
+  targetFormat: 'image/png' | 'image/jpeg' | 'image/webp',
+  options?: { quality?: number }
 ): Promise<ImageToolResult> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -26,6 +27,7 @@ export async function convertImageFormat(
         if (!ctx) reject(new Error('Could not get canvas context'));
         
         ctx?.drawImage(img, 0, 0);
+        const quality = options?.quality ? (options.quality / 100) : 0.9;
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -38,7 +40,7 @@ export async function convertImageFormat(
             }
           },
           targetFormat,
-          0.9
+          quality
         );
       };
       img.onerror = () => reject(new Error('Failed to load image'));

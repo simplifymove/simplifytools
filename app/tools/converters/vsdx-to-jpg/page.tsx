@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
-import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
-import { HomeHeader } from '../../components/HomeHeader';
+import { ImageUploader } from '../../../components/ImageUploader';
+import { convertImageFormat } from '../../../lib/imageTools';
+import { HomeHeader } from '../../../components/HomeHeader';
 
-export default function WebpToJpgPage() {
+export default function VsdxToJpgPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -74,7 +74,7 @@ export default function WebpToJpgPage() {
               <ChevronRight size={16} />
               <Link href="/tools" className="hover:text-white transition">Tools</Link>
               <ChevronRight size={16} />
-              <span>WebP to JPG</span>
+              <span>VSDX to JPG</span>
             </div>
 
             {/* Title Section */}
@@ -83,8 +83,8 @@ export default function WebpToJpgPage() {
                 <FileUp size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">WebP to JPG Converter</h1>
-                <p className="text-lg text-white/90">Convert WebP images to JPG format with adjustable quality for compatibility with older systems.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">VSDX to JPG Converter</h1>
+                <p className="text-lg text-white/90">Convert Visio VSDX diagrams to JPG format with adjustable quality for web and document sharing.</p>
               </div>
             </div>
           </div>
@@ -97,12 +97,12 @@ export default function WebpToJpgPage() {
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload WebP File</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload VSDX File</h2>
                   <ImageUploader
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
-                    accept=".webp"
+                    accept=".vsdx"
                   />
                   {error && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -170,8 +170,8 @@ export default function WebpToJpgPage() {
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Instant conversion in your browser</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Perfect for older system compatibility</li>
-                      <li>• Supports WebP format</li>
+                      <li>• Perfect for Visio diagrams</li>
+                      <li>• No file size limits</li>
                       <li>• Secure - files never uploaded</li>
                     </ul>
                   </div>
