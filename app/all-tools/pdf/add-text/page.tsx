@@ -22,6 +22,8 @@ interface TextElement {
   underline: boolean;
   opacity: number;
   width?: number;
+  hidden?: boolean; // Mark deleted extracted text
+  isModified?: boolean; // Track if extracted text was edited
 }
 
 export default function AddTextToPdfPage() {
@@ -32,12 +34,17 @@ export default function AddTextToPdfPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [textElements, setTextElements] = useState<TextElement[]>([]);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
   const [loading, setLoading] = useState(false);
   const [canvasScale, setCanvasScale] = useState(1);
-  const [zoomLevel, setZoomLevel] = useState(100);
+  const [zoomLevel, setZoomLevel] = useState(70);
+  const [isDragging, setIsDragging] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragStateRef = useRef<{ startX: number; startY: number; elementId: string } | null>(null);
+  const lastClickRef = useRef<{ id: string; time: number } | null>(null);
+  const lastExtractedPageRef = useRef<number>(-1);
 
   // Text formatting state
   const [textInput, setTextInput] = useState('');
@@ -49,10 +56,149 @@ export default function AddTextToPdfPage() {
   const [underlineText, setUnderlineText] = useState(false);
   const [textOpacity, setTextOpacity] = useState(1);
 
+  // Extracted PDF text (existing text from the document)
+  const [extractedText, setExtractedText] = useState<TextElement[]>([]);
+  const [showExtractedText, setShowExtractedText] = useState(false);
+
+  // Undo/Redo history
+  const undoStackRef = useRef<Array<{ textElements: TextElement[]; extractedText: TextElement[] }>>([]);
+  const redoStackRef = useRef<Array<{ textElements: TextElement[]; extractedText: TextElement[] }>>([]);
+
+  // Save current state to undo stack
+  const saveToUndoStack = () => {
+    undoStackRef.current.push({ textElements, extractedText });
+    // Limit history to 50 items
+    if (undoStackRef.current.length > 50) {
+      undoStackRef.current.shift();
+    }
+    redoStackRef.current = []; // Clear redo stack when new change is made
+  };
+
+  // Undo function
+  const handleUndo = () => {
+    if (undoStackRef.current.length === 0) return;
+    
+    const previousState = undoStackRef.current.pop();
+    if (previousState) {
+      // Save current state to redo stack
+      redoStackRef.current.push({ textElements, extractedText });
+      setTextElements(previousState.textElements);
+      setExtractedText(previousState.extractedText);
+    }
+  };
+
+  // Redo function
+  const handleRedo = () => {
+    if (redoStackRef.current.length === 0) return;
+    
+    const nextState = redoStackRef.current.pop();
+    if (nextState) {
+      // Save current state to undo stack
+      undoStackRef.current.push({ textElements, extractedText });
+      setTextElements(nextState.textElements);
+      setExtractedText(nextState.extractedText);
+    }
+  };
+
   // Initialize client-side flag
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Keyboard shortcuts for undo/redo, delete, and copy/paste
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        handleUndo();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) {
+        e.preventDefault();
+        handleRedo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && selectedTextId && !editingId) {
+        // Copy selected text to clipboard
+        e.preventDefault();
+        let textToCopy = '';
+        
+        const isExtractedText = selectedTextId.startsWith('extracted-');
+        if (isExtractedText) {
+          const element = extractedText.find((el) => el.id === selectedTextId);
+          textToCopy = element?.text || '';
+        } else {
+          const element = textElements.find((el) => el.id === selectedTextId);
+          textToCopy = element?.text || '';
+        }
+        
+        if (textToCopy) {
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            console.log('📋 Copied to clipboard:', textToCopy);
+          }).catch(() => {
+            console.error('Failed to copy to clipboard');
+          });
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'v' && !editingId) {
+        // Paste text from clipboard as new text element
+        e.preventDefault();
+        navigator.clipboard.readText().then((pastedText) => {
+          if (!pastedText.trim()) return;
+          
+          console.log('📌 Pasting text:', pastedText);
+          console.log('📌 Applied styles - Font Size:', fontSize, 'px, Color:', textColor, 'Font:', fontFamily, 'Bold:', boldText, 'Italic:', italicText, 'Underline:', underlineText, 'Opacity:', textOpacity);
+          
+          // Create new text element with current style settings
+          // Position at center of visible area
+          const newElement: TextElement = {
+            id: `text-${Date.now()}`,
+            page: currentPage,
+            text: pastedText,
+            x: 200, // Better default position
+            y: 200,
+            fontSize,
+            color: textColor,
+            fontFamily,
+            bold: boldText,
+            italic: italicText,
+            underline: underlineText,
+            opacity: textOpacity,
+          };
+          
+          console.log('📌 Created new text element:', newElement);
+          
+          saveToUndoStack();
+          setTextElements([...textElements, newElement]);
+          setSelectedTextId(newElement.id);
+          
+          // Show detailed confirmation with styles
+          const styleText = `Size: ${fontSize}px, Color: ${textColor}, Font: ${fontFamily}${boldText ? ' (Bold)' : ''}${italicText ? ' (Italic)' : ''}${underlineText ? ' (Underline)' : ''}`;
+          alert('✅ Pasted with styles:\n' + styleText + '\n\nText: ' + pastedText.substring(0, 40) + (pastedText.length > 40 ? '...' : ''));
+        }).catch((err) => {
+          console.error('Failed to read clipboard:', err);
+          alert('❌ Failed to paste from clipboard');
+        });
+      } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedTextId && !editingId) {
+        // Delete selected text element (but not when editing text in input)
+        e.preventDefault();
+        console.log('🗑️ Deleting text:', selectedTextId);
+        saveToUndoStack();
+        
+        const isExtractedText = selectedTextId.startsWith('extracted-');
+        console.log('Is extracted text:', isExtractedText);
+        
+        if (isExtractedText) {
+          setExtractedText((prev) => {
+            const updated = prev.map((el) => (el.id === selectedTextId ? { ...el, hidden: true } : el));
+            console.log('Updated extractedText:', updated);
+            return updated;
+          });
+        } else {
+          setTextElements((prev) => prev.filter((el) => el.id !== selectedTextId));
+        }
+        setSelectedTextId(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedTextId, editingId]);
 
   // Render current page - MUST BE BEFORE CONDITIONAL RETURN
   useEffect(() => {
@@ -71,7 +217,60 @@ export default function AddTextToPdfPage() {
         canvas.height = viewport.height;
 
         await page.render({ canvasContext: context, viewport }).promise;
+        
+        // Cover deleted extracted text with white rectangles
+        extractedText.forEach((el) => {
+          if (el.page === currentPage && el.hidden) {
+            const textWidth = el.text.length * (el.fontSize * 0.6);
+            const padding = 10;
+            
+            context.fillStyle = 'white';
+            context.fillRect(
+              el.x - padding,
+              el.y - el.fontSize - padding,
+              textWidth + padding * 2,
+              el.fontSize + padding * 2
+            );
+          }
+        });
+        
         setCanvasScale(scale);
+
+        // Auto-extract text for this page (only once per page)
+        if (lastExtractedPageRef.current !== currentPage) {
+          const textContent = await page.getTextContent();
+          const extractedItems: TextElement[] = [];
+          let itemId = 0;
+
+          textContent.items.forEach((item: any) => {
+            if (item.str && item.str.trim()) {
+              const x = (item.transform?.[4] || 0) * (viewport.scale || 1);
+              const y = viewport.height - ((item.transform?.[5] || 0) * (viewport.scale || 1));
+              const fontSize = Math.abs(item.transform?.[0] || 12) * (viewport.scale || 1);
+
+              if (!isNaN(x) && !isNaN(y) && !isNaN(fontSize)) {
+                extractedItems.push({
+                  id: `extracted-${currentPage}-${itemId++}`,
+                  page: currentPage,
+                  text: item.str,
+                  x,
+                  y,
+                  fontSize,
+                  color: '#000000',
+                  fontFamily: 'Arial',
+                  bold: false,
+                  italic: false,
+                  underline: false,
+                  opacity: 1,
+                });
+              }
+            }
+          });
+
+          setExtractedText(extractedItems);
+          setShowExtractedText(true);
+          lastExtractedPageRef.current = currentPage;
+        }
       } catch (error) {
         console.error('Error rendering page:', error);
       }
@@ -79,6 +278,96 @@ export default function AddTextToPdfPage() {
 
     renderPage();
   }, [currentPage, pdfPages, zoomLevel]);
+
+  // Redraw white rectangles for hidden text without re-rendering PDF
+  useEffect(() => {
+    if (!canvasRef.current || pdfPages.length === 0) return;
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    // Only redraw rectangles if there are hidden items on current page
+    const hasHiddenItems = extractedText.some(el => el.page === currentPage && el.hidden);
+    if (!hasHiddenItems) return;
+
+    // Draw white rectangles for hidden extracted text
+    extractedText.forEach((el) => {
+      if (el.page === currentPage && el.hidden) {
+        const textWidth = el.text.length * (el.fontSize * 0.6);
+        const padding = 10;
+        
+        context.fillStyle = 'white';
+        context.fillRect(
+          el.x - padding,
+          el.y - el.fontSize - padding,
+          textWidth + padding * 2,
+          el.fontSize + padding * 2
+        );
+      }
+    });
+  }, [extractedText, currentPage, pdfPages]);
+
+  // Handle document-level mouse move for smooth dragging
+  useEffect(() => {
+    const handleWindowMouseMove = (e: MouseEvent) => {
+      if (!dragStateRef.current || !canvasRef.current) return;
+
+      const dragState = dragStateRef.current;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / canvasScale;
+      const y = (e.clientY - rect.top) / canvasScale;
+
+      const deltaX = x - dragState.startX;
+      const deltaY = y - dragState.startY;
+
+      // Update manual text elements
+      setTextElements((prev) =>
+        prev.map((el) =>
+          el.id === dragState.elementId
+            ? {
+                ...el,
+                x: el.x + Math.round(deltaX),
+                y: el.y + Math.round(deltaY),
+              }
+            : el
+        )
+      );
+
+      // Update extracted text elements
+      setExtractedText((prev) =>
+        prev.map((el) =>
+          el.id === dragState.elementId
+            ? {
+                ...el,
+                x: el.x + Math.round(deltaX),
+                y: el.y + Math.round(deltaY),
+              }
+            : el
+        )
+      );
+
+      dragState.startX = x;
+      dragState.startY = y;
+    };
+
+    const handleWindowMouseUp = () => {
+      dragStateRef.current = null;
+      setIsDragging(false);
+    };
+
+    // Always listen for mouse move and up, not just when dragging
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+    };
+  }, [canvasScale]);
+
+  // Note: Keyboard handling for editing is now done in inline input's onKeyDown handler
+  // This prevents race conditions between global and local handlers
 
   if (!isClient) {
     return (
@@ -110,26 +399,80 @@ export default function AddTextToPdfPage() {
     setLoading(true);
     setTextElements([]);
     setCurrentPage(1);
+    setExtractedText([]);
+    lastExtractedPageRef.current = -1;
 
     try {
-      // Dynamically import pdf-js
-      const pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      // Import PDF.js library - use legacy for better compatibility  
+      const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+      
+      // Set worker from the same distribution
+      pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.js`;
       
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const pages: any[] = [];
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      const pagePromises: any[] = [];
 
       for (let i = 1; i <= Math.min(pdf.numPages, 200); i++) {
-        pages.push(pdf.getPage(i));
+        pagePromises.push(pdf.getPage(i));
       }
 
+      const pages = await Promise.all(pagePromises);
       setPdfPages(pages);
+      // Auto-extraction happens in render effect for all pages
     } catch (error) {
       console.error('Error loading PDF:', error);
       alert('Error loading PDF file');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Extract existing text from PDF
+  const extractTextFromPdf = async () => {
+    if (pdfPages.length === 0) return;
+
+    try {
+      const pageIndex = currentPage - 1;
+      const page = pdfPages[pageIndex];
+      const textContent = await page.getTextContent();
+      const viewport = page.getViewport({ scale: 1.5 });
+
+      const extractedItems: TextElement[] = [];
+      let itemId = 0;
+
+      textContent.items.forEach((item: any) => {
+        if (item.str && item.str.trim()) {
+          // Extract x, y from transform matrix [scaleX, skewX, skewY, scaleY, x, y]
+          const x = (item.transform?.[4] || 0) * (viewport.scale || 1);
+          const y = viewport.height - ((item.transform?.[5] || 0) * (viewport.scale || 1));
+          const fontSize = Math.abs(item.transform?.[0] || 12) * (viewport.scale || 1);
+
+          // Only add if coordinates are valid numbers
+          if (!isNaN(x) && !isNaN(y) && !isNaN(fontSize)) {
+            extractedItems.push({
+              id: `extracted-${currentPage}-${itemId++}`,
+              page: currentPage,
+              text: item.str,
+              x,
+              y,
+              fontSize,
+              color: '#000000',
+              fontFamily: 'Arial',
+              bold: false,
+              italic: false,
+              underline: false,
+              opacity: 1,
+            });
+          }
+        }
+      });
+
+      setExtractedText(extractedItems);
+      setShowExtractedText(true);
+    } catch (error) {
+      console.error('Error extracting text:', error);
+      alert('Could not extract text from PDF');
     }
   };
 
@@ -140,12 +483,15 @@ export default function AddTextToPdfPage() {
       return;
     }
 
+    console.log('📝 Adding text element:', textInput);
+    console.log('Current page:', currentPage, 'Canvas ref:', canvasRef.current);
+
     const newElement: TextElement = {
-      id: Date.now().toString(),
+      id: `text-${Date.now()}`,
       page: currentPage,
       text: textInput,
-      x: 50,
-      y: 50,
+      x: 100, // Better default position
+      y: 150,
       fontSize,
       color: textColor,
       fontFamily,
@@ -155,12 +501,21 @@ export default function AddTextToPdfPage() {
       opacity: textOpacity,
     };
 
-    setTextElements([...textElements, newElement]);
+    console.log('✅ Created new element:', newElement);
+    
+    saveToUndoStack();
+    setTextElements((prev) => {
+      const updated = [...prev, newElement];
+      console.log('📚 Updated textElements:', updated);
+      return updated;
+    });
     setTextInput('');
     setSelectedTextId(newElement.id);
+    
+    alert('✅ Text added! Drag it to reposition if needed.');
   };
 
-  // Handle text element drag
+  // Handle text element drag and selection
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     const x = (e.clientX - rect.left) / canvasScale;
@@ -169,65 +524,67 @@ export default function AddTextToPdfPage() {
     // Check if clicking on existing text element
     for (const element of textElements.filter((el) => el.page === currentPage)) {
       const textWidth = element.text.length * (element.fontSize * 0.6);
-      if (x >= element.x && x <= element.x + textWidth && y >= element.y - element.fontSize && y <= element.y + 5) {
+      // Large click area for easier selection
+      const padding = 15;
+      if (
+        x >= element.x - padding &&
+        x <= element.x + textWidth + padding &&
+        y >= element.y - element.fontSize - padding &&
+        y <= element.y + padding
+      ) {
         setSelectedTextId(element.id);
+        saveToUndoStack(); // Save state before dragging
         dragStateRef.current = { startX: x, startY: y, elementId: element.id };
+        setIsDragging(true);
+        e.preventDefault();
         return;
       }
     }
 
-    // Click to add text
-    const newElement: TextElement = {
-      id: Date.now().toString(),
-      page: currentPage,
-      text: 'New Text',
-      x: Math.round(x),
-      y: Math.round(y),
-      fontSize: 14,
-      color: '#000000',
-      fontFamily: 'Helvetica',
-      bold: false,
-      italic: false,
-      underline: false,
-      opacity: 1,
-    };
+    // Don't create text on click - only use "Add Text" button
+    setSelectedTextId(null);
+  };
 
-    setTextElements([...textElements, newElement]);
-    setSelectedTextId(newElement.id);
+  // Handle direct SVG text click - start dragging on single click
+  const handleSvgTextMouseDown = (e: React.MouseEvent<SVGSVGElement>, elementId: string) => {
+    if (!canvasRef.current) return;
+    
+    // Single click - select and prepare for dragging
+    setSelectedTextId(elementId);
+    saveToUndoStack(); // Save state before dragging
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / canvasScale;
+    const y = (e.clientY - rect.top) / canvasScale;
+    
+    dragStateRef.current = { startX: x, startY: y, elementId };
+    setIsDragging(true);
+    
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  // Handle double-click to edit text
+  const handleSvgTextDoubleClick = (e: React.MouseEvent<SVGSVGElement>, elementId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    startEditing(elementId);
   };
 
   // Handle mouse move for dragging
-  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!dragStateRef.current) return;
-
-    const rect = canvasRef.current!.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / canvasScale;
-    const y = (e.clientY - rect.top) / canvasScale;
-
-    setTextElements((prev) =>
-      prev.map((el) =>
-        el.id === dragStateRef.current!.elementId
-          ? {
-              ...el,
-              x: Math.round(el.x + (x - dragStateRef.current!.startX)),
-              y: Math.round(el.y + (y - dragStateRef.current!.startY)),
-            }
-          : el
-      )
-    );
-
-    dragStateRef.current.startX = x;
-    dragStateRef.current.startY = y;
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement | SVGSVGElement>) => {
+    // Handled by document-level listeners when dragging
   };
 
   // Handle mouse up
-  const handleCanvasMouseUp = () => {
-    dragStateRef.current = null;
+  const handleCanvasMouseUp = (e: React.MouseEvent<HTMLCanvasElement | SVGSVGElement>) => {
+    // Handled by document-level listeners
   };
 
   // Update selected text
   const updateSelectedText = (updates: Partial<TextElement>) => {
     if (!selectedTextId) return;
+    saveToUndoStack();
     setTextElements((prev) =>
       prev.map((el) => (el.id === selectedTextId ? { ...el, ...updates } : el))
     );
@@ -236,8 +593,57 @@ export default function AddTextToPdfPage() {
   // Delete text element
   const deleteSelectedText = () => {
     if (!selectedTextId) return;
-    setTextElements((prev) => prev.filter((el) => el.id !== selectedTextId));
+    saveToUndoStack();
+    
+    // Check if it's extracted text or manual text
+    const isExtractedText = selectedTextId.startsWith('extracted-');
+    
+    if (isExtractedText) {
+      // Mark extracted text as hidden
+      setExtractedText((prev) =>
+        prev.map((el) => (el.id === selectedTextId ? { ...el, hidden: true } : el))
+      );
+    } else {
+      // Delete manual text
+      setTextElements((prev) => prev.filter((el) => el.id !== selectedTextId));
+    }
+    
     setSelectedTextId(null);
+  };
+
+  // Start editing text
+  const startEditing = (elementId: string) => {
+    const element = textElements.find((el) => el.id === elementId);
+    if (element) {
+      setEditingId(elementId);
+      setEditingText(element.text);
+      setSelectedTextId(elementId);
+    }
+  };
+
+  // Save edited text with current styles
+  const saveEdit = () => {
+    if (!editingId) return;
+    
+    updateSelectedText({ 
+      text: editingText,
+      fontSize,
+      color: textColor,
+      fontFamily,
+      bold: boldText,
+      italic: italicText,
+      underline: underlineText,
+      opacity: textOpacity,
+    });
+    
+    setEditingId(null);
+    setEditingText('');
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingText('');
   };
 
   // Export PDF with text
@@ -253,9 +659,13 @@ export default function AddTextToPdfPage() {
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const pages = pdfDoc.getPages();
 
+      // Export only manually added text (extracted text editing is view-only)
+      // To modify extracted text: delete it (covered with white) and add new text instead
+      const allText = textElements;
+
       // Group text elements by page
       const elementsByPage: Record<number, TextElement[]> = {};
-      textElements.forEach((el) => {
+      allText.forEach((el) => {
         if (!elementsByPage[el.page]) elementsByPage[el.page] = [];
         elementsByPage[el.page].push(el);
       });
@@ -335,7 +745,7 @@ export default function AddTextToPdfPage() {
 
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">✍️ Add Text to PDF</h1>
               <p className="text-lg text-white/90 max-w-2xl">
-                Add custom text anywhere on your PDF pages. Click to place, drag to adjust, and export with precision.
+                Add custom text anywhere on your PDF. Click on text to edit inline, modify styles, and export with precision.
               </p>
             </motion.div>
           </div>
@@ -382,10 +792,10 @@ export default function AddTextToPdfPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="grid grid-cols-1 lg:grid-cols-4 gap-6"
+                className="grid grid-cols-1 lg:grid-cols-6 gap-4"
               >
                 {/* Canvas Area */}
-                <div className="lg:col-span-3">
+                <div className="lg:col-span-4">
                   <div className="bg-white rounded-lg shadow-lg p-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-bold text-gray-800">Page {currentPage}</h3>
@@ -406,7 +816,7 @@ export default function AddTextToPdfPage() {
                       </div>
                     </div>
 
-                    <div className="border border-gray-300 rounded-lg overflow-auto bg-gray-200 flex items-center justify-center" style={{ height: '600px' }}>
+                    <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center" style={{ height: '100vh', maxHeight: 'calc(100vh - 100px)' }}>
                       <div style={{ position: 'relative', display: 'inline-block' }}>
                         <canvas
                           ref={canvasRef}
@@ -414,11 +824,12 @@ export default function AddTextToPdfPage() {
                           onMouseMove={handleCanvasMouseMove}
                           onMouseUp={handleCanvasMouseUp}
                           onMouseLeave={handleCanvasMouseUp}
-                          className="cursor-crosshair max-w-full max-h-full"
+                          className="cursor-pointer max-w-full max-h-full"
                           style={{
                             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
                             display: 'block',
                           }}
+                          title="Click on text to select and edit"
                         />
 
                         {/* Text Overlay */}
@@ -429,33 +840,298 @@ export default function AddTextToPdfPage() {
                             left: 0,
                             width: canvasRef.current?.width,
                             height: canvasRef.current?.height,
-                            pointerEvents: 'none',
+                            pointerEvents: 'auto',
                           }}
+                          onMouseMove={handleCanvasMouseMove}
+                          onMouseUp={handleCanvasMouseUp}
+                          onMouseLeave={handleCanvasMouseUp}
                         >
                           {textElements
                             .filter((el) => el.page === currentPage)
-                            .map((el) => (
-                              <text
-                                key={el.id}
-                                x={el.x}
-                                y={el.y}
-                                fontSize={el.fontSize}
-                                fill={el.color}
-                                opacity={el.opacity}
-                                fontWeight={el.bold ? 'bold' : 'normal'}
-                                fontStyle={el.italic ? 'italic' : 'normal'}
-                                textDecoration={el.underline ? 'underline' : 'none'}
-                                fontFamily={el.fontFamily}
-                                style={{
-                                  cursor: 'pointer',
-                                  stroke: selectedTextId === el.id ? '#3b82f6' : 'none',
-                                  strokeWidth: '1',
-                                }}
-                              >
-                                {el.text}
-                              </text>
-                            ))}
+                            .map((el) => {
+                              const textWidth = el.text.length * (el.fontSize * 0.6);
+                              const padding = 15;
+                              return (
+                                <g key={el.id}>
+                                  {/* Invisible hit detection rectangle - makes text easy to select, drag, and edit */}
+                                  <rect
+                                    x={el.x - padding}
+                                    y={el.y - el.fontSize - padding}
+                                    width={textWidth + padding * 2}
+                                    height={el.fontSize + padding * 2}
+                                    fill="transparent"
+                                    onMouseDown={(e) => handleSvgTextMouseDown(e as any, el.id)}
+                                    onDoubleClick={(e) => handleSvgTextDoubleClick(e as any, el.id)}
+                                    onContextMenu={(e) => {
+                                      // Right-click copy for manual text
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(el.text).then(() => {
+                                        console.log('📋 Copied to clipboard via right-click:', el.text);
+                                        alert('✅ Copied: ' + el.text.substring(0, 30) + (el.text.length > 30 ? '...' : ''));
+                                      }).catch(() => {
+                                        console.error('Failed to copy to clipboard');
+                                      });
+                                    }}
+                                    style={{ cursor: 'move', pointerEvents: 'auto' }}
+                                  />
+                                  {/* Selection box around selected text */}
+                                  {selectedTextId === el.id && (
+                                    <rect
+                                      x={el.x - padding}
+                                      y={el.y - el.fontSize - padding}
+                                      width={textWidth + padding * 2}
+                                      height={el.fontSize + padding * 2}
+                                      fill="none"
+                                      stroke="#3b82f6"
+                                      strokeWidth="2"
+                                      strokeDasharray="5,5"
+                                      pointerEvents="none"
+                                    />
+                                  )}
+                                  {/* Hover highlight for unselected text */}
+                                  {selectedTextId !== el.id && (
+                                    <rect
+                                      x={el.x - padding}
+                                      y={el.y - el.fontSize - padding}
+                                      width={textWidth + padding * 2}
+                                      height={el.fontSize + padding * 2}
+                                      fill="rgba(59, 130, 246, 0.05)"
+                                      opacity="0"
+                                      style={{ transition: 'opacity 0.2s' }}
+                                      onMouseEnter={(e) => {
+                                        (e.target as SVGRectElement).style.opacity = '1';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        (e.target as SVGRectElement).style.opacity = '0';
+                                      }}
+                                      pointerEvents="none"
+                                    />
+                                  )}
+                                  {/* The text itself - only show if not editing */}
+                                  {editingId !== el.id && (
+                                    <text
+                                      x={el.x}
+                                      y={el.y}
+                                      fontSize={el.fontSize}
+                                      fill={el.color}
+                                      opacity={el.opacity}
+                                      fontWeight={el.bold ? 'bold' : 'normal'}
+                                      fontStyle={el.italic ? 'italic' : 'normal'}
+                                      textDecoration={el.underline ? 'underline' : 'none'}
+                                      fontFamily={el.fontFamily}
+                                      pointerEvents="none"
+                                      style={{
+                                        userSelect: 'text',
+                                        cursor: 'text',
+                                      }}
+                                    >
+                                      {el.text}
+                                    </text>
+                                  )}
+                                </g>
+                              );
+                            })}
+
+                          {/* Render extracted PDF text (skip hidden) */}
+                          {showExtractedText && extractedText
+                            .filter((el) => el.page === currentPage && !el.hidden)
+                            .map((el) => {
+                              const textWidth = el.text.length * (el.fontSize * 0.6);
+                              const padding = 8;
+                              
+                              return (
+                                <g key={el.id}>
+                                  {/* Hit detection rectangle - transparent, clickable */}
+                                  <rect
+                                    x={el.x - padding}
+                                    y={el.y - el.fontSize - padding}
+                                    width={textWidth + padding * 2}
+                                    height={el.fontSize + padding * 2}
+                                    fill="transparent"
+                                    onMouseDown={(e) => {
+                                      setSelectedTextId(el.id);
+                                      saveToUndoStack(); // Save state before dragging
+                                      if (!canvasRef.current) return;
+                                      const rect = canvasRef.current.getBoundingClientRect();
+                                      const x = (e.clientX - rect.left) / canvasScale;
+                                      const y = (e.clientY - rect.top) / canvasScale;
+                                      dragStateRef.current = { startX: x, startY: y, elementId: el.id };
+                                      setIsDragging(true);
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                    }}
+                                    onContextMenu={(e) => {
+                                      // Right-click copy
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(el.text).then(() => {
+                                        console.log('📋 Copied to clipboard via right-click:', el.text);
+                                        alert('✅ Copied: ' + el.text.substring(0, 30) + (el.text.length > 30 ? '...' : ''));
+                                      }).catch(() => {
+                                        console.error('Failed to copy to clipboard');
+                                      });
+                                    }}
+                                    onDoubleClick={(e) => {
+                                      setEditingId(el.id);
+                                      setEditingText(el.text);
+                                      setSelectedTextId(el.id);
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                    }}
+                                    style={{ cursor: 'move', pointerEvents: 'auto' }}
+                                  />
+                                  {/* Selection box for extracted text - ONLY when selected */}
+                                  {selectedTextId === el.id && (
+                                    <rect
+                                      x={el.x - padding}
+                                      y={el.y - el.fontSize - padding}
+                                      width={textWidth + padding * 2}
+                                      height={el.fontSize + padding * 2}
+                                      fill="none"
+                                      stroke="#f59e0b"
+                                      strokeWidth="2"
+                                      strokeDasharray="5,5"
+                                      pointerEvents="none"
+                                    />
+                                  )}
+                                  {/* Render extracted text on top - replaces canvas text */}
+                                  {editingId !== el.id && (
+                                    <text
+                                      x={el.x}
+                                      y={el.y}
+                                      fontSize={el.fontSize}
+                                      fill={el.color}
+                                      opacity={el.opacity}
+                                      fontWeight={el.bold ? 'bold' : 'normal'}
+                                      fontStyle={el.italic ? 'italic' : 'normal'}
+                                      textDecoration={el.underline ? 'underline' : 'none'}
+                                      fontFamily={el.fontFamily}
+                                      pointerEvents="none"
+                                      style={{
+                                        userSelect: 'text',
+                                        cursor: 'text',
+                                      }}
+                                    >
+                                      {el.text}
+                                    </text>
+                                  )}
+                                </g>
+                              );
+                            })}
                         </svg>
+
+                        {/* Inline Editing Input - appears directly on the text when editing */}
+                        {editingId && canvasRef.current && (() => {
+                          let editElement = textElements.find((el) => el.id === editingId);
+                          // Also check extracted text
+                          if (!editElement && showExtractedText) {
+                            editElement = extractedText.find((el) => el.id === editingId);
+                          }
+                          if (!editElement) return null;
+
+                          return (
+                            <input
+                              key={`edit-${editingId}`}
+                              autoFocus
+                              type="text"
+                              value={editingText}
+                              onChange={(e) => setEditingText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Delete' || e.key === 'Backspace') {
+                                  // Both Delete and Backspace delete the entire element immediately
+                                  e.preventDefault();
+                                  console.log('🗑️ Deleting element via', e.key, ':', editingId);
+                                  saveToUndoStack();
+                                  
+                                  const isExtractedText = editingId.startsWith('extracted-');
+                                  if (isExtractedText) {
+                                    setExtractedText((prev) =>
+                                      prev.map((el) => (el.id === editingId ? { ...el, hidden: true } : el))
+                                    );
+                                  } else {
+                                    setTextElements((prev) => prev.filter((el) => el.id !== editingId));
+                                  }
+                                  
+                                  setEditingId(null);
+                                  setEditingText('');
+                                  setSelectedTextId(null);
+                                } else if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  saveToUndoStack();
+                                  
+                                  // Update extracted text OR manual text with the new text and styles
+                                  const isExtractedText = editingId.startsWith('extracted-');
+                                  
+                                  if (isExtractedText) {
+                                    setExtractedText((prev) => {
+                                      return prev.map((el) =>
+                                        el.id === editingId
+                                          ? {
+                                              ...el,
+                                              text: editingText,
+                                              fontSize,
+                                              color: textColor,
+                                              fontFamily,
+                                              bold: boldText,
+                                              italic: italicText,
+                                              underline: underlineText,
+                                              opacity: textOpacity,
+                                              isModified: true,
+                                            }
+                                          : el
+                                      );
+                                    });
+                                  } else {
+                                    // Update manual text (including pasted text)
+                                    setTextElements((prev) => {
+                                      return prev.map((el) =>
+                                        el.id === editingId
+                                          ? {
+                                              ...el,
+                                              text: editingText,
+                                              fontSize,
+                                              color: textColor,
+                                              fontFamily,
+                                              bold: boldText,
+                                              italic: italicText,
+                                              underline: underlineText,
+                                              opacity: textOpacity,
+                                            }
+                                          : el
+                                      );
+                                    });
+                                  }
+                                  
+                                  setEditingId(null);
+                                  setEditingText('');
+                                } else if (e.key === 'Escape') {
+                                  e.preventDefault();
+                                  setEditingId(null);
+                                  setEditingText('');
+                                }
+                              }}
+                              style={{
+                                position: 'absolute',
+                                left: `${editElement.x}px`,
+                                top: `${editElement.y - fontSize * 0.8}px`,
+                                fontSize: `${fontSize}px`,
+                                fontFamily: fontFamily,
+                                fontWeight: boldText ? 'bold' : 'normal',
+                                fontStyle: italicText ? 'italic' : 'normal',
+                                textDecoration: underlineText ? 'underline' : 'none',
+                                color: textColor,
+                                opacity: textOpacity,
+                                border: '2px solid #3b82f6',
+                                backgroundColor: 'rgba(255,255,255,0.95)',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                zIndex: 100,
+                                minWidth: '100px',
+                              }}
+                            />
+                          );
+                        })()}
                       </div>
                     </div>
 
@@ -481,17 +1157,35 @@ export default function AddTextToPdfPage() {
                         </button>
                       </div>
                     )}
+
+                    {/* Tips */}
+                    <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-700">
+                      <p className="font-semibold mb-2">💡 How to use:</p>
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li><strong>View extracted text:</strong> PDF text auto-extracts with amber boxes</li>
+                        <li><strong>Delete extracted text:</strong> Select and click trash icon (covered with white, removed from export)</li>
+                        <li><strong>To modify extracted text:</strong> Delete it first, then add new text with correct content</li>
+                        <li><strong>Add new text:</strong> Set styles in left panel, enter text, click "Add Text"</li>
+                        <li>Customize styles: font, color, size, bold, italic, underline, opacity</li>
+                        <li>Drag any text to reposition it on the page</li>
+                        <li>Export includes: original PDF + deleted text areas (white) + any manually added text</li>
+                      </ol>
+                    </div>
                   </div>
                 </div>
 
                 {/* Right Panel - Controls */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-2 space-y-4 overflow-y-auto" style={{ maxHeight: '750px' }}>
                   {/* Add Text Panel */}
                   <div className="bg-white rounded-lg shadow-lg p-6">
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                       <Plus size={18} />
                       Add Text
                     </h3>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4 text-sm text-blue-700">
+                      📝 Add new text or delete extracted text. Tip: To modify extracted text, delete it first, then add new text.
+                    </div>
 
                     <div className="space-y-4">
                       <div>
@@ -573,86 +1267,17 @@ export default function AddTextToPdfPage() {
                       >
                         Add Text
                       </button>
+
+                      {selectedTextId && (
+                        <button
+                          onClick={deleteSelectedText}
+                          className="w-full mt-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition"
+                        >
+                          Delete Selected
+                        </button>
+                      )}
                     </div>
                   </div>
-
-                  {/* Properties Panel */}
-                  {selectedElement && (
-                    <div className="bg-white rounded-lg shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                          <Settings size={18} />
-                          Properties
-                        </h3>
-                        <button
-                          onClick={deleteSelectedText}
-                          className="text-red-600 hover:text-red-700 transition"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-
-                      <div className="space-y-3 text-sm">
-                        <div className="bg-gray-100 p-2 rounded">
-                          <p className="text-gray-600 font-semibold">Text:</p>
-                          <p className="text-gray-800">{selectedElement.text}</p>
-                        </div>
-
-                        <div>
-                          <label className="block text-gray-600 font-semibold mb-1">Text Content</label>
-                          <textarea
-                            value={selectedElement.text}
-                            onChange={(e) => updateSelectedText({ text: e.target.value })}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            rows={2}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-gray-600 font-semibold mb-1">Size</label>
-                          <input
-                            type="number"
-                            min="8"
-                            max="72"
-                            value={selectedElement.fontSize}
-                            onChange={(e) => updateSelectedText({ fontSize: parseInt(e.target.value) })}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-gray-600 font-semibold mb-1">X: {selectedElement.x}</label>
-                          <input
-                            type="range"
-                            min="0"
-                            max="800"
-                            value={selectedElement.x}
-                            onChange={(e) => updateSelectedText({ x: parseInt(e.target.value) })}
-                            className="w-full"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-gray-600 font-semibold mb-1">Y: {selectedElement.y}</label>
-                          <input
-                            type="range"
-                            min="0"
-                            max="1000"
-                            value={selectedElement.y}
-                            onChange={(e) => updateSelectedText({ y: parseInt(e.target.value) })}
-                            className="w-full"
-                          />
-                        </div>
-
-                        <button
-                          onClick={deleteSelectedText}
-                          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded transition mt-4"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Export Section */}
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg shadow-lg p-6 border border-green-200">
@@ -662,13 +1287,15 @@ export default function AddTextToPdfPage() {
                     </h3>
 
                     <p className="text-sm text-gray-600 mb-4">
-                      {textElements.length} text element{textElements.length !== 1 ? 's' : ''} added
+                      {textElements.length > 0 && `${textElements.length} text element${textElements.length !== 1 ? 's' : ''} added • `}
+                      {extractedText.filter(el => el.hidden).length > 0 && `${extractedText.filter(el => el.hidden).length} text element${extractedText.filter(el => el.hidden).length !== 1 ? 's' : ''} deleted • `}
+                      {textElements.length === 0 && extractedText.filter(el => el.hidden).length === 0 ? 'Ready to download' : ''}
                     </p>
 
                     <button
                       onClick={exportPdf}
-                      disabled={loading || textElements.length === 0}
-                      className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
+                      disabled={loading || !pdfFile}
+                      className="w-full mt-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
                     >
                       {loading ? 'Exporting...' : 'Download PDF'}
                     </button>
@@ -678,7 +1305,10 @@ export default function AddTextToPdfPage() {
                         setPdfFile(null);
                         setPdfPages([]);
                         setTextElements([]);
+                        setExtractedText([]);
+                        setShowExtractedText(false);
                         setSelectedTextId(null);
+                        setEditingId(null);
                         setCurrentPage(1);
                       }}
                       className="w-full mt-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded-lg transition"
