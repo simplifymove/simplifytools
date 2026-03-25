@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { 
-  FileText, Image, Video, PenTool, Database, Code2, Volume2,
+  FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
   Search, Menu, X, ChevronRight, Sparkles
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -54,7 +55,7 @@ export function HomeHeader() {
       id: 'image',
       title: 'Image Tools',
       description: 'Edit, convert, enhance, and optimize images',
-      icon: Image,
+      icon: ImageIcon,
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
       count: '30+',
@@ -131,8 +132,14 @@ export function HomeHeader() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-2xl text-gray-900 hover:opacity-80 transition">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
-              SC
+            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center overflow-hidden shadow-md shadow-orange-500/40 p-1">
+              <Image 
+                src="/Logo-icon.gif" 
+                alt="Logo" 
+                width={20} 
+                height={20}
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="hidden sm:inline">SimplifyConvert</span>
           </Link>
