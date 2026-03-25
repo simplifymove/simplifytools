@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Github, Twitter, Linkedin, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -48,8 +49,14 @@ export function Footer() {
             viewport={{ once: true }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center font-bold text-white shadow-md shadow-orange-500/40 text-sm">
-                SC
+              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center overflow-hidden shadow-md shadow-orange-500/40 p-1">
+                <Image 
+                  src="/Logo-icon.gif" 
+                  alt="Logo" 
+                  width={28} 
+                  height={28}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="font-bold text-lg text-white">SimplifyConvert</span>
             </div>

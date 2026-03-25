@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, Search, Menu, X, FileText, Image, Video, PenTool, Database, Code2, Volume2 } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronDown, Search, Menu, X, FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2 } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -31,7 +32,7 @@ export function Header() {
     {
       id: 'image',
       title: 'Image Tools',
-      icon: Image,
+      icon: ImageIcon,
       color: 'from-orange-500 to-orange-700',
       count: '30+',
       link: '/all-tools/image-tools',
@@ -91,8 +92,14 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SC</span>
+            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center overflow-hidden p-1">
+              <Image 
+                src="/Logo-icon.gif" 
+                alt="Logo" 
+                width={28} 
+                height={28}
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="font-bold text-lg text-gray-900 hidden sm:inline">
               SimplifyConvert
