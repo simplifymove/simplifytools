@@ -12,6 +12,13 @@ import zipfile
 import os
 import time
 
+# Enable HEIC support for Pillow
+try:
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+except ImportError:
+    pass  # pillow-heif not installed, HEIC support unavailable
+
 
 class PdfConvertEngine:
     """PDF format conversion operations"""
@@ -44,19 +51,25 @@ class PdfConvertEngine:
             output_dir = Path(output_path).parent
             output_files = []
             
+            # Determine output format
+            output_format_lower = output_format.lower()
+            if output_format_lower == 'jpg':
+                output_format_lower = 'jpeg'
+                ext = 'jpg'
+                needs_alpha = False
+            elif output_format_lower == 'tiff':
+                ext = 'tiff'
+                needs_alpha = False
+            elif output_format_lower == 'png':
+                ext = 'png'
+                needs_alpha = True  # PNG needs alpha channel
+            else:
+                ext = output_format_lower
+                needs_alpha = False
+            
             for page_num in pages_to_convert:
                 page = doc[page_num]
-                pix = page.get_pixmap(matrix=mat, alpha=False)
-                
-                # Determine output extension and format
-                output_format_lower = output_format.lower()
-                if output_format_lower == 'jpg':
-                    output_format_lower = 'jpeg'
-                    ext = 'jpg'
-                elif output_format_lower == 'tiff':
-                    ext = 'tiff'
-                else:
-                    ext = output_format_lower
+                pix = page.get_pixmap(matrix=mat, alpha=needs_alpha)
                 
                 out_file = output_dir / f"page_{page_num+1}.{ext}"
                 
@@ -66,8 +79,14 @@ class PdfConvertEngine:
                 elif output_format_lower == 'tiff':
                     img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
                     img.save(out_file, "TIFF", compression='lzw')
-                else:  # PNG and others
-                    pix.save_png(str(out_file))
+                elif output_format_lower == 'png':
+                    # PNG with alpha channel - use PIL with RGBA mode
+                    img = Image.frombytes("RGBA", [pix.width, pix.height], pix.samples)
+                    img.save(out_file, "PNG")
+                else:
+                    # Fallback for other formats
+                    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                    img.save(out_file, str(ext).upper())
                 
                 output_files.append(str(out_file))
             
@@ -88,16 +107,62 @@ class PdfConvertEngine:
     def image_to_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Convert images to PDF with proper scaling and orientation"""
         try:
-            # Standard PDF page size (8.5 x 11 inches at 72 DPI = 612 x 792 points)
-            page_width = 612
-            page_height = 792
+            # Use higher DPI for better quality (300 DPI instead of 72 DPI)
+            # This provides 4x more detail when scaling
+            dpi_factor = 300 / 72  # 4.167x scale factor
+            
+            # Standard PDF page size (8.5 x 11 inches at 300 DPI = 2550 x 3300 points)
+            page_width = 612 * dpi_factor
+            page_height = 792 * dpi_factor
             
             doc = fitz.open()
             
             for idx, img_path in enumerate(input_paths):
                 try:
-                    # Open the image
-                    img = Image.open(img_path)
+                    file_ext = Path(img_path).suffix.lower()
+                    img = None
+                    
+                    # Validate file exists and is readable
+                    if not Path(img_path).exists():
+                        raise Exception(f"File not found: {img_path}")
+                    
+                    if not os.access(img_path, os.R_OK):
+                        raise Exception(f"File is not readable: {img_path}")
+                    
+                    # Try to open image with PIL (works for most raster formats)
+                    try:
+                        img = Image.open(img_path)
+                    except (OSError, IOError) as open_err:
+                        # If PIL can't open it, try PyMuPDF for PDF/PostScript documents
+                        if file_ext in ['.eps', '.ps', '.pdf']:
+                            try:
+                                # PyMuPDF can handle PDF and PostScript formats
+                                # Use is_pdf=False to allow PostScript detection
+                                doc_page = fitz.open(img_path)
+                                if doc_page is None or len(doc_page) == 0:
+                                    raise Exception(f"File appears to be empty or invalid: {img_path}")
+                                    
+                                page = doc_page[0]
+                                # Render at higher zoom for EPS files (PostScript needs quality rendering)
+                                if file_ext in ['.eps', '.ps']:
+                                    pix = page.get_pixmap(matrix=fitz.Matrix(3, 3), alpha=False)
+                                else:
+                                    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+                                    
+                                if pix is None:
+                                    raise Exception(f"Could not render {file_ext.upper()} page to image")
+                                    
+                                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                                doc_page.close()
+                                
+                            except Exception as fitz_err:
+                                error_msg = str(fitz_err)
+                                if "Ghostscript" in error_msg or "not found" in error_msg.lower():
+                                    raise Exception(f"Cannot convert {file_ext} file. PostScript/EPS files require proper Ghostscript support. Error: {error_msg}")
+                                else:
+                                    raise Exception(f"Failed to convert {file_ext} file: {error_msg}")
+                        else:
+                            raise Exception(f"Cannot open image file ({file_ext}). Supported formats: JPG, PNG, GIF, WebP, TIFF, HEIC, PDF, EPS. Error: {str(open_err)}")
                     
                     # Convert RGBA to RGB if needed (for JPEG compatibility)
                     if img.mode in ('RGBA', 'LA', 'P'):
@@ -109,37 +174,41 @@ class PdfConvertEngine:
                     elif img.mode != 'RGB':
                         img = img.convert('RGB')
                     
-                    # Calculate aspect ratio
+                    # Get image dimensions
                     img_width, img_height = img.size
                     aspect_ratio = img_width / img_height
                     page_aspect = page_width / page_height
                     
-                    # Scale image to fit page while maintaining aspect ratio
+                    # Scale image to fit page while maintaining aspect ratio with margin
+                    margin = 20 * dpi_factor
                     if aspect_ratio > page_aspect:
                         # Image is wider
-                        new_width = page_width - 20
+                        new_width = page_width - margin
                         new_height = int(new_width / aspect_ratio)
                     else:
                         # Image is taller
-                        new_height = page_height - 20
+                        new_height = page_height - margin
                         new_width = int(new_height * aspect_ratio)
                     
-                    img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                    # Only resize if image is larger than target
+                    if img.size[0] > new_width or img.size[1] > new_height:
+                        img = img.resize((int(new_width), int(new_height)), Image.Resampling.LANCZOS)
                     
-                    # Create page
+                    # Create page with high-DPI dimensions
                     page = doc.new_page(width=page_width, height=page_height)
                     
                     # Center the image on the page
                     x = (page_width - new_width) / 2
                     y = (page_height - new_height) / 2
                     
-                    # Save image temporarily and insert
+                    # Save image temporarily with high quality
                     import tempfile
                     temp_dir = tempfile.gettempdir()
-                    temp_img_path = os.path.join(temp_dir, f'temp_img_{idx}_{int(time.time() * 1000)}.png')
-                    img.save(temp_img_path, 'PNG')
+                    temp_img_path = os.path.join(temp_dir, f'temp_img_{idx}_{int(time.time() * 1000)}.jpg')
+                    # Save as JPEG with high quality to preserve details
+                    img.save(temp_img_path, 'JPEG', quality=95)
                     
-                    # Insert image
+                    # Insert image at full dimensions for maximum quality
                     rect = fitz.Rect(x, y, x + new_width, y + new_height)
                     page.insert_image(rect, filename=temp_img_path)
                     
@@ -150,12 +219,13 @@ class PdfConvertEngine:
                         pass
                         
                 except Exception as img_err:
-                    raise Exception(f"Failed to process image {idx + 1} ({img_path}): {str(img_err)}")
+                    raise Exception(f"Failed to process image {idx + 1} ({Path(img_path).name}): {str(img_err)}")
             
             if len(doc) == 0:
                 raise Exception("No images were successfully converted")
             
-            doc.save(output_path)
+            # Save PDF with high quality compression
+            doc.save(output_path, deflate=True, garbage=4)
             doc.close()
             return output_path
         except Exception as e:

@@ -39,7 +39,7 @@ import {
 export interface PdfOption {
   id: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'file' | 'url';
+  type: 'text' | 'number' | 'select' | 'checkbox' | 'file' | 'url' | 'visual-crop';
   default?: any;
   options?: Array<{ label: string; value: any }>;
   min?: number;
@@ -189,34 +189,15 @@ export const pdfTools: Record<string, PdfToolConfig> = {
     inputMode: 'single-file',
     options: [
       {
+        id: 'visualCrop',
+        label: 'Crop Area',
+        type: 'visual-crop',
+      },
+      {
         id: 'pageRange',
         label: 'Pages to Crop (leave empty for all)',
         type: 'text',
         placeholder: '1-5',
-      },
-      {
-        id: 'left',
-        label: 'Left (pixels)',
-        type: 'number',
-        default: 0,
-      },
-      {
-        id: 'bottom',
-        label: 'Bottom (pixels)',
-        type: 'number',
-        default: 0,
-      },
-      {
-        id: 'right',
-        label: 'Right (pixels)',
-        type: 'number',
-        default: 612,
-      },
-      {
-        id: 'top',
-        label: 'Top (pixels)',
-        type: 'number',
-        default: 792,
       },
     ],
   },
@@ -314,13 +295,38 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-watermark-remover': {
     id: 'pdf-watermark-remover',
     title: 'PDF Watermark Remover',
-    description: 'Remove watermarks from PDF (best effort)',
+    description: 'Remove watermarks from PDF (text, graphics, annotations)',
     category: 'Security',
     engine: 'security',
     icon: Eye,
     accepts: ['.pdf'],
     output: '.pdf',
     inputMode: 'single-file',
+    options: [
+      {
+        id: 'method',
+        label: 'Removal Method',
+        type: 'select',
+        default: 'all',
+        options: [
+          { value: 'all', label: 'All Methods (Comprehensive)' },
+          { value: 'annotations', label: 'Remove Annotations Only' },
+          { value: 'graphics', label: 'Remove Graphics & Light Objects' },
+          { value: 'text', label: 'Remove Watermark Text Only' },
+        ],
+      },
+      {
+        id: 'sensitivity',
+        label: 'Removal Sensitivity',
+        type: 'select',
+        default: 'medium',
+        options: [
+          { value: 'low', label: 'Low (Conservative)' },
+          { value: 'medium', label: 'Medium (Balanced)' },
+          { value: 'high', label: 'High (Aggressive)' },
+        ],
+      },
+    ],
   },
 
   // CONVERT ENGINE TOOLS
@@ -520,6 +526,8 @@ export const pdfTools: Record<string, PdfToolConfig> = {
     output: '.pdf',
     inputMode: 'multi-file',
   },
+
+
 
   'eps-to-pdf': {
     id: 'eps-to-pdf',

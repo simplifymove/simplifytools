@@ -147,13 +147,27 @@ class PdfCoreEngine:
         """Rearrange PDF pages"""
         try:
             pdf_path = input_paths[0]
-            page_order = options.get('pageOrder', [])  # e.g., [0, 2, 1, 3]
+            page_order = options.get('pageOrder', [])  # e.g., [0, 2, 1, 3] or "0,2,1,3"
             
             if not page_order:
                 raise ValueError("pageOrder not provided")
             
+            # Convert pageOrder to list of integers
+            if isinstance(page_order, str):
+                # Handle comma-separated string format
+                page_order = [int(idx.strip()) for idx in page_order.split(',')]
+            else:
+                # Convert list elements to integers
+                page_order = [int(idx) for idx in page_order]
+            
             pdf = PyPDF2.PdfReader(pdf_path)
+            total_pages = len(pdf.pages)
             writer = PyPDF2.PdfWriter()
+            
+            # Validate page indices
+            invalid_indices = [idx for idx in page_order if idx < 0 or idx >= total_pages]
+            if invalid_indices:
+                raise ValueError(f"Invalid page indices: {invalid_indices}. PDF has {total_pages} pages (valid indices: 0-{total_pages-1})")
             
             for page_idx in page_order:
                 writer.add_page(pdf.pages[page_idx])
@@ -161,6 +175,8 @@ class PdfCoreEngine:
             with open(output_path, 'wb') as f:
                 writer.write(f)
             return output_path
+        except ValueError as ve:
+            raise Exception(f"Invalid page order: {str(ve)}")
         except Exception as e:
             raise Exception(f"Failed to rearrange PDF: {str(e)}")
     
@@ -173,14 +189,20 @@ class PdfCoreEngine:
             # Crop box: [left, bottom, right, top]
             crop_box = options.get('cropBox', [0, 0, 612, 792])
             
+            # Ensure crop_box is a list of integers
+            if isinstance(crop_box, (list, tuple)):
+                crop_box = [int(x) for x in crop_box]
+            else:
+                crop_box = [0, 0, 612, 792]
+            
             pdf = PyPDF2.PdfReader(pdf_path)
             writer = PyPDF2.PdfWriter()
             
             pages_to_crop = []
-            if page_range == 'all':
+            if page_range == 'all' or not page_range:
                 pages_to_crop = list(range(len(pdf.pages)))
             else:
-                for part in page_range.split(','):
+                for part in str(page_range).split(','):
                     if '-' in part:
                         start, end = map(int, part.split('-'))
                         pages_to_crop.extend(range(start-1, end))
@@ -204,13 +226,23 @@ class PdfCoreEngine:
         """Delete specific pages from PDF"""
         try:
             pdf_path = input_paths[0]
-            pages_to_delete = options.get('pagesToDelete', [])  # 0-indexed
+            pages_to_delete = options.get('pagesToDelete', '')
+            
+            # Parse pages to delete - convert from string to list of 0-indexed integers
+            indices_to_delete = []
+            if pages_to_delete:
+                if isinstance(pages_to_delete, str):
+                    # Handle comma-separated string like "1,3,5" (1-indexed)
+                    indices_to_delete = [int(p.strip()) - 1 for p in pages_to_delete.split(',')]
+                else:
+                    # Handle list of strings like ["1", "3", "5"]
+                    indices_to_delete = [int(p) - 1 for p in pages_to_delete]
             
             pdf = PyPDF2.PdfReader(pdf_path)
             writer = PyPDF2.PdfWriter()
             
             for idx, page in enumerate(pdf.pages):
-                if idx not in pages_to_delete:
+                if idx not in indices_to_delete:
                     writer.add_page(page)
             
             with open(output_path, 'wb') as f:

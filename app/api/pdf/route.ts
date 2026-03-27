@@ -13,11 +13,12 @@ export async function POST(request: NextRequest) {
   const timestamp = Date.now();
   let inputFiles: string[] = [];
   let outputFile = '';
+  let toolId = ''; // Move to outer scope so catch block can access it
 
   try {
     const formData = await request.formData();
 
-    const toolId = formData.get('tool') as string;
+    toolId = formData.get('tool') as string;
     const url = formData.get('url') as string | null;
     const files = formData.getAll('file') as File[];
     const optionsJson = formData.get('options') as string;
@@ -77,8 +78,18 @@ export async function POST(request: NextRequest) {
     // Call Python backend
     const pythonScript = path.join(process.cwd(), 'python', 'pdf_router.py');
 
-    const result = await new Promise<{ success: boolean; output?: string; error?: string }>((resolve, reject) => {
-      const pythonProcess = spawn('python', [
+    // Use full path to venv Python executable
+    const pythonExe = process.platform === 'win32' 
+      ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
+      : path.join(process.cwd(), '.venv', 'bin', 'python');
+    
+    console.log(`[PDF API] Using Python executable: ${pythonExe}`);
+    console.log(`[PDF API] Script path: ${pythonScript}`);
+    console.log(`[PDF API] Tool ID: ${toolId}`);
+    console.log(`[PDF API] Input files: ${JSON.stringify(inputFiles)}`);
+
+    const result = await new Promise<{ success: boolean; output?: string; error?: string; debug?: string }>((resolve, reject) => {
+      const pythonProcess = spawn(pythonExe, [
         pythonScript,
         toolId,
         JSON.stringify(inputFiles),
@@ -98,30 +109,77 @@ export async function POST(request: NextRequest) {
       });
 
       pythonProcess.on('error', (err) => {
-        console.error('Failed to start Python process:', err);
-        reject(new Error(`Failed to start Python process: ${err.message}`));
+        console.error('[PDF API] Failed to start Python process:', {
+          error: err.message,
+          code: (err as any).code,
+          pythonExe,
+          additionalInfo: 'Python may not be installed or not in PATH'
+        });
+        reject(new Error(`Failed to start Python process (${pythonExe}): ${err.message}. Make sure Python is installed and in your PATH.`));
       });
 
       pythonProcess.on('close', (code) => {
         if (code !== 0) {
           const errorMsg = stderr || stdout || 'Unknown error';
-          console.error('Python process failed:', { code, stderr, stdout });
+          console.error('[PDF API] Python process failed:', { 
+            code, 
+            stderr: stderr.substring(0, 500), 
+            stdout: stdout.substring(0, 500) 
+          });
           reject(new Error(`Python process failed (code ${code}): ${errorMsg}`));
           return;
         }
 
         try {
-          const result = JSON.parse(stdout);
+          // Extract JSON from stdout (may have debug logs before it)
+          let result;
+          const lines = stdout.split('\n');
+          let jsonLine = '';
+          
+          // Find the last line that starts with { (likely the JSON result)
+          for (let i = lines.length - 1; i >= 0; i--) {
+            const line = lines[i].trim();
+            if (line.startsWith('{')) {
+              jsonLine = line;
+              break;
+            }
+          }
+          
+          if (!jsonLine) {
+            console.error('[PDF API] No JSON output found in Python response');
+            console.log('[PDF API] Raw stdout:', stdout);
+            throw new Error('No JSON output found from Python');
+          }
+          
+          result = JSON.parse(jsonLine);
+          console.log('[PDF API] Python process succeeded:', { success: result.success, hasOutput: !!result.output });
+          
+          // Include debug logs if available
+          if (stdout && stdout.length > jsonLine.length) {
+            const debugLogs = stdout.substring(0, stdout.lastIndexOf(jsonLine)).trim();
+            if (debugLogs) {
+              console.log('[DEBUG from PDF tool]:', debugLogs);
+              result.debug = debugLogs;
+            }
+          }
+          
           resolve(result);
         } catch (parseErr) {
-          console.error('Failed to parse Python response:', { stdout, stderr });
-          reject(new Error(`Failed to parse Python response: ${stdout}`));
+          console.error('[PDF API] Failed to parse Python response:', { 
+            stdout: stdout.substring(0, 500),
+            stderr: stderr.substring(0, 500),
+            parseError: parseErr 
+          });
+          reject(new Error(`Failed to parse Python response`));
         }
       });
     });
 
     if (!result.success) {
-      throw new Error(result.error || 'PDF processing failed');
+      // Include debug logs in error response if available
+      const errorMsg = result.error || 'PDF processing failed';
+      const response: any = { error: errorMsg };
+      throw new Error(JSON.stringify(response));
     }
 
     // Read output file
@@ -181,7 +239,12 @@ export async function POST(request: NextRequest) {
     }
 
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('PDF API error:', { message, error });
+    console.error('[PDF API] Error:', { 
+      message, 
+      toolId,
+      inputFiles: inputFiles.length,
+      errorType: error instanceof Error ? 'Error' : typeof error
+    });
     return NextResponse.json(
       { error: `PDF processing failed: ${message}` },
       { status: 500 }

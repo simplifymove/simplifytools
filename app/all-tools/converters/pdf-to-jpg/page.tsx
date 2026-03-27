@@ -66,7 +66,7 @@ export default function PdfToJpgPage() {
     const url = URL.createObjectURL(result);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'converted.jpg';
+    link.download = 'converted.zip';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -193,7 +193,7 @@ export default function PdfToJpgPage() {
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
-                      Download JPG
+                      Download ZIP
                     </button>
                   )}
 
@@ -201,7 +201,7 @@ export default function PdfToJpgPage() {
                   {result && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <h4 className="font-semibold text-green-900 mb-2">✓ Conversion Complete!</h4>
-                      <p className="text-sm text-green-800">Your PDF has been successfully converted to JPG.</p>
+                      <p className="text-sm text-green-800">Your PDF has been successfully converted to JPG. Download the ZIP file containing all pages.</p>
                     </div>
                   )}
 

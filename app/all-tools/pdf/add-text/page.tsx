@@ -216,7 +216,7 @@ export default function AddTextToPdfPage() {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
-        await page.render({ canvasContext: context, viewport }).promise;
+        await (page.render({ canvas, viewport }) as any).promise;
         
         // Cover deleted extracted text with white rectangles
         extractedText.forEach((el) => {

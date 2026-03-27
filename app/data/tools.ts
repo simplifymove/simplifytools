@@ -487,6 +487,7 @@ const converterTools: Tool[] = [
     icon: RefreshCw,
     route: '/all-tools/converters/webp-to-gif',
   },
+
   {
     id: 'png-eps',
     title: 'PNG to EPS',
@@ -512,15 +513,7 @@ const converterTools: Tool[] = [
     icon: RefreshCw,
     route: '/all-tools/converters/jpg-to-tiff',
   },
-  {
-    id: 'eps-png',
-    title: 'EPS to PNG',
-    description: 'Convert EPS vector to PNG',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/converters/eps-to-png',
-    headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
-  },
+
   {
     id: 'psd-ai',
     title: 'PSD to AI',
@@ -570,13 +563,7 @@ const converterTools: Tool[] = [
     icon: RefreshCw,
     route: '/all-tools/converters/gif-to-png',
   },
-  {
-    id: 'eps-jpg',
-    title: 'EPS to JPG',
-    description: 'Convert EPS vector to JPG',
-    category: 'Image',
-    icon: RefreshCw,
-  },
+
   {
     id: 'png-tiff',
     title: 'PNG to TIFF',
@@ -586,6 +573,7 @@ const converterTools: Tool[] = [
     route: '/all-tools/converters/png-to-tiff',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
+
   {
     id: 'eps-svg',
     title: 'EPS to SVG',
@@ -602,11 +590,20 @@ const converterTools: Tool[] = [
     route: '/all-tools/converters/tiff-to-text',
   },
   {
+    id: 'eps-jpg',
+    title: 'EPS to JPG',
+    description: 'Convert EPS vector to JPG',
+    category: 'Image',
+    icon: RefreshCw,
+  },
+  {
     id: 'gif-apng',
     title: 'GIF to APNG',
     description: 'Convert GIF to animated PNG',
     category: 'Image',
-    icon: RefreshCw,    route: '/all-tools/converters/gif-to-png',  },
+    icon: RefreshCw,
+    route: '/all-tools/converters/gif-to-png',
+  },
   {
     id: 'jpg-avif',
     title: 'JPG to AVIF',

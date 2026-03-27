@@ -134,7 +134,7 @@ async function extractTextFromPDFPages(
         canvas.height = viewport.height;
 
         const context = canvas.getContext('2d')!;
-        await page.render({ canvasContext: context, viewport }).promise;
+        await (page.render({ canvas, viewport }) as any).promise;
 
         // Convert canvas to image and run OCR
         const imageData = canvas.toDataURL('image/png');

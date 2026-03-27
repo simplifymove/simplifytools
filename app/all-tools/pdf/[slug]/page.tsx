@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
 import { validatePdfInput } from '@/app/lib/pdf-validation';
+import { PdfCropEditor } from '@/app/components/PdfCropEditor';
 import type { PdfToolConfig } from '@/app/lib/pdf-tools';
 import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, Shield } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
@@ -23,7 +24,18 @@ export default function PdfToolPage({ params }: PageProps) {
 
   const [files, setFiles] = useState<File[]>([]);
   const [url, setUrl] = useState('');
-  const [options, setOptions] = useState<Record<string, any>>({});
+  const [options, setOptions] = useState<Record<string, any>>(() => {
+    // Initialize options with default values from tool config
+    const defaults: Record<string, any> = {};
+    if (tool && tool.options) {
+      for (const option of tool.options) {
+        if (option.default !== undefined) {
+          defaults[option.id] = option.default;
+        }
+      }
+    }
+    return defaults;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
@@ -112,7 +124,23 @@ export default function PdfToolPage({ params }: PageProps) {
 
       setResult({ type: 'file', message: 'File processed successfully!' });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
+      
+      // Try to parse debug info from error message
+      try {
+        const debugInfo = JSON.parse(errorMsg);
+        setError(debugInfo.error || errorMsg);
+        if (debugInfo.debug) {
+          // Store debug info and show it with error
+          setResult({ 
+            type: 'debug', 
+            message: 'Processing encountered an issue. Check debug info below.',
+            debug: debugInfo.debug 
+          });
+        }
+      } catch {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -250,13 +278,32 @@ export default function PdfToolPage({ params }: PageProps) {
                     transition={{ delay: 0.2 }}
                     className="space-y-4"
                   >
-                    <h3 className="font-semibold text-gray-900">Options</h3>
-                    {tool.options.map((option) => (
-                      <div key={option.id}>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {option.label}
-                          {option.required && <span className="text-red-500">*</span>}
-                        </label>
+                    {tool.options.map((option) => {
+                      // Handle visual crop editor
+                      if (option.type === 'visual-crop') {
+                        return (
+                          <div key={option.id}>
+                            <PdfCropEditor
+                              pdfFile={files.length > 0 ? files[0] : undefined}
+                              onCropChange={(cropBox) => {
+                                handleOptionChange('cropBox', cropBox);
+                              }}
+                            />
+                          </div>
+                        );
+                      }
+
+                      // Skip the visualCrop option itself
+                      if (option.id === 'visualCrop') {
+                        return null;
+                      }
+
+                      return (
+                        <div key={option.id}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {option.label}
+                            {option.required && <span className="text-red-500">*</span>}
+                          </label>
                         {option.type === 'select' && option.options ? (
                           <select
                             value={options[option.id] ?? option.default ?? ''}
@@ -296,8 +343,9 @@ export default function PdfToolPage({ params }: PageProps) {
                             className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
                           />
                         )}
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </motion.div>
                 )}
 
@@ -306,13 +354,25 @@ export default function PdfToolPage({ params }: PageProps) {
                   <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-4 bg-red-50 border-2 border-red-200 rounded-xl flex gap-3"
+                    className="space-y-3"
                   >
-                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-red-900">Error</p>
-                      <p className="text-sm text-red-700">{error}</p>
+                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl flex gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-red-900">Error</p>
+                        <p className="text-sm text-red-700">{error}</p>
+                      </div>
                     </div>
+                    
+                    {/* Debug Logs */}
+                    {result?.debug && (
+                      <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                        <p className="font-medium text-blue-900 mb-2">Debug Information</p>
+                        <pre className="text-xs text-blue-700 overflow-auto max-h-40 whitespace-pre-wrap break-words font-mono bg-white p-2 rounded border border-blue-100">
+                          {result.debug}
+                        </pre>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -321,13 +381,25 @@ export default function PdfToolPage({ params }: PageProps) {
                   <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-4 bg-green-50 border-2 border-green-200 rounded-xl flex gap-3"
+                    className="space-y-3"
                   >
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-green-900">Success</p>
-                      <p className="text-sm text-green-700">{result.message}</p>
+                    <div className="p-4 bg-green-50 border-2 border-green-200 rounded-xl flex gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-green-900">Success</p>
+                        <p className="text-sm text-green-700">{result.message}</p>
+                      </div>
                     </div>
+                    
+                    {/* Debug Logs */}
+                    {result.debug && (
+                      <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                        <p className="font-medium text-blue-900 mb-2">Debug Information</p>
+                        <pre className="text-xs text-blue-700 overflow-auto max-h-40 whitespace-pre-wrap break-words font-mono bg-white p-2 rounded border border-blue-100">
+                          {result.debug}
+                        </pre>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
