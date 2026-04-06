@@ -6,6 +6,9 @@ import os from "os";
 // Set max payload size
 export const maxDuration = 180;
 
+// File size limit: 500MB for local processing
+const MAX_FILE_SIZE = 500 * 1024 * 1024;
+
 export async function POST(request: Request): Promise<Response> {
   const formData = await request.formData();
   const imageFile = formData.get("image") as File;
@@ -26,6 +29,19 @@ export async function POST(request: Request): Promise<Response> {
     return new Response(JSON.stringify({ error: "No image provided" }), {
       status: 400,
     });
+  }
+
+  // Validate file size
+  if (imageFile.size > MAX_FILE_SIZE) {
+    const maxMB = (MAX_FILE_SIZE / 1024 / 1024).toFixed(0);
+    const fileMB = (imageFile.size / 1024 / 1024).toFixed(2);
+    console.warn(`[SIZE LIMIT EXCEEDED] File: ${fileMB}MB, Limit: ${maxMB}MB`);
+    return new Response(
+      JSON.stringify({ 
+        error: `File size exceeds ${maxMB}MB limit. Your file: ${fileMB}MB` 
+      }),
+      { status: 413 }
+    );
   }
 
   // Create temp files

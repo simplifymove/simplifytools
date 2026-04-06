@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, Loader, Sparkles, ChevronRight } from 'lucide-react';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 declare global {
@@ -145,6 +146,7 @@ export default function AiImageGeneratorPage() {
 
   return (
     <>
+    <HomeHeader />
     <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
       {/* Hero Header */}
       <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">

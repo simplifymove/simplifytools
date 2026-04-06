@@ -84,7 +84,7 @@ function generateSiteMap() {
       priority: '0.5',
     },
     {
-      url: '/tos',
+      url: '/terms',
       lastmod: new Date().toISOString().split('T')[0],
       changefreq: 'monthly',
       priority: '0.5',

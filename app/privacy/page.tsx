@@ -1,214 +1,65 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Search, Menu, X, FileText, Image, Video, PenTool, Database, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
-const categories = [
-  { id: 'pdf', title: 'PDF Tools', icon: FileText, color: 'from-purple-500 via-purple-600 to-purple-700', count: '47+', link: '/all-tools/pdf-tools' },
-  { id: 'image', title: 'Image Tools', icon: Image, color: 'from-orange-500 via-orange-600 to-orange-700', count: '30+', link: '/all-tools/image-tools' },
-  { id: 'video', title: 'Video Tools', icon: Video, color: 'from-pink-500 via-pink-600 to-pink-700', count: '10+', link: '/all-tools/video-tools' },
-  { id: 'ai', title: 'AI Write', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '50+', link: '/all-tools/ai-tools' },
-  { id: 'data', title: 'Data Conversion', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/all-tools/data-converter' },
-  { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '15+', link: '/tools' }
-];
-
 export default function PrivacyPage() {
-  const router = useRouter();
-  const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (query: string) => {
-    if (query.trim()) {
-      router.push(`/all-tools?search=${encodeURIComponent(query)}`);
-    }
-  };
-
-  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch((e.target as HTMLInputElement).value);
-    }
-  };
-
-  useEffect(() => {
-    const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
   const sections = [
     {
       title: '1. Information We Collect',
-      content: 'When you use SimplifyConvert, we collect certain information to improve your experience. This includes: Device information (browser, operating system), usage data (which tools you use, features accessed), and temporary file data during processing. We do NOT store your uploaded files permanently unless you specifically request it.'
+      content: 'When you use SimplifyConvert, we collect certain information to improve your experience. This includes: Device information (browser type, operating system, device type), usage data (which tools you use, features accessed, processing times), and temporary file data during active processing sessions. We collect IP addresses and timestamps for security and abuse prevention. We do NOT store your uploaded files permanently on our servers.'
     },
     {
-      title: '2. How We Use Your Information',
-      content: 'We use the information we collect to: Improve our services and user experience, troubleshoot technical issues, analyze usage patterns to enhance tools, and ensure security of our platform. Your privacy is our priority, and we never sell user data to third parties.'
+      title: '2. File Handling & Retention',
+      content: 'Files you upload for processing are stored temporarily on our servers ONLY during the processing phase. After you download your converted/processed file, all temporary files are automatically deleted within 5 seconds. If you upload a file but do NOT submit it for processing, the file remains only in your browser memory and is never transmitted to our servers—it is automatically cleared when you close the browser or navigate away. We have zero access to files stored only in your browser.'
     },
     {
-      title: '3. Data Security',
-      content: 'SimplifyConvert uses industry-standard encryption and security measures to protect your data. All file uploads are transmitted securely, and files are automatically deleted from our servers after processing. We regularly audit our security practices to maintain the highest standards.'
+      title: '3. How We Use Your Information',
+      content: 'We use the information we collect to: Improve our services and user experience through analytics, troubleshoot technical issues, identify and fix bugs, analyze usage patterns to enhance tools and prioritize features, ensure security and prevent abuse, and provide customer support. Your privacy is our priority, and we never sell user data to third parties. We do not share identifiable information with advertisers.'
     },
     {
-      title: '4. Cookies & Tracking',
-      content: 'We use cookies to remember your preferences and improve your experience. These are primarily session cookies that expire when you close your browser. You can disable cookies in your browser settings, though some features may not work optimally.'
+      title: '4. Data Security',
+      content: 'SimplifyConvert uses industry-standard encryption (HTTPS/TLS) and security measures to protect your data during transmission. All file uploads are transmitted securely using SSL/TLS encryption. We implement access controls, firewalls, and regular security audits to maintain the highest standards. However, no method of transmission over the internet is 100% secure. We are not liable for unauthorized access due to factors beyond our control.'
     },
     {
-      title: '5. Third-Party Services',
-      content: 'SimplifyConvert may use third-party services for analytics, hosting, and processing. These services are bound by similar privacy obligations. We never share personal information with third parties without your consent.'
+      title: '5. Cookies & Tracking',
+      content: 'We use cookies to remember your preferences, maintain session information, and improve your experience. These are primarily session cookies that expire when you close your browser, and persistent cookies (max 1 year) for features like "remember my settings." We use analytics cookies (Google Analytics) to understand usage patterns. You can disable cookies in your browser settings, though some features may not work optimally. We do not use cookies for tracking across other websites.'
     },
     {
-      title: '6. User Rights',
-      content: 'You have the right to: Access your personal information, request deletion of your data, opt-out of analytics tracking, and contact us with privacy concerns. We will respond to all requests within 30 days.'
+      title: '6. Third-Party Services',
+      content: 'SimplifyConvert uses third-party services for: Analytics (Google Analytics), hosting and infrastructure, payment processing (if applicable), and CDN services. These services are bound by similar privacy obligations and data processing agreements. We never share your personal information with third parties for marketing purposes. Your data is processed according to their privacy policies and our data processing agreements. You can opt-out of analytics tracking in your browser settings.'
     },
     {
-      title: '7. Updates to This Policy',
-      content: 'We may update this privacy policy periodically to reflect changes in our practices or applicable laws. We will notify you of significant changes via email or through our platform. Your continued use of SimplifyConvert after updates means you accept the new policy.'
+      title: '7. User Rights & Data Control',
+      content: 'You have the right to: Access your personal information (if stored), request deletion or correction of your data, opt-out of analytics and non-essential tracking, port your data to another service, and contact us with privacy concerns. To exercise these rights, email info@simplifymove.com with your request. We will respond to all requests within 30 days. If you delete your account or request data deletion, all associated information will be permanently removed from our servers.'
+    },
+    {
+      title: '8. Children\'s Privacy',
+      content: 'SimplifyConvert does not knowingly collect personal information from users under the age of 13. If we become aware that a child under 13 has provided us with personal information, we will take immediate steps to delete such information and terminate the child\'s account. Parents or guardians who believe their child has provided information to SimplifyConvert should contact us immediately at info@simplifymove.com.'
+    },
+    {
+      title: '9. GDPR & CCPA Compliance',
+      content: 'If you are in the European Union, you are subject to GDPR (General Data Protection Regulation) rights. If you are in California, US, you are subject to CCPA (California Consumer Privacy Act) rights. We comply with both regulations. You have rights including access, deletion, portability, and opt-out of certain processing. We do not sell personal information as defined by CCPA. For GDPR/CCPA requests, email info@simplifymove.com with "GDPR REQUEST" or "CCPA REQUEST."'
+    },
+    {
+      title: '10. International Data Transfers',
+      content: 'Your information may be transferred to, stored in, and processed in countries other than your country of residence. These countries may have different data protection laws. By using SimplifyConvert, you consent to the transfer of your information to countries outside your country of residence, including countries that may not have the same data protection laws.'
+    },
+    {
+      title: '11. Updates to This Policy',
+      content: 'We may update this privacy policy periodically to reflect changes in our practices, technology, legal requirements, or applicable laws. We will notify you of significant changes by posting the updated policy on our website and updating the "Last updated" date. For material changes, we will provide notice via email. Your continued use of SimplifyConvert after updates means you accept the new policy. Please review this policy regularly to stay informed about how we protect your information.'
+    },
+    {
+      title: '12. Contact Us',
+      content: 'If you have any questions, concerns, or requests regarding our privacy practices, please contact our Privacy Team at: info@simplifymove.com. We will respond to all inquiries within 5 business days. For urgent privacy concerns, mark your email as "URGENT" and we will prioritize your request.'
     }
   ];
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Top Navigation Header */}
-      <motion.header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          isHeaderScrolled 
-            ? 'bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm' 
-            : 'bg-white'
-        }`}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-2xl text-gray-900 hover:opacity-80 transition">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
-              SC
-            </div>
-            <span className="hidden sm:inline">SimplifyConvert</span>
-          </Link>
-
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {/* All Tools Dropdown */}
-            <div className="relative group pb-2">
-              <motion.a 
-                href="/#categories"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative flex items-center gap-1 py-2 px-1"
-                whileHover={{ y: -2 }}
-              >
-                All Tools
-                <ChevronRight size={16} className="group-hover:rotate-90 transition-transform" />
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </motion.a>
-
-              {/* Dropdown Menu */}
-              <div
-                className="absolute left-0 top-full w-80 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-4 pointer-events-none group-hover:pointer-events-auto"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  {categories.map((cat) => {
-                    const Icon = cat.icon;
-                    return (
-                      <Link key={cat.id} href={cat.link}>
-                        <motion.div
-                          className="p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-all group/item"
-                          whileHover={{ scale: 1.05 }}
-                        >
-                          <div className={`flex items-center gap-2 mb-2`}>
-                            <div className={`p-1.5 bg-gradient-to-br ${cat.color} rounded-md flex-shrink-0`}>
-                              <Icon className="w-3.5 h-3.5 text-white" />
-                            </div>
-                            <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition whitespace-nowrap overflow-hidden text-ellipsis">{cat.title}</p>
-                          </div>
-                          <p className="text-xs text-gray-500">{cat.count} tools</p>
-                        </motion.div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Other Navigation Items */}
-            {['Image', 'Video', 'AI Write', 'Data'].map((item) => (
-              <motion.a 
-                key={item} 
-                href="#" 
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
-                whileHover={{ y: -2 }}
-              >
-                {item}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </motion.a>
-            ))}
-          </nav>
-
-          {/* Search & CTA */}
-          <div className="flex items-center gap-4">
-            <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-              searchActive ? 'bg-orange-50 border border-orange-200 shadow-lg shadow-orange-500/10' : 'bg-gray-50 border border-gray-200'
-            }`}>
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search tools..."
-                className="bg-transparent outline-none text-sm w-32 text-gray-900 placeholder-gray-400"
-                onFocus={() => setSearchActive(true)}
-                onBlur={() => setSearchActive(false)}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleSearchKeyPress}
-              />
-            </div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                href="/all-tools"
-                className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
-              >
-                Browse Tools
-              </Link>
-            </motion.div>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="lg:hidden p-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <motion.div
-            className="lg:hidden border-t border-gray-200 bg-white px-4 py-4"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <div className="space-y-3">
-              {['All Tools', 'Image', 'Video', 'AI Write', 'Data'].map((item) => (
-                <Link key={item} href="/tools" className="block px-4 py-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
-                  {item}
-                </Link>
-              ))}
-              <Link href="/tools" className="block px-4 py-2 bg-orange-500 text-white rounded-lg font-medium">
-                Browse Tools
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </motion.header>
+      <HomeHeader />
 
       {/* Hero Section */}
       <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
@@ -264,7 +115,7 @@ export default function PrivacyPage() {
           >
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Questions About Our Privacy Policy?</h2>
             <p className="text-gray-600 text-lg mb-6">
-              If you have any questions or concerns about our privacy practices, please contact us at privacy@simplifyconvert.com
+              If you have any questions or concerns about our privacy practices, please contact us at info@simplifymove.com
             </p>
             <Link href="/contact" className="inline-block px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all">
               Contact Us

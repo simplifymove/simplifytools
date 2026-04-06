@@ -4,22 +4,18 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useSession, signOut } from 'next-auth/react';
 import { 
   FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
   Search, Menu, X, ChevronRight, Sparkles
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { SignInModal } from './SignInModal';
 
 export function HomeHeader() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [signInModalOpen, setSignInModalOpen] = useState(false);
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -234,62 +230,17 @@ export function HomeHeader() {
               />
             </div>
 
-            {session?.user ? (
-              <>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    href="/all-tools"
-                    className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
-                  >
-                    Explore Tools
-                  </Link>
-                </motion.div>
-                
-                <motion.button
-                  onClick={() => setSignInModalOpen(true)}
-                  className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {session.user.image && (
-                    <img
-                      src={session.user.image}
-                      alt={session.user.name || 'User'}
-                      className="w-8 h-8 rounded-full"
-                    />
-                  )}
-                  <span className="text-sm font-medium text-gray-700 truncate max-w-xs">
-                    {session.user.name?.split(' ')[0]}
-                  </span>
-                </motion.button>
-              </>
-            ) : (
-              <>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    href="/all-tools"
-                    className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
-                  >
-                    Browse Tools
-                  </Link>
-                </motion.div>
-
-                <motion.button
-                  onClick={() => setSignInModalOpen(true)}
-                  className="hidden sm:inline-block px-6 py-2 border-2 border-orange-500 text-orange-600 font-medium rounded-full hover:bg-orange-50 transition-all"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Sign In
-                </motion.button>
-              </>
-            )}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link
+                href="/all-tools"
+                className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
+              >
+                Browse Tools
+              </Link>
+            </motion.div>
 
             {/* Mobile Menu Button */}
             <button
@@ -335,9 +286,6 @@ export function HomeHeader() {
         )}
       </header>
 
-      {signInModalOpen && (
-        <SignInModal isOpen={signInModalOpen} onClose={() => setSignInModalOpen(false)} />
-      )}
     </>
   );
 }

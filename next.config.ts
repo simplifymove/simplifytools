@@ -4,10 +4,28 @@ const nextConfig: NextConfig = {
   /* config options here */
   images: {
     unoptimized: false,
+    // Whitelist trusted image sources only (prevents malicious image injection)
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'simplifyconvert.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.simplifyconvert.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.simplifyconvert.com', // Any subdomain (cdn, api, assets, etc.)
+      },
+      // Development - allows localhost
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
       },
     ],
   },
@@ -52,6 +70,21 @@ const nextConfig: NextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            // Content Security Policy to prevent XSS attacks
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+          },
+          {
+            // HSTS forces HTTPS for 1 year and all subdomains
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          {
+            // Restrict browser features for security
+            key: 'Permissions-Policy',
+            value: 'geolocation=(), microphone=(), camera=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()',
           },
         ],
       },

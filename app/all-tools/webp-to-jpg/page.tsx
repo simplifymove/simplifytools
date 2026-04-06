@@ -233,7 +233,7 @@ export default function WebpToJpgPage() {
                 {[
                   { label: 'About', href: '/about' },
                   { label: 'Privacy Policy', href: '/privacy' },
-                  { label: 'Terms of Service', href: '/tos' },
+                  { label: 'Terms of Service', href: '/terms' },
                   { label: 'Contact', href: '/contact' },
                   { label: 'Blog', href: '/blog' }
                 ].map((item) => (

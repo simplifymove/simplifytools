@@ -3,28 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
 import { 
   FileText, Image, Video, PenTool, Database, Code2, Volume2, Brackets,
   ArrowRight, Search, Menu, X, Zap, Lock, Smartphone, Sparkles,
   BarChart3, CheckCircle, ChevronRight, ArrowUpRight, Eraser, Combine,
-  FileImage, Mountain, Wand2, Package, LogOut
+  FileImage, Mountain, Wand2, Package
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { aiEditingTools, converterTools, aiWriteTools, videoTools } from './data/tools';
-import { SignInModal } from './components/SignInModal';
 import { HomeHeader } from './components/HomeHeader';
 import { Footer } from './components/Footer';
 
 export default function Home() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [signInModalOpen, setSignInModalOpen] = useState(false);
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -852,137 +848,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PREMIUM UPGRADE SECTION */}
-      <section className="relative px-4 md:px-8 py-16 md:py-24 overflow-hidden">
-        {/* Animated gradient background */}
-        <motion.div
-          className="absolute inset-0 bg-orange-500 opacity-95\"
-          animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-
-        {/* Floating shapes */}
-        <motion.div
-          className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-3xl opacity-10"
-          animate={{ x: [0, 50, -30, 0], y: [0, -50, 30, 0] }}
-          transition={{ duration: 10, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-3xl opacity-10"
-          animate={{ x: [0, -50, 30, 0], y: [0, 50, -30, 0] }}
-          transition={{ duration: 12, repeat: Infinity, delay: 1 }}
-        />
-
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <motion.h2
-                className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-              >
-                Get More with Premium
-              </motion.h2>
-              <motion.p
-                className="text-lg text-white/90 mb-8 leading-relaxed"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-              >
-                Take your productivity to the next level with unlimited usage, priority processing, and advanced features.
-              </motion.p>
-
-              {/* Benefits List */}
-              <motion.div
-                className="space-y-4 mb-8"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-              >
-                {[
-                  { icon: '🚀', text: 'Unlimited file uploads and downloads' },
-                  { icon: '⚡', text: 'Faster processing priority' },
-                  { icon: '🔒', text: 'Advanced privacy controls' },
-                  { icon: '✨', text: 'Access to beta features' }
-                ].map((benefit, idx) => (
-                  <motion.div
-                    key={benefit.text}
-                    className="flex items-center gap-3"
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 + idx * 0.05 }}
-                  >
-                    <span className="text-2xl">{benefit.icon}</span>
-                    <span className="text-white font-medium">{benefit.text}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
-                whileHover={{ scale: 1.05, y: -4 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <button className="px-8 py-4 bg-white text-purple-600 font-bold rounded-full hover:shadow-2xl hover:shadow-white/40 transition-all flex items-center justify-center gap-2 group">
-                  Get Started
-                  <motion.span
-                    animate={{ x: [0, 4, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <ArrowRight size={20} />
-                  </motion.span>
-                </button>
-              </motion.div>
-            </motion.div>
-
-            {/* Right Visual */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative h-96 hidden lg:block"
-            >
-              <motion.div
-                className="absolute inset-0 bg-white/10 rounded-3xl backdrop-blur-sm border border-white/20 p-8 flex items-center justify-center"
-                animate={{ y: [0, -20, 0] }}
-                transition={{ duration: 4, repeat: Infinity }}
-              >
-                <div className="text-center">
-                  <motion.div
-                    className="text-6xl mb-4"
-                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                  >
-                    ⭐
-                  </motion.div>
-                  <p className="text-white font-bold text-lg">Upgrade Your Experience</p>
-                  <p className="text-white/70 text-sm mt-2">Join premium users and unlock full potential</p>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* FOOTER */}
       <Footer />
-
-      {/* Sign In Modal */}
-      <SignInModal isOpen={signInModalOpen} onClose={() => setSignInModalOpen(false)} />
     </main>
   );
 }

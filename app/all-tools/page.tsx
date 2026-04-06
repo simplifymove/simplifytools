@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useMemo, Suspense } from 'react';
-import { Search, Clock, ChevronRight, Filter, Sparkles, TrendingUp } from 'lucide-react';
+import { Search, Clock, ChevronRight, Sparkles, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ToolCard } from '@/app/components/ToolCard';
+import { HomeHeader } from '@/app/components/HomeHeader';
 import { allTools } from '@/app/data/tools';
 import { motion } from 'framer-motion';
 import { Footer } from '@/app/components/Footer';
@@ -20,7 +21,6 @@ const categoryColors: Record<string, { bg: string; gradient: string; text: strin
 function ToolsContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
-  const [showFilters, setShowFilters] = useState(false);
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
   const searchParam = searchParams.get('search');
@@ -80,6 +80,7 @@ function ToolsContent() {
 
   return (
     <>
+      <HomeHeader />
       <main className="min-h-screen bg-slate-50">
       {/* Premium Header */}
       <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
@@ -164,13 +165,6 @@ function ToolsContent() {
             {/* Filter & Sort Controls */}
             <div className="flex gap-4 flex-wrap items-center justify-between">
               <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="px-4 py-2 rounded-full border-2 border-gray-300 hover:border-purple-500 text-gray-700 hover:text-purple-600 font-medium transition-all flex items-center gap-2"
-                >
-                  <Filter size={16} />
-                  Filters
-                </button>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
@@ -195,15 +189,22 @@ function ToolsContent() {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <span className="text-sm font-semibold text-gray-700">Quick categories:</span>
-              {uniqueCategories.map((cat) => (
-                <Link
-                  key={cat}
-                  href={`/tools?category=${cat}`}
-                  className="px-4 py-2 rounded-full bg-white border-2 border-gray-200 hover:border-purple-500 text-gray-700 hover:text-purple-600 font-medium transition-all hover:shadow-md text-sm"
-                >
-                  {cat}
-                </Link>
-              ))}
+              {categories.map((cat) => {
+                const getCategoryLink = (category: string) => {
+                  if (category === 'AI Write') return '/all-tools/ai-tools';
+                  return `/all-tools?category=${category}`;
+                };
+                
+                return (
+                  <Link
+                    key={cat}
+                    href={getCategoryLink(cat)}
+                    className="px-4 py-2 rounded-full bg-white border-2 border-gray-200 hover:border-purple-500 text-gray-700 hover:text-purple-600 font-medium transition-all hover:shadow-md text-sm"
+                  >
+                    {cat}
+                  </Link>
+                );
+              })}
             </motion.div>
           )}
         </div>

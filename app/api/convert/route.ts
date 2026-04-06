@@ -7,6 +7,14 @@ import { randomUUID } from "crypto";
 // Max execution time: 10 minutes
 export const maxDuration = 600;
 
+// File size limits (bytes)
+const FILE_SIZE_LIMITS = {
+  image: 500 * 1024 * 1024, // 500MB for images
+  video: 500 * 1024 * 1024, // 500MB for videos
+  document: 200 * 1024 * 1024, // 200MB for documents
+  default: 100 * 1024 * 1024, // 100MB default
+};
+
 interface ConversionRequest {
   from_format: string;
   to_format: string;
@@ -41,9 +49,20 @@ export async function POST(request: Request): Promise<Response> {
     // Parse FormData
     const formData = await request.formData();
     const imageFile = formData.get("image") as File;
-    const conversionConfig = JSON.parse(
-      (formData.get("config") as string) || "{}"
-    ) as ConversionRequest;
+    let conversionConfig: ConversionRequest;
+
+    // Safely parse JSON config with error handling
+    try {
+      conversionConfig = JSON.parse(
+        (formData.get("config") as string) || "{}"
+      ) as ConversionRequest;
+    } catch (parseError) {
+      console.error(`[JSON PARSE ERROR] Invalid config JSON`);
+      return Response.json(
+        { ok: false, error: "Invalid conversion configuration" },
+        { status: 400 }
+      );
+    }
 
     console.log(`[API] Conversion request: ${conversionConfig.from_format} → ${conversionConfig.to_format}`);
     console.log(`[API] UUID: ${uuid}`);
@@ -63,7 +82,29 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Save uploaded image to temp file
+    // Determine file type for size limit
+    const fileType = ["mp4", "webm", "avi", "mov", "mkv"].includes(conversionConfig.from_format)
+      ? "video"
+      : ["pdf", "docx", "doc", "txt"].includes(conversionConfig.from_format)
+      ? "document"
+      : "image";
+
+    const maxSize = FILE_SIZE_LIMITS[fileType as keyof typeof FILE_SIZE_LIMITS] || FILE_SIZE_LIMITS.default;
+
+    // Validate file size
+    const fileSize = imageFile.size;
+    if (fileSize > maxSize) {
+      const maxMB = (maxSize / 1024 / 1024).toFixed(0);
+      const fileMB = (fileSize / 1024 / 1024).toFixed(2);
+      console.warn(`[SIZE LIMIT EXCEEDED] File: ${fileMB}MB, Limit: ${maxMB}MB`);
+      return Response.json(
+        { 
+          ok: false, 
+          error: `File size exceeds ${maxMB}MB limit. Your file: ${fileMB}MB` 
+        },
+        { status: 413 }
+      );
+    }
     console.log(`[API] Saving uploaded image...`);
     const buffer = await imageFile.arrayBuffer();
     fs.writeFileSync(inputFile, Buffer.from(buffer));

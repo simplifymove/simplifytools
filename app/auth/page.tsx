@@ -35,8 +35,6 @@ function AuthContent() {
   };
 
   const handleGoogleSignIn = () => signIn('google', { callbackUrl: '/' });
-  const handleFacebookSignIn = () => signIn('facebook', { callbackUrl: '/' });
-  const handleOutlookSignIn = () => signIn('azure-ad', { callbackUrl: '/' });
 
   return (
     <main className="min-h-screen bg-white flex items-center justify-center px-4 md:px-8 py-16">
@@ -47,8 +45,12 @@ function AuthContent() {
         transition={{ duration: 0.6 }}
       >
         {/* Logo/Icon */}
-        <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-3xl shadow-lg mx-auto mb-8">
-          SC
+        <div className="mb-8 text-center">
+          <svg width="120" height="50" viewBox="0 0 120 50" className="mx-auto">
+            <rect x="0" y="0" width="40" height="50" fill="#FF8C00" rx="4"/>
+            <text x="20" y="35" textAnchor="middle" fontSize="28" fontWeight="bold" fill="white" fontFamily="Arial">I</text>
+            <text x="55" y="32" fontSize="16" fontWeight="bold" fill="#1F2937" fontFamily="Arial">SimplifyConvert</text>
+          </svg>
         </div>
 
         {/* Title */}
@@ -141,41 +143,12 @@ function AuthContent() {
           {isLoading ? 'Signing In...' : 'Sign In'}
         </motion.button>
 
-        {/* Divider */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1 h-px bg-gray-200"></div>
-          <span className="text-xs text-gray-500">Or sign in with</span>
-          <div className="flex-1 h-px bg-gray-200"></div>
-        </div>
 
-        {/* Social Sign In */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <motion.button
-            onClick={handleFacebookSignIn}
-            className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-blue-700 hover:bg-blue-50 transition-all"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <svg className="w-5 h-5 fill-blue-600" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-          </motion.button>
-          <motion.button
-            onClick={handleOutlookSignIn}
-            className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-all"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <svg className="w-5 h-5 fill-blue-600" viewBox="0 0 24 24">
-              <path d="M11.6 4H4.4C3.6 4 3 4.6 3 5.4v13.2c0 .8.6 1.4 1.4 1.4h7.2V4zm8.8 0h-7.2v14.6h7.2c.8 0 1.4-.6 1.4-1.4V5.4c0-.8-.6-1.4-1.4-1.4z" />
-            </svg>
-          </motion.button>
-        </div>
 
         {/* Sign Up Link */}
         <p className="text-center text-gray-600">
           Don&apos;t have an account yet?{' '}
-          <Link href="/signup" className="text-blue-500 hover:text-blue-600 font-medium">
+          <Link href="/auth/signup" className="text-blue-500 hover:text-blue-600 font-medium">
             Sign Up
           </Link>
         </p>

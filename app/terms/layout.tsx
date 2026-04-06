@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TOSLayout({
+export default function TermsLayout({
   children,
 }: {
   children: React.ReactNode;

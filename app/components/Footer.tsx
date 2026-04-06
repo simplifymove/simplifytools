@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Github, Twitter, Linkedin, MapPin } from 'lucide-react';
+import { Mail, Instagram, Linkedin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function Footer() {
@@ -15,25 +15,23 @@ export function Footer() {
       { label: 'PDF Tools', href: '/all-tools/pdf-tools' },
       { label: 'Image Tools', href: '/all-tools/image-tools' },
     ],
-    Resources: [
-      { label: 'Documentation', href: '/docs' },
-      { label: 'Blog', href: '/blog' },
-      { label: 'Support', href: '/contact' },
-      { label: 'FAQ', href: '/faq' },
+    PopularTools: [
+      { label: 'Remove Background', href: '/all-tools/remove-background' },
+      { label: 'Compress Image', href: '/all-tools/compress-image' },
+      { label: 'Merge PDF', href: '/all-tools/pdf-tools' },
+      { label: 'AI Write', href: '/all-tools/ai-tools' },
     ],
     Company: [
       { label: 'About Us', href: '/about' },
       { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Terms of Service', href: '/tos' },
+      { label: 'Terms of Service', href: '/terms' },
       { label: 'Contact Us', href: '/contact' },
     ],
   };
 
   const socialLinks = [
-    { icon: Mail, href: 'mailto:support@simplifyconvert.com', label: 'Email' },
-    { icon: Github, href: '#', label: 'GitHub' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
+    { icon: Instagram, href: 'https://instagram.com', label: 'Instagram' },
+    { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
   ];
 
   return (
@@ -65,13 +63,10 @@ export function Footer() {
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-gray-400">
-                <MapPin size={16} />
-                <span>India</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
+
                 <Mail size={16} />
-                <a href="mailto:support@simplifyconvert.com" className="hover:text-white transition">
-                  support@simplifyconvert.com
+                <a href="mailto:info@simplifymove.com" className="hover:text-white transition">
+                  info@simplifymove.com
                 </a>
               </div>
             </div>
@@ -99,16 +94,16 @@ export function Footer() {
             </ul>
           </motion.div>
 
-          {/* Resources Links */}
+          {/* Popular Tools Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <h3 className="font-bold text-white mb-4">Resources</h3>
+            <h3 className="font-bold text-white mb-4">Popular Tools</h3>
             <ul className="space-y-2">
-              {footerLinks.Resources.map((link) => (
+              {footerLinks.PopularTools.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
@@ -159,7 +154,7 @@ export function Footer() {
                     key={social.label}
                     href={social.href}
                     title={social.label}
-                    className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition group"
+                    className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition group"
                   >
                     <Icon size={18} />
                   </a>
@@ -184,13 +179,13 @@ export function Footer() {
             © {currentYear} SimplifyConvert. All rights reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link href="#" className="text-sm text-gray-400 hover:text-white transition">
+            <Link href="/privacy" className="text-sm text-gray-400 hover:text-white transition">
               Privacy Policy
             </Link>
-            <Link href="#" className="text-sm text-gray-400 hover:text-white transition">
+            <Link href="/terms" className="text-sm text-gray-400 hover:text-white transition">
               Terms of Service
             </Link>
-            <Link href="#" className="text-sm text-gray-400 hover:text-white transition">
+            <Link href="/cookies" className="text-sm text-gray-400 hover:text-white transition">
               Cookie Policy
             </Link>
           </div>
