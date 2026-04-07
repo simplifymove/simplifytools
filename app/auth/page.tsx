@@ -7,8 +7,11 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 
+// Prevent static prerendering since this page uses useSession()
+export const dynamic = 'force-dynamic';
+
 function AuthContent() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
@@ -18,9 +21,19 @@ function AuthContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  if (session) {
+  // Only redirect if we're authenticated and fully loaded
+  if (status === 'authenticated' && session) {
     router.push('/');
     return null;
+  }
+
+  // Show loading state while checking session
+  if (status === 'loading') {
+    return (
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
+      </main>
+    );
   }
 
   const handleEmailSignIn = async (e: React.FormEvent) => {

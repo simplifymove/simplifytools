@@ -78,6 +78,17 @@ npm run dev
 4. **Open in browser:**
 Visit [http://localhost:3000](http://localhost:3000)
 
+### Optional: Tesseract OCR Setup
+
+For **PDF OCR features** to work, you must install Tesseract OCR separately:
+
+**→ See [TESSERACT_SETUP.md](./TESSERACT_SETUP.md) for complete instructions**
+
+Quick summary:
+- **Windows**: Download from [GitHub Releases](https://github.com/UB-Mannheim/tesseract/releases)
+- **macOS**: `brew install tesseract`
+- **Linux**: `sudo apt-get install tesseract-ocr`
+
 ## Available Scripts
 
 - `npm run dev` - Start development server

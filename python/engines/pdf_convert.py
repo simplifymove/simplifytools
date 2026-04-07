@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PDF Convert Engine
 Handles format conversions: PDF to images, images to PDF, document conversions
@@ -268,16 +269,22 @@ class PdfConvertEngine:
     
     @staticmethod
     def pdf_to_docx(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
-        """Convert PDF to Word DOCX format"""
+        """Convert PDF to Word DOCX format (with OCR support for scanned PDFs)"""
         try:
             from docx import Document
             from docx.shared import Pt, Inches
             
             pdf_path = input_paths[0]
             page_range = options.get('pageRange', 'all')
+            language = options.get('language', 'en')
+            
+            print(f"[PDF_TO_DOCX] Starting conversion: {pdf_path}", flush=True)
             
             doc_obj = fitz.open(pdf_path)
             document = Document()
+            
+            # Initialize OCR reader for fallback
+            ocr_reader = None
             
             pages_to_extract = []
             if page_range == 'all':
@@ -299,21 +306,59 @@ class PdfConvertEngine:
                 
                 # Add content
                 if text.strip():
+                    print(f"[PDF_TO_DOCX] Text found on page {page_num + 1}", flush=True)
                     for paragraph_text in text.split('\n'):
                         if paragraph_text.strip():
                             p = document.add_paragraph(paragraph_text)
                             p.paragraph_format.space_before = Pt(6)
                             p.paragraph_format.space_after = Pt(6)
                 else:
-                    document.add_paragraph('(Page with no extractable text)')
+                    # Try OCR
+                    print(f"[PDF_TO_DOCX] No text found, attempting OCR on page {page_num + 1}", flush=True)
+                    try:
+                        if ocr_reader is None:
+                            import easyocr
+                            print(f"[PDF_TO_DOCX] Initializing OCR reader", flush=True)
+                            ocr_reader = easyocr.Reader([language], gpu=False, verbose=False)
+                        
+                        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+                        import tempfile
+                        temp_img = tempfile.NamedTemporaryFile(suffix='.png', delete=False).name
+                        pix.save_png(temp_img)
+                        
+                        results = ocr_reader.readtext(temp_img)
+                        ocr_text = '\n'.join([line[1] for line in results if line[1].strip()])
+                        
+                        if ocr_text.strip():
+                            print(f"[PDF_TO_DOCX] OCR successful", flush=True)
+                            for paragraph_text in ocr_text.split('\n'):
+                                if paragraph_text.strip():
+                                    p = document.add_paragraph(paragraph_text)
+                                    p.paragraph_format.space_before = Pt(6)
+                                    p.paragraph_format.space_after = Pt(6)
+                        else:
+                            document.add_paragraph('(No text detected)')
+                        
+                        try:
+                            import os as os_module
+                            os_module.unlink(temp_img)
+                        except:
+                            pass
+                    except Exception as ocr_err:
+                        print(f"[PDF_TO_DOCX] OCR failed: {str(ocr_err)}", flush=True)
+                        document.add_paragraph('(Page with no extractable text)')
                 
                 document.add_paragraph()  # Add spacing between pages
             
             doc_obj.close()
+            print(f"[PDF_TO_DOCX] Writing DOCX file", flush=True)
             document.save(output_path)
             return output_path
         except Exception as e:
-            raise Exception(f"Failed to convert PDF to DOCX: {str(e)}")
+            import traceback
+            error_msg = f"Failed to convert PDF to DOCX: {str(e)}\n{traceback.format_exc()}"
+            print(f"[PDF_TO_DOCX] ERROR: {error_msg}", flush=True)
+            raise Exception(error_msg)
     
     @staticmethod
     def pdf_to_pptx(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
@@ -476,12 +521,18 @@ class PdfConvertEngine:
     
     @staticmethod
     def pdf_to_html(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
-        """Convert PDF to HTML format"""
+        """Convert PDF to HTML format (with OCR support for scanned PDFs)"""
         try:
             pdf_path = input_paths[0]
             page_range = options.get('pageRange', 'all')
+            language = options.get('language', 'en')
+            
+            print(f"[PDF_TO_HTML] Starting conversion: {pdf_path}", flush=True)
             
             doc = fitz.open(pdf_path)
+            
+            # Initialize OCR reader for fallback
+            ocr_reader = None
             
             pages_to_extract = []
             if page_range == 'all':
@@ -519,11 +570,43 @@ class PdfConvertEngine:
                 html_content += f'<h1>Page {page_num + 1}</h1>\n'
                 
                 if text.strip():
+                    print(f"[PDF_TO_HTML] Text found on page {page_num + 1}", flush=True)
                     for line in text.split('\n'):
                         if line.strip():
                             html_content += f'<p>{line.strip()}</p>\n'
                 else:
-                    html_content += '<p><em>(Page with no extractable text)</em></p>\n'
+                    # Try OCR
+                    print(f"[PDF_TO_HTML] No text found, attempting OCR on page {page_num + 1}", flush=True)
+                    try:
+                        if ocr_reader is None:
+                            import easyocr
+                            print(f"[PDF_TO_HTML] Initializing OCR reader", flush=True)
+                            ocr_reader = easyocr.Reader([language], gpu=False, verbose=False)
+                        
+                        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+                        import tempfile
+                        temp_img = tempfile.NamedTemporaryFile(suffix='.png', delete=False).name
+                        pix.save_png(temp_img)
+                        
+                        results = ocr_reader.readtext(temp_img)
+                        ocr_text = '\n'.join([line[1] for line in results if line[1].strip()])
+                        
+                        if ocr_text.strip():
+                            print(f"[PDF_TO_HTML] OCR successful", flush=True)
+                            for line in ocr_text.split('\n'):
+                                if line.strip():
+                                    html_content += f'<p>{line.strip()}</p>\n'
+                        else:
+                            html_content += '<p><em>(No text detected)</em></p>\n'
+                        
+                        try:
+                            import os as os_module
+                            os_module.unlink(temp_img)
+                        except:
+                            pass
+                    except Exception as ocr_err:
+                        print(f"[PDF_TO_HTML] OCR failed: {str(ocr_err)}", flush=True)
+                        html_content += '<p><em>(Page with no extractable text)</em></p>\n'
                 
                 html_content += f'<div class="page-number">Page {page_num + 1}</div>\n'
                 html_content += '</div>\n'
@@ -533,19 +616,27 @@ class PdfConvertEngine:
             
             doc.close()
             
+            print(f"[PDF_TO_HTML] Writing HTML file", flush=True)
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
             
             return output_path
         except Exception as e:
-            raise Exception(f"Failed to convert PDF to HTML: {str(e)}")
+            import traceback
+            error_msg = f"Failed to convert PDF to HTML: {str(e)}\n{traceback.format_exc()}"
+            print(f"[PDF_TO_HTML] ERROR: {error_msg}", flush=True)
+            raise Exception(error_msg)
     
     @staticmethod
     def pdf_to_rtf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
-        """Convert PDF to RTF format"""
+        """Convert PDF to RTF format (with OCR support for scanned PDFs)"""
         try:
             pdf_path = input_paths[0]
             page_range = options.get('pageRange', 'all')
+            language = options.get('language', 'en')
+            
+            print(f"[PDF_TO_RTF] Starting conversion: {pdf_path}", flush=True)
+            print(f"[PDF_TO_RTF] Language for OCR: {language}", flush=True)
             
             doc = fitz.open(pdf_path)
             
@@ -560,11 +651,15 @@ class PdfConvertEngine:
                     else:
                         pages_to_extract.append(int(part)-1)
             
+            # Initialize OCR reader for fallback (lazy load on first use)
+            ocr_reader = None
+            
             rtf_content = r"{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0 Arial;}}" + "\n"
             rtf_content += r"{\colortbl;\red0\green0\blue0;}" + "\n"
             rtf_content += r"\viewkind4\uc1\pard\f0\fs20 " + "\n"
             
             for page_num in pages_to_extract:
+                print(f"[PDF_TO_RTF] Processing page {page_num + 1}/{len(pages_to_extract)}", flush=True)
                 page = doc[page_num]
                 text = page.get_text()
                 
@@ -572,13 +667,91 @@ class PdfConvertEngine:
                 rtf_content += r"\b PDF Page " + str(page_num + 1) + r"\b0 \par \par " + "\n"
                 
                 if text.strip():
+                    print(f"[PDF_TO_RTF] [OK] Text found on page {page_num + 1}", flush=True)
                     for line in text.split('\n'):
                         if line.strip():
                             # Escape special RTF characters
                             line_escaped = line.replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}')
                             rtf_content += line_escaped + r" \par " + "\n"
                 else:
-                    rtf_content += r"\i (Page with no extractable text) \i0 \par " + "\n"
+                    # No text found - try OCR
+                    print(f"[PDF_TO_RTF] [NO_TEXT] No text found, attempting OCR on page {page_num + 1}...", flush=True)
+                    
+                    ocr_attempted = False
+                    try:
+                        # Lazy load OCR reader on first use
+                        if ocr_reader is None:
+                            try:
+                                import easyocr
+                                print(f"[PDF_TO_RTF] Importing easyocr...", flush=True)
+                                print(f"[PDF_TO_RTF] Loading EasyOCR reader for language: {language}", flush=True)
+                                ocr_reader = easyocr.Reader([language], gpu=False, verbose=False)
+                                print(f"[PDF_TO_RTF] [OK] OCR reader initialized", flush=True)
+                            except ImportError as ie:
+                                print(f"[PDF_TO_RTF] [FAIL] EasyOCR import failed: {str(ie)}", flush=True)
+                                raise Exception(f"EasyOCR not installed: {str(ie)}")
+                            except Exception as e:
+                                print(f"[PDF_TO_RTF] [FAIL] Failed to initialize OCR: {str(e)}", flush=True)
+                                raise
+                        
+                        ocr_attempted = True
+                        print(f"[PDF_TO_RTF] Rendering page to image for OCR...", flush=True)
+                        
+                        try:
+                            # Render page to image for OCR (2x zoom for better quality)
+                            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+                            print(f"[PDF_TO_RTF] Image size: {pix.width}x{pix.height}", flush=True)
+                        except Exception as pix_err:
+                            print(f"[PDF_TO_RTF] [FAIL] Failed to render page: {str(pix_err)}", flush=True)
+                            raise
+                        
+                        # Save to temp image
+                        import tempfile
+                        try:
+                            temp_img = tempfile.NamedTemporaryFile(suffix='.png', delete=False).name
+                            pix.save_png(temp_img)
+                            print(f"[PDF_TO_RTF] Saved image to: {temp_img}", flush=True)
+                        except Exception as save_err:
+                            print(f"[PDF_TO_RTF] [FAIL] Failed to save image: {str(save_err)}", flush=True)
+                            raise
+                        
+                        print(f"[PDF_TO_RTF] Running readtext OCR...", flush=True)
+                        try:
+                            # Run OCR
+                            results = ocr_reader.readtext(temp_img)
+                            print(f"[PDF_TO_RTF] OCR readtext completed, found {len(results)} regions", flush=True)
+                        except Exception as ocr_read_err:
+                            print(f"[PDF_TO_RTF] [FAIL] readtext failed: {str(ocr_read_err)}", flush=True)
+                            raise
+                        
+                        # Extract text from OCR results
+                        ocr_text = '\n'.join([line[1] for line in results if line[1].strip()])
+                        print(f"[PDF_TO_RTF] Extracted {len(ocr_text)} characters from OCR", flush=True)
+                        
+                        if ocr_text.strip():
+                            print(f"[PDF_TO_RTF] [OK] OCR successful", flush=True)
+                            for line in ocr_text.split('\n'):
+                                if line.strip():
+                                    line_escaped = line.replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}')
+                                    rtf_content += line_escaped + r" \par " + "\n"
+                        else:
+                            print(f"[PDF_TO_RTF] [NO_TEXT] OCR returned no text", flush=True)
+                            rtf_content += r"\i (No text detected by OCR) \i0 \par " + "\n"
+                        
+                        # Clean up temp file
+                        try:
+                            import os as os_module
+                            os_module.unlink(temp_img)
+                            print(f"[PDF_TO_RTF] Cleaned up temp file", flush=True)
+                        except:
+                            pass
+                            
+                    except Exception as ocr_err:
+                        import traceback
+                        tb = traceback.format_exc()
+                        print(f"[PDF_TO_RTF] [FAIL] OCR exception: {str(ocr_err)}", flush=True)
+                        print(f"[PDF_TO_RTF] Traceback: {tb}", flush=True)
+                        rtf_content += r"\i (Page with no extractable text - OCR failed) \i0 \par " + "\n"
                 
                 rtf_content += r"\par \page " + "\n"
             
@@ -586,8 +759,18 @@ class PdfConvertEngine:
             
             doc.close()
             
+            print(f"[PDF_TO_RTF] Writing RTF file: {output_path}", flush=True)
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(rtf_content)
+            
+            print(f"[PDF_TO_RTF] [OK] Conversion complete", flush=True)
+            return output_path
+            
+        except Exception as e:
+            import traceback
+            error_msg = f"Failed to convert PDF to RTF: {str(e)}\n{traceback.format_exc()}"
+            print(f"[PDF_TO_RTF] [ERROR] {error_msg}", flush=True)
+            raise Exception(error_msg)
             
             return output_path
         except Exception as e:

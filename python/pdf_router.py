@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PDF Tools Router
 Routes PDF tool requests to appropriate engines
@@ -15,6 +16,7 @@ from engines.pdf_edit import PdfEditEngine
 from engines.pdf_security import PdfSecurityEngine
 from engines.pdf_extract import PdfExtractEngine
 from engines.pdf_ocr_translate import PdfOCRTranslateEngine
+from engines.pdf_sign import PdfSignEngine
 
 
 class PdfRouter:
@@ -27,6 +29,7 @@ class PdfRouter:
         'security': PdfSecurityEngine,
         'extract': PdfExtractEngine,
         'ocr_translate': PdfOCRTranslateEngine,
+        'sign': PdfSignEngine,
     }
     
     @staticmethod
@@ -89,7 +92,7 @@ class PdfRouter:
                 'add-watermark': ('edit', 'add_watermark'),
                 'add-numbers-to-pdf': ('edit', 'add_page_numbers'),
                 'annotate-pdf': ('edit', 'annotate'),
-                'esign-pdf': ('edit', 'add_signature'),
+                'esign-pdf': ('sign', 'apply_signatures'),
                 
                 # Security operations
                 'protect-pdf': ('security', 'protect'),
@@ -158,11 +161,24 @@ class PdfRouter:
             return result
             
         except Exception as e:
-            raise Exception(f"PDF processing failed: {str(e)}")
+            import traceback
+            full_traceback = traceback.format_exc()
+            error_msg = f"PDF processing failed: {str(e)}\n{full_traceback}"
+            
+            # Safely print error with encoding fallback
+            try:
+                print(f"[ERROR] {error_msg}", flush=True)
+            except UnicodeEncodeError:
+                safe_msg = error_msg.encode('utf-8', errors='replace').decode('utf-8')
+                print(f"[ERROR] {safe_msg}", flush=True)
+            
+            raise Exception(error_msg)
 
 
 if __name__ == '__main__':
     import sys
+    import traceback
+    import os
     
     if len(sys.argv) < 4:
         print(json.dumps({'error': 'Invalid arguments'}))
@@ -171,11 +187,48 @@ if __name__ == '__main__':
     tool_id = sys.argv[1]
     input_paths = json.loads(sys.argv[2])
     output_path = sys.argv[3]
-    options = json.loads(sys.argv[4]) if len(sys.argv) > 4 else {}
+    
+    # Options can be passed as a JSON string (4th arg) or as a file path (4th arg is a file)
+    options = {}
+    if len(sys.argv) > 4:
+        options_arg = sys.argv[4]
+        # Check if it's a file path (exists as a file)
+        if os.path.isfile(options_arg):
+            # Read options from file
+            try:
+                with open(options_arg, 'r') as f:
+                    options = json.load(f)
+            except Exception as e:
+                print(json.dumps({'error': f'Failed to read options file: {str(e)}'}))
+                sys.exit(1)
+        else:
+            # Parse as JSON string
+            try:
+                options = json.loads(options_arg)
+            except json.JSONDecodeError as e:
+                print(json.dumps({'error': f'Invalid options JSON: {str(e)}'}))
+                sys.exit(1)
     
     try:
         result = PdfRouter.process(tool_id, input_paths, output_path, options)
-        print(json.dumps({'success': True, 'output': result}))
+        print(json.dumps({'success': True, 'output': result}), flush=True)
     except Exception as e:
-        print(json.dumps({'error': str(e)}))
+        error_msg = str(e)
+        full_traceback = traceback.format_exc()
+        combined_error = f"{error_msg}\n{full_traceback}"
+        
+        # Safely print errors with encoding fallback
+        try:
+            print(combined_error, flush=True)
+        except UnicodeEncodeError:
+            # Fallback: encode to ASCII with errors replaced
+            print(combined_error.encode('utf-8', errors='replace').decode('utf-8'), flush=True)
+        
+        try:
+            print(json.dumps({'error': combined_error}), flush=True)
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            # Fallback: encode errors safely
+            safe_error = combined_error.encode('utf-8', errors='replace').decode('utf-8')
+            print(json.dumps({'error': safe_error}), flush=True)
+        
         sys.exit(1)

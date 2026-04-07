@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
   const timestamp = Date.now();
   let inputFiles: string[] = [];
   let outputFile = '';
+  let optionsFile = ''; // For large options that need file-based passing
   let toolId = ''; // Move to outer scope so catch block can access it
 
   try {
@@ -87,28 +88,79 @@ export async function POST(request: NextRequest) {
     console.log(`[PDF API] Script path: ${pythonScript}`);
     console.log(`[PDF API] Tool ID: ${toolId}`);
     console.log(`[PDF API] Input files: ${JSON.stringify(inputFiles)}`);
+    
+    // Extra logging for esign-pdf
+    if (toolId === 'esign-pdf') {
+      console.log(`[PDF API] [ESIGN] Options keys: ${Object.keys(options).join(', ')}`);
+      if (options.signatures) {
+        console.log(`[PDF API] [ESIGN] Signatures JSON string length: ${options.signatures.length}`);
+        console.log(`[PDF API] [ESIGN] Signatures JSON prefix: ${typeof options.signatures === 'string' ? options.signatures.substring(0, 100) : 'NOT A STRING'}`);
+        try {
+          const sigsArray = JSON.parse(options.signatures);
+          console.log(`[PDF API] [ESIGN] Parsed ${sigsArray.length} signatures`);
+          sigsArray.forEach((sig: any, idx: number) => {
+            console.log(`[PDF API] [ESIGN] Signature ${idx}: type=${sig.type}, page=${sig.page}, base64Length=${sig.imageData?.length || 0}`);
+          });
+        } catch (e) {
+          console.error(`[PDF API] [ESIGN] Failed to parse signatures JSON: ${e}`);
+        }
+      }
+    }
+
+    const pythonArgs = [
+      toolId,
+      JSON.stringify(inputFiles),
+      outputFile,
+    ];
+    
+    // For tools with large options (like esign-pdf with base64 signatures), write options to a file
+    if (toolId === 'esign-pdf' || JSON.stringify(options).length > 5000) {
+      optionsFile = path.join(tempDir, `options_${timestamp}.json`);
+      await writeFile(optionsFile, JSON.stringify(options));
+      pythonArgs.push(optionsFile);
+      console.log(`[PDF API] Wrote options to file: ${optionsFile}`);
+    } else {
+      pythonArgs.push(JSON.stringify(options));
+    }
+    
+    if (toolId === 'esign-pdf') {
+      console.log(`[PDF API] [ESIGN] About to call Python with ${optionsFile ? 'options file: ' + optionsFile : 'options arg'}`);
+    }
 
     const result = await new Promise<{ success: boolean; output?: string; error?: string; debug?: string }>((resolve, reject) => {
       const pythonProcess = spawn(pythonExe, [
         pythonScript,
-        toolId,
-        JSON.stringify(inputFiles),
-        outputFile,
-        JSON.stringify(options),
+        ...pythonArgs,
       ]);
+
+      // Set a longer timeout for OCR operations (15 minutes for model download)
+      const timeout = toolId === 'pdf-ocr' ? 15 * 60 * 1000 : 5 * 60 * 1000;
+      const timeoutHandle = setTimeout(() => {
+        pythonProcess.kill();
+        reject(new Error(`Python process timeout after ${timeout / 1000}s for tool: ${toolId}. For OCR on first run, EasyOCR needs to download language models (~200MB). Please try again.`));
+      }, timeout);
 
       let stdout = '';
       let stderr = '';
 
       pythonProcess.stdout.on('data', (data) => {
         stdout += data.toString();
+        // Log OCR progress
+        if (toolId === 'pdf-ocr' && stdout.includes('[OCR]')) {
+          console.log('[PDF API OCR Progress]:', data.toString().trim());
+        }
       });
 
       pythonProcess.stderr.on('data', (data) => {
         stderr += data.toString();
+        // Log warnings/progress from EasyOCR
+        if (data.toString().includes('Downloading')) {
+          console.log('[PDF API] Model Download:', data.toString().trim());
+        }
       });
 
       pythonProcess.on('error', (err) => {
+        clearTimeout(timeoutHandle);
         console.error('[PDF API] Failed to start Python process:', {
           error: err.message,
           code: (err as any).code,
@@ -119,6 +171,7 @@ export async function POST(request: NextRequest) {
       });
 
       pythonProcess.on('close', (code) => {
+        clearTimeout(timeoutHandle);
         if (code !== 0) {
           const errorMsg = stderr || stdout || 'Unknown error';
           console.error('[PDF API] Python process failed:', { 
@@ -214,6 +267,9 @@ export async function POST(request: NextRequest) {
           await unlink(file);
         }
         await unlink(result.output || outputFile);
+        if (optionsFile) {
+          await unlink(optionsFile);
+        }
       } catch {
         // Ignore cleanup errors
       }
@@ -233,6 +289,9 @@ export async function POST(request: NextRequest) {
       }
       if (outputFile) {
         await unlink(outputFile);
+      }
+      if (optionsFile) {
+        await unlink(optionsFile);
       }
     } catch {
       // Ignore cleanup errors

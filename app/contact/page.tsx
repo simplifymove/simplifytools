@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { FormEvent } from 'react';
+import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 

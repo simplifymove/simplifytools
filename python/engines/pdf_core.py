@@ -282,38 +282,88 @@ class PdfCoreEngine:
     
     @staticmethod
     def compress(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
-        """Compress PDF by recompressing images and removing unused objects"""
+        """Compress PDF using pikepdf with aggressive compression settings"""
         try:
+            import os as os_module
+            import warnings
+            
             pdf_path = input_paths[0]
-            compression_level = options.get('level', 'medium')  # low, medium, high
+            compression_level = options.get('level', 'medium')
+            
+            print(f"[COMPRESS] Starting PDF compression...", flush=True)
+            
+            original_size = os_module.path.getsize(pdf_path)
+            print(f"[COMPRESS] Original size: {original_size / 1024 / 1024:.2f} MB", flush=True)
+            print(f"[COMPRESS] Compression level: {compression_level}", flush=True)
+            
+            # Suppress warnings and logger messages
+            warnings.filterwarnings('ignore')
+            
+            # Try pikepdf first for best compression
+            try:
+                import pikepdf
+                import logging
+                
+                # Suppress pikepdf logger
+                logging.getLogger('pikepdf').setLevel(logging.CRITICAL)
+                
+                print(f"[COMPRESS] Using pikepdf for compression...", flush=True)
+                
+                with pikepdf.open(pdf_path) as pdf:
+                    print(f"[COMPRESS] PDF opened, {len(pdf.pages)} pages", flush=True)
+                    
+                    # Apply compression based on level
+                    print(f"[COMPRESS] Compressing streams...", flush=True)
+                    pdf.compress_streams()
+                    
+                    if compression_level in ['high', 'maximum']:
+                        print(f"[COMPRESS] Removing unreferenced objects...", flush=True)
+                        pdf.remove_unreferenced_objects()
+                    
+                    # Save with pikepdf options
+                    print(f"[COMPRESS] Writing compressed PDF...", flush=True)
+                    pdf.save(output_path, compress_streams=True, object_stream_mode=pikepdf.ObjectStreamMode.generate)
+                
+                compressed_size = os_module.path.getsize(output_path)
+                reduction = ((original_size - compressed_size) / original_size) * 100
+                
+                print(f"[COMPRESS] Compressed size: {compressed_size / 1024 / 1024:.2f} MB", flush=True)
+                print(f"[COMPRESS] Reduction: {reduction:.1f}%", flush=True)
+                
+                return output_path
+                
+            except Exception as e:
+                print(f"[COMPRESS] pikepdf method failed, trying PyMuPDF: {str(e)}", flush=True)
+            
+            # Fallback to PyMuPDF compression if pikepdf fails
+            print(f"[COMPRESS] Using PyMuPDF for compression...", flush=True)
             
             doc = fitz.open(pdf_path)
+            print(f"[COMPRESS] PDF opened, {len(doc)} pages", flush=True)
             
-            # Compression quality settings
-            quality_map = {
-                'low': 85,     # Lower compression
-                'medium': 70,  # Medium
-                'high': 50     # High compression
-            }
-            quality = quality_map.get(compression_level, 70)
+            # Set garbage collection level based on compression
+            garbage_level = {
+                'low': 1,
+                'medium': 2,
+                'high': 3
+            }.get(compression_level, 2)
             
-            for page_num in range(len(doc)):
-                page = doc[page_num]
-                # Re-compress images
-                images = page.get_images()
-                for img_index in images:
-                    xref = img_index[0]
-                    pix = fitz.Pixmap(doc, xref)
-                    if pix.n - pix.alpha < 4:  # GRAY or RGB
-                        pix = fitz.Pixmap(fitz.csRGB, pix)
-                    pix.save_png(f'/tmp/img_{xref}.png')
-                    pix_new = fitz.Pixmap(f'/tmp/img_{xref}.png')
-                    doc.replace_image(xref, pixmap=pix_new)
+            print(f"[COMPRESS] Applying garbage collection level {garbage_level}...", flush=True)
             
-            # Clean unused objects
-            doc.xref_stream()
-            doc.save(output_path, garbage=3, deflate=True)
+            # Save with maximum compression
+            doc.save(output_path, garbage=garbage_level, deflate=True, incremental=False)
             doc.close()
+            
+            compressed_size = os_module.path.getsize(output_path)
+            reduction = ((original_size - compressed_size) / original_size) * 100
+            
+            print(f"[COMPRESS] Compressed size: {compressed_size / 1024 / 1024:.2f} MB", flush=True)
+            print(f"[COMPRESS] Reduction: {reduction:.1f}%", flush=True)
+            
             return output_path
+            
         except Exception as e:
-            raise Exception(f"Failed to compress PDF: {str(e)}")
+            import traceback
+            error_msg = f"Failed to compress PDF: {str(e)}\n{traceback.format_exc()}"
+            print(f"[COMPRESS] ERROR: {error_msg}", flush=True)
+            raise Exception(error_msg)

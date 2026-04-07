@@ -10,6 +10,12 @@ import numpy as np
 import tempfile
 import os
 import time
+import platform
+import sys
+import warnings
+
+# Suppress warnings
+warnings.filterwarnings('ignore')
 
 
 class PdfOCRTranslateEngine:
@@ -19,14 +25,42 @@ class PdfOCRTranslateEngine:
     def ocr_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Extract text from scanned PDF using OCR (creates searchable PDF)"""
         try:
-            import pytesseract
+            import easyocr
+        except ImportError:
+            raise Exception(
+                "easyocr is not installed. "
+                "Install it with: pip install easyocr"
+            )
+        
+        try:
+            if not input_paths or len(input_paths) == 0:
+                raise Exception("No input PDF file provided")
             
             pdf_path = input_paths[0]
-            language = options.get('language', 'eng')  # OCR language
+            if not os.path.exists(pdf_path):
+                raise Exception(f"PDF file not found: {pdf_path}")
+            
+            language = options.get('language', 'en')  # OCR language (use 'en' for English)
+            print(f"[OCR] Language code received: {language}")
+            
+            # Normalize language codes from tesseract format to easyocr format
+            language_map = {
+                'eng': 'en', 'deu': 'de', 'fra': 'fr', 'spa': 'es',
+                'ita': 'it', 'por': 'pt', 'rus': 'ru', 'jpn': 'ja',
+                'kor': 'ko', 'chi_sim': 'ch_sim', 'chi_tra': 'ch_tra'
+            }
+            language = language_map.get(language, language.split('_')[0][:2])  # Use first 2 chars if not in map
+            print(f"[OCR] Normalized language code: {language}")
+            
             page_range = options.get('pageRange', 'all')
-            output_format = options.get('outputFormat', 'pdf')  # pdf, txt
+            output_format = options.get('outputFormat', 'docx')  # docx, pdf, txt (default: Word doc)
+            
+            # Initialize EasyOCR reader (downloads models on first use)
+            print(f"[OCR] Initializing EasyOCR reader for language: {language}", flush=True)
+            reader = easyocr.Reader([language], gpu=False, verbose=False)  # Set gpu=True if NVIDIA GPU available
             
             doc = fitz.open(pdf_path)
+            print(f"[OCR] Opened PDF with {len(doc)} pages", flush=True)
             
             pages_to_ocr = []
             if page_range == 'all':
@@ -39,13 +73,16 @@ class PdfOCRTranslateEngine:
                     else:
                         pages_to_ocr.append(int(part)-1)
             
+            print(f"[OCR] Processing {len(pages_to_ocr)} pages", flush=True)
+            
             ocr_content = []
             new_doc = None
             
             if output_format == 'pdf':
                 new_doc = fitz.open()
             
-            for page_num in pages_to_ocr:
+            for idx, page_num in enumerate(pages_to_ocr):
+                print(f"[OCR] Page {idx + 1}/{len(pages_to_ocr)}: Processing page {page_num + 1}...", flush=True)
                 page = doc[page_num]
                 
                 # Convert page to image
@@ -54,41 +91,77 @@ class PdfOCRTranslateEngine:
                 # Save image temporarily
                 temp_dir = tempfile.gettempdir()
                 temp_img = os.path.join(temp_dir, f'ocr_{page_num}_{int(time.time() * 1000)}.png')
-                pix.save_png(temp_img)
+                pix.save(temp_img)
                 
-                # Run OCR
-                img = Image.open(temp_img)
-                ocr_text = pytesseract.image_to_string(img, lang=language)
-                ocr_content.append(ocr_text)
-                
-                if output_format == 'pdf':
-                    # Create new page with extracted text
-                    new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
-                    # Insert original page as image background
-                    new_page.insert_image(page.rect, pixmap=pix)
-                    # Add OCR text as overlay (optional - for searchability)
-                    new_page.insert_text((50, 50), ocr_text[:500], fontsize=8, color=(1, 1, 1), 
-                                       text_matrix=fitz.Matrix(0.1, 0.1))  # Transparent text
-                
-                # Clean up temp file
                 try:
-                    os.remove(temp_img)
-                except:
-                    pass
+                    # Run OCR using EasyOCR
+                    print(f"[OCR] Running EasyOCR...", flush=True)
+                    results = reader.readtext(temp_img)
+                    print(f"[OCR] EasyOCR found {len(results)} text regions", flush=True)
+                    
+                    # Extract text from results
+                    ocr_text = '\n'.join([text[1] for text in results]) if results else "[No text detected]"
+                    ocr_content.append(ocr_text)
+                    
+                    if output_format == 'pdf':
+                        # Create new page with extracted text
+                        new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
+                        # Insert original page as image background
+                        new_page.insert_image(page.rect, pixmap=pix)
+                        # Add OCR text as overlay (optional - for searchability)
+                        if ocr_text and ocr_text != "[No text detected]":
+                            # Use white text with reduced opacity for background
+                            new_page.insert_text((50, 50), ocr_text[:500], fontsize=7)
+                    
+                    print(f"[OCR] Page {page_num + 1} completed", flush=True)
+                finally:
+                    # Clean up temp file
+                    try:
+                        os.remove(temp_img)
+                    except:
+                        pass
             
             doc.close()
             
+            # Save output in requested format
             if output_format == 'pdf':
+                print(f"[OCR] Saving output PDF...", flush=True)
                 new_doc.save(output_path)
                 new_doc.close()
+            elif output_format == 'docx':
+                print(f"[OCR] Creating Word document...", flush=True)
+                from docx import Document
+                from docx.shared import Pt, RGBColor
+                from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+                
+                word_doc = Document()
+                word_doc.add_heading('OCR Extracted Text', level=1)
+                word_doc.add_paragraph(f'Source PDF: {os.path.basename(pdf_path)}')
+                word_doc.add_paragraph(f'Pages Processed: {len(pages_to_ocr)}')
+                word_doc.add_paragraph()
+                
+                for idx, text in enumerate(ocr_content):
+                    # Add page heading
+                    word_doc.add_heading(f'Page {pages_to_ocr[idx] + 1}', level=2)
+                    # Add OCR text
+                    word_doc.add_paragraph(text)
+                    word_doc.add_paragraph()  # Add spacing
+                
+                word_doc.save(output_path)
+                print(f"[OCR] Word document saved", flush=True)
             else:  # txt
+                print(f"[OCR] Saving output text file...", flush=True)
                 with open(output_path, 'w', encoding='utf-8') as f:
                     for idx, text in enumerate(ocr_content):
-                        f.write(f"--- Page {idx + 1} ---\n{text}\n\n")
+                        f.write(f"--- Page {pages_to_ocr[idx] + 1} ---\n{text}\n\n")
             
+            print(f"[OCR] OCR completed successfully: {output_path}", flush=True)
             return output_path
         except Exception as e:
-            raise Exception(f"Failed to OCR PDF: {str(e)}")
+            import traceback
+            error_msg = f"Failed to OCR PDF: {str(e)}\n{traceback.format_exc()}"
+            print(f"[OCR ERROR] {error_msg}", flush=True)
+            raise Exception(error_msg)
     
     @staticmethod
     def deskew_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
