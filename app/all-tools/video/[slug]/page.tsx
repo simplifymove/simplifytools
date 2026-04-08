@@ -147,7 +147,7 @@ export default function VideoToolPage({ params }: PageProps) {
           >
             <Link href="/" className="hover:opacity-80 transition">Home</Link>
             <ChevronRight size={16} />
-            <Link href="/all-tools/video" className="hover:opacity-80 transition">Video Tools</Link>
+            <Link href="/all-tools/video-tools" className="hover:opacity-80 transition">Video Tools</Link>
             <ChevronRight size={16} />
             <span className="opacity-90">{tool.title}</span>
           </motion.div>

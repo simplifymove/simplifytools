@@ -18,7 +18,8 @@ class PdfEditEngine:
         try:
             pdf_path = input_paths[0]
             text = options.get('text', '')
-            page_num = int(options.get('pageNumber', 0))
+            # Frontend sends 1-indexed page numbers, PyMuPDF uses 0-indexed
+            page_num = int(options.get('pageNumber', 1)) - 1
             x = float(options.get('x', 50))
             y = float(options.get('y', 50))
             font_size = float(options.get('fontSize', 12))
@@ -238,38 +239,132 @@ class PdfEditEngine:
     
     @staticmethod
     def annotate(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
-        """Add annotations to PDF"""
+        """Add annotations to PDF from annotation objects"""
         try:
             pdf_path = input_paths[0]
-            page_num = int(options.get('pageNumber', 0))
-            annotation_type = options.get('type', 'highlight')  # highlight, note, underline
-            text = options.get('text', '')
-            rect = options.get('rect', [0, 0, 100, 100])  # [x0, y0, x1, y1]
+            annotations = options.get('annotations', [])
             
             doc = fitz.open(pdf_path)
-            page = doc[page_num]
             
-            rect_obj = fitz.Rect(rect)
+            # Process each annotation
+            for ann in annotations:
+                # Frontend sends 1-indexed page numbers, PyMuPDF uses 0-indexed
+                page_num = ann.get('page', 1) - 1
+                if page_num < 0 or page_num >= len(doc):
+                    continue
+                    
+                page = doc[page_num]
+                ann_type = ann.get('type', 'highlight')
+                color = ann.get('color', '#FFFF00')
+                opacity = ann.get('opacity', 0.5)
+                
+                # Convert hex color to RGB tuple
+                color_hex = color.lstrip('#')
+                try:
+                    color_rgb = tuple(int(color_hex[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+                except:
+                    color_rgb = (1.0, 1.0, 0.0)  # Default yellow
+                
+                if ann_type == 'highlight':
+                    if all(k in ann for k in ['x', 'y', 'width', 'height']):
+                        rect = fitz.Rect(
+                            ann['x'],
+                            ann['y'],
+                            ann['x'] + ann['width'],
+                            ann['y'] + ann['height']
+                        )
+                        annot = page.add_highlight_annot(rect)
+                        if annot:
+                            # For highlights, set both stroke and fill colors
+                            annot.set_colors({"stroke": color_rgb, "fill": color_rgb})
+                            # Also set the transparency
+                            annot.set_opacity(opacity)
+                
+                elif ann_type == 'underline':
+                    if all(k in ann for k in ['x', 'y', 'width', 'height']):
+                        rect = fitz.Rect(
+                            ann['x'],
+                            ann['y'],
+                            ann['x'] + ann['width'],
+                            ann['y'] + ann['height']
+                        )
+                        annot = page.add_underline_annot(rect)
+                        if annot:
+                            annot.set_colors({"stroke": color_rgb})
+                            annot.set_opacity(opacity)
+                
+                elif ann_type == 'strikethrough':
+                    if all(k in ann for k in ['x', 'y', 'width', 'height']):
+                        rect = fitz.Rect(
+                            ann['x'],
+                            ann['y'],
+                            ann['x'] + ann['width'],
+                            ann['y'] + ann['height']
+                        )
+                        # Strikethrough uses line annotation
+                        line_points = [
+                            fitz.Point(ann['x'], ann['y'] + ann['height'] / 2),
+                            fitz.Point(ann['x'] + ann['width'], ann['y'] + ann['height'] / 2)
+                        ]
+                        # add_polyline_annot expects points directly, not wrapped in another list
+                        annot = page.add_polyline_annot(line_points)
+                        if annot:
+                            annot.set_colors({"stroke": color_rgb})
+                            annot.set_border({"width": 2})
+                            annot.set_opacity(opacity)
+                
+                elif ann_type == 'freehand' and 'points' in ann:
+                    # Convert points to polyline
+                    points = ann.get('points', [])
+                    if len(points) > 1:
+                        fitz_points = [fitz.Point(p['x'], p['y']) for p in points]
+                        # add_polyline_annot expects points directly, not wrapped in another list
+                        annot = page.add_polyline_annot(fitz_points)
+                        if annot:
+                            annot.set_colors({"stroke": color_rgb})
+                            annot.set_border({"width": 2})
+                            annot.set_opacity(opacity)
+                
+                elif ann_type == 'text':
+                    if all(k in ann for k in ['x', 'y', 'text']):
+                        # Add as a visible text annotation (comment)
+                        text = ann.get('text', '')
+                        annot = page.add_text_annot(
+                            fitz.Point(ann['x'], ann['y']),
+                            text
+                        )
+                        if annot:
+                            annot.set_colors({"stroke": color_rgb})
+                            annot.set_opacity(opacity)
+                
+                elif ann_type == 'comment':
+                    if all(k in ann for k in ['x', 'y', 'text']):
+                        # Add as a popup comment
+                        text = ann.get('text', '')
+                        annot = page.add_text_annot(
+                            fitz.Point(ann['x'], ann['y']),
+                            text,
+                            icon='Comment'
+                        )
+                        if annot:
+                            annot.set_colors({"stroke": color_rgb})
+                            annot.set_opacity(opacity)
             
-            if annotation_type == 'highlight':
-                page.add_highlight_annot(rect_obj)
-            elif annotation_type == 'note':
-                page.add_text_annot(rect_obj.tl, text)
-            elif annotation_type == 'underline':
-                page.add_underline_annot(rect_obj)
-            
+            # Save the annotated PDF
             doc.save(output_path)
             doc.close()
             return output_path
         except Exception as e:
-            raise Exception(f"Failed to annotate PDF: {str(e)}")
+            import traceback
+            raise Exception(f"Failed to annotate PDF: {str(e)}\n{traceback.format_exc()}")
     
     @staticmethod
     def add_signature(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Add signature to PDF"""
         try:
             pdf_path = input_paths[0]
-            page_num = int(options.get('pageNumber', 0))
+            # Frontend sends 1-indexed page numbers, PyMuPDF uses 0-indexed
+            page_num = int(options.get('pageNumber', 1)) - 1
             x = float(options.get('x', 50))
             y = float(options.get('y', 50))
             signature_text = options.get('signatureText', 'Signed')

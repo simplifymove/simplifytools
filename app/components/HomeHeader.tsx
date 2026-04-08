@@ -43,7 +43,7 @@ export function HomeHeader() {
       icon: FileText,
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
-      count: '47+',
+      count: '54+',
       link: '/all-tools/pdf-tools',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
@@ -54,7 +54,7 @@ export function HomeHeader() {
       icon: ImageIcon,
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
-      count: '30+',
+      count: '80+',
       link: '/all-tools/image-tools',
       glowColor: 'group-hover:shadow-orange-500/20'
     },
@@ -65,7 +65,7 @@ export function HomeHeader() {
       icon: Video,
       color: 'from-pink-500 via-pink-600 to-pink-700',
       bgColor: 'bg-pink-50',
-      count: '10+',
+      count: '58+',
       link: '/all-tools/video-tools',
       glowColor: 'group-hover:shadow-pink-500/20'
     },
@@ -76,7 +76,7 @@ export function HomeHeader() {
       icon: PenTool,
       color: 'from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-50',
-      count: '50+',
+      count: '60+',
       link: '/all-tools/ai-tools',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
@@ -143,7 +143,7 @@ export function HomeHeader() {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-8">
             {/* All Tools Dropdown */}
-            <div className="relative group pb-2">
+            <div className="relative group">
               <Link 
                 href="/all-tools"
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative flex items-center gap-1 py-2 px-1"

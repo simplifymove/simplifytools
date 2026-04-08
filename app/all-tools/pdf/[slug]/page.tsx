@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
 import { validatePdfInput } from '@/app/lib/pdf-validation';
 import { PdfCropEditor } from '@/app/components/PdfCropEditor';
+import PdfAnnotator from '@/app/components/PdfAnnotator';
 import type { PdfToolConfig } from '@/app/lib/pdf-tools';
 import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, Shield } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
@@ -21,6 +22,11 @@ export default function PdfToolPage({ params }: PageProps) {
   // Unwrap params promise
   const resolvedParams = React.use(params);
   const tool = getPdfToolById(resolvedParams.slug);
+
+  // Special handling for annotate-pdf
+  if (tool && resolvedParams.slug === 'annotate-pdf') {
+    return <AnnotatePdfPage tool={tool} />;
+  }
 
   const [files, setFiles] = useState<File[]>([]);
   const [url, setUrl] = useState('');
@@ -526,6 +532,267 @@ export default function PdfToolPage({ params }: PageProps) {
           </p>
         </motion.div>
       </motion.div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+// Special component for Annotate PDF tool
+function AnnotatePdfPage({ tool }: { tool: PdfToolConfig }) {
+  const [files, setFiles] = useState<File[]>([]);
+  const [annotations, setAnnotations] = useState<any[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 0) {
+      setFiles(selectedFiles);
+      setSaveError('');
+      setSaveSuccess('');
+    }
+  };
+
+  const handleAnnotationsChange = (newAnnotations: any[]) => {
+    setAnnotations(newAnnotations);
+  };
+
+  const handleDownloadAnnotated = async () => {
+    if (files.length === 0) {
+      setSaveError('Please upload a PDF first');
+      return;
+    }
+
+    setSaving(true);
+    setSaveError('');
+    setSaveSuccess('');
+
+    try {
+      const formData = new FormData();
+      formData.append('tool', tool.id);
+      formData.append('file', files[0]);
+      formData.append('options', JSON.stringify({
+        annotations: annotations,
+      }));
+
+      const response = await fetch('/api/pdf', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save annotations');
+      }
+
+      // Download the annotated PDF
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `annotated_${files[0].name}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+
+      setSaveSuccess('PDF with annotations downloaded successfully!');
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
+      setSaveError(errorMsg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Header */}
+        <div className="relative bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 py-12 px-4 md:px-8 overflow-hidden">
+          <motion.div
+            className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
+            animate={{ x: [0, 30, -20, 0], y: [0, -30, 20, 0] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
+            animate={{ x: [0, -30, 20, 0], y: [0, 30, -20, 0] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          />
+
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
+              <Link href="/" className="hover:text-white transition">Home</Link>
+              <ChevronRight size={16} />
+              <Link href="/all-tools/pdf" className="hover:text-white transition">PDF Tools</Link>
+              <ChevronRight size={16} />
+              <span className="text-white">{tool.title}</span>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                ✏️ {tool.title}
+              </h1>
+              <p className="text-lg text-white/90 max-w-2xl">
+                {tool.description}
+              </p>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-8">
+          <div className="grid md:grid-cols-1 gap-8">
+            {/* Upload Section */}
+            {files.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="bg-white rounded-2xl shadow-xl p-12 border border-gray-100">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-8">📄 Upload PDF to Annotate</h2>
+
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-purple-300 rounded-2xl p-12 text-center cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all group"
+                  >
+                    <Upload className="w-16 h-16 text-purple-500 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+                    <p className="text-lg font-semibold text-gray-700 mb-2">
+                      Click to upload or drag & drop
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      PDF files up to 100MB
+                    </p>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Annotator Section */}
+            {files.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+              >
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">📝 Annotation Tools</h2>
+                      <p className="text-sm text-gray-600">
+                        File: <span className="font-semibold">{files[0].name}</span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setFiles([])}
+                      className="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition"
+                    >
+                      Change File
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ height: '600px', overflow: 'hidden' }}>
+                  <PdfAnnotator
+                    file={files[0]}
+                    onAnnotationsChange={handleAnnotationsChange}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Download Section */}
+            {files.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">⬇️ Save & Download</h2>
+
+                {saveError && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex gap-3"
+                  >
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-red-900">Error</p>
+                      <p className="text-sm text-red-700">{saveError}</p>
+                    </div>
+                  </motion.div>
+                )}
+
+                {saveSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl flex gap-3"
+                  >
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-green-900">Success</p>
+                      <p className="text-sm text-green-700">{saveSuccess}</p>
+                    </div>
+                  </motion.div>
+                )}
+
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl mb-6">
+                  <p className="text-sm text-blue-700">
+                    <strong>Total Annotations:</strong> {annotations.length}
+                  </p>
+                </div>
+
+                <motion.button
+                  onClick={handleDownloadAnnotated}
+                  disabled={saving || annotations.length === 0}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-purple-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      Download Annotated PDF
+                    </>
+                  )}
+                </motion.button>
+
+                {annotations.length === 0 && (
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    Add annotations to enable download
+                  </p>
+                )}
+              </motion.div>
+            )}
+          </div>
         </div>
       </main>
       <Footer />

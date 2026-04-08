@@ -128,10 +128,14 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await new Promise<{ success: boolean; output?: string; error?: string; debug?: string }>((resolve, reject) => {
+      console.log(`[PDF API] Spawning Python process with cwd: ${process.cwd()}`);
       const pythonProcess = spawn(pythonExe, [
         pythonScript,
         ...pythonArgs,
-      ]);
+      ], {
+        cwd: process.cwd(), // Explicitly set working directory
+        stdio: ['pipe', 'pipe', 'pipe'], // Keep pipes for stdout and stderr
+      });
 
       // Set a longer timeout for OCR operations (15 minutes for model download)
       const timeout = toolId === 'pdf-ocr' ? 15 * 60 * 1000 : 5 * 60 * 1000;
@@ -174,11 +178,9 @@ export async function POST(request: NextRequest) {
         clearTimeout(timeoutHandle);
         if (code !== 0) {
           const errorMsg = stderr || stdout || 'Unknown error';
-          console.error('[PDF API] Python process failed:', { 
-            code, 
-            stderr: stderr.substring(0, 500), 
-            stdout: stdout.substring(0, 500) 
-          });
+          console.error('[PDF API] Python process failed with exit code:', code);
+          console.error('[PDF API] STDERR (full):', stderr);
+          console.error('[PDF API] STDOUT (full):', stdout);
           reject(new Error(`Python process failed (code ${code}): ${errorMsg}`));
           return;
         }
@@ -200,11 +202,19 @@ export async function POST(request: NextRequest) {
           
           if (!jsonLine) {
             console.error('[PDF API] No JSON output found in Python response');
-            console.log('[PDF API] Raw stdout:', stdout);
+            console.error('[PDF API] Raw stdout (full):', stdout);
+            console.error('[PDF API] Raw stderr (full):', stderr);
             throw new Error('No JSON output found from Python');
           }
           
           result = JSON.parse(jsonLine);
+          
+          // Check if Python returned an error
+          if (!result.success && result.error) {
+            console.error('[PDF API] Python returned error:', result.error);
+            throw new Error(result.error);
+          }
+          
           console.log('[PDF API] Python process succeeded:', { success: result.success, hasOutput: !!result.output });
           
           // Include debug logs if available
@@ -298,11 +308,14 @@ export async function POST(request: NextRequest) {
     }
 
     const message = error instanceof Error ? error.message : 'Unknown error';
+    const fullError = error instanceof Error ? error.toString() : JSON.stringify(error);
+    
     console.error('[PDF API] Error:', { 
       message, 
       toolId,
       inputFiles: inputFiles.length,
-      errorType: error instanceof Error ? 'Error' : typeof error
+      errorType: error instanceof Error ? 'Error' : typeof error,
+      fullError
     });
     return NextResponse.json(
       { error: `PDF processing failed: ${message}` },

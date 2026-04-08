@@ -48,7 +48,7 @@ export default function Home() {
       icon: FileText,
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
-      count: '47+',
+      count: '54+',
       link: '/all-tools/pdf-tools',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
@@ -59,7 +59,7 @@ export default function Home() {
       icon: Image,
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
-      count: '30+',
+      count: '80+',
       link: '/all-tools/image-tools',
       glowColor: 'group-hover:shadow-orange-500/20'
     },
@@ -70,7 +70,7 @@ export default function Home() {
       icon: Video,
       color: 'from-pink-500 via-pink-600 to-pink-700',
       bgColor: 'bg-pink-50',
-      count: '10+',
+      count: '58+',
       link: '/all-tools/video-tools',
       glowColor: 'group-hover:shadow-pink-500/20'
     },
@@ -81,7 +81,7 @@ export default function Home() {
       icon: PenTool,
       color: 'from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-50',
-      count: '50+',
+      count: '60+',
       link: '/all-tools/ai-tools',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
@@ -103,7 +103,7 @@ export default function Home() {
       icon: Code2,
       color: 'from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-50',
-      count: '44',
+      count: '44+',
       link: '/all-tools/code-tools',
       glowColor: 'group-hover:shadow-green-500/20'
     },

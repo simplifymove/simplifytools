@@ -6,8 +6,14 @@ Routes PDF tool requests to appropriate engines
 
 import json
 import os
+import sys
 from typing import Dict, Any
 from pathlib import Path
+
+# Add the python directory to the path so we can import engines
+python_dir = os.path.dirname(os.path.abspath(__file__))
+if python_dir not in sys.path:
+    sys.path.insert(0, python_dir)
 
 # Import all engines
 from engines.pdf_core import PdfCoreEngine
@@ -179,56 +185,113 @@ if __name__ == '__main__':
     import sys
     import traceback
     import os
+    import logging
     
-    if len(sys.argv) < 4:
-        print(json.dumps({'error': 'Invalid arguments'}))
-        sys.exit(1)
+    # Set up logging to capture detailed errors
+    log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tmp', 'pdf_debug.log')
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
     
-    tool_id = sys.argv[1]
-    input_paths = json.loads(sys.argv[2])
-    output_path = sys.argv[3]
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    logger = logging.getLogger('PdfRouter')
     
-    # Options can be passed as a JSON string (4th arg) or as a file path (4th arg is a file)
-    options = {}
-    if len(sys.argv) > 4:
-        options_arg = sys.argv[4]
-        # Check if it's a file path (exists as a file)
-        if os.path.isfile(options_arg):
-            # Read options from file
-            try:
-                with open(options_arg, 'r') as f:
-                    options = json.load(f)
-            except Exception as e:
-                print(json.dumps({'error': f'Failed to read options file: {str(e)}'}))
-                sys.exit(1)
-        else:
-            # Parse as JSON string
-            try:
-                options = json.loads(options_arg)
-            except json.JSONDecodeError as e:
-                print(json.dumps({'error': f'Invalid options JSON: {str(e)}'}))
-                sys.exit(1)
-    
+    # Wrap everything in try-except to catch any initialization errors
     try:
+        logger.info(f"PDF Router started with {len(sys.argv)} arguments")
+        logger.info(f"Arguments: {sys.argv}")
+        logger.info(f"Working directory: {os.getcwd()}")
+        
+        if len(sys.argv) < 4:
+            error_msg = f'Invalid arguments: expected at least 4 args, got {len(sys.argv)}. Args: {sys.argv}'
+            logger.error(error_msg)
+            print(json.dumps({'success': False, 'error': error_msg}), flush=True)
+            sys.exit(1)
+        
+        tool_id = sys.argv[1]
+        logger.info(f"Tool ID: {tool_id}")
+        
+        # Parse input paths
+        try:
+            input_paths = json.loads(sys.argv[2])
+            logger.info(f"Input paths: {input_paths}")
+        except json.JSONDecodeError as e:
+            error_msg = f'Failed to parse input paths JSON: {str(e)}'
+            logger.error(error_msg)
+            print(json.dumps({'success': False, 'error': error_msg}), flush=True)
+            sys.exit(1)
+        
+        output_path = sys.argv[3]
+        logger.info(f"Output path: {output_path}")
+        
+        # Options can be passed as a JSON string (4th arg) or as a file path (4th arg is a file)
+        options = {}
+        if len(sys.argv) > 4:
+            options_arg = sys.argv[4]
+            # Check if it's a file path (exists as a file)
+            if os.path.isfile(options_arg):
+                # Read options from file
+                try:
+                    logger.info(f"Reading options from file: {options_arg}")
+                    with open(options_arg, 'r') as f:
+                        options = json.load(f)
+                    logger.info(f"Options loaded from file")
+                except Exception as e:
+                    error_msg = f'Failed to read options file: {str(e)}'
+                    logger.error(error_msg)
+                    print(json.dumps({'success': False, 'error': error_msg}), flush=True)
+                    sys.exit(1)
+            else:
+                # Parse as JSON string
+                try:
+                    logger.info("Parsing options as JSON string")
+                    options = json.loads(options_arg)
+                    logger.info(f"Options parsed from JSON")
+                except json.JSONDecodeError as e:
+                    error_msg = f'Invalid options JSON: {str(e)}'
+                    logger.error(error_msg)
+                    print(json.dumps({'success': False, 'error': error_msg}), flush=True)
+                    sys.exit(1)
+        
+        logger.info(f"Starting PDF routing for tool: {tool_id}")
+        
+        # Add extra logging for annotate-pdf to debug coordinate issues
+        if tool_id == 'annotate-pdf':
+            annotations = options.get('annotations', [])
+            logger.info(f"[ANNOTATE] Processing {len(annotations)} annotations")
+            for idx, ann in enumerate(annotations):
+                logger.info(f"[ANNOTATE] Annotation {idx}: type={ann.get('type')}, page={ann.get('page')}, x={ann.get('x')}, y={ann.get('y')}, width={ann.get('width')}, height={ann.get('height')}, color={ann.get('color')}")
+        
         result = PdfRouter.process(tool_id, input_paths, output_path, options)
+        logger.info(f"PDF processing completed successfully")
         print(json.dumps({'success': True, 'output': result}), flush=True)
     except Exception as e:
         error_msg = str(e)
         full_traceback = traceback.format_exc()
         combined_error = f"{error_msg}\n{full_traceback}"
         
-        # Safely print errors with encoding fallback
-        try:
-            print(combined_error, flush=True)
-        except UnicodeEncodeError:
-            # Fallback: encode to ASCII with errors replaced
-            print(combined_error.encode('utf-8', errors='replace').decode('utf-8'), flush=True)
+        logger.error(f"Exception occurred: {combined_error}")
         
+        # ALWAYS print the error as JSON as the last output
+        # This is what the API expects to parse
         try:
-            print(json.dumps({'error': combined_error}), flush=True)
-        except (UnicodeEncodeError, UnicodeDecodeError):
-            # Fallback: encode errors safely
-            safe_error = combined_error.encode('utf-8', errors='replace').decode('utf-8')
-            print(json.dumps({'error': safe_error}), flush=True)
+            # Try to output JSON error
+            json_error = json.dumps({'success': False, 'error': combined_error})
+            print(json_error, flush=True)
+        except (TypeError, UnicodeEncodeError) as json_err:
+            # If JSON encoding fails, try with error replacement
+            try:
+                safe_error = combined_error.encode('utf-8', errors='replace').decode('utf-8')
+                json_error = json.dumps({'success': False, 'error': safe_error})
+                print(json_error, flush=True)
+            except Exception:
+                # Last resort: print raw error
+                print(f"ERROR: {combined_error}", flush=True)
         
+        logger.error(f"Exit code: 1")
         sys.exit(1)

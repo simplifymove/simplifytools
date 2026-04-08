@@ -26,7 +26,7 @@ export function Header() {
       title: 'PDF Tools',
       icon: FileText,
       color: 'from-purple-500 to-purple-700',
-      count: '47+',
+      count: '54+',
       link: '/all-tools/pdf-tools',
     },
     {
@@ -34,7 +34,7 @@ export function Header() {
       title: 'Image Tools',
       icon: ImageIcon,
       color: 'from-orange-500 to-orange-700',
-      count: '30+',
+      count: '80+',
       link: '/all-tools/image-tools',
     },
     {
@@ -42,7 +42,7 @@ export function Header() {
       title: 'Video Tools',
       icon: Video,
       color: 'from-pink-500 to-pink-700',
-      count: '10+',
+      count: '58+',
       link: '/all-tools/video-tools',
     },
     {
@@ -50,7 +50,7 @@ export function Header() {
       title: 'AI Write',
       icon: PenTool,
       color: 'from-blue-500 to-blue-700',
-      count: '50+',
+      count: '60+',
       link: '/all-tools/ai-tools',
     },
     {
@@ -66,7 +66,7 @@ export function Header() {
       title: 'Code Tools',
       icon: Code2,
       color: 'from-green-500 to-green-700',
-      count: '44',
+      count: '44+',
       link: '/all-tools/code',
     },
     {
