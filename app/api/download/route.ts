@@ -426,7 +426,7 @@ export async function POST(request: NextRequest) {
     // Get buffer from response
     const buffer = await downloadResponse.arrayBuffer();
 
-    const fileName = getFileName(url, contentType, contentDisposition);
+    const fileName = getFileName(url, contentType, contentDisposition ?? undefined);
     const fileType = contentType;
     const fileSizeFormatted = formatFileSize(buffer.byteLength);
 
