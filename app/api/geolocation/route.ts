@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
   try {
     // Get client IP from headers
     const forwardedFor = request.headers.get('x-forwarded-for');
-    let clientIP = forwardedFor ? forwardedFor.split(',')[0].trim() : request.ip || '';
+    let clientIP = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
 
     // Validate IP - skip localhost/empty IPs
     if (!clientIP || clientIP === '127.0.0.1' || clientIP === '::1' || clientIP.startsWith('192.168.') || clientIP.startsWith('10.')) {

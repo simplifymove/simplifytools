@@ -376,7 +376,7 @@ export function calculateLoanOptimization(inputs: LoanOptimizerInputs): LoanOpti
   if (extraMonthlyPayment > 0) {
     const yearsFromStandard = totalMonths / 12;
     const monthsReduced = totalMonths - payoffMonth;
-    recommendations.push(`💡 Extra payment saves ${Math.round(interestSavings.toLocaleString())} and pays off ${Math.round(monthsReduced / 12)} years early`);
+    recommendations.push(`💡 Extra payment saves ${Math.round(interestSavings).toLocaleString()} and pays off ${Math.round(monthsReduced / 12)} years early`);
   }
 
   if (annualInterestRate > 7) {
