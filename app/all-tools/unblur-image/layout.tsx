@@ -20,3 +20,4 @@ export const metadata: Metadata = {
 export default function UnblurImageLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
+

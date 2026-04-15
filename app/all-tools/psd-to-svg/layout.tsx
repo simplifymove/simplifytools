@@ -20,3 +20,4 @@ export const metadata: Metadata = {
 export default function PsdToSvgLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
+

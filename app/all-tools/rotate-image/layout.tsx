@@ -20,3 +20,4 @@ export const metadata: Metadata = {
 export default function RotateImageLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
+

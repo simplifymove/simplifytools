@@ -38,3 +38,4 @@ export default function ImageToolsLayout({
 }) {
   return <>{children}</>;
 }
+
