@@ -57,7 +57,7 @@ const aiEditingTools: Tool[] = [
     description: 'Remove backgrounds from images automatically',
     category: 'Image',
     icon: Eraser,
-    route: '/all-tools/converters/remove-background',
+    route: '/all-tools/remove-background',
     headerColor: 'bg-orange-500',
   },
   {
@@ -111,7 +111,7 @@ const aiEditingTools: Tool[] = [
     description: 'Remove people from photos effortlessly',
     category: 'Image',
     icon: Package,
-    route: '/all-tools/converters/remove-person',
+    route: '/all-tools/remove-person',
     headerColor: 'bg-orange-500',
   },
   {
@@ -129,7 +129,7 @@ const aiEditingTools: Tool[] = [
     description: 'Clean up and enhance image quality',
     category: 'Image',
     icon: Eraser,
-    route: '/all-tools/converters/cleanup-picture',
+    route: '/all-tools/cleanup-picture',
     headerColor: 'bg-orange-500',
   },
   {
@@ -138,7 +138,7 @@ const aiEditingTools: Tool[] = [
     description: 'Add color to black and white photos',
     category: 'Image',
     icon: Palette,
-    route: '/all-tools/converters/colorize-photo',
+    route: '/all-tools/colorize-photo',
     headerColor: 'bg-orange-500',
   },
   {
@@ -147,7 +147,7 @@ const aiEditingTools: Tool[] = [
     description: 'Merge multiple images together',
     category: 'Image',
     icon: Combine,
-    route: '/all-tools/converters/combine-images',
+    route: '/all-tools/combine-images',
     headerColor: 'bg-orange-500',
   },
   {
@@ -156,7 +156,7 @@ const aiEditingTools: Tool[] = [
     description: 'Create transparent backgrounds instantly',
     category: 'Image',
     icon: Eye,
-    route: '/all-tools/converters/make-background-transparent',
+    route: '/all-tools/make-background-transparent',
     headerColor: 'bg-orange-500',
   },
   {
@@ -165,7 +165,7 @@ const aiEditingTools: Tool[] = [
     description: 'Crop and resize images precisely',
     category: 'Image',
     icon: Scissors,
-    route: '/all-tools/converters/crop-image',
+    route: '/all-tools/crop-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -174,7 +174,7 @@ const aiEditingTools: Tool[] = [
     description: 'Convert images to circular shape',
     category: 'Image',
     icon: Circle,
-    route: '/all-tools/converters/make-round-image',
+    route: '/all-tools/make-round-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -190,7 +190,7 @@ const aiEditingTools: Tool[] = [
     description: 'Convert images to black and white',
     category: 'Image',
     icon: Palette,
-    route: '/all-tools/converters/black-white',
+    route: '/all-tools/black-white',
     headerColor: 'bg-orange-500',
   },
   {
@@ -199,7 +199,7 @@ const aiEditingTools: Tool[] = [
     description: 'Split images into parts',
     category: 'Image',
     icon: Grid,
-    route: '/all-tools/converters/image-splitter',
+    route: '/all-tools/image-splitter',
     headerColor: 'bg-orange-500',
   },
   {
@@ -208,7 +208,7 @@ const aiEditingTools: Tool[] = [
     description: 'Add multiple images to a canvas',
     category: 'Image',
     icon: Image,
-    route: '/all-tools/converters/add-images',
+    route: '/all-tools/add-images',
     headerColor: 'bg-orange-500',
   },
   {
@@ -217,7 +217,7 @@ const aiEditingTools: Tool[] = [
     description: 'Add decorative borders to images',
     category: 'Image',
     icon: Square,
-    route: '/all-tools/converters/add-border',
+    route: '/all-tools/add-border',
     headerColor: 'bg-orange-500',
   },
   {
@@ -226,7 +226,7 @@ const aiEditingTools: Tool[] = [
     description: 'Translate text within images',
     category: 'Image',
     icon: Globe,
-    route: '/all-tools/converters/translate-image',
+    route: '/all-tools/translate-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -235,7 +235,7 @@ const aiEditingTools: Tool[] = [
     description: 'Reverse or mirror images',
     category: 'Image',
     icon: RotateCcw,
-    route: '/all-tools/converters/reverse-image',
+    route: '/all-tools/reverse-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -244,7 +244,7 @@ const aiEditingTools: Tool[] = [
     description: 'Create image collages easily',
     category: 'Image',
     icon: Combine,
-    route: '/all-tools/converters/collage-maker',
+    route: '/all-tools/collage-maker',
     headerColor: 'bg-orange-500',
   },
   {
@@ -253,7 +253,7 @@ const aiEditingTools: Tool[] = [
     description: 'Flip images horizontally or vertically',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/flip-image',
+    route: '/all-tools/flip-image',
     headerColor: 'bg-orange-500',
   },
   {
@@ -262,7 +262,7 @@ const aiEditingTools: Tool[] = [
     description: 'View and edit image metadata',
     category: 'Image',
     icon: FileJson,
-    route: '/all-tools/converters/view-metadata',
+    route: '/all-tools/view-metadata',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -271,7 +271,7 @@ const aiEditingTools: Tool[] = [
     description: 'Create data visualizations and charts',
     category: 'Image',
     icon: BarChart3,
-    route: '/all-tools/converters/chart-maker',
+    route: '/all-tools/chart-maker',
     headerColor: 'from-green-400 via-emerald-400 to-green-500',
   },
   {
@@ -280,7 +280,7 @@ const aiEditingTools: Tool[] = [
     description: 'Convert Font Awesome icons to PNG',
     category: 'Image',
     icon: Code,
-    route: '/all-tools/converters/font-awesome-to-png',
+    route: '/all-tools/font-awesome-to-png',
     headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
@@ -319,7 +319,7 @@ const converterTools: Tool[] = [
     description: 'Convert PDF pages to JPG images',
     category: 'Image',
     icon: FileImage,
-    route: '/all-tools/converters/pdf-to-jpg',
+    route: '/all-tools/pdf-to-jpg',
     headerColor: 'from-orange-400 via-red-400 to-orange-500',
   },
   {
@@ -328,7 +328,7 @@ const converterTools: Tool[] = [
     description: 'Extract text from images',
     category: 'Image',
     icon: FileText,
-    route: '/all-tools/converters/image-to-text',
+    route: '/all-tools/image-to-text',
     headerColor: 'from-blue-400 via-indigo-400 to-blue-500',
   },
   {
