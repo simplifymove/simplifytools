@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { HomeHeader } from '../../../components/HomeHeader';
-import { Footer } from '../../../components/Footer';
+import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 export default function StubConverterPage() {
   return (

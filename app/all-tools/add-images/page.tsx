@@ -3,8 +3,8 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Image as ImageIcon, X, Plus } from 'lucide-react';
-import { HomeHeader } from '../../../components/HomeHeader';
-import { Footer } from '../../../components/Footer';
+import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 interface CanvasImage {
   id: string;

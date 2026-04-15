@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileUp, BarChart3 } from 'lucide-react';
-import { HomeHeader } from '../../../components/HomeHeader';
-import { Footer } from '../../../components/Footer';
+import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 type ChartType = 'bar' | 'line' | 'pie';
 

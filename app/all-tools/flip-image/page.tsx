@@ -2,10 +2,10 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { HomeHeader } from '../../../components/HomeHeader';
-import { ImageUploader } from '../../../components/ImageUploader';
+import { HomeHeader } from '../../components/HomeHeader';
+import { ImageUploader } from '../../components/ImageUploader';
 import { Download, ChevronRight, RefreshCw } from 'lucide-react';
-import { Footer } from '../../../components/Footer';
+import { Footer } from '../../components/Footer';
 
 export default function FlipImagePage() {
   const [file, setFile] = useState<File | null>(null);

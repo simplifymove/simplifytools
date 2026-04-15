@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { HomeHeader } from '../../../components/HomeHeader';
-import { ImageUploader } from '../../../components/ImageUploader';
+import { HomeHeader } from '../../components/HomeHeader';
+import { ImageUploader } from '../../components/ImageUploader';
 import { Download, ChevronRight, Globe, Plus, X } from 'lucide-react';
-import { Footer } from '../../../components/Footer';
+import { Footer } from '../../components/Footer';
 
 interface TextOverlay {
   id: string;

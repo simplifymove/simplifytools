@@ -3,9 +3,9 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Grid, X } from 'lucide-react';
-import { ImageUploader } from '../../../components/ImageUploader';
-import { HomeHeader } from '../../../components/HomeHeader';
-import { Footer } from '../../../components/Footer';
+import { ImageUploader } from '../../components/ImageUploader';
+import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 interface SplitSegment {
   id: string;

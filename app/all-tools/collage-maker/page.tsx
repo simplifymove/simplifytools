@@ -2,9 +2,9 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { HomeHeader } from '../../../components/HomeHeader';
+import { HomeHeader } from '../../components/HomeHeader';
 import { Download, ChevronRight, Combine, X, Plus } from 'lucide-react';
-import { Footer } from '../../../components/Footer';
+import { Footer } from '../../components/Footer';
 
 type CollageLayout = '2x2' | '3x3' | '1x4' | '4x1';
 
