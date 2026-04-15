@@ -337,7 +337,7 @@ const converterTools: Tool[] = [
     description: 'Extract text from PDF documents',
     category: 'Image',
     icon: FileText,
-    route: '/all-tools/converters/pdf-to-text',
+    route: '/all-tools/pdf-to-text',
     headerColor: 'from-blue-400 via-indigo-400 to-blue-500',
   },
   {
@@ -355,7 +355,7 @@ const converterTools: Tool[] = [
     description: 'Convert HEIC images to JPG format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/heic-to-jpg',
+    route: '/all-tools/heic-to-jpg',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -364,7 +364,7 @@ const converterTools: Tool[] = [
     description: 'Convert WebP to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/webp-to-jpg',
+    route: '/all-tools/webp-to-jpg',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -373,7 +373,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG images to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/png-to-jpg',
+    route: '/all-tools/png-to-jpg',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -382,7 +382,7 @@ const converterTools: Tool[] = [
     description: 'Convert WebP to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/webp-to-png',
+    route: '/all-tools/webp-to-png',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -391,7 +391,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to PNG format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/jpg-to-png',
+    route: '/all-tools/jpg-to-png',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -409,7 +409,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to WebP format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/jpg-to-webp',
+    route: '/all-tools/jpg-to-webp',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -418,7 +418,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG images to scalable SVG',
     category: 'Image',
     icon: Mountain,
-    route: '/all-tools/converters/png-to-svg',
+    route: '/all-tools/png-to-svg',
     headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
   },
   {
@@ -427,7 +427,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to SVG format',
     category: 'Image',
     icon: Mountain,
-    route: '/all-tools/converters/jpg-to-svg',
+    route: '/all-tools/jpg-to-svg',
     headerColor: 'from-indigo-400 via-purple-400 to-indigo-500',
   },
   {
@@ -436,7 +436,7 @@ const converterTools: Tool[] = [
     description: 'Convert HEIC to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/heic-to-png',
+    route: '/all-tools/heic-to-png',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -445,7 +445,7 @@ const converterTools: Tool[] = [
     description: 'Convert various formats to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/edit-to-png',
+    route: '/all-tools/edit-to-png',
     headerColor: 'from-sky-400 via-blue-400 to-sky-500',
   },
   {
@@ -454,7 +454,7 @@ const converterTools: Tool[] = [
     description: 'Convert animated GIF to MP4',
     category: 'Image',
     icon: FileAudio,
-    route: '/all-tools/converters/gif-to-mp4',
+    route: '/all-tools/gif-to-mp4',
     headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
@@ -463,7 +463,7 @@ const converterTools: Tool[] = [
     description: 'Convert MP4 videos to animated GIF',
     category: 'Image',
     icon: FileAudio,
-    route: '/all-tools/converters/mp4-to-gif',
+    route: '/all-tools/mp4-to-gif',
     headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
@@ -472,7 +472,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to animated GIF',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/jpg-to-gif',
+    route: '/all-tools/jpg-to-gif',
   },
   {
     id: 'tiff-jpg',
@@ -480,7 +480,7 @@ const converterTools: Tool[] = [
     description: 'Convert TIFF images to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/tiff-to-jpg',
+    route: '/all-tools/tiff-to-jpg',
   },
   {
     id: 'webp-gif',
@@ -488,7 +488,7 @@ const converterTools: Tool[] = [
     description: 'Convert WebP to animated GIF',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/webp-to-gif',
+    route: '/all-tools/webp-to-gif',
   },
 
   {
@@ -497,7 +497,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to EPS vector format',
     category: 'Image',
     icon: Mountain,
-    route: '/all-tools/converters/png-to-eps',
+    route: '/all-tools/png-to-eps',
     headerColor: 'from-emerald-400 via-teal-400 to-emerald-500',
   },
   {
@@ -506,7 +506,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to TIFF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/png-to-tiff',
+    route: '/all-tools/png-to-tiff',
   },
   {
     id: 'jpg-tif',
@@ -514,7 +514,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to TIFF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/jpg-to-tiff',
+    route: '/all-tools/jpg-to-tiff',
   },
 
   {
@@ -523,7 +523,7 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop to Illustrator format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/psd-to-ai',
+    route: '/all-tools/psd-to-ai',
     headerColor: 'from-violet-400 via-purple-400 to-violet-500',
   },
   {
@@ -532,7 +532,7 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop files to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/psd-to-jpg',
+    route: '/all-tools/psd-to-jpg',
   },
   {
     id: 'psd-png',
@@ -540,7 +540,7 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop files to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/psd-to-png',
+    route: '/all-tools/psd-to-png',
   },
   {
     id: 'gif-jpg',
@@ -548,7 +548,7 @@ const converterTools: Tool[] = [
     description: 'Convert GIF images to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/gif-to-jpg',
+    route: '/all-tools/gif-to-jpg',
   },
   {
     id: 'tiff-png',
@@ -556,7 +556,7 @@ const converterTools: Tool[] = [
     description: 'Convert TIFF to PNG format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/tiff-to-png',
+    route: '/all-tools/tiff-to-png',
   },
   {
     id: 'gif-png',
@@ -564,7 +564,7 @@ const converterTools: Tool[] = [
     description: 'Convert GIF to PNG format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/gif-to-png',
+    route: '/all-tools/gif-to-png',
   },
 
   {
@@ -573,7 +573,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to TIFF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/png-to-tiff',
+    route: '/all-tools/png-to-tiff',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
 
@@ -590,7 +590,7 @@ const converterTools: Tool[] = [
     description: 'Extract text from TIFF images (OCR)',
     category: 'Image',
     icon: FileText,
-    route: '/all-tools/converters/tiff-to-text',
+    route: '/all-tools/tiff-to-text',
   },
   {
     id: 'eps-jpg',
@@ -605,7 +605,7 @@ const converterTools: Tool[] = [
     description: 'Convert GIF to animated PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/gif-to-png',
+    route: '/all-tools/gif-to-png',
   },
   {
     id: 'jpg-avif',
@@ -613,7 +613,7 @@ const converterTools: Tool[] = [
     description: 'Convert JPG to modern AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/jpg-to-avif',
+    route: '/all-tools/jpg-to-avif',
   },
   {
     id: 'vsd-pdf',
@@ -621,7 +621,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio diagrams to PDF',
     category: 'Image',
     icon: FileArchive,
-    route: '/all-tools/converters/vsd-to-pdf',
+    route: '/all-tools/vsd-to-pdf',
   },
   {
     id: 'png-avif',
@@ -629,7 +629,7 @@ const converterTools: Tool[] = [
     description: 'Convert PNG to modern AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/png-to-avif',
+    route: '/all-tools/png-to-avif',
   },
   {
     id: 'psd-svg',
@@ -637,7 +637,7 @@ const converterTools: Tool[] = [
     description: 'Convert Photoshop to SVG vector',
     category: 'Image',
     icon: Mountain,
-    route: '/all-tools/converters/psd-to-svg',
+    route: '/all-tools/psd-to-svg',
   },
   {
     id: 'tiff-svg',
@@ -645,7 +645,7 @@ const converterTools: Tool[] = [
     description: 'Convert TIFF to scalable SVG',
     category: 'Image',
     icon: Mountain,
-    route: '/all-tools/converters/tiff-to-svg',
+    route: '/all-tools/tiff-to-svg',
   },
   {
     id: 'vsdx-pdf',
@@ -653,7 +653,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio VSDX to PDF',
     category: 'Image',
     icon: FileArchive,
-    route: '/all-tools/converters/vsdx-to-pdf',
+    route: '/all-tools/vsdx-to-pdf',
   },
   {
     id: 'vsdx-pptx',
@@ -661,7 +661,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio to PowerPoint',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/vsdx-to-pptx',
+    route: '/all-tools/vsdx-to-pptx',
   },
   {
     id: 'vsdx-docx',
@@ -669,7 +669,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio to Word document',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/vsdx-to-docx',
+    route: '/all-tools/vsdx-to-docx',
   },
   {
     id: 'vsd-docx',
@@ -677,7 +677,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio diagram to Word',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/vsd-to-docx',
+    route: '/all-tools/vsd-to-docx',
   },
   {
     id: 'webp-avif',
@@ -685,7 +685,7 @@ const converterTools: Tool[] = [
     description: 'Convert WebP to AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/webp-to-avif',
+    route: '/all-tools/webp-to-avif',
   },
   {
     id: 'vsdx-jpg',
@@ -693,7 +693,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio diagrams to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/vsdx-to-jpg',
+    route: '/all-tools/vsdx-to-jpg',
     headerColor: 'from-cyan-400 via-blue-400 to-cyan-500',
   },
   {
@@ -702,7 +702,7 @@ const converterTools: Tool[] = [
     description: 'Convert HEIC to AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/heic-to-avif',
+    route: '/all-tools/heic-to-avif',
   },
   {
     id: 'tiff-avif',
@@ -710,7 +710,7 @@ const converterTools: Tool[] = [
     description: 'Convert TIFF to AVIF format',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/tiff-to-avif',
+    route: '/all-tools/tiff-to-avif',
   },
   {
     id: 'vsd-pptx',
@@ -718,7 +718,7 @@ const converterTools: Tool[] = [
     description: 'Convert Visio to PowerPoint',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/vsd-to-pptx',
+    route: '/all-tools/vsd-to-pptx',
   },
   {
     id: 'bmp-jpg',
@@ -726,7 +726,7 @@ const converterTools: Tool[] = [
     description: 'Convert BMP images to JPG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/bmp-to-jpg',
+    route: '/all-tools/bmp-to-jpg',
   },
   {
     id: 'bmp-png',
@@ -734,7 +734,7 @@ const converterTools: Tool[] = [
     description: 'Convert BMP to PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/converters/bmp-to-png',
+    route: '/all-tools/bmp-to-png',
   },
 ];
 

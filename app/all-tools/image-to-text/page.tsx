@@ -87,8 +87,6 @@ export default function ImageToTextPage() {
               <ChevronRight size={16} />
               <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
               <ChevronRight size={16} />
-              <Link href="/all-tools/converters" className="hover:text-white transition">Converters</Link>
-              <ChevronRight size={16} />
               <span>Image to Text</span>
             </div>
 

@@ -86,8 +86,6 @@ export default function PdfToJpgPage() {
               <ChevronRight size={16} />
               <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
               <ChevronRight size={16} />
-              <Link href="/all-tools/converters" className="hover:text-white transition">Converters</Link>
-              <ChevronRight size={16} />
               <span>PDF to JPG</span>
             </div>
 

@@ -173,7 +173,7 @@ export default function MakeRoundImagePage() {
             </Link>
             <ChevronRight size={16} />
             <Link href="/all-tools" className="hover:opacity-75 underline">
-              Tools
+              All Tools
             </Link>
             <ChevronRight size={16} />
             <span>Make Round Image</span>

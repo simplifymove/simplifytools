@@ -2,16 +2,16 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, ChevronRight, Loader, PresentationIcon } from 'lucide-react';
+import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
-export default function VsdxToPptxPage() {
+export default function TiffToAvifPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [slideLayout, setSlideLayout] = useState('auto');
-  const [preserveFormatting, setPreserveFormatting] = useState(true);
+  const [quality, setQuality] = useState('80');
+  const [speed, setSpeed] = useState('5');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
@@ -37,11 +37,11 @@ export default function VsdxToPptxPage() {
     setProcessing(true);
     try {
       const formData = new FormData();
-      formData.append('tool', 'vsdx-to-pptx');
+      formData.append('tool', 'tiff-to-avif');
       formData.append('file', file);
       formData.append('options', JSON.stringify({ 
-        slideLayout,
-        preserveFormatting
+        quality: parseInt(quality),
+        speed: parseInt(speed)
       }));
 
       const response = await fetch('/api/convert', {
@@ -56,7 +56,7 @@ export default function VsdxToPptxPage() {
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setResult(url);
-      setResultFileName(`presentation.pptx`);
+      setResultFileName(`converted.avif`);
     } catch (error) {
       alert('Error converting file: ' + (error as Error).message);
     } finally {
@@ -79,7 +79,7 @@ export default function VsdxToPptxPage() {
       <HomeHeader />
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Hero Header */}
-        <div className="relative bg-indigo-500 py-16 px-4 md:px-8 overflow-hidden">
+        <div className="relative bg-sky-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
@@ -87,17 +87,17 @@ export default function VsdxToPptxPage() {
               <ChevronRight size={16} />
               <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
               <ChevronRight size={16} />
-              <span>VSDX to PPTX</span>
+              <span>TIFF to AVIF</span>
             </div>
 
             {/* Title Section */}
             <div className="flex items-start gap-4">
               <div className="p-3 bg-white/20 rounded-lg">
-                <PresentationIcon size={32} className="text-white" />
+                <Image size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">VSDX to PPTX</h1>
-                <p className="text-lg text-white/90">Convert Visio diagrams to PowerPoint presentations. Preserve shapes, text, and formatting.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">TIFF to AVIF</h1>
+                <p className="text-lg text-white/90">Convert TIFF images to modern AVIF format. Reduce file size while maintaining quality.</p>
               </div>
             </div>
           </div>
@@ -110,12 +110,12 @@ export default function VsdxToPptxPage() {
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload VSDX File</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload TIFF File</h2>
                   <ImageUploader
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
-                    accept=".vsdx"
+                    accept=".tiff,.tif"
                   />
                   {file && (
                     <p className="mt-4 text-sm text-gray-600">
@@ -132,41 +132,45 @@ export default function VsdxToPptxPage() {
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
                     
-                    {/* Slide Layout */}
+                    {/* Quality */}
                     <div className="mb-6">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Slide Layout
+                        Quality: {quality}%
                       </label>
-                      <select
-                        value={slideLayout}
-                        onChange={(e) => setSlideLayout(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      >
-                        <option value="auto">Automatic</option>
-                        <option value="blank">Blank Slides</option>
-                        <option value="title-content">Title & Content</option>
-                      </select>
+                      <input
+                        type="range"
+                        min="1"
+                        max="100"
+                        value={quality}
+                        onChange={(e) => setQuality(e.target.value)}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
                     </div>
 
-                    {/* Preserve Formatting */}
-                    <div className="mb-6 flex items-center">
-                      <input
-                        type="checkbox"
-                        id="preserve"
-                        checked={preserveFormatting}
-                        onChange={(e) => setPreserveFormatting(e.target.checked)}
-                        className="w-4 h-4 text-indigo-500 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
-                      />
-                      <label htmlFor="preserve" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
-                        Preserve Formatting
+                    {/* Speed */}
+                    <div className="mb-6">
+                      <label className="text-sm font-medium text-gray-700 block mb-2">
+                        Compression Speed
                       </label>
+                      <select
+                        value={speed}
+                        onChange={(e) => setSpeed(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                      >
+                        <option value="0">Slowest (Best Quality)</option>
+                        <option value="3">Slow</option>
+                        <option value="5">Normal</option>
+                        <option value="8">Fast</option>
+                        <option value="10">Fastest</option>
+                      </select>
                     </div>
 
                     {/* Convert Button */}
                     <button
                       onClick={handleConvert}
                       disabled={!file || processing}
-                      className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
+                      className="w-full bg-sky-500 hover:bg-sky-600 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
                     >
                       {processing ? (
                         <>
@@ -174,7 +178,7 @@ export default function VsdxToPptxPage() {
                           Converting...
                         </>
                       ) : (
-                        'Convert to PPTX'
+                        'Convert to AVIF'
                       )}
                     </button>
                   </div>
@@ -188,7 +192,7 @@ export default function VsdxToPptxPage() {
                         className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
                       >
                         <Download size={18} />
-                        Download PPTX File
+                        Download AVIF
                       </button>
                     </div>
                   )}
@@ -202,4 +206,3 @@ export default function VsdxToPptxPage() {
     </>
   );
 }
-
