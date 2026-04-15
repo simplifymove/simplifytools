@@ -73,7 +73,7 @@ export default function TiffToPngPage() {
             <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
               <Link href="/" className="hover:text-white transition">Home</Link>
               <ChevronRight size={16} />
-              <Link href="/all-tools" className="hover:text-white transition">Tools</Link>
+              <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
               <ChevronRight size={16} />
               <span>TIFF to PNG</span>
             </div>

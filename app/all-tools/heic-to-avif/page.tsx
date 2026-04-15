@@ -14,7 +14,7 @@ export default function StubConverterPage() {
             <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
               <Link href="/" className="hover:text-white transition">Home</Link>
               <span>/</span>
-              <Link href="/all-tools" className="hover:text-white transition">Tools</Link>
+              <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Converter Tool</h1>
             <p className="text-lg text-white/90">This converter tool is currently being updated. Please check back soon!</p>
