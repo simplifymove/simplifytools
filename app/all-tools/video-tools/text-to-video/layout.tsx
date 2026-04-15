@@ -4,6 +4,9 @@ export const metadata: Metadata = {
   title: 'Text to Video - AI Video Generator | tinyTools',
   description: 'Generate stunning AI videos from text prompts. Create cinematic videos, animations, and visual content in minutes. No experience needed.',
   keywords: 'text to video, AI video generator, video creation, AI video maker, generate videos from text',
+  alternates: {
+    canonical: 'https://simplifyconvert.com/all-tools/video-tools/text-to-video',
+  },
   openGraph: {
     title: 'Text to Video Generator - Create AI Videos from Text',
     description: 'Generate cinematic AI videos from simple text prompts. Fast, easy, and no technical skills required.',
@@ -21,7 +24,6 @@ export const metadata: Metadata = {
     title: 'Text to Video - AI Video Generator',
     description: 'Generate AI videos from text prompts instantly',
   },
-  canonical: 'https://simplifyconvert.com/all-tools/video-tools/text-to-video',
 };
 
 export default function TextToVideoLayout({
