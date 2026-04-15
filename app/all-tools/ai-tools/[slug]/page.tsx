@@ -9,6 +9,7 @@ import { getToolById } from '@/app/lib/ai-tools';
 import type { AIWriteTool } from '@/app/lib/ai-tools';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import AIDetectorResults from '@/app/components/AIDetectorResults';
 
 export default function AIWriteToolPage() {
   const params = useParams();
@@ -16,7 +17,7 @@ export default function AIWriteToolPage() {
 
   const [tool, setTool] = useState<AIWriteTool | null>(null);
   const [inputs, setInputs] = useState<Record<string, any>>({});
-  const [result, setResult] = useState<string>('');
+  const [result, setResult] = useState<string | any>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [copied, setCopied] = useState(false);
@@ -67,6 +68,7 @@ export default function AIWriteToolPage() {
       if (!data.ok) {
         setError(data.error || 'Failed to generate content');
       } else {
+        // Store result - could be string or object
         setResult(data.result);
         if (data.meta?.usingMock) {
           setError('Note: Using mock response. Add GROQ_API_KEY to .env.local to enable real AI generation.');
@@ -80,14 +82,16 @@ export default function AIWriteToolPage() {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(result);
+    const textToCopy = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+    navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const downloadResult = () => {
+    const textToDownload = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
     const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(result));
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textToDownload));
     element.setAttribute('download', `${tool?.id || 'result'}.txt`);
     element.style.display = 'none';
     document.body.appendChild(element);
@@ -162,14 +166,14 @@ export default function AIWriteToolPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8"
+          className={`max-w-7xl mx-auto grid gap-8 ${slug === 'ai-detector' ? 'md:grid-cols-5' : 'md:grid-cols-3'}`}
         >
           {/* Left Column - Generate Form (Sticky) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="md:col-span-1"
+            className={slug === 'ai-detector' ? 'md:col-span-2' : 'md:col-span-1'}
           >
             <div className="sticky top-4 space-y-6">
               {/* Input Card */}
@@ -196,7 +200,7 @@ export default function AIWriteToolPage() {
                             placeholder={field.placeholder}
                             maxLength={field.validation?.maxLength}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                            rows={3}
+                            rows={slug === 'ai-detector' ? 12 : 3}
                           />
                         )}
 
@@ -271,7 +275,7 @@ export default function AIWriteToolPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="md:col-span-2 space-y-6"
+            className={slug === 'ai-detector' ? 'md:col-span-3 space-y-6' : 'md:col-span-2 space-y-6'}
           >
             {/* Info Box */}
             <motion.div
@@ -304,7 +308,9 @@ export default function AIWriteToolPage() {
               >
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle size={20} className="text-blue-600" />
-                  <h2 className="text-xl font-bold text-gray-900">Output</h2>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    {slug === 'ai-detector' ? 'Detection Results' : 'Output'}
+                  </h2>
                 </div>
 
                 {error && error.includes('Note:') && (
@@ -313,9 +319,18 @@ export default function AIWriteToolPage() {
                   </div>
                 )}
 
-                {tool.outputFormat === 'json' ? (
+                {/* AI Detector Custom Display */}
+                {slug === 'ai-detector' && typeof result === 'object' && result.likelihood ? (
+                  <AIDetectorResults
+                    result={result}
+                    inputText={inputs.inputText || ''}
+                    onCopy={copyToClipboard}
+                    onDownload={downloadResult}
+                    copied={copied}
+                  />
+                ) : tool.outputFormat === 'json' ? (
                   <pre className="bg-gray-50 p-4 rounded-lg overflow-auto max-h-96 text-sm font-mono text-gray-800 mb-4">
-                    {result}
+                    {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}
                   </pre>
                 ) : (
                   <div className="bg-gray-50 p-6 rounded-lg max-h-96 overflow-auto whitespace-pre-wrap text-gray-800 leading-relaxed mb-4">
@@ -323,23 +338,25 @@ export default function AIWriteToolPage() {
                   </div>
                 )}
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={copyToClipboard}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium duration-0 flex items-center justify-center gap-2"
-                  >
-                    <Copy size={16} />
-                    {copied ? 'Copied!' : 'Copy'}
-                  </button>
+                {slug !== 'ai-detector' && (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={copyToClipboard}
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium duration-0 flex items-center justify-center gap-2"
+                    >
+                      <Copy size={16} />
+                      {copied ? 'Copied!' : 'Copy'}
+                    </button>
 
-                  <button
-                    onClick={downloadResult}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium duration-0 flex items-center justify-center gap-2"
-                  >
-                    <Download size={16} />
-                    Download
-                  </button>
-                </div>
+                    <button
+                      onClick={downloadResult}
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium duration-0 flex items-center justify-center gap-2"
+                    >
+                      <Download size={16} />
+                      Download
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
 

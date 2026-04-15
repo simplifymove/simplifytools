@@ -1601,34 +1601,31 @@ Keep:
 
   'ai-detector': {
     id: 'ai-detector',
-    title: 'AI Detector',
-    description: 'Analyze text for AI characteristics',
+    title: 'AI Content Detector',
+    description: 'Advanced AI detection using statistical analysis and linguistic patterns. Detects common AI generation markers.',
     category: 'utility',
     fields: [
-      fields.inputText('Text to Analyze'),
+      {
+        name: 'inputText',
+        type: 'textarea',
+        label: 'Text to Analyze',
+        placeholder: 'Paste the text you want to analyze for AI-generated content...',
+        required: true,
+        validation: { minLength: 50, maxLength: 10000 },
+      },
     ],
-    systemPrompt: 'You are a text analysis expert. Analyze text for patterns that might indicate AI generation or human writing.',
+    systemPrompt: 'You are an expert AI detection analyst. Analyze text using statistical and linguistic methods to determine likelihood of AI generation.',
     buildPrompt: (inputs) => `
-Analyze this text for potential AI-generated characteristics:
+This tool uses statistical analysis to detect AI-generated content. 
+It analyzes: vocabulary diversity, entropy, sentence structure consistency, 
+phrase repetition patterns, and linguistic markers.
 
+TEXT TO ANALYZE:
 ${inputs.inputText}
 
-Analyze:
-1. Writing patterns
-2. Repetitive phrases
-3. Sentence structure consistency
-4. Natural flow
-5. Overall assessment
-
-Provide a likelihood score:
-- "Likely AI-generated"
-- "Likely Human-written"
-- "Inconclusive - Mixed signals"
-
-With reasoning for your assessment.
-
-Note: This is an indicator only, not definitive proof.
+Provide insights about the detected patterns and likelihood score.
     `,
+    outputFormat: 'json',
   },
 };
 

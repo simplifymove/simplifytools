@@ -23,6 +23,7 @@ import {
   type AIWriteTool 
 } from '@/app/lib/ai-tools';
 import { generateText, generateTextMock, analyzeText } from '@/app/lib/ai-client';
+import { detectAI } from '@/app/lib/ai-detector';
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,6 +63,21 @@ export async function POST(request: NextRequest) {
         tool: toolId,
         result: JSON.stringify(analysis, null, 2),
         meta: analysis,
+      });
+    }
+
+    // Special handling for AI Detector - uses statistical analysis
+    if (toolId === 'ai-detector') {
+      const detectionResult = detectAI(inputs.inputText);
+      return NextResponse.json({
+        ok: true,
+        tool: toolId,
+        result: detectionResult,
+        meta: {
+          timestamp: new Date().toISOString(),
+          methodName: 'Statistical + Linguistic Analysis',
+          version: '2.0-industry-standard',
+        },
       });
     }
 

@@ -26,13 +26,16 @@ import {
   Square,
   Mountain,
   Sparkles,
+  FileCheck,
+  Briefcase,
+  Download,
 } from 'lucide-react';
 
 export interface Tool {
   id: string;
   title: string;
   description: string;
-  category: 'Image' | 'PDF' | 'Video' | 'AI Write' | 'File';
+  category: 'Image' | 'PDF' | 'Video' | 'AI Write' | 'File' | 'Financial Calculator' | 'Resume Maker' | 'Downloader';
   icon: any;
   route?: string;
   headerColor?: string; // Tailwind gradient color (e.g., "from-orange-400 via-orange-500 to-orange-600")
@@ -1267,8 +1270,81 @@ const videoTools: Tool[] = [
     icon: RefreshCw,
     route: '/all-tools/video/mp4-to-ogg',
   },
+  // AI Video Generation
+  {
+    id: 'text-to-video',
+    title: 'Text to Video',
+    description: 'Generate videos from text prompts using AI',
+    category: 'Video',
+    icon: Wand2,
+    route: '/all-tools/video-tools/text-to-video',
+    headerColor: 'from-indigo-500 via-purple-500 to-pink-500',
+  },
 ];
 
-export const allTools: Tool[] = [...aiEditingTools, ...converterTools, ...aiWriteTools, ...videoTools];
-export { aiEditingTools, converterTools, aiWriteTools, videoTools };
+const financialTools: Tool[] = [
+  {
+    id: 'startup-runway',
+    title: '🚀 Startup Runway Calculator',
+    description: 'Calculate months of runway and project financial trajectory for startups',
+    category: 'Financial Calculator',
+    icon: BarChart3,
+    route: '/all-tools/financial-calculators/startup-runway',
+    headerColor: 'from-purple-600 to-purple-700',
+  },
+  {
+    id: 'saas-profit',
+    title: '💼 SaaS Profit Simulator',
+    description: 'Model MRR growth, churn, and profitability for SaaS businesses',
+    category: 'Financial Calculator',
+    icon: BarChart3,
+    route: '/all-tools/financial-calculators/saas-profit',
+    headerColor: 'from-blue-600 to-blue-700',
+  },
+  {
+    id: 'loan-optimizer',
+    title: '🏦 Loan Optimization Engine',
+    description: 'Analyze loan terms, EMI, and create optimal payment strategies',
+    category: 'Financial Calculator',
+    icon: BarChart3,
+    route: '/all-tools/financial-calculators/loan-optimizer',
+    headerColor: 'from-green-600 to-green-700',
+  },
+  {
+    id: 'india-tax',
+    title: '🇮🇳 India Tax Estimator',
+    description: 'Calculate taxes, deductions, and optimization for Indian residents (FY 2024-25)',
+    category: 'Financial Calculator',
+    icon: BarChart3,
+    route: '/all-tools/financial-calculators/india-tax',
+    headerColor: 'from-orange-600 to-orange-700',
+  },
+];
+
+const resumeTools: Tool[] = [
+  {
+    id: 'resume-job-match',
+    title: '📄 Resume Maker - Job Match',
+    description: 'Match your resume against job descriptions with ATS optimization and AI recommendations',
+    category: 'Resume Maker',
+    icon: FileCheck,
+    route: '/all-tools/resume-maker/job-match',
+    headerColor: 'from-blue-600 via-cyan-600 to-teal-600',
+  },
+];
+
+const downloaderTools: Tool[] = [
+  {
+    id: 'save-from-online',
+    title: 'Save From Online',
+    description: 'Download any file from any URL - videos, images, PDFs, documents, and more',
+    category: 'Downloader',
+    icon: Download,
+    route: '/all-tools/save-from-online',
+    headerColor: 'from-green-400 via-emerald-400 to-green-500',
+  },
+];
+
+export const allTools: Tool[] = [...aiEditingTools, ...converterTools, ...aiWriteTools, ...videoTools, ...financialTools, ...resumeTools, ...downloaderTools];
+export { aiEditingTools, converterTools, aiWriteTools, videoTools, financialTools, resumeTools, downloaderTools };
 

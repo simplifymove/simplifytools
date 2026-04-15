@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { 
   FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
-  Search, Menu, X, ChevronRight, Sparkles
+  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -112,6 +112,39 @@ export function HomeHeader() {
       count: 'Multi',
       link: '/all-tools/text-to-speech',
       glowColor: 'group-hover:shadow-indigo-500/20'
+    },
+    {
+      id: 'financial-calculators',
+      title: 'Financial Calculators',
+      description: 'Advanced financial planning and analysis tools',
+      icon: TrendingUp,
+      color: 'from-emerald-500 via-emerald-600 to-emerald-700',
+      bgColor: 'bg-emerald-50',
+      count: '4',
+      link: '/all-tools/financial-calculators',
+      glowColor: 'group-hover:shadow-emerald-500/20'
+    },
+    {
+      id: 'resume-maker',
+      title: 'Resume Maker',
+      description: 'AI-powered resume builder with job matching and ATS optimization',
+      icon: FileCheck,
+      color: 'from-blue-500 via-cyan-600 to-teal-700',
+      bgColor: 'bg-blue-50',
+      count: '1',
+      link: '/all-tools/resume-maker/job-match',
+      glowColor: 'group-hover:shadow-blue-500/20'
+    },
+    {
+      id: 'downloader',
+      title: 'Save From Online',
+      description: 'Download any file from any URL - videos, images, PDFs, and more',
+      icon: Download,
+      color: 'from-green-500 via-emerald-600 to-green-700',
+      bgColor: 'bg-green-50',
+      count: 'Universal',
+      link: '/all-tools/save-from-online',
+      glowColor: 'group-hover:shadow-green-500/20'
     }
   ];
 
@@ -155,22 +188,22 @@ export function HomeHeader() {
 
               {/* Dropdown Menu */}
               <div
-                className="absolute left-0 top-full w-80 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-4 pointer-events-none group-hover:pointer-events-auto"
+                className="absolute left-0 top-full min-w-max bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-6 pointer-events-none group-hover:pointer-events-auto"
               >
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-5 gap-4">
                   {categories.map((cat) => {
                     const Icon = cat.icon;
                     return (
                       <Link key={cat.id} href={cat.link}>
                         <motion.div
-                          className="p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-all group/item"
+                          className="p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-all group/item w-40"
                           whileHover={{ scale: 1.05 }}
                         >
                           <div className={`flex items-center gap-2 mb-2`}>
-                            <div className={`p-1.5 bg-gradient-to-br ${cat.color} rounded-md shrink-0`}>
+                            <div className={`p-1.5 bg-linear-to-br ${cat.color} rounded-md shrink-0`}>
                               <Icon className="w-3.5 h-3.5 text-white" />
                             </div>
-                            <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition whitespace-nowrap overflow-hidden text-ellipsis">{cat.title}</p>
+                            <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition">{cat.title}</p>
                           </div>
                           <p className="text-xs text-gray-500">{cat.count} tools</p>
                         </motion.div>
@@ -277,6 +310,15 @@ export function HomeHeader() {
               </Link>
               <Link href="/all-tools/code-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Code
+              </Link>
+              <Link href="/all-tools/text-to-speech" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Text to Speech
+              </Link>
+              <Link href="/all-tools/financial-calculators" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Financial Calculators
+              </Link>
+              <Link href="/all-tools/resume-maker/job-match" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Resume Maker
               </Link>
               <Link href="/all-tools" className="px-4 py-2 bg-orange-500 text-white font-medium rounded-full text-center hover:bg-orange-600 transition-all">
                 Browse Tools
