@@ -36,13 +36,31 @@ async function runPythonEngine(
     ];
 
     const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    
+    // Build environment with Python-specific variables
+    const spawnEnv = {
+      ...process.env,
+      PYTHONUNBUFFERED: '1',
+      PYTHONDONTWRITEBYTECODE: '1',
+      PYTHONHOME: '/usr',  // System Python home for VPS
+    } as any;
+    
+    // Explicitly set PYTHONPATH for VPS deployment (Linux uses dist-packages)
+    if (process.platform !== 'win32') {
+      const pythonPaths = [
+        '/usr/lib/python3/dist-packages',
+        '/usr/lib/python3.12/dist-packages',
+        '/usr/lib/python3.11/dist-packages',
+        '/usr/lib/python3.10/dist-packages',
+        '/usr/local/lib/python3.12/site-packages',
+        '/usr/local/lib/python3.11/site-packages',
+        '/usr/local/lib/python3.10/site-packages',
+      ];
+      spawnEnv.PYTHONPATH = pythonPaths.join(':');
+    }
+    
     const python = spawn(pythonExe, [pythonScript, ...args], {
-      env: { 
-        ...process.env, 
-        PYTHONUNBUFFERED: '1',
-        PYTHONDONTWRITEBYTECODE: '1',
-        PYTHONHOME: '/usr',  // System Python home for VPS
-      },
+      env: spawnEnv,
     });
 
     let stdout = '';

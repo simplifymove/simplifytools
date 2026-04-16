@@ -155,7 +155,21 @@ export async function POST(request: NextRequest) {
         ...process.env,
         PYTHONDONTWRITEBYTECODE: '1',
         PYTHONHOME: '/usr',  // System Python home
-      };
+      } as any;
+      
+      // Explicitly set PYTHONPATH for VPS deployment
+      if (process.platform !== 'win32') {
+        const pythonPaths = [
+          '/usr/lib/python3/dist-packages',
+          '/usr/lib/python3.12/dist-packages',
+          '/usr/lib/python3.11/dist-packages',
+          '/usr/lib/python3.10/dist-packages',
+          '/usr/local/lib/python3.12/site-packages',
+          '/usr/local/lib/python3.11/site-packages',
+          '/usr/local/lib/python3.10/site-packages',
+        ];
+        spawnEnv.PYTHONPATH = pythonPaths.join(':');
+      }
       
       const pythonProcess = spawn(pythonExe, [pythonScript, ...args], {
         env: spawnEnv,

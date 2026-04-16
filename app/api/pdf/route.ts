@@ -146,6 +146,22 @@ export async function POST(request: NextRequest) {
         PYTHONHOME: '/usr',  // System Python home
       } as NodeJS.ProcessEnv;
       
+      // Explicitly set PYTHONPATH for VPS deployment (Linux uses dist-packages)
+      // CRITICAL: Subprocess doesn't inherit PYTHONPATH, so we must set it explicitly
+      if (process.platform !== 'win32') {
+        const pythonPaths = [
+          '/usr/lib/python3/dist-packages',           // Debian/Ubuntu system packages
+          '/usr/lib/python3.12/dist-packages',        // Python 3.12 specific
+          '/usr/lib/python3.11/dist-packages',        // Python 3.11 specific
+          '/usr/lib/python3.10/dist-packages',        // Python 3.10 specific
+          '/usr/local/lib/python3.12/site-packages',  // Local Python 3.12
+          '/usr/local/lib/python3.11/site-packages',  // Local Python 3.11
+          '/usr/local/lib/python3.10/site-packages',  // Local Python 3.10
+        ];
+        (spawnEnv as any).PYTHONPATH = pythonPaths.join(':');
+        console.log(`[PDF API] Set PYTHONPATH for Linux: ${pythonPaths.length} directories`);
+      }
+      
       // If using venv, also set VIRTUAL_ENV for compatibility
       if (!pythonExe.includes('/usr/bin/')) {
         (spawnEnv as any).VIRTUAL_ENV = path.dirname(path.dirname(pythonExe));
