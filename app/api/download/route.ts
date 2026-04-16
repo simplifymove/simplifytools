@@ -188,7 +188,16 @@ export async function POST(request: NextRequest) {
           // Use spawn with URL passed as a direct argument (no batch file)
           // This avoids file path encoding issues entirely
           // OPTIMIZATION: MAXIMUM SPEED - 32 parallel, minimal timeout, smallest format
-          const ytdlpProcess = spawn('python', [
+          const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+          
+          // Prepare environment with Python-specific variables
+          const spawnEnv = {
+            ...process.env,
+            PYTHONDONTWRITEBYTECODE: '1',
+            PYTHONHOME: '/usr',  // System Python home for VPS
+          };
+          
+          const ytdlpProcess = spawn(pythonExe, [
             '-m',
             'yt_dlp',
             // Format: Download smallest video file possible (even worse than worst)
@@ -210,7 +219,9 @@ export async function POST(request: NextRequest) {
             '--quiet',
             '--force-ipv4',                  // IPv4 only (faster on most networks)
             url,  // Pass URL directly - spawn handles it safely
-          ]);
+          ], {
+            env: spawnEnv,
+          });
 
           // Promise wrapper for spawn
           await new Promise<void>((resolve, reject) => {

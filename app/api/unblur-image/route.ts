@@ -56,7 +56,8 @@ export async function POST(request: Request): Promise<Response> {
 
     // Build command with full path to the script
     const scriptPath = path.join(process.cwd(), "unblur_img.py");
-    let command = `python "${scriptPath}" --input "${inputFile}" --output "${outputFile}" --mode ${mode}`;
+    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    let command = `${pythonExe} "${scriptPath}" --input "${inputFile}" --output "${outputFile}" --mode ${mode}`;
 
     if (mode === "enhance") {
       command += ` --strength ${strength} --denoise ${denoise} --clahe ${clahe}`;

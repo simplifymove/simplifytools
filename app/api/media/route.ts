@@ -35,8 +35,14 @@ async function runPythonEngine(
       JSON.stringify(options),
     ];
 
-    const python = spawn('python', [pythonScript, ...args], {
-      env: { ...process.env, PYTHONUNBUFFERED: '1' },
+    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    const python = spawn(pythonExe, [pythonScript, ...args], {
+      env: { 
+        ...process.env, 
+        PYTHONUNBUFFERED: '1',
+        PYTHONDONTWRITEBYTECODE: '1',
+        PYTHONHOME: '/usr',  // System Python home for VPS
+      },
     });
 
     let stdout = '';

@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
 
     // Call Python script
     const pythonScript = path.join(process.cwd(), 'remove_object.py');
-    const command = `python "${pythonScript}" --input "${inputImagePath}" --mask "${inputMaskPath}" --output "${outputImagePath}" --method ${method} --radius ${radius}`;
+    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    const command = `${pythonExe} "${pythonScript}" --input "${inputImagePath}" --mask "${inputMaskPath}" --output "${outputImagePath}" --method ${method} --radius ${radius}`;
 
     try {
       const { stdout, stderr } = await execAsync(command, { timeout: 30000 });

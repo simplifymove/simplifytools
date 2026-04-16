@@ -136,9 +136,10 @@ export async function POST(request: Request): Promise<Response> {
     console.log(`[API] Executing: python ${args.slice(0, 4).join(' ')} ...`);
 
     // Execute Python script safely with execFile
+    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
     return new Promise((resolve) => {
       execFile(
-        "python",
+        pythonExe,
         args,
         {
           timeout: 600000, // 10 min timeout

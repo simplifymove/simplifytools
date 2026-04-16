@@ -15,6 +15,69 @@ python_dir = os.path.dirname(os.path.abspath(__file__))
 if python_dir not in sys.path:
     sys.path.insert(0, python_dir)
 
+# Ensure system site-packages are accessible (for VPS deployment)
+# This is crucial when running from subprocess that may not inherit PYTHONPATH
+def _ensure_site_packages():
+    """Aggressively ensure site-packages are in sys.path"""
+    added_paths = []
+    
+    # Try site.getsitepackages() first
+    try:
+        import site
+        for site_dir in site.getsitepackages():
+            if site_dir not in sys.path:
+                sys.path.insert(0, site_dir)
+                added_paths.append(site_dir)
+    except (AttributeError, TypeError):
+        pass
+    
+    # Try sysconfig
+    try:
+        import sysconfig
+        for scheme in ['posix_prefix', 'posix_venv', 'venv']:
+            for path_name in ['purelib', 'platlib']:
+                try:
+                    sp = sysconfig.get_path(path_name, scheme)
+                    if sp and os.path.exists(sp) and sp not in sys.path:
+                        sys.path.insert(0, sp)
+                        added_paths.append(sp)
+                except:
+                    pass
+    except Exception:
+        pass
+    
+    # Try common system locations on Linux/VPS
+    common_paths = [
+        # Python 3.12
+        '/usr/local/lib/python3.12/site-packages',
+        '/usr/lib/python3.12/site-packages',
+        # Python 3.11
+        '/usr/local/lib/python3.11/site-packages',
+        '/usr/lib/python3.11/site-packages',
+        # Python 3.10
+        '/usr/local/lib/python3.10/site-packages',
+        '/usr/lib/python3.10/site-packages',
+        # Generic dist-packages (Debian/Ubuntu)
+        '/usr/lib/python3/dist-packages',
+        '/usr/local/lib/python3/dist-packages',
+        # Site packages in common prefix locations
+        '/opt/python/site-packages',
+    ]
+    
+    for path in common_paths:
+        if os.path.exists(path) and path not in sys.path:
+            sys.path.insert(0, path)
+            added_paths.append(path)
+    
+    return added_paths
+
+# Run the site-packages discovery
+added_paths = _ensure_site_packages()
+if added_paths:
+    print(f'[PDF Router] Added {len(added_paths)} paths to sys.path', file=sys.stderr)
+    for p in added_paths[:3]:  # Print first 3 for debugging
+        print(f'  - {p}', file=sys.stderr)
+
 # Import all engines
 from engines.pdf_core import PdfCoreEngine
 from engines.pdf_convert import PdfConvertEngine

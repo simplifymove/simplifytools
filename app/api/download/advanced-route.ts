@@ -103,7 +103,16 @@ function downloadWithYtDlp(url: string): Promise<{ filePath: string; fileName: s
       const urlFilePathFormatted = urlFilePath.replace(/\\/g, '/');
 
       // Use --batch-file to read URLs from file (avoids encoding issues)
-      const ytDlpProcess = spawn('python', [
+      const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+      
+      // Prepare environment with Python-specific variables
+      const spawnEnv = {
+        ...process.env,
+        PYTHONDONTWRITEBYTECODE: '1',
+        PYTHONHOME: '/usr',  // System Python home for VPS
+      };
+      
+      const ytDlpProcess = spawn(pythonExe, [
         '-m',
         'yt_dlp',
         '-f',
@@ -114,7 +123,9 @@ function downloadWithYtDlp(url: string): Promise<{ filePath: string; fileName: s
         '--quiet',
         '--batch-file',
         urlFilePathFormatted,
-      ]);
+      ], {
+        env: spawnEnv,
+      });
 
       let stdout = '';
       let stderr = '';
@@ -239,7 +250,18 @@ export async function POST(request: NextRequest) {
 
       try {
         // Check if yt-dlp is available
-        const ytDlpCheck = spawn('python', ['-m', 'yt_dlp', '--version']);
+        const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+        
+        // Prepare environment with Python-specific variables
+        const spawnEnv = {
+          ...process.env,
+          PYTHONDONTWRITEBYTECODE: '1',
+          PYTHONHOME: '/usr',  // System Python home for VPS
+        };
+        
+        const ytDlpCheck = spawn(pythonExe, ['-m', 'yt_dlp', '--version'], {
+          env: spawnEnv,
+        });
         await new Promise<void>((resolve, reject) => {
           let checkComplete = false;
           ytDlpCheck.on('close', (code) => {

@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, unlink, mkdir } from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
@@ -79,15 +80,21 @@ export async function POST(request: NextRequest) {
     // Call Python backend
     const pythonScript = path.join(process.cwd(), 'python', 'pdf_router.py');
 
-    // Use full path to venv Python executable
-    const pythonExe = process.platform === 'win32' 
+    // Use system python directly on VPS for access to installed packages
+    let pythonExe = process.platform === 'win32' 
       ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
-      : path.join(process.cwd(), '.venv', 'bin', 'python');
+      : '/usr/bin/python3';  // Use system python directly on Linux/VPS
+    
+    // On Windows dev, try venv first
+    if (process.platform === 'win32' && fs.existsSync(path.join(process.cwd(), '.venv', 'Scripts', 'python.exe'))) {
+      pythonExe = path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
+    }
     
     console.log(`[PDF API] Using Python executable: ${pythonExe}`);
     console.log(`[PDF API] Script path: ${pythonScript}`);
     console.log(`[PDF API] Tool ID: ${toolId}`);
     console.log(`[PDF API] Input files: ${JSON.stringify(inputFiles)}`);
+    console.log(`[PDF API] Working directory: ${process.cwd()}`);
     
     // Extra logging for esign-pdf
     if (toolId === 'esign-pdf') {
@@ -129,12 +136,30 @@ export async function POST(request: NextRequest) {
 
     const result = await new Promise<{ success: boolean; output?: string; error?: string; debug?: string }>((resolve, reject) => {
       console.log(`[PDF API] Spawning Python process with cwd: ${process.cwd()}`);
+      
+      // Prepare environment with Python-specific variables
+      // This ensures subprocess can find system-installed packages
+      const spawnEnv = {
+        ...process.env,
+        PYTHONDONTWRITEBYTECODE: '1',
+        // For VPS: ensure system site-packages are accessible
+        PYTHONHOME: '/usr',  // System Python home
+      } as NodeJS.ProcessEnv;
+      
+      // If using venv, also set VIRTUAL_ENV for compatibility
+      if (!pythonExe.includes('/usr/bin/')) {
+        (spawnEnv as any).VIRTUAL_ENV = path.dirname(path.dirname(pythonExe));
+      }
+      
+      console.log(`[PDF API] Python environment: PYTHONHOME=${spawnEnv.PYTHONHOME}, PYTHONDONTWRITEBYTECODE=${spawnEnv.PYTHONDONTWRITEBYTECODE}`);
+      
       const pythonProcess = spawn(pythonExe, [
         pythonScript,
         ...pythonArgs,
       ], {
         cwd: process.cwd(), // Explicitly set working directory
         stdio: ['pipe', 'pipe', 'pipe'], // Keep pipes for stdout and stderr
+        env: spawnEnv, // Pass environment with Python variables
       });
 
       // Set a longer timeout for OCR operations (15 minutes for model download)

@@ -148,7 +148,18 @@ export async function POST(request: NextRequest) {
       console.log(`[DEBUG] Spawning Python: ${pythonScript}`);
       console.log(`[DEBUG] Args: tool=${tool}, inputFile=${inputFile}, outputFile=${outputFile}`);
       
-      const process = spawn('python', [pythonScript, ...args]);
+      const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+      
+      // Prepare environment with Python-specific variables
+      const spawnEnv = {
+        ...process.env,
+        PYTHONDONTWRITEBYTECODE: '1',
+        PYTHONHOME: '/usr',  // System Python home
+      };
+      
+      const pythonProcess = spawn(pythonExe, [pythonScript, ...args], {
+        env: spawnEnv,
+      });
       
       let stdout = '';
       let stderr = '';
@@ -158,7 +169,7 @@ export async function POST(request: NextRequest) {
         if (!resolved) {
           resolved = true;
           console.error('[ERROR] Conversion timeout - killing process');
-          process.kill('SIGKILL');
+          pythonProcess.kill('SIGKILL');
           resolve({
             success: false,
             error: 'Conversion timeout: Process took longer than 55 seconds. The file might be too large or the conversion is stuck.',
@@ -166,17 +177,17 @@ export async function POST(request: NextRequest) {
         }
       }, 55000);
       
-      process.stdout?.on('data', (data) => {
+      pythonProcess.stdout?.on('data', (data) => {
         stdout += data.toString();
         console.log(`[STDOUT] ${data.toString()}`);
       });
       
-      process.stderr?.on('data', (data) => {
+      pythonProcess.stderr?.on('data', (data) => {
         stderr += data.toString();
         console.error(`[STDERR] ${data.toString()}`);
       });
       
-      process.on('close', (code) => {
+      pythonProcess.on('close', (code) => {
         if (!resolved) {
           resolved = true;
           clearTimeout(timeoutId);
@@ -195,7 +206,7 @@ export async function POST(request: NextRequest) {
         }
       });
       
-      process.on('error', (err) => {
+      pythonProcess.on('error', (err) => {
         if (!resolved) {
           resolved = true;
           clearTimeout(timeoutId);
