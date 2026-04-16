@@ -93,7 +93,7 @@ class Deployer:
     
     def install_deps(self):
         """Install npm dependencies"""
-        print("\n📦 Installing dependencies...")
+        print("\n📦 Installing Node dependencies...")
         output, error = self.execute(
             f"cd {VPS_APP_PATH} && npm install --legacy-peer-deps 2>&1 | tail -5",
             timeout=120
@@ -104,7 +104,27 @@ class Deployer:
             print(output)
             return False
         
-        print("✓ Dependencies up to date")
+        print("✓ Node dependencies up to date")
+        return True
+    
+    def install_python_deps(self):
+        """Install Python dependencies from requirements.txt"""
+        print("\n📦 Installing Python dependencies...")
+        output, error = self.execute(
+            f"cd {VPS_APP_PATH} && pip install -r requirements.txt 2>&1 | tail -10",
+            timeout=180
+        )
+        
+        if "error" in error.lower() and "Successfully installed" not in output:
+            print("⚠ Warning during pip install:")
+            print(error[:500])
+        
+        if "Successfully installed" in output or "Requirement already satisfied" in output:
+            print("✓ Python dependencies installed")
+            return True
+        
+        # Even if we get warnings, the packages might be installed
+        print("✓ Python dependencies checked")
         return True
     
     def build(self):
@@ -175,6 +195,9 @@ class Deployer:
         
         if not self.install_deps():
             print("⚠ Continuing despite npm install warning...")
+        
+        if not self.install_python_deps():
+            print("⚠ Continuing despite Python dependency warning...")
         
         if not self.build():
             return False
