@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, Loader, ChevronRight, Palette } from 'lucide-react';
+import { HomeHeader } from '@/app/components/HomeHeader';
+import { Footer } from '@/app/components/Footer';
 import { ImageUploader } from '../../components/ImageUploader';
 import { applyGrayscale } from '../../lib/imageTools';
 
@@ -58,7 +60,9 @@ export default function GrayscaleImagePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
       {/* Hero Header */}
       <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-6xl mx-auto relative z-10">
@@ -187,6 +191,8 @@ export default function GrayscaleImagePage() {
         </div>
       </div>
     </main>
+    <Footer />
+    </>
   );
 }
 
