@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    // Optimize CSS loading to prevent unused preload warnings
+    optimizePackageImports: ["lucide-react"],
+    optimizeCss: true,
+  },
+  swcMinify: true,
+  compress: true,
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
   images: {
     unoptimized: false,
     // Whitelist trusted image sources only (prevents malicious image injection)
