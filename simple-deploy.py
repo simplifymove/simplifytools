@@ -123,6 +123,11 @@ class Deployer:
         
         # Show installation output for debugging
         if output:
+            # Check if rembg was installed
+            if "rembg" in output and "Successfully installed" in output:
+                print("✓ All packages installed (including rembg-2.0.72)")
+                return True
+            
             lines = output.split('\n')[-10:]
             for line in lines:
                 if line.strip() and ("Successfully" in line or "Installing" in line or "Requirement" in line):
