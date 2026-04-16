@@ -16,10 +16,16 @@ export default function RemoveBackgroundPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleFileSelect = (selectedFile: File) => {
+    console.log('File selected:', selectedFile.name, selectedFile.type, selectedFile.size);
     setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+      const result = e.target?.result as string;
+      console.log('FileReader onload - preview data:', result?.substring(0, 50));
+      setPreview(result);
+    };
+    reader.onerror = (e) => {
+      console.error('FileReader error:', e);
     };
     reader.readAsDataURL(selectedFile);
     setError(null);
@@ -37,6 +43,7 @@ export default function RemoveBackgroundPage() {
   const removeBackground = async () => {
     if (!file) {
       setError('Please select an image first');
+      console.warn('[removeBackground] No file selected');
       return;
     }
 
@@ -44,12 +51,28 @@ export default function RemoveBackgroundPage() {
     setError(null);
 
     try {
+      console.log('[removeBackground] File info:', { 
+        name: file.name, 
+        size: file.size, 
+        type: file.type,
+        lastModified: file.lastModified
+      });
+
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('file', file);
       formData.append('hq', hqMode ? 'true' : 'false');
       formData.append('format', outputFormat);
 
+      // Debug: log what we're sending
+      console.log('[removeBackground] FormData entries:', {
+        file: file.name,
+        hq: hqMode ? 'true' : 'false',
+        format: outputFormat
+      });
+
       const startTime = Date.now();
+      console.log('[removeBackground] Sending request to /api/bg-remove');
+      
       const response = await fetch('/api/bg-remove', {
         method: 'POST',
         body: formData,
@@ -74,8 +97,17 @@ export default function RemoveBackgroundPage() {
         throw new Error('Empty response from server');
       }
 
-      const url = URL.createObjectURL(blob);
-      setResult(url);
+      // Convert blob to data URL to avoid CSP issues with blob: URLs
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        console.log('Result image loaded, data URL length:', dataUrl.length);
+        setResult(dataUrl);
+      };
+      reader.onerror = () => {
+        throw new Error('Failed to read result image');
+      };
+      reader.readAsDataURL(blob);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
@@ -93,6 +125,7 @@ export default function RemoveBackgroundPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    console.log('Download started for:', link.download);
   };
 
   return (
@@ -157,13 +190,19 @@ export default function RemoveBackgroundPage() {
                 {preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Original Image</h2>
-                    <div className="flex justify-center">
-                      <img
-                        src={preview}
-                        alt="original"
-                        className="rounded-lg shadow-lg max-w-full"
-                        style={{ maxHeight: '500px', maxWidth: '100%' }}
-                      />
+                    <div className="flex justify-center items-center min-h-80">
+                      {preview ? (
+                        <img
+                          src={preview}
+                          alt="original"
+                          className="rounded-lg shadow-lg"
+                          style={{ maxHeight: '500px', maxWidth: '100%', objectFit: 'contain' }}
+                          onLoad={() => console.log('Preview image loaded successfully')}
+                          onError={(e) => console.error('Preview image failed to load:', e)}
+                        />
+                      ) : (
+                        <p className="text-gray-500">Loading preview...</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -172,16 +211,18 @@ export default function RemoveBackgroundPage() {
                 {result && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Background Removed</h2>
-                    <div className="flex justify-center mb-6">
+                    <div className="flex justify-center items-center min-h-80">
                       <img
                         src={result}
                         alt="result"
-                        className="rounded-lg shadow-lg max-w-full"
-                        style={{ maxHeight: '500px', maxWidth: '100%' }}
+                        className="rounded-lg shadow-lg"
+                        style={{ maxHeight: '500px', maxWidth: '100%', objectFit: 'contain', backgroundColor: '#f3f4f6' }}
+                        onLoad={() => console.log('Result image loaded successfully')}
+                        onError={(e) => console.error('Result image failed to load:', e)}
                       />
                     </div>
                     {processingTime !== null && (
-                      <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded-lg mt-6">
                         Processed in {(processingTime / 1000).toFixed(1)}s • {outputFormat.toUpperCase()} format
                       </p>
                     )}

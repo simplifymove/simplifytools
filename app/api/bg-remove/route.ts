@@ -97,25 +97,36 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
+    // Debug: Log request info
+    console.log(`[bg-remove] REQUEST INFO:`);
+    console.log(`  Method: ${request.method}`);
+    console.log(`  Content-Type: ${request.headers.get('content-type')}`);
+    console.log(`  Content-Length: ${request.headers.get('content-length')}`);
+    console.log(`  URL: ${request.url}`);
+    
     const formData = await request.formData();
     
     // Debug: Log all form fields
     console.log(`[bg-remove] FormData fields received:`);
+    let fieldCount = 0;
     for (const [key, value] of formData.entries()) {
+      fieldCount++;
       if (value instanceof File) {
         console.log(`  - ${key}: File(name=${value.name}, size=${value.size}, type=${value.type})`);
       } else {
         console.log(`  - ${key}: ${value}`);
       }
     }
+    console.log(`  Total fields: ${fieldCount}`);
     
     const file = formData.get("file") as File;
     const hqParam = formData.get("hq") as string;
     const format = (formData.get("format") as string) || "png";
 
     if (!file) {
-      console.error(`[bg-remove] ERROR: No file in formData. Keys received: ${Array.from(formData.keys()).join(", ")}`);
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      const keysArray = Array.from(formData.keys());
+      console.error(`[bg-remove] ERROR: No file in formData. Keys received: ${keysArray.join(", ")} (${keysArray.length} keys)`);
+      return NextResponse.json({ error: "No file provided", debug: { keysReceived: keysArray } }, { status: 400 });
     }
     console.log(`[bg-remove] File: ${file.name} (${file.size} bytes) from ${clientIp}`);
 
