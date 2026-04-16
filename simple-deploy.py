@@ -110,20 +110,30 @@ class Deployer:
     def install_python_deps(self):
         """Install Python dependencies from requirements.txt"""
         print("\n📦 Installing Python dependencies...")
+        # Use python3 -m pip to ensure we install to the correct Python
         output, error = self.execute(
-            f"cd {VPS_APP_PATH} && pip install -r requirements.txt 2>&1 | tail -10",
-            timeout=180
+            f"cd {VPS_APP_PATH} && python3 -m pip install -r requirements.txt 2>&1 | tail -15",
+            timeout=300
         )
         
         if "error" in error.lower() and "Successfully installed" not in output:
             print("⚠ Warning during pip install:")
             print(error[:500])
         
-        if "Successfully installed" in output or "Requirement already satisfied" in output:
-            print("✓ Python dependencies installed")
-            return True
+        # Verify rembg is installed
+        verify_output, verify_error = self.execute(
+            "python3 -c 'import rembg; print(\"✓ rembg installed\")'",
+            timeout=10
+        )
         
-        # Even if we get warnings, the packages might be installed
+        if "rembg installed" in verify_output:
+            print("✓ Python dependencies installed and verified")
+            return True
+        elif "ModuleNotFoundError" in verify_error:
+            print("✗ rembg not found after installation")
+            print(verify_error[:300])
+            return False
+        
         print("✓ Python dependencies checked")
         return True
     
