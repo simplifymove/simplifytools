@@ -132,10 +132,3 @@ export default function AiImageGeneratorPage() {
     </>
   );
 }
-
-
-
-
-
-
-
