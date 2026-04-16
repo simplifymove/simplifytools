@@ -7,8 +7,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["lucide-react"],
     optimizeCss: true,
   },
-  swcMinify: true,
-  compress: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   images: {
