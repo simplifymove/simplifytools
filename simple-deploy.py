@@ -115,9 +115,9 @@ class Deployer:
         python_info, _ = self.execute("python3 --version && python3 -m pip --version", timeout=10)
         print(f"  Python info: {python_info.strip()}")
         
-        # Use python3 -m pip with --break-system-packages for Python 3.12+
+        # Use python3 -m pip with flags for Python 3.12+ and Debian systems
         output, error = self.execute(
-            f"cd {VPS_APP_PATH} && python3 -m pip install --upgrade --break-system-packages -r requirements.txt",
+            f"cd {VPS_APP_PATH} && python3 -m pip install --upgrade --break-system-packages --ignore-installed -r requirements.txt",
             timeout=300
         )
         
