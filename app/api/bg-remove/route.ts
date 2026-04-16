@@ -72,7 +72,7 @@ except Exception as e:
     await fs.writeFile(pythonScript, pythonCode);
     console.log(`[bg-remove] Processing with ${model} model (HQ: ${hqMode})`);
     
-    const { stdout, stderr } = await execAsync(`python "${pythonScript}"`, { 
+    const { stdout, stderr } = await execAsync(`python3 "${pythonScript}"`, { 
       timeout: 120000, 
       maxBuffer: 50 * 1024 * 1024
     });
