@@ -115,9 +115,9 @@ class Deployer:
         python_info, _ = self.execute("python3 --version && python3 -m pip --version", timeout=10)
         print(f"  Python info: {python_info.strip()}")
         
-        # Use python3 -m pip to ensure we install to the correct Python
+        # Use python3 -m pip with --break-system-packages for Python 3.12+
         output, error = self.execute(
-            f"cd {VPS_APP_PATH} && python3 -m pip install --upgrade -r requirements.txt",
+            f"cd {VPS_APP_PATH} && python3 -m pip install --upgrade --break-system-packages -r requirements.txt",
             timeout=300
         )
         
@@ -125,10 +125,10 @@ class Deployer:
         if output:
             lines = output.split('\n')[-10:]
             for line in lines:
-                if line.strip():
+                if line.strip() and ("Successfully" in line or "Installing" in line or "Requirement" in line):
                     print(f"    {line}")
         
-        if error and "error" in error.lower():
+        if error and "error" in error.lower() and "externally-managed" not in error:
             print(f"  Install error: {error[:300]}")
         
         # Verify rembg is installed
@@ -141,8 +141,9 @@ class Deployer:
             print("✓ Python dependencies installed and verified")
             return True
         else:
-            print(f"  Verify error: {verify_error[:200]}")
-            print("⚠ Will continue anyway - rembg might install on first run")
+            print(f"  Verify output: {verify_output.strip() if verify_output else 'none'}")
+            print(f"  Verify error: {verify_error[:200] if verify_error else 'none'}")
+            print("⚠ Python dependencies may not be available")
     
     def build(self):
         """Build Next.js application"""
