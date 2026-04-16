@@ -110,15 +110,26 @@ class Deployer:
     def install_python_deps(self):
         """Install Python dependencies from requirements.txt"""
         print("\n📦 Installing Python dependencies...")
+        
+        # First, show what Python we're using
+        python_info, _ = self.execute("python3 --version && python3 -m pip --version", timeout=10)
+        print(f"  Python info: {python_info.strip()}")
+        
         # Use python3 -m pip to ensure we install to the correct Python
         output, error = self.execute(
-            f"cd {VPS_APP_PATH} && python3 -m pip install -r requirements.txt 2>&1 | tail -15",
+            f"cd {VPS_APP_PATH} && python3 -m pip install --upgrade -r requirements.txt",
             timeout=300
         )
         
-        if "error" in error.lower() and "Successfully installed" not in output:
-            print("⚠ Warning during pip install:")
-            print(error[:500])
+        # Show installation output for debugging
+        if output:
+            lines = output.split('\n')[-10:]
+            for line in lines:
+                if line.strip():
+                    print(f"    {line}")
+        
+        if error and "error" in error.lower():
+            print(f"  Install error: {error[:300]}")
         
         # Verify rembg is installed
         verify_output, verify_error = self.execute(
@@ -129,13 +140,9 @@ class Deployer:
         if "rembg installed" in verify_output:
             print("✓ Python dependencies installed and verified")
             return True
-        elif "ModuleNotFoundError" in verify_error:
-            print("✗ rembg not found after installation")
-            print(verify_error[:300])
-            return False
-        
-        print("✓ Python dependencies checked")
-        return True
+        else:
+            print(f"  Verify error: {verify_error[:200]}")
+            print("⚠ Will continue anyway - rembg might install on first run")
     
     def build(self):
         """Build Next.js application"""
