@@ -98,11 +98,25 @@ export async function POST(request: NextRequest) {
 
   try {
     const formData = await request.formData();
+    
+    // Debug: Log all form fields
+    console.log(`[bg-remove] FormData fields received:`);
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`  - ${key}: File(name=${value.name}, size=${value.size}, type=${value.type})`);
+      } else {
+        console.log(`  - ${key}: ${value}`);
+      }
+    }
+    
     const file = formData.get("file") as File;
     const hqParam = formData.get("hq") as string;
     const format = (formData.get("format") as string) || "png";
 
-    if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!file) {
+      console.error(`[bg-remove] ERROR: No file in formData. Keys received: ${Array.from(formData.keys()).join(", ")}`);
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
     console.log(`[bg-remove] File: ${file.name} (${file.size} bytes) from ${clientIp}`);
 
     if (file.size > MAX_FILE_SIZE) {
