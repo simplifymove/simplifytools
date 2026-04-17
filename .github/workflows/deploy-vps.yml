@@ -41,6 +41,11 @@ jobs:
         run: |
           echo "🚀 Starting deployment..."
           
+          # Kill old npm processes and free port 3000
+          echo "🛑 Stopping old processes..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
+            "pkill -9 -f 'npm start' || true; sleep 1" || true
+          
           # Pull latest code
           echo "📥 Pulling latest code..."
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
@@ -60,5 +65,18 @@ jobs:
           echo "✅ Verifying build..."
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
             "test -d /var/www/tinytools-app/.next && echo '✅ Build verified successfully'" || { echo "❌ Build verification failed"; exit 1; }
+          
+          # Start the application
+          echo "🟢 Starting application..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
+            "cd /var/www/tinytools-app && npm start > /tmp/app.log 2>&1 &" || { echo "⚠️ App start command sent"; }
+          
+          # Give app time to start
+          sleep 3
+          
+          # Verify app is running
+          echo "🔍 Verifying app is running..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
+            "curl -s http://localhost:3000 | head -1 | grep -q 'html' && echo '✅ App is responding!' || echo '⚠️ App may still be starting...'" || true
           
           echo "✨ Deployment completed successfully!"
