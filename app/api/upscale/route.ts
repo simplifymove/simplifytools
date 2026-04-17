@@ -179,15 +179,15 @@ async function upscaleWithSharp(
     });
 
   if (outputFormat === 'png') {
-    return pipeline
+    return await pipeline
       .png({ progressive: true, compressionLevel: 9, adaptiveFiltering: true })
       .toBuffer();
   } else if (outputFormat === 'jpg') {
-    return pipeline
+    return await pipeline
       .jpeg({ quality: 95, progressive: true, optimizeScans: true })
       .toBuffer();
   } else {
-    return pipeline.webp({ quality: 90, alphaQuality: 90 }).toBuffer();
+    return await pipeline.webp({ quality: 90, alphaQuality: 90 }).toBuffer();
   }
 }
 
