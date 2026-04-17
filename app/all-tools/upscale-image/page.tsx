@@ -2,25 +2,43 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, ChevronRight, Loader, Zap } from 'lucide-react';
+import { Download, ChevronRight, Loader, Zap, Info, Cpu, AlertCircle } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Footer } from '../../components/Footer';
+
+interface UpscaleMetadata {
+  original_size?: string;
+  upscaled_size?: string;
+  scale?: number;
+  mode?: string;
+  model?: string;
+  engine?: string;
+  processing_time_ms?: number;
+  output_size_bytes?: number;
+  compression_ratio?: number;
+  warning?: string;
+}
 
 export default function UpscaleImagePage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [resultBlob, setResultBlob] = useState<Blob | null>(null); // ← Keep reference to prevent GC
+  const [resultDataUrl, setResultDataUrl] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [useDataUrl, setUseDataUrl] = useState(false);
   
   // Upscale options
-  const [scale, setScale] = useState<2 | 4>(4);
+  const [scale, setScale] = useState<2 | 3 | 4>(4);
   const [mode, setMode] = useState<'auto' | 'photo' | 'anime'>('auto');
   const [faceEnhance, setFaceEnhance] = useState(false);
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
   
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<UpscaleMetadata | null>(null);
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
@@ -29,12 +47,19 @@ export default function UpscaleImagePage() {
       setPreview(e.target?.result as string);
     };
     reader.readAsDataURL(selectedFile);
+    setMetadata(null);
   };
 
   const handleClearPreview = () => {
     setFile(null);
     setPreview(null);
     setResult(null);
+    setResultBlob(null); // ← Clear blob reference
+    setResultDataUrl(null);
+    setMetadata(null);
+    setError(null);
+    setImageLoading(false);
+    setUseDataUrl(false);
   };
 
   const upscaleImage = async () => {
@@ -45,6 +70,7 @@ export default function UpscaleImagePage() {
 
     setProcessing(true);
     setError(null);
+    setMetadata(null);
 
     try {
       const formData = new FormData();
@@ -73,17 +99,122 @@ export default function UpscaleImagePage() {
         throw new Error(errorMessage);
       }
 
+      const contentType = response.headers.get('Content-Type');
+      console.log('📥 Response received:', { 
+        status: response.status,
+        contentType,
+        contentLength: response.headers.get('Content-Length')
+      });
+
       const blob = await response.blob();
+      console.log('✓ Response blob received:', { 
+        size: blob.size, 
+        type: blob.type,
+        contentType
+      });
+
       if (blob.size === 0) {
         throw new Error('Empty response from server');
       }
 
-      const url = URL.createObjectURL(blob);
-      setResult(url);
+      // Validate blob is actually an image
+      if (!blob.type.startsWith('image/')) {
+        console.error('❌ Invalid blob type:', blob.type);
+        throw new Error(`Invalid response type: ${blob.type}. Expected image.`);
+      }
+
+      // Validate blob contains actual image data by checking magic bytes
+      const headerBytes = await blob.slice(0, 8).arrayBuffer();
+      const view = new Uint8Array(headerBytes);
+      const hexHeader = Array.from(view).map(b => b.toString(16).padStart(2, '0')).join(' ');
+      console.log('Blob magic bytes:', hexHeader);
+
+      // Check for PNG (89 50 4E 47) or JPEG (FF D8 FF)
+      const isPNG = view[0] === 0x89 && view[1] === 0x50 && view[2] === 0x4E && view[3] === 0x47;
+      const isJPEG = view[0] === 0xFF && view[1] === 0xD8 && view[2] === 0xFF;
+      const isWebP = view[0] === 0x52 && view[1] === 0x49 && view[2] === 0x46 && view[3] === 0x46;
+
+      if (!isPNG && !isJPEG && !isWebP) {
+        console.error('❌ Invalid image data. Magic bytes:', hexHeader);
+        throw new Error(`Invalid image data: not a valid PNG, JPEG, or WebP file`);
+      }
+
+      console.log('✓ Valid image format:', { isPNG, isJPEG, isWebP });
+
+      // Parse metadata from response header
+      const metadataHeader = response.headers.get('X-Upscale-Metadata');
+      if (metadataHeader) {
+        try {
+          const parsedMetadata = JSON.parse(metadataHeader);
+          console.log('✓ Metadata parsed:', parsedMetadata);
+          setMetadata(parsedMetadata);
+        } catch (e) {
+          console.warn('Failed to parse metadata', e);
+        }
+      }
+
+      // Create blob URL and data URL as fallback
+      let url: string;
+      let dataUrl: string | null = null;
+      
+      try {
+        url = URL.createObjectURL(blob);
+        console.log('✓ Blob URL created:', { 
+          url: url.substring(0, 50) + '...',
+          blobSize: blob.size,
+          blobType: blob.type
+        });
+      } catch (err) {
+        console.error('❌ Failed to create blob URL:', err);
+        throw new Error(`Failed to create blob URL: ${err}`);
+      }
+      
+      // Store blob reference in state to prevent garbage collection
+      setResultBlob(blob);
+      
+      // Convert blob to data URL (works more reliably than blob URLs in some environments)
+      try {
+        console.log('🔄 Converting blob to data URL... (this may take a moment for large images)');
+        const arrayBuffer = await blob.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        let binaryString = '';
+        
+        // Convert in chunks to avoid stack overflow
+        const chunkSize = 65536;
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.subarray(i, i + chunkSize);
+          binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+        }
+        
+        const base64 = btoa(binaryString);
+        dataUrl = `data:${blob.type};base64,${base64}`;
+        
+        console.log('✓ Data URL created (base64 length:', base64.length, ', image size:', (blob.size / (1024*1024)).toFixed(1), 'MB)');
+        setResultDataUrl(dataUrl);
+        
+        // Use data URL as primary (more reliable than blob URLs)
+        setResult(dataUrl);
+        setUseDataUrl(true);
+        setImageLoading(true);
+        console.log('🖼️ Image loading started from data URL');
+      } catch (err) {
+        console.error('⚠️ Failed to create data URL:', err);
+        
+        // Fallback to blob URL if data URL creation fails
+        try {
+          url = URL.createObjectURL(blob);
+          console.log('🔄 Falling back to blob URL:', url.substring(0, 50));
+          setResult(url);
+          setImageLoading(true);
+          console.log('🖼️ Image loading started from blob URL (fallback)');
+        } catch (blobErr) {
+          throw new Error(`Failed to create both data URL and blob URL: ${err}`);
+        }
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
-      console.error('Error:', err);
+      console.error('❌ Upscale error:', err);
     } finally {
       setProcessing(false);
     }
@@ -104,7 +235,7 @@ export default function UpscaleImagePage() {
       <HomeHeader />
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Hero Header */}
-        <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
+        <div className="relative bg-gradient-to-r from-orange-500 to-red-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
@@ -121,12 +252,14 @@ export default function UpscaleImagePage() {
                 <Zap size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Upscale Image</h1>
-                <p className="text-lg text-white/90">Enlarge your images up to 4x with AI-powered quality enhancement.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">AI Image Upscaler</h1>
+                <p className="text-lg text-white/90">Professional image enlargement using Real-ESRGAN. Upscale to 2×, 3×, or 4× with advanced AI enhancement.</p>
               </div>
             </div>
           </div>
         </div>
+
+
 
         {/* Main Content */}
         <div className="flex-1 py-12 px-4 md:px-8">
@@ -150,7 +283,7 @@ export default function UpscaleImagePage() {
                 {preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Original Image</h2>
-                    <div className="flex justify-center">
+                    <div className="flex justify-center mb-4">
                       <img
                         src={preview}
                         alt="original"
@@ -165,32 +298,105 @@ export default function UpscaleImagePage() {
                 {result && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Upscaled Result ({scale}×)</h2>
-                    <div className="flex justify-center mb-6">
+                    <div className="flex justify-center mb-6 bg-gray-50 rounded-lg p-4 min-h-[300px]">
+                      {imageLoading && (
+                        <div className="text-center">
+                          <Loader className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">Loading high-resolution image...</p>
+                        </div>
+                      )}
                       <img
-                        src={result}
+                        src={useDataUrl ? resultDataUrl : result}
                         alt="upscaled"
-                        className="rounded-lg shadow-lg max-w-full"
+                        className={`rounded-lg shadow-lg max-w-full ${imageLoading ? 'hidden' : ''}`}
                         style={{ maxHeight: '600px', maxWidth: '100%' }}
+                        onLoad={() => {
+                          console.log('✅ Image loaded successfully');
+                          setImageLoading(false);
+                        }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          console.error('❌ Image failed to load');
+                          console.error('Image element details:', {
+                            srcLength: target.src?.length,
+                            hasBlob: !!resultBlob,
+                            blobSize: resultBlob?.size,
+                            naturalWidth: target.naturalWidth,
+                            naturalHeight: target.naturalHeight,
+                            complete: target.complete,
+                          });
+                          setError('Preview failed to load. File is ready to download. Try refreshing the page.');
+                          setImageLoading(false);
+                        }}
+                        onLoad={() => {
+                          console.log('✓ Image loaded successfully');
+                          setImageLoading(false);
+                        }}
+                        onLoadStart={() => {
+                          console.log('Image loading started...');
+                          setImageLoading(true);
+                        }}
                       />
                     </div>
-                    {processingTime !== null && (
-                      <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded-lg mb-4">
-                        Processed in {(processingTime / 1000).toFixed(1)}s • {outputFormat.toUpperCase()} format
-                      </p>
+
+                    {/* Metadata Display */}
+                    {metadata && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                        {metadata.original_size && (
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="text-xs text-gray-600 font-medium">Original Size</p>
+                            <p className="text-sm text-gray-900">{metadata.original_size}px</p>
+                          </div>
+                        )}
+                        {metadata.upscaled_size && (
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="text-xs text-gray-600 font-medium">Upscaled Size</p>
+                            <p className="text-sm text-gray-900">{metadata.upscaled_size}px</p>
+                          </div>
+                        )}
+                        {metadata.mode && (
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="text-xs text-gray-600 font-medium">Detected Mode</p>
+                            <p className="text-sm text-gray-900 capitalize">{metadata.mode}</p>
+                          </div>
+                        )}
+                        {metadata.output_size_bytes && (
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="text-xs text-gray-600 font-medium">Output Size</p>
+                            <p className="text-sm text-gray-900">{(metadata.output_size_bytes / (1024 * 1024)).toFixed(2)} MB</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Engine & Performance Info */}
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {processingTime !== null && (
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
+                          ⚡ {(processingTime / 1000).toFixed(1)}s processing
+                        </span>
+                      )}
+
+                    </div>
+
+                    {metadata?.warning && (
+                      <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <p className="text-xs text-yellow-800">⚠️ {metadata.warning}</p>
+                      </div>
                     )}
                   </div>
                 )}
 
                 {!preview && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-                    <h3 className="font-semibold text-green-900 mb-3">How to Upscale:</h3>
+                    <h3 className="font-semibold text-green-900 mb-3">How to Use:</h3>
                     <ol className="text-sm text-green-800 space-y-2">
-                      <li>1. Upload an image you want to enlarge</li>
-                      <li>2. Choose upscale factor (2× or 4×)</li>
+                      <li>1. Upload an image (JPG, PNG, or WebP)</li>
+                      <li>2. Choose upscale factor (2×, 3×, or 4×)</li>
                       <li>3. Select image type (auto-detect or specific)</li>
-                      <li>4. Optional: Enable face enhancement</li>
-                      <li>5. Pick output format (PNG/JPG/WebP)</li>
-                      <li>6. Click "Upscale" and download result</li>
+                      <li>4. Optional: Enable face enhancement for portraits</li>
+                      <li>5. Pick output format (PNG for quality, JPG for size, WebP for balance)</li>
+                      <li>6. Click "Upscale" and download your enhanced image</li>
                     </ol>
                   </div>
                 )}
@@ -201,13 +407,14 @@ export default function UpscaleImagePage() {
                 <div className="sticky top-4 space-y-4">
                   {!preview && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-blue-900 mb-3">Features</h3>
-                      <ul className="text-sm text-blue-800 space-y-1">
-                        <li>• 2× or 4× upscaling</li>
-                        <li>• AI-powered enhancement</li>
-                        <li>• Multiple output formats</li>
-                        <li>• Face enhancement mode</li>
-                        <li>• Auto image detection</li>
+                      <h3 className="font-semibold text-blue-900 mb-3">Key Features</h3>
+                      <ul className="text-sm text-blue-800 space-y-2">
+                        <li>✓ Real-ESRGAN AI upscaling</li>
+                        <li>✓ 2×, 3×, 4× magnification</li>
+                        <li>✓ Auto image type detection</li>
+                        <li>✓ Face enhancement mode</li>
+                        <li>✓ Multiple formats (PNG/JPG/WebP)</li>
+                        <li>✓ Batch processing ready</li>
                       </ul>
                     </div>
                   )}
@@ -221,10 +428,10 @@ export default function UpscaleImagePage() {
                       <div className="mb-4">
                         <label className="text-sm font-medium text-gray-700 block mb-2">Upscale Factor</label>
                         <div className="flex gap-2">
-                          {[2, 4].map((s) => (
+                          {[2, 3, 4].map((s) => (
                             <button
                               key={s}
-                              onClick={() => setScale(s as 2 | 4)}
+                              onClick={() => setScale(s as 2 | 3 | 4)}
                               className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition ${
                                 scale === s
                                   ? 'bg-orange-500 text-white'
@@ -235,9 +442,9 @@ export default function UpscaleImagePage() {
                             </button>
                           ))}
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {scale === 2 ? 'Faster, good for web' : 'Maximum quality'}
-                        </p>
+                        <div className="text-xs text-gray-600 mt-2 space-y-1">
+                          <p>{scale === 2 ? '✓ Fastest, good for web' : scale === 3 ? '✓ Balanced quality & speed' : '✓ Maximum quality'}</p>
+                        </div>
                       </div>
 
                       {/* Image Type */}
@@ -248,7 +455,7 @@ export default function UpscaleImagePage() {
                           onChange={(e) => setMode(e.target.value as 'auto' | 'photo' | 'anime')}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
-                          <option value="auto">Auto Detect</option>
+                          <option value="auto">Auto Detect (Recommended)</option>
                           <option value="photo">Photo / Real Image</option>
                           <option value="anime">Anime / Illustration</option>
                         </select>
@@ -262,7 +469,7 @@ export default function UpscaleImagePage() {
                             <button
                               key={fmt}
                               onClick={() => setOutputFormat(fmt)}
-                              className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition ${
+                              className={`flex-1 px-2 py-2 rounded-lg font-medium text-xs transition ${
                                 outputFormat === fmt
                                   ? 'bg-orange-500 text-white'
                                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -309,10 +516,13 @@ export default function UpscaleImagePage() {
                       {processing ? (
                         <>
                           <Loader size={20} className="animate-spin" />
-                          Upscaling...
+                          Processing...
                         </>
                       ) : (
-                        'Upscale Image'
+                        <>
+                          <Zap size={20} />
+                          Upscale Now
+                        </>
                       )}
                     </button>
                   )}
@@ -328,13 +538,19 @@ export default function UpscaleImagePage() {
                     </button>
                   )}
 
-                  {/* Speed Comparison */}
+                  {/* Quality Info */}
                   {preview && (
                     <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-indigo-900 mb-2">Scale Comparison</h3>
-                      <ul className="text-sm text-indigo-800 space-y-1">
-                        <li>• <span className="font-medium">2×</span> Web-ready</li>
-                        <li>• <span className="font-medium">4×</span> Best quality</li>
+                      <div className="flex items-start gap-2 mb-3">
+                        <Info size={16} className="text-indigo-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-indigo-900 text-sm">Scale Comparison</h3>
+                        </div>
+                      </div>
+                      <ul className="text-xs text-indigo-800 space-y-1">
+                        <li><span className="font-medium">2×</span> — Quick, web-friendly</li>
+                        <li><span className="font-medium">3×</span> — Balanced approach</li>
+                        <li><span className="font-medium">4×</span> — Maximum detail</li>
                       </ul>
                     </div>
                   )}
@@ -342,11 +558,11 @@ export default function UpscaleImagePage() {
                   {/* Format Tips */}
                   {preview && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-amber-900 mb-2">Format Tips</h3>
+                      <h3 className="font-semibold text-amber-900 mb-2 text-sm">Format Guide</h3>
                       <ul className="text-xs text-amber-800 space-y-1">
-                        <li>• PNG: Best quality</li>
-                        <li>• WebP: Balanced</li>
-                        <li>• JPG: Smallest file</li>
+                        <li><span className="font-medium">PNG:</span> Lossless, best quality</li>
+                        <li><span className="font-medium">WebP:</span> Optimal balance</li>
+                        <li><span className="font-medium">JPG:</span> Smallest file size</li>
                       </ul>
                     </div>
                   )}

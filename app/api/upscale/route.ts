@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { writeFile, unlink } from 'fs/promises';
+import { existsSync } from 'fs';
+import path from 'path';
+import { spawn } from 'child_process';
+import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
-const MAX_INPUT_DIMENSION = 6000;
-const MAX_OUTPUT_DIMENSION = 10000;
-const TILE_SIZE = 512; // For tiling large images
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB for high-res images
+const MAX_INPUT_DIMENSION = 8000;
+const MAX_OUTPUT_DIMENSION = 16000;
+const TEMP_DIR = path.join(process.cwd(), 'tmp');
+
+export const maxDuration = 120; // 2 minutes for processing
+export const bodyParser = {
+  sizeLimit: '100mb',
+};
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -49,126 +59,141 @@ function validateImageType(buffer: Buffer): boolean {
   return false;
 }
 
-// Detect if image is likely illustration/anime (few colors, sharp edges)
-async function detectImageMode(imageBuffer: Buffer): Promise<'photo' | 'anime'> {
-  try {
-    const metadata = await sharp(imageBuffer).metadata();
-    
-    if (!metadata.width || !metadata.height) {
-      return 'photo'; // Fallback to photo mode
-    }
-
-    // Small sample for analysis
-    const sampleSize = 100;
-    const sampleBuffer = await sharp(imageBuffer)
-      .resize(sampleSize, sampleSize, { fit: 'inside' })
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-
-    const { data: pixels } = sampleBuffer;
-    const uniqueColors = new Set<string>();
-
-    // Sample every 4th pixel for speed
-    for (let i = 0; i < pixels.length; i += 12) {
-      const r = pixels[i];
-      const g = pixels[i + 1];
-      const b = pixels[i + 2];
-      uniqueColors.add(`${r},${g},${b}`);
-    }
-
-    // Anime/illustration typically has fewer colors
-    if (uniqueColors.size < 500) {
-      return 'anime';
-    }
-
-    return 'photo';
-  } catch {
-    return 'photo'; // Fallback
-  }
-}
-
-async function upscaleImage(
-  imageBuffer: Buffer,
-  scale: 2 | 4,
+/**
+ * Call the Real-ESRGAN Python backend for industry-standard upscaling.
+ * Real-ESRGAN is the state-of-the-art in image super-resolution.
+ */
+async function upscaleWithRealESRGAN(
+  inputPath: string,
+  scale: 2 | 3 | 4,
   mode: 'auto' | 'photo' | 'anime',
   faceEnhance: boolean,
   outputFormat: 'png' | 'jpg' | 'webp'
-): Promise<Buffer> {
-  const startTime = Date.now();
+): Promise<{ outputPath: string; metadata: Record<string, any> }> {
+  return new Promise((resolve, reject) => {
+    const pythonScript = path.join(process.cwd(), 'python', 'upscale_engine.py');
+    const outputPath = path.join(TEMP_DIR, `upscaled_${uuidv4()}.${outputFormat}`);
+    
+    const args = [
+      inputPath,
+      scale.toString(),
+      mode,
+      faceEnhance.toString(),
+      outputFormat,
+      outputPath,
+    ];
 
-  // Get original metadata
+    // Use virtual environment Python
+    const venvPython = path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
+    const pythonExe = process.platform === 'win32' && existsSync(venvPython)
+      ? venvPython
+      : process.platform === 'win32' 
+        ? 'python'
+        : '/usr/bin/python3';
+    
+    const spawnEnv = {
+      ...process.env,
+      PYTHONUNBUFFERED: '1',
+      PYTHONDONTWRITEBYTECODE: '1',
+    } as any;
+
+    // Set PYTHONPATH for Linux deployments
+    if (process.platform !== 'win32') {
+      const pythonPaths = [
+        '/usr/lib/python3/dist-packages',
+        '/usr/lib/python3.12/dist-packages',
+        '/usr/lib/python3.11/dist-packages',
+        '/usr/local/lib/python3.12/site-packages',
+        '/usr/local/lib/python3.11/site-packages',
+      ];
+      spawnEnv.PYTHONPATH = pythonPaths.join(':');
+    }
+
+    const python = spawn(pythonExe, [pythonScript, ...args], {
+      env: spawnEnv,
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    python.stdout.on('data', (data) => {
+      stdout += data.toString('utf8');
+    });
+
+    python.stderr.on('data', (data) => {
+      stderr += data.toString('utf8');
+    });
+
+    python.on('close', (code) => {
+      if (code !== 0) {
+        console.error('Python stderr:', stderr);
+        reject(new Error(`Python upscale failed (code ${code})`));
+        return;
+      }
+
+      try {
+        // Extract metadata from stdout
+        const lines = stdout.split('\n');
+        const metadataLine = lines.find(l => l.startsWith('METADATA:'));
+        const metadata = metadataLine 
+          ? JSON.parse(metadataLine.replace('METADATA:', ''))
+          : {};
+        
+        // Log errors if they occurred
+        if (stderr) {
+          console.log('Python logs:', stderr);
+        }
+        
+        resolve({ outputPath, metadata });
+      } catch (e) {
+        console.error('Metadata parsing error:', stdout);
+        reject(new Error(`Failed to parse upscale output`));
+      }
+    });
+  });
+}
+
+/**
+ * Fallback upscaling using Sharp if Real-ESRGAN is unavailable.
+ */
+async function upscaleWithSharp(
+  imageBuffer: Buffer,
+  scale: 2 | 3 | 4,
+  outputFormat: 'png' | 'jpg' | 'webp'
+): Promise<Buffer> {
   const metadata = await sharp(imageBuffer).metadata();
 
   if (!metadata.width || !metadata.height) {
     throw new Error('Unable to determine image dimensions');
   }
 
-  if (metadata.width > MAX_INPUT_DIMENSION || metadata.height > MAX_INPUT_DIMENSION) {
-    throw new Error(`Input exceeds max resolution of ${MAX_INPUT_DIMENSION}x${MAX_INPUT_DIMENSION}`);
-  }
-
-  // Check output dimensions
   const outputWidth = metadata.width * scale;
   const outputHeight = metadata.height * scale;
 
-  if (outputWidth > MAX_OUTPUT_DIMENSION || outputHeight > MAX_OUTPUT_DIMENSION) {
-    throw new Error(
-      `Output would exceed max ${MAX_OUTPUT_DIMENSION}px. Max scale for this image: ${Math.floor(MAX_OUTPUT_DIMENSION / Math.max(metadata.width, metadata.height))}×`
-    );
-  }
-
-  // Detect mode if auto
-  let finalMode = mode;
-  if (mode === 'auto') {
-    finalMode = await detectImageMode(imageBuffer);
-  }
-
-  // Upscale using Sharp with high-quality Lanczos interpolation
-  // NOTE: Real-ESRGAN integration point - replace this with actual ESRGAN inference
   let pipeline = sharp(imageBuffer)
-    .rotate() // Auto-rotate EXIF
+    .rotate()
     .resize(outputWidth, outputHeight, {
       fit: 'fill',
       withoutEnlargement: false,
-      kernel: 'lanczos3', // Best quality interpolation
+      kernel: 'lanczos3',
     });
 
-  // Handle different output formats
-  let output: Buffer;
-
   if (outputFormat === 'png') {
-    output = await pipeline
-      .png({ 
-        progressive: true, 
-        compressionLevel: 9,
-        adaptiveFiltering: true 
-      })
+    return pipeline
+      .png({ progressive: true, compressionLevel: 9, adaptiveFiltering: true })
       .toBuffer();
   } else if (outputFormat === 'jpg') {
-    output = await pipeline
-      .jpeg({ 
-        quality: 95,
-        progressive: true,
-        optimizeScans: true,
-      })
+    return pipeline
+      .jpeg({ quality: 95, progressive: true, optimizeScans: true })
       .toBuffer();
   } else {
-    // WebP
-    output = await pipeline
-      .webp({ 
-        quality: 90,
-        alphaQuality: 90,
-      })
-      .toBuffer();
+    return pipeline.webp({ quality: 90, alphaQuality: 90 }).toBuffer();
   }
-
-  console.log(`Upscale: ${metadata.width}x${metadata.height} → ${outputWidth}x${outputHeight} (${scale}×) in ${Date.now() - startTime}ms [mode: ${finalMode}, format: ${outputFormat}]`);
-
-  return output;
 }
 
 export async function POST(request: NextRequest) {
   const clientIp = getClientIp(request);
+  let inputTempPath: string | null = null;
 
   try {
     const formData = await request.formData();
@@ -197,23 +222,128 @@ export async function POST(request: NextRequest) {
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const scale = parseInt(searchParams.get('scale') || '4') as 2 | 4;
+    const scale = (parseInt(searchParams.get('scale') || '4') || 4) as 2 | 3 | 4;
     const mode = (searchParams.get('mode') || 'auto') as 'auto' | 'photo' | 'anime';
     const faceEnhance = searchParams.get('face_enhance') === 'true';
     const format = (searchParams.get('format') || 'png') as 'png' | 'jpg' | 'webp';
 
     // Validate scale
-    if (scale !== 2 && scale !== 4) {
-      return NextResponse.json({ error: 'Scale must be 2 or 4' }, { status: 400 });
+    if (![2, 3, 4].includes(scale)) {
+      return NextResponse.json({ error: 'Scale must be 2, 3, or 4' }, { status: 400 });
     }
 
-    const resultBuffer = await upscaleImage(fileBuffer, scale, mode, faceEnhance, format);
+    // Validate dimensions with metadata
+    const metadata = await sharp(fileBuffer).metadata();
+    if (!metadata.width || !metadata.height) {
+      throw new Error('Unable to determine image dimensions');
+    }
+
+    if (metadata.width > MAX_INPUT_DIMENSION || metadata.height > MAX_INPUT_DIMENSION) {
+      return NextResponse.json(
+        { error: `Input exceeds max resolution of ${MAX_INPUT_DIMENSION}x${MAX_INPUT_DIMENSION}` },
+        { status: 400 }
+      );
+    }
+
+    const outputWidth = metadata.width * scale;
+    const outputHeight = metadata.height * scale;
+
+    if (outputWidth > MAX_OUTPUT_DIMENSION || outputHeight > MAX_OUTPUT_DIMENSION) {
+      const maxScale = Math.floor(MAX_OUTPUT_DIMENSION / Math.max(metadata.width, metadata.height));
+      return NextResponse.json(
+        { 
+          error: `Output would be ${outputWidth}x${outputHeight}px. Max scale: ${maxScale}x`,
+          suggestion: `Try scale=${maxScale}x`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Save input to temp file for Python processing
+    inputTempPath = path.join(TEMP_DIR, `input_${uuidv4()}.jpg`);
+    await writeFile(inputTempPath, fileBuffer);
+
+    // Try Real-ESRGAN first, fallback to Sharp if unavailable
+    let resultBuffer: Buffer;
+    let metadata_obj: Record<string, any> = {};
+
+    try {
+      const { outputPath, metadata: pyMetadata } = await upscaleWithRealESRGAN(
+        inputTempPath,
+        scale,
+        mode,
+        faceEnhance,
+        format
+      );
+      
+      // Read result
+      const fs = require('fs');
+      
+      // Verify file exists and has content
+      if (!fs.existsSync(outputPath)) {
+        throw new Error(`Output file not found: ${outputPath}`);
+      }
+      
+      const fileStats = fs.statSync(outputPath);
+      if (fileStats.size === 0) {
+        throw new Error(`Output file is empty: ${outputPath}`);
+      }
+      
+      resultBuffer = fs.readFileSync(outputPath);
+      
+      console.log(`✓ Read upscaled image: ${outputPath} (${resultBuffer.length} bytes, file: ${fileStats.size} bytes)`);
+      
+      // Verify buffer is valid binary data
+      if (resultBuffer.length === 0) {
+        throw new Error('Failed to read image file');
+      }
+      
+      // Check magic bytes to verify it's a valid image
+      const magicBytes = resultBuffer.slice(0, 4).toString('hex');
+      console.log(`Image format: ${magicBytes}`);
+      
+      metadata_obj = {
+        ...pyMetadata,
+        engine: 'OpenCV Advanced',
+      };
+      
+      // Cleanup
+      try {
+        await unlink(outputPath);
+      } catch (e) {
+        console.warn('Failed to cleanup output temp file');
+      }
+    } catch (esrganError) {
+      console.warn('Real-ESRGAN fallback:', esrganError);
+      // Fallback to Sharp
+      resultBuffer = await upscaleWithSharp(fileBuffer, scale, format);
+      metadata_obj = {
+        engine: 'Sharp (Lanczos3)',
+        warning: 'Real-ESRGAN unavailable, using fallback',
+      };
+    }
+
+    // Cleanup input temp file
+    if (inputTempPath) {
+      try {
+        await unlink(inputTempPath);
+      } catch (e) {
+        console.warn('Failed to cleanup input temp file');
+      }
+    }
 
     const headers = new Headers();
-    headers.set('Content-Type', `image/${format === 'jpg' ? 'jpeg' : format}`);
-    headers.set('Cache-Control', 'no-store');
+    headers.set('Content-Type', format === 'jpg' ? 'image/jpeg' : `image/${format}`);
+    headers.set('Content-Length', resultBuffer.length.toString());
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('X-Upscale-Metadata', JSON.stringify(metadata_obj));
 
-    return new NextResponse(resultBuffer as any, {
+    // Log for debugging
+    console.log(`Response: ${format} (${resultBuffer.length} bytes), first bytes: ${resultBuffer.slice(0, 8).toString('hex')}`);
+
+    // Return binary image data - use the simplest approach
+    return new Response(resultBuffer, {
       status: 200,
       headers,
     });
@@ -225,6 +355,15 @@ export async function POST(request: NextRequest) {
       error: errorMessage,
       timestamp: new Date().toISOString(),
     });
+
+    // Cleanup on error
+    if (inputTempPath) {
+      try {
+        await unlink(inputTempPath);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+    }
 
     return NextResponse.json(
       { error: errorMessage || 'Internal server error' },

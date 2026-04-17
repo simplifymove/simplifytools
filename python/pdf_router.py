@@ -10,6 +10,33 @@ import sys
 from typing import Dict, Any
 from pathlib import Path
 
+# CRITICAL: Fix import order to use venv packages instead of broken system packages
+# This must be done BEFORE any other imports to prevent 'frontend' ModuleNotFoundError
+venv_packages = [
+    '/var/www/simplifytools/.venv/lib/python3.12/site-packages',
+    '/var/www/simplifytools/.venv/lib/python3.12/dist-packages',
+    '/var/www/simplifytools/.venv/local/lib/python3.12/site-packages',
+]
+
+# Insert venv paths at the BEGINNING of sys.path
+for venv_path in venv_packages:
+    if os.path.exists(venv_path):
+        sys.path.insert(0, venv_path)
+
+# CRITICAL: Remove broken system paths from sys.path BEFORE they shadow venv packages
+broken_system_paths = [
+    '/usr/local/lib/python3.12/dist-packages',
+    '/usr/lib/python3.12/dist-packages',
+    '/usr/local/lib/python3/dist-packages',
+    '/usr/lib/python3/dist-packages',
+]
+
+for broken_path in broken_system_paths:
+    while broken_path in sys.path:
+        sys.path.remove(broken_path)
+
+print(f'[PDF Router] sys.path corrected. Venv packages loaded first.', file=sys.stderr)
+
 # Add the python directory to the path so we can import engines
 python_dir = os.path.dirname(os.path.abspath(__file__))
 if python_dir not in sys.path:
@@ -74,9 +101,7 @@ def _ensure_site_packages():
 # Run the site-packages discovery
 added_paths = _ensure_site_packages()
 if added_paths:
-    print(f'[PDF Router] Added {len(added_paths)} paths to sys.path', file=sys.stderr)
-    for p in added_paths[:3]:  # Print first 3 for debugging
-        print(f'  - {p}', file=sys.stderr)
+    print(f'[PDF Router] Added {len(added_paths)} additional paths to sys.path', file=sys.stderr)
 
 # Import all engines
 from engines.pdf_core import PdfCoreEngine
