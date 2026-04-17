@@ -6,53 +6,46 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  VPS_HOST: ${{ secrets.VPS_HOST }}
-  VPS_USER: ${{ secrets.VPS_USER }}
-  VPS_KEY: ${{ secrets.VPS_SSH_KEY }}
-  VPS_PORT: ${{ secrets.VPS_SSH_PORT || 22 }}
-  APP_DIR: /var/www/tinytools-app
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH
+      - name: Deploy to VPS
         run: |
+          # Setup SSH
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_key
-          chmod 600 ~/.ssh/vps_key
-          ssh-keyscan -p ${{ env.VPS_PORT }} ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Pull latest code
-        run: |
-          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "cd ${{ env.APP_DIR }} && git pull origin main"
-
-      - name: Install dependencies
-        run: |
-          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "cd ${{ env.APP_DIR }} && npm ci"
-
-      - name: Build application
-        run: |
-          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "cd ${{ env.APP_DIR }} && rm -rf .next .turbo && npm run build"
-
-      - name: Verify build success
-        run: |
-          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "ls -la ${{ env.APP_DIR }}/.next && echo 'Build artifacts verified'"
-
-      - name: Deployment notification
-        if: success()
-        run: echo "✅ Deployment successful!"
-
-      - name: Deployment failed
-        if: failure()
-        run: echo "❌ Deployment failed! Check logs above."
+          cat > ~/.ssh/deploy_key << 'EOF'
+          ${{ secrets.VPS_SSH_KEY }}
+          EOF
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          
+          # Pull latest code
+          echo "📥 Pulling latest code..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "cd /var/www/tinytools-app && git pull origin main" || exit 1
+          
+          # Install dependencies
+          echo "📦 Installing dependencies..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "cd /var/www/tinytools-app && npm ci" || exit 1
+          
+          # Build application
+          echo "🏗️ Building application..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "cd /var/www/tinytools-app && rm -rf .next .turbo && npm run build" || exit 1
+          
+          # Verify build
+          echo "✅ Verifying build artifacts..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "test -d /var/www/tinytools-app/.next && echo 'Build artifacts verified' || (echo 'Build failed'; exit 1)" || exit 1
+          
+          echo "🚀 Deployment successful!"
