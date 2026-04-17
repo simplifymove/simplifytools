@@ -172,45 +172,19 @@ export default function UpscaleImagePage() {
       // Store blob reference in state to prevent garbage collection
       setResultBlob(blob);
       
-      // Convert blob to data URL (works more reliably than blob URLs in some environments)
-      try {
-        console.log('🔄 Converting blob to data URL... (this may take a moment for large images)');
-        const arrayBuffer = await blob.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
-        let binaryString = '';
-        
-        // Convert in chunks to avoid stack overflow
-        const chunkSize = 65536;
-        for (let i = 0; i < uint8Array.length; i += chunkSize) {
-          const chunk = uint8Array.subarray(i, i + chunkSize);
-          binaryString += String.fromCharCode.apply(null, Array.from(chunk));
-        }
-        
-        const base64 = btoa(binaryString);
-        dataUrl = `data:${blob.type};base64,${base64}`;
-        
-        console.log('✓ Data URL created (base64 length:', base64.length, ', image size:', (blob.size / (1024*1024)).toFixed(1), 'MB)');
-        setResultDataUrl(dataUrl);
-        
-        // Use data URL as primary (more reliable than blob URLs)
-        setResult(dataUrl);
-        setUseDataUrl(true);
-        setImageLoading(true);
-        console.log('🖼️ Image loading started from data URL');
-      } catch (err) {
-        console.error('⚠️ Failed to create data URL:', err);
-        
-        // Fallback to blob URL if data URL creation fails
-        try {
-          url = URL.createObjectURL(blob);
-          console.log('🔄 Falling back to blob URL:', url.substring(0, 50));
-          setResult(url);
-          setImageLoading(true);
-          console.log('🖼️ Image loading started from blob URL (fallback)');
-        } catch (blobErr) {
-          throw new Error(`Failed to create both data URL and blob URL: ${err}`);
-        }
-      }
+      // Use blob URL directly - most efficient for all image sizes
+      const blobUrl = URL.createObjectURL(blob);
+      console.log('✓ Blob URL created:', { 
+        url: blobUrl.substring(0, 50) + '...',
+        blobSize: blob.size,
+        blobType: blob.type,
+        sizeMB: (blob.size / (1024*1024)).toFixed(1)
+      });
+      
+      // Set result and start loading
+      setResult(blobUrl);
+      setImageLoading(true);
+      console.log('🖼️ Image loading started from blob URL');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
@@ -306,7 +280,7 @@ export default function UpscaleImagePage() {
                         </div>
                       )}
                       <img
-                        src={useDataUrl ? resultDataUrl : result}
+                        src={result || ''}
                         alt="upscaled"
                         className={`rounded-lg shadow-lg max-w-full ${imageLoading ? 'hidden' : ''}`}
                         style={{ maxHeight: '600px', maxWidth: '100%' }}
@@ -317,25 +291,16 @@ export default function UpscaleImagePage() {
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           console.error('❌ Image failed to load');
-                          console.error('Image element details:', {
-                            srcLength: target.src?.length,
+                          console.error('Image src length:', target.src?.length);
+                          console.error('Blob info:', {
                             hasBlob: !!resultBlob,
                             blobSize: resultBlob?.size,
-                            naturalWidth: target.naturalWidth,
-                            naturalHeight: target.naturalHeight,
-                            complete: target.complete,
+                            blobType: resultBlob?.type,
                           });
-                          setError('Preview failed to load. File is ready to download. Try refreshing the page.');
+                          setError('Unable to display preview. The file is ready to download.');
                           setImageLoading(false);
                         }}
-                        onLoad={() => {
-                          console.log('✓ Image loaded successfully');
-                          setImageLoading(false);
-                        }}
-                        onLoadStart={() => {
-                          console.log('Image loading started...');
-                          setImageLoading(true);
-                        }}
+                      />
                       />
                     </div>
 
