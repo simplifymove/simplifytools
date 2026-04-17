@@ -145,9 +145,9 @@ if [ ! -f "$APP_DIR/.env.production" ]; then
 UPSCALE_TEMP_DIR=/tmp/tinytools-upscale
 UPSCALE_TIMEOUT=120000
 
-# Real-ESRGAN settings (optional)
-REALESRGAN_DEVICE=cpu
-REALESRGAN_TILE=400
+# Note: Using OpenCV Advanced for upscaling
+# Real-ESRGAN is optional - install manually if needed:
+# pip install torch realesrgan basicsr
 EOF
     echo -e "${GREEN}✓ .env.production created${NC}"
 else

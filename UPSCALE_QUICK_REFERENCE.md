@@ -82,9 +82,14 @@ npm run start
 - `torch` - Deep learning (for Real-ESRGAN)
 - `realesrgan` - Super-resolution AI
 
-Install all:
+Install required only:
 ```bash
 pip install -r requirements.txt
+```
+
+Install optional Real-ESRGAN:
+```bash
+pip install torch realesrgan basicsr
 ```
 
 ---

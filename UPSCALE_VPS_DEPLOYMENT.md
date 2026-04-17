@@ -6,7 +6,7 @@ This guide covers deploying the industry-standard image upscaling feature to you
 ## What's Included
 - **Frontend**: React UI component with real-time upscaling preview
 - **Backend**: Node.js API endpoint (`/api/upscale`) spawning Python subprocess
-- **Python Engine**: `upscale_engine.py` with Real-ESRGAN (optional) and OpenCV Advanced fallback
+- **Python Engine**: `upscale_engine.py` with OpenCV Advanced (always available, no AI dependencies)
 - **Supported Formats**: PNG, JPEG, WebP input/output
 - **Scale Factors**: 2x, 3x, 4x magnification
 - **Modes**: Auto-detect, Photo, Anime with optional face enhancement
@@ -84,11 +84,23 @@ pip install -r requirements.txt
 ### 2.2 Package Details
 
 ```
-Pillow==10.1.0              # Image processing
-opencv-python==4.8.1.78     # Computer vision (ALWAYS required)
-numpy==1.24.3               # Numerical computing (ALWAYS required)
-torch==2.0.0                # Deep learning (OPTIONAL - Real-ESRGAN)
-realesrgan==0.3.0           # Super-resolution AI (OPTIONAL)
+Pillow==10.1.0              # Image processing (REQUIRED)
+opencv-python==4.8.1.78     # Computer vision (REQUIRED)
+numpy==1.24.3               # Numerical computing (REQUIRED)
+rembg==2.0.72               # Background removal (optional)
+onnxruntime==1.16.0         # ONNX Runtime (optional)
+```
+
+**Optional (for Real-ESRGAN AI upscaling):**
+```
+torch==2.0.0                # Deep learning framework
+realesrgan==0.3.0           # Super-resolution AI
+basicsr==1.4.2              # Real-ESRGAN dependency
+```
+
+Install optional packages manually if needed:
+```bash
+pip install torch realesrgan basicsr
 ```
 
 ### 2.3 Verify Installation
@@ -158,9 +170,9 @@ cat > /path/to/tinytools-app/.env.production << 'EOF'
 UPSCALE_TEMP_DIR=/tmp/tinytools-upscale
 UPSCALE_TIMEOUT=120000
 
-# Optional: Real-ESRGAN settings
-REALESRGAN_DEVICE=cpu  # or 'cuda' if GPU available
-REALESRGAN_TILE=400    # Tile size for large images
+# Note: Using OpenCV Advanced for upscaling
+# Real-ESRGAN is optional - install manually if needed:
+# pip install torch realesrgan basicsr
 
 EOF
 ```
@@ -432,10 +444,10 @@ pip install opencv-python==4.8.1.78
 ### Issue: "Failed to load native TensorFlow library"
 
 ```bash
-# PyTorch/Real-ESRGAN is optional. The app falls back to OpenCV Advanced
-# To use Real-ESRGAN, install:
-pip install torch torchvision
-pip install realesrgan
+# This is normal - PyTorch/Real-ESRGAN is optional
+# The app automatically uses OpenCV Advanced (works great!)
+# If you want Real-ESRGAN, install manually:
+pip install torch realesrgan basicsr
 ```
 
 ### Issue: "Address already in use (port 3000)"

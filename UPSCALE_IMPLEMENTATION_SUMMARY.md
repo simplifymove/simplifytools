@@ -59,11 +59,16 @@
 
 ### Python Packages (in venv)
 ```
-Pillow==10.1.0              # Image processing
+Pillow==10.1.0              # Image processing (REQUIRED)
 opencv-python==4.8.1.78     # Computer vision (REQUIRED)
 numpy==1.24.3               # Numerical computing (REQUIRED)
-torch==2.0.0                # Deep learning (OPTIONAL)
-realesrgan==0.3.0           # Super-resolution AI (OPTIONAL)
+rembg==2.0.72               # Background removal (optional)
+onnxruntime==1.16.0         # ONNX Runtime (optional)
+```
+
+**Optional for Real-ESRGAN AI upscaling:**
+```bash
+pip install torch realesrgan basicsr
 ```
 
 ### Node.js Packages

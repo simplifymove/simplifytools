@@ -1,8 +1,11 @@
-rembg==2.0.72
+# Core Image Processing (REQUIRED)
 Pillow>=10.0.0
-onnxruntime>=1.16.0
-realesrgan>=0.3.0
 opencv-python>=4.8.0
-torch>=2.0.0
-basicsr>=1.4.2
 numpy>=1.24.0
+
+# Optional: Background removal (for other tools)
+rembg>=2.0.72
+onnxruntime>=1.16.0
+
+# Note: Real-ESRGAN is optional for upscaling
+# Install manually if needed: pip install torch realesrgan basicsr
