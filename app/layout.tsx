@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     canonical: "https://simplifyconvert.com",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.png",
   },
 };
 
