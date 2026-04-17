@@ -27,6 +27,8 @@ echo "📦 Step 2: Install Node dependencies..."
 sudo npm ci
 
 echo "🏗️ Step 3: Build Next.js application..."
+# Temporarily remove venv to prevent Turbopack symlink resolution issues
+sudo rm -rf "$VENV_DIR" 2>/dev/null || true
 npm run build
 
 echo "📦 Step 4: Install Python dependencies..."
