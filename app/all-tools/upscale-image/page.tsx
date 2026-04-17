@@ -153,38 +153,31 @@ export default function UpscaleImagePage() {
         }
       }
 
-      // Create blob URL and data URL as fallback
-      let url: string;
-      let dataUrl: string | null = null;
-      
-      try {
-        url = URL.createObjectURL(blob);
-        console.log('✓ Blob URL created:', { 
-          url: url.substring(0, 50) + '...',
+      // Convert blob to data URL (CSP allows data: URIs for images)
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        console.log('✓ Data URL created:', { 
+          urlLength: dataUrl.length,
           blobSize: blob.size,
-          blobType: blob.type
+          blobType: blob.type,
+          sizeMB: (blob.size / (1024*1024)).toFixed(1)
         });
-      } catch (err) {
-        console.error('❌ Failed to create blob URL:', err);
-        throw new Error(`Failed to create blob URL: ${err}`);
-      }
+        
+        // Store blob reference in state to prevent garbage collection
+        setResultBlob(blob);
+        
+        // Set result and start loading
+        setResult(dataUrl);
+        setImageLoading(true);
+        console.log('🖼️ Image loading started from data URL');
+      };
       
-      // Store blob reference in state to prevent garbage collection
-      setResultBlob(blob);
+      reader.onerror = () => {
+        throw new Error('Failed to convert image blob to data URL');
+      };
       
-      // Use blob URL directly - most efficient for all image sizes
-      const blobUrl = URL.createObjectURL(blob);
-      console.log('✓ Blob URL created:', { 
-        url: blobUrl.substring(0, 50) + '...',
-        blobSize: blob.size,
-        blobType: blob.type,
-        sizeMB: (blob.size / (1024*1024)).toFixed(1)
-      });
-      
-      // Set result and start loading
-      setResult(blobUrl);
-      setImageLoading(true);
-      console.log('🖼️ Image loading started from blob URL');
+      reader.readAsDataURL(blob);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
