@@ -4,16 +4,11 @@
  * No API keys, no costs, 100% free and open-source
  */
 
+// Set max request timeout for large file uploads (50MB limit)
+export const maxDuration = 300;
+
 import { NextRequest, NextResponse } from 'next/server';
 import { extractTextFromPDF } from '@/app/lib/tesseract-ocr';
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-  },
-};
 
 /**
  * POST /api/pdf/ocr
