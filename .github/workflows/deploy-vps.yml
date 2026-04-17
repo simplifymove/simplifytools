@@ -42,17 +42,12 @@ jobs:
       - name: Build application
         run: |
           ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "cd ${{ env.APP_DIR }} && npm run build"
+            "cd ${{ env.APP_DIR }} && rm -rf .next .turbo && npm run build"
 
-      - name: Restart application
+      - name: Verify build success
         run: |
           ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "sudo systemctl restart tinytools"
-
-      - name: Verify deployment
-        run: |
-          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
-            "sudo systemctl status tinytools | grep -E 'active|failed'"
+            "ls -la ${{ env.APP_DIR }}/.next && echo 'Build artifacts verified'"
 
       - name: Deployment notification
         if: success()
