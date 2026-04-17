@@ -342,8 +342,8 @@ export async function POST(request: NextRequest) {
     // Log for debugging
     console.log(`Response: ${format} (${resultBuffer.length} bytes), first bytes: ${resultBuffer.slice(0, 8).toString('hex')}`);
 
-    // Return binary image data - use the simplest approach
-    return new Response(resultBuffer, {
+    // Return binary image data - convert Buffer to Uint8Array for Response compatibility
+    return new Response(new Uint8Array(resultBuffer), {
       status: 200,
       headers,
     });
