@@ -1,0 +1,63 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  VPS_HOST: ${{ secrets.VPS_HOST }}
+  VPS_USER: ${{ secrets.VPS_USER }}
+  VPS_KEY: ${{ secrets.VPS_SSH_KEY }}
+  VPS_PORT: ${{ secrets.VPS_SSH_PORT || 22 }}
+  APP_DIR: /var/www/tinytools-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_key
+          chmod 600 ~/.ssh/vps_key
+          ssh-keyscan -p ${{ env.VPS_PORT }} ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Pull latest code
+        run: |
+          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+            "cd ${{ env.APP_DIR }} && git pull origin main"
+
+      - name: Install dependencies
+        run: |
+          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+            "cd ${{ env.APP_DIR }} && npm ci"
+
+      - name: Build application
+        run: |
+          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+            "cd ${{ env.APP_DIR }} && npm run build"
+
+      - name: Restart application
+        run: |
+          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+            "sudo systemctl restart tinytools"
+
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/vps_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} \
+            "sudo systemctl status tinytools | grep -E 'active|failed'"
+
+      - name: Deployment notification
+        if: success()
+        run: echo "✅ Deployment successful!"
+
+      - name: Deployment failed
+        if: failure()
+        run: echo "❌ Deployment failed! Check logs above."
