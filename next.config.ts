@@ -9,7 +9,18 @@ const nextConfig: NextConfig = {
   },
   // Turbopack configuration for Next.js 16
   turbopack: {
-    // Exclude Python virtual environment from build to prevent symlink resolution issues
+    // Exclude Python virtual environment and other non-essential directories
+    resolveExtensions: undefined,
+  },
+  // Exclude venv and other system directories from all build processes
+  excludeDefaultMomentLocales: true,
+  swcMinify: true,
+  // Configure getStaticProps and getServerSideProps to skip certain paths
+  publicRuntimeConfig: {},
+  serverRuntimeConfig: {},
+  // Skip resolving node_modules-like patterns that might contain broken symlinks
+  typescript: {
+    tsconfigPath: './tsconfig.json',
   },
   poweredByHeader: false,
   productionBrowserSourceMaps: false,

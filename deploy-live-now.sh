@@ -27,8 +27,19 @@ echo "📦 Step 2: Install Node dependencies..."
 sudo npm ci
 
 echo "🏗️ Step 3: Build Next.js application..."
-# Temporarily remove venv to prevent Turbopack symlink resolution issues
-sudo rm -rf "$VENV_DIR" 2>/dev/null || true
+# CRITICAL: Remove venv BEFORE build to prevent Turbopack symlink resolution issues
+# Use multiple methods to ensure removal on all systems
+echo "  Removing venv directory to prevent build conflicts..."
+if [ -d "$VENV_DIR" ]; then
+  sudo rm -rf "$VENV_DIR" 2>/dev/null || rm -rf "$VENV_DIR" 2>/dev/null || true
+  sleep 1  # Wait for filesystem to sync
+fi
+# Verify venv is gone
+if [ -d "$VENV_DIR" ]; then
+  echo "  WARNING: venv still exists, attempting forced removal..."
+  find . -maxdepth 1 -name venv -type d -exec rm -rf {} \; 2>/dev/null || true
+fi
+echo "  Building Next.js..."
 npm run build
 
 echo "📦 Step 4: Install Python dependencies..."
