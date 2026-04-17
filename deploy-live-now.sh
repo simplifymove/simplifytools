@@ -26,7 +26,10 @@ sudo git pull origin main
 echo "📦 Step 2: Install Node dependencies..."
 sudo npm ci
 
-echo "📦 Step 3: Install Python dependencies..."
+echo "🏗️ Step 3: Build Next.js application..."
+npm run build
+
+echo "📦 Step 4: Install Python dependencies..."
 if [ -d "$VENV_DIR" ]; then
     source "$VENV_DIR/bin/activate"
 else
@@ -35,9 +38,6 @@ else
 fi
 pip install --upgrade pip
 pip install -r requirements.txt
-
-echo "🏗️ Step 4: Build Next.js application..."
-npm run build
 
 echo "🔄 Step 5: Restart application..."
 sudo systemctl daemon-reload
