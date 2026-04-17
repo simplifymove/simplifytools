@@ -12,13 +12,7 @@ const nextConfig: NextConfig = {
     // Exclude Python virtual environment and other non-essential directories
     resolveExtensions: undefined,
   },
-  // Exclude venv and other system directories from all build processes
-  excludeDefaultMomentLocales: true,
-  swcMinify: true,
-  // Configure getStaticProps and getServerSideProps to skip certain paths
-  publicRuntimeConfig: {},
-  serverRuntimeConfig: {},
-  // Skip resolving node_modules-like patterns that might contain broken symlinks
+  // TypeScript configuration
   typescript: {
     tsconfigPath: './tsconfig.json',
   },
