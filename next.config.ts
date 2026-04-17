@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["lucide-react"],
     optimizeCss: true,
   },
+  // Turbopack configuration for Next.js 16
+  turbopack: {
+    // Exclude Python virtual environment from build to prevent symlink resolution issues
+  },
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   images: {

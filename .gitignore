@@ -47,3 +47,10 @@ next-env.d.ts
 *.mp4
 *.webm
 .env.local
+
+# Python virtual environment
+venv/
+.venv/
+env/
+env.bak/
+venv.bak/
