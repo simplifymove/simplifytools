@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,38 +17,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to VPS
+      - name: Configure deployment
         run: |
           # Setup SSH
           mkdir -p ~/.ssh
+          
+          # Store SSH key
           cat > ~/.ssh/deploy_key << 'EOF'
           ${{ secrets.VPS_SSH_KEY }}
           EOF
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          
+          # Add host to known hosts
+          echo "🔐 Configuring SSH..."
+          ssh-keyscan -p 22 75.119.155.15 >> ~/.ssh/known_hosts 2>/dev/null || true
+          
+          # Test connectivity
+          echo "🧪 Testing SSH connectivity..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+            root@75.119.155.15 "echo 'SSH connection successful'" || { echo "❌ SSH connection failed"; exit 1; }
+
+      - name: Deploy application
+        run: |
+          echo "🚀 Starting deployment..."
           
           # Pull latest code
           echo "📥 Pulling latest code..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "cd /var/www/tinytools-app && git pull origin main" || exit 1
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
+            "cd /var/www/tinytools-app && git pull origin main --quiet" || { echo "❌ Git pull failed"; exit 1; }
           
           # Install dependencies
           echo "📦 Installing dependencies..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "cd /var/www/tinytools-app && npm ci" || exit 1
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
+            "cd /var/www/tinytools-app && npm ci --silent" || { echo "❌ npm ci failed"; exit 1; }
           
           # Build application
           echo "🏗️ Building application..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "cd /var/www/tinytools-app && rm -rf .next .turbo && npm run build" || exit 1
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
+            "cd /var/www/tinytools-app && rm -rf .next .turbo && npm run build" || { echo "❌ Build failed"; exit 1; }
           
           # Verify build
-          echo "✅ Verifying build artifacts..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "test -d /var/www/tinytools-app/.next && echo 'Build artifacts verified' || (echo 'Build failed'; exit 1)" || exit 1
+          echo "✅ Verifying build..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
+            "test -d /var/www/tinytools-app/.next && echo '✅ Build verified successfully'" || { echo "❌ Build verification failed"; exit 1; }
           
-          echo "🚀 Deployment successful!"
+          echo "✨ Deployment completed successfully!"
