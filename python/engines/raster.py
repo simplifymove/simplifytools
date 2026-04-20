@@ -83,6 +83,8 @@ def convert_raster(
             save_kwargs = {'quality': quality, 'optimize': True}
         elif to_format.lower() == 'webp':
             save_kwargs = {'quality': quality, 'method': 6}
+        elif to_format.lower() == 'avif':
+            save_kwargs = {'quality': quality}
         elif to_format.lower() == 'png':
             save_kwargs = {'optimize': True}
         

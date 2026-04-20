@@ -47,6 +47,12 @@ CONVERSION_ROUTES = {
     ('heic', 'jpg'): convert_raster,
     ('heic', 'png'): convert_raster,
     ('heic', 'webp'): convert_raster,
+    ('heic', 'avif'): convert_raster,
+    ('tiff', 'avif'): convert_raster,
+    ('jpg', 'avif'): convert_raster,
+    ('png', 'avif'): convert_raster,
+    ('webp', 'avif'): convert_raster,
+    ('bmp', 'avif'): convert_raster,
     
     # Vector/Document to Raster
     ('pdf', 'jpg'): vector_render,
