@@ -404,7 +404,6 @@ export default function AddTextToPdfPage() {
 
     try {
       // Import PDF.js library dynamically to support both browser and Node.js
-      // @ts-expect-error - pdfjs-dist build files don't have type declarations
       let pdfjs: any;
       try {
         pdfjs = await import('pdfjs-dist');

@@ -5,7 +5,6 @@
  */
 
 import Tesseract from 'tesseract.js';
-// @ts-expect-error - pdfjs-dist build files don't have type declarations
 // Use dynamic import for pdfjs-dist to handle Node.js environments
 let pdfjsLib: any = null;
 

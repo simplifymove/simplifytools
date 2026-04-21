@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
       const fileStream = fs.createReadStream(outputPath);
       const contentType = getContentType(outputPath);
 
-      const response = new NextResponse(fileStream, {
+      const response = new NextResponse(fileStream as any, {
         headers: {
           'Content-Type': contentType,
           'Content-Disposition': `attachment; filename="${path.basename(outputPath)}"`,
