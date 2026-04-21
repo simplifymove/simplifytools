@@ -1,16 +1,26 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
 import { validatePdfInput } from '@/app/lib/pdf-validation';
-import { PdfCropEditor } from '@/app/components/PdfCropEditor';
-import PdfAnnotator from '@/app/components/PdfAnnotator';
 import type { PdfToolConfig } from '@/app/lib/pdf-tools';
 import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, Shield } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+
+// Dynamically import PDF components to avoid DOMMatrix errors
+const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
+  loading: () => <div className="p-4">Loading PDF editor...</div>,
+  ssr: false,
+});
+
+const PdfAnnotator = dynamic(() => import('@/app/components/PdfAnnotator'), {
+  loading: () => <div className="p-4">Loading PDF annotator...</div>,
+  ssr: false,
+});
 
 interface PageProps {
   params: Promise<{

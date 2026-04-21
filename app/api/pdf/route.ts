@@ -12,7 +12,7 @@ import { spawn } from 'child_process';
 export async function POST(request: NextRequest) {
   const tempDir = path.join(os.tmpdir(), 'pdf-tools');
   const timestamp = Date.now();
-  let inputFiles: string[] = [];
+  const inputFiles: string[] = [];
   let outputFile = '';
   let optionsFile = ''; // For large options that need file-based passing
   let toolId = ''; // Move to outer scope so catch block can access it
@@ -230,7 +230,6 @@ export async function POST(request: NextRequest) {
 
         try {
           // Extract JSON from stdout (may have debug logs before it)
-          let result;
           const lines = stdout.split('\n');
           let jsonLine = '';
           
@@ -250,7 +249,7 @@ export async function POST(request: NextRequest) {
             throw new Error('No JSON output found from Python');
           }
           
-          result = JSON.parse(jsonLine);
+          const result = JSON.parse(jsonLine);
           
           // Check if Python returned an error
           if (!result.success && result.error) {

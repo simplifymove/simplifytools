@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     
     // Validate Excel file format if needed
     const fileExt = ('.' + file.name.split('.').pop()?.toLowerCase());
-    let inputFile: string;
+    const inputFile: string = '';
     
     // Read file buffer once (can only be called once on File object)
     const buffer = await file.arrayBuffer();
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       error?: string;
       output?: string;
     }>((resolve) => {
-      let timeoutId: NodeJS.Timeout;
+      const timeoutId: NodeJS.Timeout | null = null;
       let resolved = false;
       
       console.log(`[DEBUG] Spawning Python: ${pythonScript}`);

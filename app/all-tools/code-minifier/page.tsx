@@ -13,7 +13,7 @@ export default function CodeMinifier() {
     try {
       if (lang === 'javascript') {
         // Simple JS minification - remove comments, extra whitespace
-        let minified = code
+        const minified = code
           .replace(/\/\*[\s\S]*?\*\//g, '') // Remove /* */ comments
           .replace(/\/\/.*$/gm, '') // Remove // comments
           .replace(/\n/g, ' ')
@@ -23,7 +23,7 @@ export default function CodeMinifier() {
         return minified;
       } else if (lang === 'css') {
         // Simple CSS minification
-        let minified = code
+        const minified = code
           .replace(/\/\*[\s\S]*?\*\//g, '') // Remove comments
           .replace(/\n/g, '')
           .replace(/\s+/g, ' ')
@@ -32,7 +32,7 @@ export default function CodeMinifier() {
         return minified;
       } else if (lang === 'html') {
         // Simple HTML minification
-        let minified = code
+        const minified = code
           .replace(/<!--[\s\S]*?-->/g, '') // Remove comments
           .replace(/>\s+</g, '><')
           .replace(/\s+/g, ' ')

@@ -117,7 +117,7 @@ export function validateYAML(text: string): ValidationResult {
 
     // Basic YAML validation
     const lines = text.split('\n');
-    let indentLevel = 0;
+    const indentLevel = 0;
     const errors: Array<{ line: number; message: string }> = [];
 
     for (let i = 0; i < lines.length; i++) {

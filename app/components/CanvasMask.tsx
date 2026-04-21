@@ -37,7 +37,6 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
 
     // Get device pixel ratio
     const devicePixelRatio = window.devicePixelRatio || 1;
-    setDpr(devicePixelRatio);
 
     // Calculate display size
     const containerWidth = containerRef.current.offsetWidth || imageWidth;

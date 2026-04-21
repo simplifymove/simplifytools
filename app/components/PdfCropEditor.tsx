@@ -2,8 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Copy, Check, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
-// @ts-ignore - pdfjs-dist build files don't have type declarations
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
 
 interface CropEditorProps {
   onCropChange: (cropBox: [number, number, number, number]) => void;
@@ -18,10 +16,19 @@ interface CropBox {
   top: number;
 }
 
-// Set worker source
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
-}
+// Lazy load pdfjs-dist only in browser
+let pdfjsLib: any = null;
+const initPdfJs = async () => {
+  if (!pdfjsLib && typeof window !== 'undefined') {
+    try {
+      pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+    } catch (error) {
+      console.error('Failed to load pdfjs-dist:', error);
+    }
+  }
+  return pdfjsLib;
+};
 
 export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEditorProps) {
   const LETTER_WIDTH = 612;
@@ -63,8 +70,12 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
     const loadPdf = async () => {
       try {
         setLoading(true);
+        const pdfjs = await initPdfJs();
+        if (!pdfjs) {
+          throw new Error('Failed to initialize PDF.js');
+        }
         const arrayBuffer = await pdfFile.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
         
         setPdfDocument(pdf);
         setTotalPages(pdf.numPages);

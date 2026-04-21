@@ -595,7 +595,7 @@ export function decodeBase32(text: string): ConverterResult {
 // Markdown to HTML (basic conversion)
 export function markdownToHTML(text: string): ConverterResult {
   try {
-    let html = text
+    const html = text
       // Headers
       .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
       .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
@@ -721,7 +721,7 @@ export function convertTemperature(value: string, fromUnit: string, toUnit: stri
 export function convertUnixTimestamp(input: string, direction: string): ConverterResult {
   try {
     let result: string;
-    let meta: Record<string, any> = { direction };
+    const meta: Record<string, any> = { direction };
     
     if (direction === 'toDate') {
       const timestamp = parseInt(input);

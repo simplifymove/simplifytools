@@ -12,9 +12,7 @@ const MAX_OUTPUT_DIMENSION = 16000;
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 
 export const maxDuration = 120; // 2 minutes for processing
-export const bodyParser = {
-  sizeLimit: '100mb',
-};
+// Note: bodyParser config is handled by Next.js automatically in App Router
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -170,7 +168,7 @@ async function upscaleWithSharp(
   const outputWidth = metadata.width * scale;
   const outputHeight = metadata.height * scale;
 
-  let pipeline = sharp(imageBuffer)
+  const pipeline = sharp(imageBuffer)
     .rotate()
     .resize(outputWidth, outputHeight, {
       fit: 'fill',
@@ -277,19 +275,20 @@ export async function POST(request: NextRequest) {
       );
       
       // Read result
-      const fs = require('fs');
+      const fs = await import('fs');
+      const fsSync = fs.default;
       
       // Verify file exists and has content
-      if (!fs.existsSync(outputPath)) {
+      if (!fsSync.existsSync(outputPath)) {
         throw new Error(`Output file not found: ${outputPath}`);
       }
       
-      const fileStats = fs.statSync(outputPath);
+      const fileStats = fsSync.statSync(outputPath);
       if (fileStats.size === 0) {
         throw new Error(`Output file is empty: ${outputPath}`);
       }
       
-      resultBuffer = fs.readFileSync(outputPath);
+      resultBuffer = fsSync.readFileSync(outputPath);
       
       console.log(`✓ Read upscaled image: ${outputPath} (${resultBuffer.length} bytes, file: ${fileStats.size} bytes)`);
       

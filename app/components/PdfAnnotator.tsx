@@ -2,10 +2,20 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Highlighter, Type, Trash2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
-import * as pdfjsLib from 'pdfjs-dist';
 
-// Set up PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+// Lazy load pdfjs-dist only in browser
+let pdfjsLib: any = null;
+const initPdfJs = async () => {
+  if (!pdfjsLib && typeof window !== 'undefined') {
+    try {
+      pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+    } catch (error) {
+      console.error('Failed to load pdfjs-dist:', error);
+    }
+  }
+  return pdfjsLib;
+};
 
 interface Annotation {
   id: string;
@@ -29,9 +39,7 @@ interface Props {
 
 export default function PdfAnnotator({ file, onAnnotationsChange }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfDocRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderTaskRef = useRef<any | null>(null);
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -92,7 +100,6 @@ export default function PdfAnnotator({ file, onAnnotationsChange }: Props) {
       const renderTask = page.render({
         canvasContext: context,
         viewport: viewport,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       renderTaskRef.current = renderTask;
@@ -136,7 +143,11 @@ export default function PdfAnnotator({ file, onAnnotationsChange }: Props) {
 
         // Load PDF with pdfjs
         console.log('3. Loading PDF with pdfjsLib...');
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pdfjs = await initPdfJs();
+        if (!pdfjs) {
+          throw new Error('Failed to initialize PDF.js');
+        }
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
         console.log('4. PDF loaded, pages:', pdf.numPages);
 
         if (!isMounted) return;
@@ -179,7 +190,6 @@ export default function PdfAnnotator({ file, onAnnotationsChange }: Props) {
         setError('Failed to render page');
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, zoom, loading, totalPages]);
 
   const redrawAnnotations = (pageNum: number, annotationsToRender?: Annotation[]) => {

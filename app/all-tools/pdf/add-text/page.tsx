@@ -403,12 +403,20 @@ export default function AddTextToPdfPage() {
     lastExtractedPageRef.current = -1;
 
     try {
-      // Import PDF.js library
-      // @ts-ignore - pdfjs-dist build files don't have type declarations
-      const pdfjs = await import('pdfjs-dist/build/pdf.js');
+      // Import PDF.js library dynamically to support both browser and Node.js
+      // @ts-expect-error - pdfjs-dist build files don't have type declarations
+      let pdfjs: any;
+      try {
+        pdfjs = await import('pdfjs-dist');
+      } catch (error) {
+        console.error('Failed to load pdfjs-dist:', error);
+        throw new Error('Failed to load PDF library');
+      }
       
       // Set worker from the same distribution
-      pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.js`;
+      if (pdfjs.GlobalWorkerOptions) {
+        pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.js`;
+      }
       
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;

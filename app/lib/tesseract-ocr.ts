@@ -5,11 +5,23 @@
  */
 
 import Tesseract from 'tesseract.js';
-// @ts-ignore - pdfjs-dist build files don't have type declarations
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
+// @ts-expect-error - pdfjs-dist build files don't have type declarations
+// Use dynamic import for pdfjs-dist to handle Node.js environments
+let pdfjsLib: any = null;
 
-// Set worker path for PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+// Initialize PDF.js only when needed
+async function initPdfJs() {
+  if (pdfjsLib) return pdfjsLib;
+  try {
+    pdfjsLib = await import('pdfjs-dist');
+    if (pdfjsLib.GlobalWorkerOptions) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+    }
+  } catch (err) {
+    console.error('Failed to load pdfjs-dist:', err);
+  }
+  return pdfjsLib;
+}
 
 export interface TextBlock {
   text: string;
@@ -113,8 +125,14 @@ async function extractTextFromPDFPages(
   fileBuffer: Buffer
 ): Promise<OCRResult> {
   try {
+    // Initialize PDF.js
+    const pdfjs = await initPdfJs();
+    if (!pdfjs || !pdfjs.getDocument) {
+      throw new Error('Failed to initialize PDF.js');
+    }
+
     // Load PDF document
-    const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
+    const pdf = await pdfjs.getDocument({ data: fileBuffer }).promise;
     const pageCount = Math.min(pdf.numPages, 50); // Limit to 50 pages to avoid timeout
 
     const allTextBlocks: TextBlock[] = [];

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, unlink } from 'fs/promises';
 import path from 'path';
-import { spawn } from 'child_process';
+import { spawn, exec as execCallback } from 'child_process';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getToolById } from '@/app/lib/video-tools';
 
-const exec = promisify(require('child_process').exec);
+const exec = promisify(execCallback);
 
 // Temporary directory for processing
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
@@ -15,10 +15,8 @@ const OUTPUT_DIR = path.join(process.cwd(), 'tmp/output');
 // Max request execution time (seconds)
 export const maxDuration = 60;
 
-// Max request body size
-export const bodyParser = {
-  sizeLimit: '500mb',
-};
+// Note: bodyParser config is handled by Next.js automatically in App Router
+// For file uploads up to 500mb, ensure proper middleware is configured
 
 async function runPythonEngine(
   engine: string,
@@ -152,12 +150,11 @@ export async function POST(request: NextRequest) {
 
     if (outputType === 'text' || outputType.includes('text')) {
       // Return text content
-      const fs = require('fs').promises;
-      const content = await fs.readFile(outputPath, 'utf-8');
+      const content = await import('fs/promises').then(m => m.readFile(outputPath, 'utf-8'));
       return NextResponse.json({ content, type: 'text' });
     } else {
       // Return downloadable file
-      const fs = require('fs');
+      const fs = await import('fs');
       const fileStream = fs.createReadStream(outputPath);
       const contentType = getContentType(outputPath);
 

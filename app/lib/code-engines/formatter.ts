@@ -111,7 +111,7 @@ function beautifyJavaScript(
 ): FormatterResult {
   try {
     // Basic JavaScript beautification using indentation and newlines
-    let formatted = code
+    const formatted = code
       .replace(/;\s*/g, ';\n')
       .replace(/{\s*/g, ' {\n')
       .replace(/}\s*/g, '\n}\n')
@@ -298,7 +298,7 @@ function beautifyCSS(
 ): FormatterResult {
   try {
     const indentStr = ' '.repeat(indent);
-    let formatted = code
+    const formatted = code
       .replace(/{\s*/g, ' {\n')
       .replace(/}\s*/g, '\n}\n')
       .replace(/;\s*/g, ';\n')
@@ -408,7 +408,7 @@ function beautifySQL(code: string, indent: number): FormatterResult {
     const keywords =
       /\b(SELECT|FROM|WHERE|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AND|OR|ORDER BY|GROUP BY|HAVING|LIMIT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|TABLE|DATABASE|INDEX)\b/gi;
 
-    let formatted = code
+    const formatted = code
       .replace(keywords, (match) => '\n' + match.toUpperCase())
       .split('\n')
       .map((line) => line.trim())

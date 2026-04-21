@@ -107,8 +107,8 @@ export class ImageProcessor {
     const { refine = true } = options;
 
     // Step 1: Normalize mask to [0, 1]
-    let min = Math.min(...Array.from(mask));
-    let max = Math.max(...Array.from(mask));
+    const min = Math.min(...Array.from(mask));
+    const max = Math.max(...Array.from(mask));
     const range = max - min || 1e-5;
 
     const normalized = new Float32Array(mask.length);
