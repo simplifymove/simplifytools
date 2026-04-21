@@ -839,18 +839,43 @@ class PdfConvertEngine:
     def document_to_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Convert Word/PowerPoint document to PDF (requires LibreOffice)"""
         try:
-            doc_path = input_paths[0]
-            
-            # Use LibreOffice headless
+            import os
             import subprocess
+            from pathlib import Path
+            
+            doc_path = input_paths[0]
+            output_dir = str(Path(output_path).parent)
+            output_filename = Path(output_path).name
+            
+            # LibreOffice converts files in-place with their original name but .pdf extension
+            # So we need to get what LibreOffice will name it, then rename it to our desired output_path
+            
+            # Use LibreOffice headless with absolute path to ensure it works
             result = subprocess.run([
                 'soffice', '--headless', '--convert-to', 'pdf', 
-                '--outdir', str(Path(output_path).parent),
+                '--outdir', output_dir,
                 doc_path
-            ], capture_output=True, text=True)
+            ], capture_output=True, text=True, timeout=120)
             
             if result.returncode != 0:
-                raise Exception(f"LibreOffice conversion failed: {result.stderr}")
+                raise Exception(f"LibreOffice conversion failed (code {result.returncode}): {result.stderr}")
+            
+            # LibreOffice creates a file with the same name as input but .pdf extension
+            input_name = Path(doc_path).stem  # Get filename without extension
+            libreoffice_output = os.path.join(output_dir, f"{input_name}.pdf")
+            
+            # Check if LibreOffice created the file
+            if not os.path.exists(libreoffice_output):
+                raise Exception(f"LibreOffice did not create output file at {libreoffice_output}")
+            
+            # If our desired output path is different, rename it
+            if libreoffice_output != output_path:
+                if os.path.exists(output_path):
+                    os.remove(output_path)
+                os.rename(libreoffice_output, output_path)
+            
+            if not os.path.exists(output_path):
+                raise Exception(f"Output file not created at {output_path}")
             
             return output_path
         except Exception as e:

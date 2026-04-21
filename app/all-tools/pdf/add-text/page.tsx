@@ -403,8 +403,9 @@ export default function AddTextToPdfPage() {
     lastExtractedPageRef.current = -1;
 
     try {
-      // Import PDF.js library - use legacy for better compatibility  
-      const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+      // Import PDF.js library
+      // @ts-ignore - pdfjs-dist build files don't have type declarations
+      const pdfjs = await import('pdfjs-dist/build/pdf.js');
       
       // Set worker from the same distribution
       pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.js`;

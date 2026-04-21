@@ -5,7 +5,8 @@
  */
 
 import Tesseract from 'tesseract.js';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+// @ts-ignore - pdfjs-dist build files don't have type declarations
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
 
 // Set worker path for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';

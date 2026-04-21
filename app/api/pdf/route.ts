@@ -142,9 +142,11 @@ export async function POST(request: NextRequest) {
       const spawnEnv = {
         ...process.env,
         PYTHONDONTWRITEBYTECODE: '1',
-        // For VPS: ensure system site-packages are accessible
-        PYTHONHOME: '/usr',  // System Python home
       } as NodeJS.ProcessEnv;
+      
+      // Remove PYTHONHOME if it exists (let Python auto-detect)
+      // Setting it to '/usr' on Windows breaks module resolution
+      delete (spawnEnv as any).PYTHONHOME;
       
       // Explicitly set PYTHONPATH for VPS deployment (Linux uses dist-packages)
       // CRITICAL: Subprocess doesn't inherit PYTHONPATH, so we must set it explicitly
@@ -167,7 +169,7 @@ export async function POST(request: NextRequest) {
         (spawnEnv as any).VIRTUAL_ENV = path.dirname(path.dirname(pythonExe));
       }
       
-      console.log(`[PDF API] Python environment: PYTHONHOME=${spawnEnv.PYTHONHOME}, PYTHONDONTWRITEBYTECODE=${spawnEnv.PYTHONDONTWRITEBYTECODE}`);
+      console.log(`[PDF API] Python environment: PYTHONDONTWRITEBYTECODE=${spawnEnv.PYTHONDONTWRITEBYTECODE}, VIRTUAL_ENV=${(spawnEnv as any).VIRTUAL_ENV}`);
       
       const pythonProcess = spawn(pythonExe, [
         pythonScript,

@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Copy, Check, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+// @ts-ignore - pdfjs-dist build files don't have type declarations
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
 
 interface CropEditorProps {
   onCropChange: (cropBox: [number, number, number, number]) => void;
