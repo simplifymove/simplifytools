@@ -276,6 +276,174 @@ curl http://localhost:3000
 
 ---
 
+## 🚀 SAFE TERMINAL DEPLOYMENT (Recommended)
+
+This is the best way to deploy - using terminal commands avoids file corruption and keeps configurations safe.
+
+### Why Terminal Deployments Are Safe
+
+- ✅ **Only code changes** - No config files touched
+- ✅ **SSL certificates untouched** - /etc/letsencrypt/ never affected
+- ✅ **Nginx config safe** - Only used if you manually edit
+- ✅ **PM2 settings preserved** - Process manager stays configured
+- ✅ **No file timeouts** - Large files don't break during upload
+- ✅ **Full control** - See exactly what's happening
+
+### Standard Deployment Command (Fastest)
+
+```bash
+# SSH to VPS
+ssh root@75.119.155.15
+
+# Navigate to app folder
+cd /var/www/tinytools-app
+
+# Deploy in one command (2 minutes)
+git pull origin main && npm ci --prefer-offline && NODE_ENV=production npm run build && pm2 restart all
+
+# Done! App is live with new code
+```
+
+✅ **What happens:**
+- Latest code from GitHub downloaded
+- Dependencies installed (only if package-lock.json changed)
+- Production build created (fresh .next/ folder)
+- PM2 restarts app with new code
+- Nginx still works (not touched)
+- SSL still works (not touched)
+
+---
+
+### When to Test `127.0.0.1:3001`?
+
+**Test ONLY if something seems broken:**
+
+```bash
+# After deployment, if you want to verify (optional)
+curl http://127.0.0.1:3001
+
+# Expected: HTML page starting with <!DOCTYPE
+```
+
+**When to skip testing:**
+- ✅ Build succeeded locally
+- ✅ No errors in git pull
+- ✅ You trust the deployment
+
+**When you SHOULD test:**
+- ❌ PM2 shows "online" but domains not responding
+- ❌ You see 502 Bad Gateway on domain
+- ❌ CSS or JavaScript not loading
+
+---
+
+### Testing Explained
+
+| Test | What It Checks | When to Use |
+|------|---|---|
+| `curl http://127.0.0.1:3001` | Is app actually running? | Only troubleshooting |
+| `curl https://simplifyconvert.com` | Is Nginx proxying? | If domain not working |
+| `pm2 status` | What does PM2 think? | Quick status check |
+
+**Note:** `127.0.0.1:3001` only works **on VPS**, not on your Windows machine.
+
+---
+
+### Ultra-Quick Deployment (3 lines)
+
+For experienced users who know everything works:
+
+```bash
+ssh root@75.119.155.15 "cd /var/www/tinytools-app && git pull && npm ci && NODE_ENV=production npm run build && pm2 restart all && echo '✅ Deployed!'"
+```
+
+One command from your local machine, done in 2 minutes.
+
+---
+
+### Deployment Checklist
+
+Before running the deployment command:
+
+- [ ] Committed code locally
+- [ ] Pushed to GitHub
+- [ ] No uncommitted changes (`git status` is clean)
+- [ ] Build passed locally (`npm run build` worked)
+
+After deployment:
+
+- [ ] SSH to VPS successful
+- [ ] `git pull` completed without errors
+- [ ] `npm ci` completed (shows "up to date" or "added X packages")
+- [ ] `npm run build` completed successfully
+- [ ] `pm2 restart all` shows processes as "online"
+- [ ] (Optional) `curl https://simplifyconvert.com` returns HTML
+
+---
+
+### If Deployment Fails
+
+**Build failed?**
+```bash
+# Check what went wrong
+npm run build
+
+# If TypeScript error, fix locally then retry
+npm run lint
+```
+
+**Git pull failed?**
+```bash
+# Check git status
+git status
+
+# If conflicts, resolve them locally first
+```
+
+**PM2 not starting?**
+```bash
+# Check PM2 logs
+pm2 logs
+
+# Restart PM2
+pm2 kill
+cd /var/www/tinytools-app
+pm2 start "npm start -- -p 3001" --name tinytools-app
+```
+
+---
+
+### Configuration Safety Reference
+
+| Component | Touched? | Safe? | Notes |
+|-----------|----------|-------|-------|
+| Code in app/ | ✅ Yes | ✅ Safe | This is what we want |
+| .next/ build folder | ✅ Yes | ✅ Safe | Regenerated fresh |
+| SSL certificates | ❌ No | ✅ 100% Safe | /etc/letsencrypt untouched |
+| Nginx config | ❌ No | ✅ 100% Safe | /etc/nginx untouched |
+| PM2 config | ❌ No | ✅ 100% Safe | Process settings stay same |
+| Environment vars | ❌ No | ✅ 100% Safe | .env.local untouched |
+| System settings | ❌ No | ✅ 100% Safe | OS completely safe |
+
+---
+
+### Pro Tip: Schedule Future Deployments
+
+Save these commands for quick reference:
+
+```bash
+# Bookmark this for your next deployment:
+ssh root@75.119.155.15 "cd /var/www/tinytools-app && git pull && npm ci && NODE_ENV=production npm run build && pm2 restart all"
+
+# Or create a local script: deploy.sh
+#!/bin/bash
+ssh root@75.119.155.15 "cd /var/www/tinytools-app && git pull && npm ci && NODE_ENV=production npm run build && pm2 restart all && echo '✅ Deployed!'"
+
+# Run with: bash deploy.sh
+```
+
+---
+
 ## 🔍 Debugging Commands
 
 ### Check Build Status
@@ -532,5 +700,393 @@ If something goes wrong, follow this order:
 ---
 
 **Remember:** A few minutes of local testing saves hours of production firefighting.
+
+---
+
+# 🔄 FOLDER RENAME GUIDE: tinytools-app → simplifyconvertapp
+
+This guide will help you rename the project folder from "tinytools-app" to "simplifyconvertapp" on both your local machine and VPS.
+
+## ⚠️ IMPORTANT BEFORE STARTING
+
+- **Backup your work** - Commit any uncommitted changes to Git
+- **Stop the app** - Close any running dev servers or PM2 processes
+- **Read through completely** - This is a 3-step process (Local → Git → VPS)
+
+---
+
+## STEP 1: Rename Locally (Your Computer)
+
+### 1.1 - Commit Any Pending Changes
+
+```bash
+# Check if you have uncommitted changes
+git status
+
+# If yes, commit them first
+git add .
+git commit -m "Work in progress before folder rename"
+
+# Push to GitHub
+git push origin main
+```
+
+### 1.2 - Stop Local Development Server
+
+```bash
+# If you have npm run dev or npm start running, press Ctrl+C to stop it
+```
+
+### 1.3 - Rename the Folder
+
+**On Windows (using File Explorer):**
+1. Open File Explorer
+2. Navigate to: `C:\Users\PC\Raghava\Copilot-works\`
+3. Right-click on `tinytools-app` folder
+4. Select "Rename"
+5. Change to: `simplifyconvertapp`
+6. Press Enter
+
+**Or using PowerShell:**
+```powershell
+# Navigate to parent directory
+cd i:\Raghava\Copilot-works
+
+# Rename the folder
+Rename-Item -Path "tinytools-app" -NewName "simplifyconvertapp"
+
+# Verify it worked
+ls | grep simplifyconvertapp
+```
+
+### 1.4 - Navigate to New Folder
+
+```powershell
+# Go into the renamed folder
+cd i:\Raghava\Copilot-works\simplifyconvertapp
+
+# Verify Git still works
+git status
+```
+
+Expected output:
+```
+On branch main
+Your branch is up to date with 'origin/main'.
+nothing to commit, working tree clean
+```
+
+### 1.5 - Test Everything Still Works
+
+```bash
+# Install dependencies
+npm ci
+
+# Build locally
+npm run build
+
+# Start development server
+npm start
+
+# Open browser to http://localhost:3000
+# Verify the app loads correctly
+
+# If it works, press Ctrl+C to stop the server
+```
+
+✅ **Local rename complete!**
+
+---
+
+## STEP 2: Update Git (Push to GitHub)
+
+Even though the folder is renamed locally, Git doesn't track folder names directly. We need to commit to make Git aware of the change.
+
+### 2.1 - Check Git Status
+
+```bash
+# Git might show a lot of "deleted" and "added" files
+git status
+
+# This is normal - Git is tracking the rename
+```
+
+### 2.2 - Commit the Rename
+
+```bash
+# Stage all changes (the rename)
+git add -A
+
+# Commit with a clear message
+git commit -m "chore: rename project folder from tinytools-app to simplifyconvertapp"
+
+# Push to GitHub
+git push origin main
+```
+
+Expected output after push:
+```
+To https://github.com/simplifymove/simplifytools.git
+   abc1234..def5678  main -> main
+```
+
+✅ **Git update complete!**
+
+---
+
+## STEP 3: Update VPS (Production Server)
+
+This is the most important step. You need to update the VPS to use the new folder name.
+
+### 3.1 - Connect to VPS
+
+```bash
+ssh root@75.119.155.15
+```
+
+### 3.2 - Create New Folder with New Name
+
+```bash
+# Create the new folder
+mkdir -p /var/www/simplifyconvertapp
+
+# Verify it was created
+ls -la /var/www | grep simplifyconvertapp
+```
+
+### 3.3 - Copy Everything to New Folder
+
+```bash
+# Copy all files from old folder to new folder
+cp -r /var/www/tinytools-app/* /var/www/simplifyconvertapp/
+
+# Verify copy was successful
+ls -la /var/www/simplifyconvertapp | head -20
+```
+
+Expected to see: app/, public/, package.json, etc.
+
+### 3.4 - Update Git on VPS
+
+```bash
+# Go to the new folder
+cd /var/www/simplifyconvertapp
+
+# Pull the latest changes (includes the folder rename)
+git pull origin main
+
+# Verify the pull succeeded
+git status
+```
+
+Expected:
+```
+On branch main
+Your branch is up to date with 'origin/main'.
+```
+
+### 3.5 - Update PM2 Process
+
+**Option A: Using PM2 Save/Restore**
+
+```bash
+# Delete old PM2 process
+pm2 delete tinytools-app
+
+# Stop all processes temporarily
+pm2 stop all
+
+# Go to new folder
+cd /var/www/simplifyconvertapp
+
+# Install dependencies
+npm ci --prefer-offline
+
+# Start new process with same name
+pm2 start "npm start -- -p 3001" --name "tinytools-app"
+
+# Save PM2 state
+pm2 save
+
+# Restart all
+pm2 start all
+
+# Verify it's running
+pm2 status
+```
+
+Expected: See `tinytools-app` as "online"
+
+**Option B: Manual Process Update**
+
+```bash
+# Show current PM2 processes
+pm2 status
+
+# Edit ecosystem file (if you have one)
+pm2 restart tinytools-app
+
+# Verify
+pm2 logs
+```
+
+### 3.6 - Update Nginx (If Needed)
+
+The Nginx config should NOT need changes since it points to a port (3001), not a folder. But verify it's still working:
+
+```bash
+# Check if Nginx config is still correct
+cat /etc/nginx/sites-available/simplifyconvert.com | grep proxy_pass
+
+# Should show: proxy_pass http://127.0.0.1:3001;
+
+# Reload Nginx just to be safe
+nginx -t
+systemctl reload nginx
+```
+
+### 3.7 - Verify App is Running
+
+```bash
+# Test local app response
+curl http://127.0.0.1:3001
+
+# Expected: HTML starting with <!DOCTYPE
+
+# Test from domain
+curl -s https://simplifyconvert.com | head -20
+
+# Expected: Full page HTML, no 502 error
+```
+
+### 3.8 - Clean Up Old Folder (OPTIONAL)
+
+```bash
+# Only do this AFTER verifying new folder works!
+
+# Backup old folder just in case
+mv /var/www/tinytools-app /var/www/tinytools-app.backup
+
+# Or remove entirely (CAREFUL!)
+rm -rf /var/www/tinytools-app
+```
+
+✅ **VPS update complete!**
+
+---
+
+## 🎯 Verification Checklist
+
+After completing all 3 steps, verify everything works:
+
+**Local Machine:**
+- [ ] Folder is renamed to `simplifyconvertapp`
+- [ ] `git status` shows clean
+- [ ] `npm run build` succeeds
+- [ ] `npm start` runs without errors
+- [ ] Browser at localhost:3000 loads page
+
+**GitHub:**
+- [ ] Latest commit mentions "folder rename"
+- [ ] Repository shows updated code
+
+**VPS (Production):**
+- [ ] `curl http://127.0.0.1:3001` returns 200
+- [ ] `curl https://simplifyconvert.com` returns 200
+- [ ] PM2 status shows process as "online"
+- [ ] No 502 Bad Gateway errors
+- [ ] Page loads with all CSS/images
+
+**All Checks Passed:** ✅ Rename is complete and verified!
+
+---
+
+## 🆘 If Something Goes Wrong
+
+### Problem: Git push failed after rename
+
+**Solution:**
+```bash
+# Go back to renamed folder
+cd i:\Raghava\Copilot-works\simplifyconvertapp
+
+# Check what Git sees
+git status
+
+# Try adding and committing again
+git add -A
+git commit -m "chore: retry folder rename commit"
+git push origin main
+```
+
+### Problem: App not running on VPS after rename
+
+**Solution:**
+```bash
+# SSH to VPS
+ssh root@75.119.155.15
+
+# Check PM2 status
+pm2 status
+
+# Check logs
+pm2 logs
+
+# If not running, rebuild
+cd /var/www/simplifyconvertapp
+npm ci --prefer-offline
+NODE_ENV=production npm run build
+pm2 restart all
+
+# Verify
+curl http://127.0.0.1:3001
+```
+
+### Problem: Get 502 Bad Gateway on domain
+
+**Solution:**
+```bash
+# SSH to VPS
+ssh root@75.119.155.15
+
+# Check if app is listening on port 3001
+ss -tulpn | grep 3001
+
+# Check Nginx error logs
+tail -20 /var/log/nginx/error.log
+
+# Verify Nginx points to correct port
+cat /etc/nginx/sites-available/simplifyconvert.com | grep proxy_pass
+
+# Should show: proxy_pass http://127.0.0.1:3001;
+```
+
+### Problem: "Old folder still exists"
+
+**Solution:**
+```bash
+# On VPS, check what folders exist
+ls -la /var/www/
+
+# If both exist, verify new one is working
+curl http://127.0.0.1:3001  # Should work
+
+# Then safely delete old one
+rm -rf /var/www/tinytools-app
+```
+
+---
+
+## 📝 Summary
+
+| Step | What to Do | Takes |
+|------|-----------|-------|
+| 1 | Rename local folder | 5 min |
+| 2 | Commit & push to GitHub | 2 min |
+| 3 | Update VPS folder & config | 10 min |
+| 4 | Verify everything | 5 min |
+| **Total** | **Complete project rename** | **~22 min** |
+
+---
 
 Good luck! 🚀
