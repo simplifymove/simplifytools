@@ -114,7 +114,7 @@ export default function UnblurImagePage() {
   return (
     <>
       <HomeHeader />
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+      <main className="min-h-screen bg-linear-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Hero Header */}
         <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -134,7 +134,7 @@ export default function UnblurImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Unblur Image</h1>
-                <p className="text-lg text-white/90">Enhance and clarify blurry images using AI-powered enhancement or motion deblur technology.</p>
+                <p className="text-lg text-white/90">Industry-standard image deblurring using advanced algorithms. Remove blur with Enhancement Pipeline or Motion Deblur using Lucy-Richardson deconvolution.</p>
               </div>
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function UnblurImagePage() {
                       />
                       <div className="flex-1">
                         <p className="font-medium text-gray-900 text-sm">Enhancement Pipeline</p>
-                        <p className="text-xs text-gray-500">Denoise + contrast + sharpening</p>
+                        <p className="text-xs text-gray-500">Bilateral denoise → CLAHE contrast → Unsharp sharpening</p>
                       </div>
                     </label>
 
@@ -244,7 +244,7 @@ export default function UnblurImagePage() {
                       />
                       <div className="flex-1">
                         <p className="font-medium text-gray-900 text-sm">Motion Deblur</p>
-                        <p className="text-xs text-gray-500">Richardson-Lucy deconvolution</p>
+                        <p className="text-xs text-gray-500">Lucy-Richardson iterative deconvolution (gold standard)</p>
                       </div>
                     </label>
                   </div>
@@ -256,7 +256,7 @@ export default function UnblurImagePage() {
                       
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Denoise</label>
+                          <label className="text-sm font-medium text-gray-700">Bilateral Denoise Strength</label>
                           <span className="text-sm font-semibold text-orange-600">{denoise.toFixed(1)}</span>
                         </div>
                         <input
@@ -269,11 +269,12 @@ export default function UnblurImagePage() {
                           disabled={processing}
                           className="w-full"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Higher = more noise removed</p>
                       </div>
 
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Sharpening</label>
+                          <label className="text-sm font-medium text-gray-700">Unsharp Masking Strength</label>
                           <span className="text-sm font-semibold text-orange-600">{strength.toFixed(2)}</span>
                         </div>
                         <input
@@ -286,11 +287,12 @@ export default function UnblurImagePage() {
                           disabled={processing}
                           className="w-full"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Higher = more sharpening</p>
                       </div>
 
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Contrast (CLAHE)</label>
+                          <label className="text-sm font-medium text-gray-700">CLAHE Clip Limit</label>
                           <span className="text-sm font-semibold text-orange-600">{clahe.toFixed(2)}</span>
                         </div>
                         <input
@@ -303,6 +305,7 @@ export default function UnblurImagePage() {
                           disabled={processing}
                           className="w-full"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Adaptive histogram equalization</p>
                       </div>
 
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -325,7 +328,7 @@ export default function UnblurImagePage() {
                       
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Motion Length</label>
+                          <label className="text-sm font-medium text-gray-700">Motion Kernel Length</label>
                           <span className="text-sm font-semibold text-orange-600">{motionLength}px</span>
                         </div>
                         <input
@@ -338,6 +341,7 @@ export default function UnblurImagePage() {
                           disabled={processing}
                           className="w-full"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Size of motion blur kernel</p>
                       </div>
 
                       <div>
@@ -359,7 +363,7 @@ export default function UnblurImagePage() {
 
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Iterations</label>
+                          <label className="text-sm font-medium text-gray-700">Deconvolution Iterations</label>
                           <span className="text-sm font-semibold text-orange-600">{iterations}</span>
                         </div>
                         <input
@@ -372,6 +376,7 @@ export default function UnblurImagePage() {
                           disabled={processing}
                           className="w-full"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Higher = better quality but slower</p>
                       </div>
                     </div>
                   )}
@@ -407,12 +412,12 @@ export default function UnblurImagePage() {
 
                   {/* Info Box */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-blue-900 mb-2">About</h3>
+                    <h3 className="font-semibold text-blue-900 mb-2">Technology</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• AI-powered enhancement</li>
-                      <li>• Motion deblur support</li>
-                      <li>• Multiple parameters</li>
-                      <li>• Processing: 30-120s</li>
+                      <li>• <span className="font-semibold">Enhancement:</span> Bilateral filtering + CLAHE + Unsharp masking</li>
+                      <li>• <span className="font-semibold">Motion Deblur:</span> Lucy-Richardson deconvolution</li>
+                      <li>• Edge-preserving algorithms</li>
+                      <li>• Professional-grade processing</li>
                     </ul>
                   </div>
                 </div>
