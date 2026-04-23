@@ -31,7 +31,9 @@ export function SearchBox({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { suggestions, addRecentSearch } = useSearchSuggestions(query, limit);
+  // For header: show 8 in dropdown, for all-tools: show more
+  const displayLimit = limit || (variant === 'header' ? 8 : undefined);
+  const { suggestions, addRecentSearch } = useSearchSuggestions(query, displayLimit);
   const displayedSuggestions = showSuggestions ? suggestions : [];
 
   // Close on outside click
@@ -217,12 +219,12 @@ export function SearchBox({
               )}
 
               {query.trim() && displayedSuggestions.length > 0 && (
-                <div className="px-4 py-2 border-t border-gray-100 bg-gray-50">
+                <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 space-y-2">
                   <button
                     onClick={() => handleSearch(query)}
-                    className="w-full text-sm font-medium text-orange-600 hover:text-orange-700 transition"
+                    className="w-full text-sm font-semibold text-orange-600 hover:text-orange-700 transition py-1.5"
                   >
-                    Search for "{query}"
+                    🔍 See all results for "{query}"
                   </button>
                 </div>
               )}

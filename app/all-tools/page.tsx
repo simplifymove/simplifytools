@@ -139,11 +139,10 @@ function ToolsContent() {
             <div className="flex gap-2 flex-col sm:flex-row">
               <div className="flex-1">
                 <SearchBox
-                  placeholder={categoryParam ? `Search ${categoryParam} tools...` : "Search 200+ tools..."}
+                  placeholder={categoryParam ? `Search ${categoryParam} tools...` : "Search 300+ tools..."}
                   onSearch={(query) => setSearchTerm(query)}
                   variant="header"
                   showSuggestions={true}
-                  limit={50}
                 />
               </div>
             </div>
