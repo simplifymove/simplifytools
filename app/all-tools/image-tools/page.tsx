@@ -2,9 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { allTools } from '@/app/data/tools';
 import { ToolCard } from '@/app/components/ToolCard';
+import { SearchBox } from '@/app/components/SearchBox';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
@@ -84,34 +85,20 @@ export default function ImageToolsPage() {
           {/* Search & Filter Section */}
           <div className="py-8 px-4 md:px-8">
             <div className="max-w-7xl mx-auto">
-              <motion.form
-                onSubmit={(e) => e.preventDefault()}
+              <motion.div
                 className="space-y-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                {/* Search Bar */}
-                <div className="flex gap-2 flex-col sm:flex-row">
-                  <div className="flex-1 relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-600 transition">
-                      <Search className="w-5 h-5" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Search image tools..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-gray-200 hover:border-orange-300 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 bg-white"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="px-8 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-full font-medium hover:shadow-lg hover:shadow-orange-600/30 transition-all whitespace-nowrap flex items-center justify-center gap-2"
-                  >
-                    <Search className="w-4 h-4" />
-                    Search
-                  </button>
+                {/* Search Bar with Enhanced Component */}
+                <div className="flex-1">
+                  <SearchBox
+                    placeholder="Search image tools..."
+                    onSearch={(query) => setSearchTerm(query)}
+                    variant="header"
+                    showSuggestions={true}
+                  />
                 </div>
 
                 {/* Category Filters */}
@@ -144,7 +131,7 @@ export default function ImageToolsPage() {
                     );
                   })}
                 </div>
-              </motion.form>
+              </motion.div>
             </div>
           </div>
 
