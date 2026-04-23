@@ -71,6 +71,7 @@ class PdfCoreEngine:
             every_n = int(options.get('everyN', 1))
             
             pdf = PyPDF2.PdfReader(pdf_path)
+            total_pages = len(pdf.pages)
             pages_to_split = []
             
             if mode == 'all':
@@ -83,6 +84,15 @@ class PdfCoreEngine:
                         pages_to_split.extend(range(start-1, end))
                     else:
                         pages_to_split.append(int(part)-1)
+                
+                # Validate page numbers are within range
+                invalid_pages = [p+1 for p in pages_to_split if p >= total_pages]
+                if invalid_pages:
+                    raise Exception(f"PDF has only {total_pages} pages, but requested pages {invalid_pages} are out of range")
+                
+                # Filter out any negative indices or duplicates
+                pages_to_split = sorted(set(p for p in pages_to_split if p >= 0))
+                
             elif mode == 'every_n':
                 pages_to_split = list(range(0, len(pdf.pages), every_n))
             
