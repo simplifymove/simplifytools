@@ -29,7 +29,7 @@ export default function AboutPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            Making file conversion, editing, and transformation simple for everyone.
+            Making file conversion, editing, and transformation effortless for everyone.
           </motion.p>
         </div>
       </div>
@@ -46,37 +46,65 @@ export default function AboutPage() {
           <section>
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
             <p className="text-gray-600 text-lg leading-relaxed mb-4">
-              SimplifyConvert was founded with a simple mission: to make file conversion, editing, and data transformation accessible to everyone. We believe technology should be simple, intuitive, and free - without any barriers or restrictions.
+              At SimplifyConvert, our mission is simple: to make file conversion, editing, and data transformation accessible, fast, and hassle-free for everyone.
             </p>
             <p className="text-gray-600 text-lg leading-relaxed">
-              With over 200+ tools across 7 categories, we help millions of users convert PDFs, edit images, process videos, write with AI, transform data, format code, and convert text to speech - all from their browser.
+              We believe powerful tools shouldn't be complicated or hidden behind paywalls. Whether you're converting PDFs, editing images, processing videos, or working with data, everything should be easy, intuitive, and available instantly—right in your browser.
+            </p>
+            <p className="text-gray-600 text-lg leading-relaxed mt-4">
+              With 200+ tools across multiple categories, SimplifyConvert helps users handle everyday digital tasks quickly and efficiently, without the need for downloads or technical expertise.
             </p>
           </section>
 
-          {/* Values */}
+          {/* What We Offer */}
+          <section>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">What We Offer</h2>
+            <p className="text-gray-600 text-lg leading-relaxed mb-6">
+              SimplifyConvert brings together a wide range of tools in one place:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                '📄 PDF conversion and editing',
+                '🖼️ Image processing and enhancement',
+                '🎥 Video tools and transformations',
+                '🤖 AI-powered writing and utilities',
+                '📊 Data and file format conversions',
+                '💻 Code formatting and utilities',
+                '🔊 Text-to-speech and audio tools'
+              ].map((offer, idx) => (
+                <div key={idx} className="flex items-center space-x-3 text-gray-600">
+                  <span className="text-xl">{offer.split(' ')[0]}</span>
+                  <span>{offer.substring(offer.indexOf(' ') + 1)}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-gray-600 text-lg leading-relaxed mt-6">
+              All designed to work seamlessly online.
+            </p>
+          </section>
           <section>
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Our Values</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
                 {
                   icon: Zap,
-                  title: 'Lightning Fast',
-                  description: 'We prioritize speed and performance. Our tools process your files instantly without lag.'
+                  title: 'Fast & Efficient',
+                  description: 'We focus on speed and performance, so your files are processed quickly without unnecessary delays.'
                 },
                 {
                   icon: Users,
-                  title: 'User First',
-                  description: 'Every feature is designed with users in mind. Simple, intuitive, and hassle-free.'
+                  title: 'User-Centric Design',
+                  description: 'Every tool is built with simplicity in mind—clean interfaces, easy workflows, and no confusion.'
                 },
                 {
                   icon: Target,
-                  title: 'Precision',
-                  description: 'Accuracy matters. We ensure every conversion and edit maintains the highest quality.'
+                  title: 'Accuracy & Quality',
+                  description: 'We prioritize precision to ensure your files are processed with the best possible quality.'
                 },
                 {
                   icon: Award,
-                  title: 'Always Free',
-                  description: 'All our tools are completely free to use. No hidden charges, no paywalls, no sign-ups required.'
+                  title: 'Free & Accessible',
+                  description: 'Many of our tools are free to use with no hidden fees or mandatory sign-ups. We aim to keep our platform accessible while continuing to improve our services.'
                 }
               ].map((value, idx) => {
                 const Icon = value.icon;
@@ -95,11 +123,22 @@ export default function AboutPage() {
             </div>
           </section>
 
+          {/* Vision */}
+          <section>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Vision</h2>
+            <p className="text-gray-600 text-lg leading-relaxed">
+              We aim to become a one-stop platform for all digital file needs—continuously expanding our tools and improving performance based on real user feedback.
+            </p>
+          </section>
+
           {/* Team */}
           <section>
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Team</h2>
+            <p className="text-gray-600 text-lg leading-relaxed mb-4">
+              We're a small but passionate team of developers, designers, and problem-solvers dedicated to building practical tools that people actually use.
+            </p>
             <p className="text-gray-600 text-lg leading-relaxed">
-              We&apos;re a passionate team of developers, designers, and innovators dedicated to building the best file conversion and editing tools on the web. We believe in continuous improvement and always listen to user feedback to make SimplifyConvert better every day.
+              We believe in continuous improvement and actively listen to our users to make SimplifyConvert better every day.
             </p>
           </section>
 
