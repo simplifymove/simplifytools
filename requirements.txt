@@ -3,12 +3,29 @@ Pillow>=10.0.0
 opencv-python>=4.8.0
 numpy>=1.24.0
 
-# Optional: Background removal (for other tools)
+# Background Removal & Image Enhancement
 rembg>=2.0.72
 onnxruntime>=1.16.0
 
 # Text-to-Speech
 edge_tts>=6.1.1
 
-# Note: Real-ESRGAN is optional for upscaling
-# Install manually if needed: pip install torch realesrgan basicsr
+# PDF Processing & Manipulation
+PyPDF2>=3.0.0
+PyMuPDF>=1.24.0
+pikepdf>=9.0.0
+
+# Data & Spreadsheet Conversion
+pandas>=2.0.0
+openpyxl>=3.0.0
+
+# Document Generation
+reportlab>=4.0.0
+
+# Media Processing (GIF/Animation)
+imageio>=2.15.0
+
+# Optional: Image Upscaling
+# torch>=2.0.0
+# realesrgan>=0.3.0
+# basicsr>=1.4.2
