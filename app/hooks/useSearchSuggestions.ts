@@ -161,28 +161,6 @@ export function useSearchSuggestions(query: string, limit?: number) {
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-
-  const addRecentSearch = useCallback((search: string) => {
-    if (!search.trim()) return;
-
-    setRecentSearches((prev) => {
-      const filtered = prev.filter((item) => item.toLowerCase() !== search.toLowerCase());
-      const updated = [search, ...filtered].slice(0, 10);
-
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-
-  const addRecentSearch = useCallback((search: string) => {
-    if (!search.trim()) return;
-
-    setRecentSearches((prev) => {
-      const filtered = prev.filter((item) => item.toLowerCase() !== search.toLowerCase());
-      const updated = [search, ...filtered].slice(0, 10);
-
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
         } catch {
           // Storage error, ignore
         }
