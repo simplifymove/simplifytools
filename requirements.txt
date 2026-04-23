@@ -1,31 +1,126 @@
+# ============================================================================
+# SimplifyConvert Requirements
+# Updated: April 23, 2026
+# Contains all Python dependencies for local development and VPS deployment
+# ============================================================================
+
 # Core Image Processing (REQUIRED)
 Pillow>=10.0.0
+pillow-heif>=0.16.0
 opencv-python>=4.8.0
 numpy>=1.24.0
+scikit-image>=0.22.0
 
-# Background Removal & Image Enhancement
+# Background Removal & Image Enhancement (AI-powered)
 rembg>=2.0.72
 onnxruntime>=1.16.0
 
-# Text-to-Speech
+# Text-to-Speech & Voice
 edge_tts>=6.1.1
 
-# PDF Processing & Manipulation
+# PDF Processing & Manipulation (CRITICAL)
 PyPDF2>=3.0.0
 PyMuPDF>=1.24.0
 pikepdf>=9.0.0
+pdfminer.six>=6.0.1
+pdfplumber>=0.10.3
+pypdf>=4.0.1
+
+# OCR & Document Recognition (Tesseract-based)
+pytesseract>=0.3.10
+easyocr>=1.7.1
+paddleocr>=2.7.0.3
 
 # Data & Spreadsheet Conversion
 pandas>=2.0.0
 openpyxl>=3.0.0
+xlrd>=2.0.1
+polars>=0.19.19
 
-# Document Generation
+# Document Generation & Format Conversion
 reportlab>=4.0.0
+python-docx>=0.8.11
+python-pptx>=0.6.23
+markdown>=3.5.1
+pyyaml>=6.0.1
+toml>=0.10.2
+lxml>=4.9.3
+beautifulsoup4>=4.12.2
+html2text>=2020.1.16
 
-# Media Processing (GIF/Animation)
+# Media Processing (GIF/Animation/Video)
 imageio>=2.15.0
+imageio-ffmpeg>=1.4.1
 
-# Optional: Image Upscaling
+# Data Format Utilities
+protobuf>=4.25.1
+msgpack>=1.0.7
+python-magic>=0.4.27
+chardet>=5.2.0
+pathvalidate>=3.1.0
+
+# Machine Learning & AI (Optional for advanced features)
+# Uncomment these lines if you need advanced ML features
 # torch>=2.0.0
-# realesrgan>=0.3.0
-# basicsr>=1.4.2
+# torchvision>=0.16.1
+# tensorflow>=2.14.0
+# keras>=2.14.0
+
+# Social Media Download & APIs
+youtube-dl>=2021.12.17
+yt-dlp>=2024.1.1
+instagrapi>=2.0.0
+tweepy>=4.14.0
+
+# Google Cloud APIs (Optional - for advanced cloud features)
+# google-cloud-translate>=3.14.1
+# google-cloud-vision>=3.6.0
+# google-auth>=2.26.2
+# google-auth-httplib2>=0.2.0
+
+# ============================================================================
+# SYSTEM DEPENDENCIES (NOT PYTHON PACKAGES)
+# Install these on your VPS/server using apt-get or yum
+# ============================================================================
+# 
+# For PDF to VSDX/Visio conversion:
+#   Ubuntu/Debian: sudo apt-get install -y libreoffice
+#   CentOS/RHEL: sudo yum install -y libreoffice
+#
+# For PSD to image conversion:
+#   Ubuntu/Debian: sudo apt-get install -y imagemagick imagemagick-6-common imagemagick-6.q16
+#   CentOS/RHEL: sudo yum install -y ImageMagick
+#
+# For video processing & GIF creation:
+#   Ubuntu/Debian: sudo apt-get install -y ffmpeg
+#   CentOS/RHEL: sudo yum install -y ffmpeg
+#
+# For OCR support (Tesseract):
+#   Ubuntu/Debian: sudo apt-get install -y tesseract-ocr libtesseract-dev
+#   CentOS/RHEL: sudo yum install -y tesseract
+#
+# For additional utilities:
+#   Ubuntu/Debian: sudo apt-get install -y ghostscript fonts-dejavu libfreetype6
+#   CentOS/RHEL: sudo yum install -y ghostscript dejavu-fonts freetype-devel
+#
+# ============================================================================
+# INSTALLATION INSTRUCTIONS FOR VPS
+# ============================================================================
+#
+# 1. Create Python virtual environment:
+#    python3 -m venv .venv
+#    source .venv/bin/activate
+#
+# 2. Install system dependencies (as root):
+#    sudo apt-get update
+#    sudo apt-get install -y libreoffice imagemagick ffmpeg tesseract-ocr ghostscript fonts-dejavu
+#
+# 3. Install Python packages:
+#    pip install --upgrade pip setuptools wheel
+#    pip install -r requirements.txt
+#
+# 4. For production deployment:
+#    pip install gunicorn[gevent]  # Or use PM2 with Node.js frontend
+#    pip install python-dotenv
+#
+# ============================================================================
