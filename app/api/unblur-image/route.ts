@@ -12,17 +12,12 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024;
 export async function POST(request: Request): Promise<Response> {
   const formData = await request.formData();
   const imageFile = formData.get("image") as File;
-  const mode = (formData.get("mode") as string) || "enhance";
-  const strength = parseFloat((formData.get("strength") as string) || "1.8");
-  const denoise = parseFloat((formData.get("denoise") as string) || "15");
-  const clahe = parseFloat((formData.get("clahe") as string) || "3.5");
-  const motionLength = parseInt((formData.get("motionLength") as string) || "15");
-  const motionAngle = parseInt((formData.get("motionAngle") as string) || "45");
-  const iterations = parseInt((formData.get("iterations") as string) || "50");
-  const edgePreserve = (formData.get("edgePreserve") as string) === "true";
+  const mode = (formData.get("mode") as string) || "motion"; // motion or defocus
+  const strength = parseFloat((formData.get("strength") as string) || "1.0");
+  const iterations = parseInt((formData.get("iterations") as string) || "1");
 
   console.log(
-    `[API] Unblur mode: ${mode}, strength: ${strength}, denoise: ${denoise}, clahe: ${clahe}`
+    `[API] Restormer deblurring: mode=${mode}, strength=${strength}, iterations=${iterations}`
   );
 
   if (!imageFile) {
@@ -57,17 +52,11 @@ export async function POST(request: Request): Promise<Response> {
     // Build command with full path to the script
     const scriptPath = path.join(process.cwd(), "unblur_img.py");
     const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
-    let command = `${pythonExe} "${scriptPath}" --input "${inputFile}" --output "${outputFile}" --mode ${mode}`;
+    
+    // Restormer-based deblurring command
+    const command = `${pythonExe} "${scriptPath}" --input "${inputFile}" --output "${outputFile}" --mode ${mode} --strength ${strength} --iterations ${iterations}`;
 
-    if (mode === "enhance") {
-      command += ` --strength ${strength} --denoise ${denoise} --clahe ${clahe}`;
-      if (edgePreserve) command += ` --edge-preserve`;
-    } else if (mode === "motion") {
-      command += ` --motion-length ${motionLength} --motion-angle ${motionAngle} --iterations ${iterations}`;
-    }
-
-    console.log(`[API] Executing command: ${command}`);
-    console.log(`[API] Working directory: ${process.cwd()}`);
+    console.log(`[API] Executing: Restormer deblurring engine (SOTA CVPR2022)`);
     console.log(`[API] Script path exists: ${fs.existsSync(scriptPath)}`);
 
     // Execute Python script

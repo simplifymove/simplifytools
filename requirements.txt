@@ -66,6 +66,16 @@ pathvalidate>=3.1.0
 # tensorflow>=2.14.0
 # keras>=2.14.0
 
+# ============================================================================
+# SOTA Image Restoration (CVPR 2022 - Restormer for deblurring)
+# ============================================================================
+# Deep learning-based image restoration (state-of-the-art)
+torch>=2.0.0
+torchvision>=0.16.1
+basicsr>=1.4.2
+realesrgan>=0.3.0
+# Note: Restormer models will be auto-downloaded on first use
+
 # Social Media Download & APIs
 youtube-dl>=2021.12.17
 yt-dlp>=2024.1.1

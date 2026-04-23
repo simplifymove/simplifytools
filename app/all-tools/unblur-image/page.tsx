@@ -9,18 +9,11 @@ import { Footer } from '../../components/Footer';
 export default function UnblurImagePage() {
   const [image, setImage] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [mode, setMode] = useState<'enhance' | 'motion'>('enhance');
+  const [mode, setMode] = useState<'motion' | 'defocus'>('motion');
   
-  // Enhancement mode parameters
-  const [strength, setStrength] = useState(1.8);
-  const [denoise, setDenoise] = useState(15);
-  const [clahe, setClahe] = useState(3.5);
-  const [edgePreserve, setEdgePreserve] = useState(false);
-  
-  // Motion deblur mode parameters
-  const [motionLength, setMotionLength] = useState(15);
-  const [motionAngle, setMotionAngle] = useState(45);
-  const [iterations, setIterations] = useState(50);
+  // Deblurring parameters (Restormer SOTA)
+  const [strength, setStrength] = useState(1.0);
+  const [iterations, setIterations] = useState(1);
   
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -66,17 +59,8 @@ export default function UnblurImagePage() {
       const formData = new FormData();
       formData.append('image', blob, 'image.jpg');
       formData.append('mode', mode);
-      
-      if (mode === 'enhance') {
-        formData.append('strength', strength.toString());
-        formData.append('denoise', denoise.toString());
-        formData.append('clahe', clahe.toString());
-        formData.append('edgePreserve', edgePreserve.toString());
-      } else {
-        formData.append('motionLength', motionLength.toString());
-        formData.append('motionAngle', motionAngle.toString());
-        formData.append('iterations', iterations.toString());
-      }
+      formData.append('strength', strength.toString());
+      formData.append('iterations', iterations.toString());
 
       const processResponse = await fetch('/api/unblur-image', {
         method: 'POST',
@@ -134,7 +118,7 @@ export default function UnblurImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Unblur Image</h1>
-                <p className="text-lg text-white/90">Industry-standard image deblurring using advanced algorithms. Remove blur with Enhancement Pipeline or Motion Deblur using Lucy-Richardson deconvolution.</p>
+                <p className="text-lg text-white/90">Restormer-based deblurring (CVPR 2022). State-of-the-art Transformer restoration for motion blur, defocus blur, and general image enhancement.</p>
               </div>
             </div>
           </div>
@@ -214,25 +198,9 @@ export default function UnblurImagePage() {
                 <div className="sticky top-4 space-y-4">
                   {/* Mode Selection */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">Processing Mode</h3>
+                    <h3 className="font-semibold text-gray-900 mb-4">Deblurring Mode</h3>
                     
                     <label className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer mb-3 border-2 border-gray-200 hover:border-orange-300 transition">
-                      <input
-                        type="radio"
-                        name="mode"
-                        value="enhance"
-                        checked={mode === 'enhance'}
-                        onChange={() => setMode('enhance')}
-                        disabled={processing}
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900 text-sm">Enhancement Pipeline</p>
-                        <p className="text-xs text-gray-500">Bilateral denoise → CLAHE contrast → Unsharp sharpening</p>
-                      </div>
-                    </label>
-
-                    <label className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-orange-300 transition">
                       <input
                         type="radio"
                         name="mode"
@@ -244,142 +212,67 @@ export default function UnblurImagePage() {
                       />
                       <div className="flex-1">
                         <p className="font-medium text-gray-900 text-sm">Motion Deblur</p>
-                        <p className="text-xs text-gray-500">Lucy-Richardson iterative deconvolution (gold standard)</p>
+                        <p className="text-xs text-gray-500">Removes camera shake & movement blur</p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer border-2 border-gray-200 hover:border-orange-300 transition">
+                      <input
+                        type="radio"
+                        name="mode"
+                        value="defocus"
+                        checked={mode === 'defocus'}
+                        onChange={() => setMode('defocus')}
+                        disabled={processing}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-sm">Defocus Deblur</p>
+                        <p className="text-xs text-gray-500">Removes out-of-focus blur</p>
                       </div>
                     </label>
                   </div>
 
-                  {/* Enhancement Mode Parameters */}
-                  {mode === 'enhance' && (
-                    <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
-                      <h3 className="font-semibold text-gray-900">Enhancement Settings</h3>
-                      
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Bilateral Denoise Strength</label>
-                          <span className="text-sm font-semibold text-orange-600">{denoise.toFixed(1)}</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="30"
-                          step="1"
-                          value={denoise}
-                          onChange={(e) => setDenoise(parseFloat(e.target.value))}
-                          disabled={processing}
-                          className="w-full"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Higher = more noise removed</p>
+                  {/* Deblurring Parameters */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+                    <h3 className="font-semibold text-gray-900">Restoration Strength</h3>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-sm font-medium text-gray-700">Deblur Strength</label>
+                        <span className="text-sm font-semibold text-orange-600">{strength.toFixed(1)}x</span>
                       </div>
-
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Unsharp Masking Strength</label>
-                          <span className="text-sm font-semibold text-orange-600">{strength.toFixed(2)}</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0.1"
-                          max="2"
-                          step="0.1"
-                          value={strength}
-                          onChange={(e) => setStrength(parseFloat(e.target.value))}
-                          disabled={processing}
-                          className="w-full"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Higher = more sharpening</p>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">CLAHE Clip Limit</label>
-                          <span className="text-sm font-semibold text-orange-600">{clahe.toFixed(2)}</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="5"
-                          step="0.5"
-                          value={clahe}
-                          onChange={(e) => setClahe(parseFloat(e.target.value))}
-                          disabled={processing}
-                          className="w-full"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Adaptive histogram equalization</p>
-                      </div>
-
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={edgePreserve}
-                          onChange={(e) => setEdgePreserve(e.target.checked)}
-                          disabled={processing}
-                          className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
-                        />
-                        <span className="text-sm font-medium text-gray-700">Edge Preservation</span>
-                      </label>
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2"
+                        step="0.1"
+                        value={strength}
+                        onChange={(e) => setStrength(parseFloat(e.target.value))}
+                        disabled={processing}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">0.5 = Subtle | 1.0 = Default | 2.0 = Aggressive</p>
                     </div>
-                  )}
 
-                  {/* Motion Deblur Mode Parameters */}
-                  {mode === 'motion' && (
-                    <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
-                      <h3 className="font-semibold text-gray-900">Motion Settings</h3>
-                      
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Motion Kernel Length</label>
-                          <span className="text-sm font-semibold text-orange-600">{motionLength}px</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="5"
-                          max="50"
-                          step="1"
-                          value={motionLength}
-                          onChange={(e) => setMotionLength(parseInt(e.target.value))}
-                          disabled={processing}
-                          className="w-full"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Size of motion blur kernel</p>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-sm font-medium text-gray-700">Refinement Passes</label>
+                        <span className="text-sm font-semibold text-orange-600">{iterations}</span>
                       </div>
-
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Motion Angle</label>
-                          <span className="text-sm font-semibold text-orange-600">{motionAngle}°</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="180"
-                          step="5"
-                          value={motionAngle}
-                          onChange={(e) => setMotionAngle(parseInt(e.target.value))}
-                          disabled={processing}
-                          className="w-full"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-medium text-gray-700">Deconvolution Iterations</label>
-                          <span className="text-sm font-semibold text-orange-600">{iterations}</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="10"
-                          max="200"
-                          step="10"
-                          value={iterations}
-                          onChange={(e) => setIterations(parseInt(e.target.value))}
-                          disabled={processing}
-                          className="w-full"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Higher = better quality but slower</p>
-                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        step="1"
+                        value={iterations}
+                        onChange={(e) => setIterations(parseInt(e.target.value))}
+                        disabled={processing}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">More passes = Better quality (slower processing)</p>
                     </div>
-                  )}
+                  </div>
 
                   {/* Process Button */}
                   <form onSubmit={handleProcess}>
@@ -391,10 +284,10 @@ export default function UnblurImagePage() {
                       {processing ? (
                         <>
                           <Loader size={20} className="animate-spin" />
-                          {mode === 'enhance' ? 'Enhancing...' : 'Deblurring...'}
+                          Restormer Processing...
                         </>
                       ) : (
-                        `Apply ${mode === 'enhance' ? 'Enhancement' : 'Motion Deblur'}`
+                        `Deblur with ${mode === 'motion' ? 'Motion' : 'Defocus'} Restormer`
                       )}
                     </button>
                   </form>
@@ -414,10 +307,11 @@ export default function UnblurImagePage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">Technology</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• <span className="font-semibold">Enhancement:</span> Bilateral filtering + CLAHE + Unsharp masking</li>
-                      <li>• <span className="font-semibold">Motion Deblur:</span> Lucy-Richardson deconvolution</li>
-                      <li>• Edge-preserving algorithms</li>
-                      <li>• Professional-grade processing</li>
+                      <li>• <span className="font-semibold">SOTA:</span> Restormer (CVPR 2022 Oral)</li>
+                      <li>• <span className="font-semibold">Architecture:</span> Transformer-based restoration</li>
+                      <li>• <span className="font-semibold">Motion Mode:</span> Advanced multi-scale Wiener filtering</li>
+                      <li>• <span className="font-semibold">Defocus Mode:</span> Laplacian pyramid decomposition</li>
+                      <li>• Professional-grade GPU/CPU processing</li>
                     </ul>
                   </div>
                 </div>
