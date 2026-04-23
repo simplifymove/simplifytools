@@ -88,10 +88,15 @@ export interface UserLocation {
 /**
  * Detect user's location and currency from IP
  * Calls server-side API to avoid CORS issues
+ * For development/testing, pass ?dev-country=XX to override
  */
 export async function detectUserLocation(): Promise<UserLocation> {
   try {
-    const response = await fetch('/api/geolocation', {
+    // Check for development country parameter (e.g., ?dev-country=IN)
+    const devCountry = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('dev-country');
+    const url = devCountry ? `/api/geolocation?dev-country=${devCountry}` : '/api/geolocation';
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

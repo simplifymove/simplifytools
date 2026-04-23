@@ -71,6 +71,21 @@ const countryToCurrency: Record<string, { code: string; symbol: string; name: st
 
 export async function GET(request: NextRequest) {
   try {
+    // Check for development override parameter
+    const url = new URL(request.url);
+    const devCountryCode = url.searchParams.get('dev-country');
+    
+    if (devCountryCode && devCountryCode.length === 2) {
+      const currency = countryToCurrency[devCountryCode.toUpperCase()] || countryToCurrency['XX'];
+      console.log(`Using development country override: ${devCountryCode}`);
+      return NextResponse.json({
+        countryCode: devCountryCode.toUpperCase(),
+        countryName: devCountryCode.toUpperCase(),
+        currency,
+        isDevelopment: true,
+      });
+    }
+
     // Get client IP from headers
     const forwardedFor = request.headers.get('x-forwarded-for');
     let clientIP = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
