@@ -52,7 +52,7 @@ export function useSearchSuggestions(query: string, limit?: number) {
     const isActionBased = queryLower.includes('to ') || queryLower.includes('convert') || queryLower.includes('remove') || queryLower.includes('compress') || queryLower.includes('resize');
 
     // Combine all tools (regular + PDF + Code + AI Write tools) for comprehensive search
-    const combinedTools = [
+    const combinedToolsRaw = [
       ...allTools,
       ...getAllPdfTools().map(pdfTool => ({
         id: pdfTool.id,
@@ -76,6 +76,16 @@ export function useSearchSuggestions(query: string, limit?: number) {
         route: `/all-tools/ai-tools`, // AI tools route
       })),
     ];
+
+    // Deduplicate tools by ID (keep first occurrence)
+    const seenIds = new Set<string>();
+    const combinedTools = combinedToolsRaw.filter(tool => {
+      if (seenIds.has(tool.id)) {
+        return false;
+      }
+      seenIds.add(tool.id);
+      return true;
+    });
 
     // Search ALL tools with comprehensive matching
     combinedTools.forEach((tool) => {
