@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from 'react';
 import { allTools } from '@/app/data/tools';
+import { getAllPdfTools } from '@/app/lib/pdf-tools';
 
 export interface SearchSuggestion {
   id: string;
@@ -48,8 +49,20 @@ export function useSearchSuggestions(query: string, limit?: number) {
     const isToolName = query.length > 2 && !queryLower.includes('how') && !queryLower.includes('what');
     const isActionBased = queryLower.includes('to ') || queryLower.includes('convert') || queryLower.includes('remove') || queryLower.includes('compress') || queryLower.includes('resize');
 
+    // Combine all tools (regular + PDF tools) for comprehensive search
+    const combinedTools = [
+      ...allTools,
+      ...getAllPdfTools().map(pdfTool => ({
+        id: pdfTool.id,
+        title: pdfTool.title,
+        description: pdfTool.description,
+        category: pdfTool.category,
+        route: `/all-tools/pdf-tools`, // PDF tools route
+      })),
+    ];
+
     // Search ALL tools with comprehensive matching
-    allTools.forEach((tool) => {
+    combinedTools.forEach((tool) => {
       const titleLower = tool.title.toLowerCase();
       const descLower = tool.description.toLowerCase();
       const catLower = tool.category.toLowerCase();
@@ -119,7 +132,7 @@ export function useSearchSuggestions(query: string, limit?: number) {
 
     // Get unique categories that match
     const uniqueCategories = new Map<string, number>();
-    allTools.forEach((tool) => {
+    combinedTools.forEach((tool) => {
       if (tool.category.toLowerCase().includes(queryLower)) {
         const catLower = tool.category.toLowerCase();
         const score = catLower === queryLower ? 1000 : 500;
