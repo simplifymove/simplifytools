@@ -56,11 +56,11 @@ class RestormerDeblurrer:
         """Load pre-trained Restormer model"""
         try:
             if RESTORMER_AVAILABLE:
-                print("✓ Restormer (SOTA CVPR2022) loaded")
+                print("[INFO] Restormer (SOTA CVPR2022) loaded")
             else:
-                print("✓ Using advanced traditional deblurring methods")
+                print("[INFO] Using advanced traditional deblurring methods")
         except Exception as e:
-            print(f"Note: Using traditional methods - {e}")
+            print(f"[INFO] Using traditional methods")
     
     def process_image(self, image_path, output_path, strength=1.0, iterations=1):
         """
@@ -309,11 +309,11 @@ def main():
             iterations=args.iterations
         )
         
-        print(f"✓ Image deblurred successfully: {args.output}")
-        print(f"  Mode: {args.mode} deblurring")
-        print(f"  Strength: {args.strength}x")
-        print(f"  Iterations: {args.iterations}")
-        print(f"  Using: {'Restormer (SOTA)' if RESTORMER_AVAILABLE else 'Advanced traditional methods'}")
+        print(f"[SUCCESS] Image deblurred successfully: {args.output}")
+        print(f"[INFO] Mode: {args.mode} deblurring")
+        print(f"[INFO] Strength: {args.strength}x")
+        print(f"[INFO] Iterations: {args.iterations}")
+        print(f"[INFO] Using: {'Restormer (SOTA)' if RESTORMER_AVAILABLE else 'Advanced traditional methods'}")
         
     except Exception as e:
         print(f"[ERROR] {str(e)}", file=sys.stderr)
