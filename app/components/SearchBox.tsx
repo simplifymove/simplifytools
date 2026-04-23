@@ -167,8 +167,8 @@ export function SearchBox({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className={`absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden ${
-              variant === 'hero' ? 'min-w-max md:w-full' : 'w-full'
+            className={`absolute left-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden ${
+              variant === 'hero' ? 'w-96 md:w-full' : 'w-96'
             }`}
           >
             <div className="max-h-96 overflow-y-auto">
