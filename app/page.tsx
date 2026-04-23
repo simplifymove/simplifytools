@@ -12,27 +12,14 @@ import {
 import { motion } from 'framer-motion';
 import { aiEditingTools, converterTools, aiWriteTools, videoTools } from './data/tools';
 import { HomeHeader } from './components/HomeHeader';
+import { SearchBox } from './components/SearchBox';
 import { Footer } from './components/Footer';
 
 export default function Home() {
   const router = useRouter();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchActive, setSearchActive] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (query: string) => {
-    if (query.trim()) {
-      router.push(`/all-tools?search=${encodeURIComponent(query)}`);
-    }
-  };
-
-  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch((e.target as HTMLInputElement).value);
-    }
-  };
 
   useEffect(() => {
     const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
@@ -339,17 +326,14 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
               >
-                <div className="relative group mb-4">
+                <div className="relative group mb-4 max-w-2xl">
                   <div className="absolute inset-0 bg-orange-500/20 rounded-full blur opacity-30 group-hover:opacity-50 transition duration-300" />
-                  <div className="relative flex items-center gap-3 px-6 py-4 bg-white rounded-full shadow-lg border border-gray-200">
-                    <Search size={20} className="text-gray-400" />
-                    <input
-                      type="text"
+                  <div className="relative">
+                    <SearchBox
                       placeholder="Search tools... (e.g., Remove background, Merge PDF)"
-                      className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500 font-medium"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyPress={handleSearchKeyPress}
+                      onSearch={(query) => router.push(`/all-tools?search=${encodeURIComponent(query)}`)}
+                      variant="hero"
+                      showSuggestions={true}
                     />
                   </div>
                 </div>
@@ -362,7 +346,7 @@ export default function Home() {
                   {['Remove background', 'Merge PDF', 'Convert JPG to PNG', 'Compress video'].map((tag, i) => (
                     <button
                       key={i}
-                      onClick={() => handleSearch(tag)}
+                      onClick={() => router.push(`/all-tools?search=${encodeURIComponent(tag)}`)}
                       className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-indigo-100 hover:text-indigo-700 transition"
                     >
                       {tag}

@@ -9,26 +9,13 @@ import {
   Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { SearchBox } from './SearchBox';
 
 export function HomeHeader() {
   const router = useRouter();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [showNotification, setShowNotification] = useState(true);
-
-  const handleSearch = (query: string) => {
-    if (query.trim()) {
-      router.push(`/all-tools?search=${encodeURIComponent(query)}`);
-    }
-  };
-
-  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch((e.target as HTMLInputElement).value);
-    }
-  };
 
   useEffect(() => {
     const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
@@ -158,18 +145,18 @@ export function HomeHeader() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200 shadow-sm"
+          className="bg-linear-to-r from-yellow-50 to-orange-50 border-b border-yellow-200 shadow-sm"
         >
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <AlertCircle size={20} className="text-orange-500 flex-shrink-0" />
+              <AlertCircle size={20} className="text-orange-500 shrink-0" />
               <p className="text-sm text-gray-700 text-center md:text-left">
                 🚧 We're currently improving some features. If you notice any issues, please report them—we appreciate your feedback!
               </p>
             </div>
             <button
               onClick={() => setShowNotification(false)}
-              className="flex-shrink-0 p-1 hover:bg-white/50 rounded-md transition-colors"
+              className="shrink-0 p-1 hover:bg-white/50 rounded-md transition-colors"
               aria-label="Close notification"
             >
               <X size={18} className="text-gray-600" />
@@ -275,19 +262,12 @@ export function HomeHeader() {
 
           {/* Search & CTA */}
           <div className="flex items-center gap-4">
-            <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-              searchActive ? 'bg-orange-50 border border-orange-200 shadow-lg shadow-orange-500/10' : 'bg-gray-50 border border-gray-200'
-            }`}>
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="text"
+            <div className="hidden sm:flex items-center w-64">
+              <SearchBox
                 placeholder="Search tools..."
-                className="bg-transparent outline-none text-sm w-32 text-gray-900 placeholder-gray-400"
-                onFocus={() => setSearchActive(true)}
-                onBlur={() => setSearchActive(false)}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleSearchKeyPress}
+                onSearch={(query) => router.push(`/all-tools?search=${encodeURIComponent(query)}`)}
+                variant="header"
+                showSuggestions={true}
               />
             </div>
 
