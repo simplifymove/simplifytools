@@ -2,7 +2,7 @@
 """
 Restormer-based Image Deblurring Engine (State-of-the-Art)
 CVPR 2022 - Transformer-based High-Resolution Image Restoration
-Supports motion deblurring, defocus deblurring, and enhancement
+Falls back to advanced traditional methods if deep learning unavailable
 """
 
 import argparse
@@ -10,18 +10,28 @@ import sys
 import os
 import cv2
 import numpy as np
-import torch
-import torch.nn.functional as F
 from pathlib import Path
 from PIL import Image
 
-# Fallback to advanced traditional methods if Restormer not available
+# Optional imports for deep learning (graceful fallback)
+TORCH_AVAILABLE = False
 RESTORMER_AVAILABLE = False
+
 try:
-    from basicsr.archs.restormer_arch import Restormer
-    RESTORMER_AVAILABLE = True
-except ImportError:
-    pass
+    import torch
+    import torch.nn.functional as F
+    TORCH_AVAILABLE = True
+except ImportError as e:
+    print(f"[INFO] PyTorch not available: {e}")
+    print("[INFO] Using advanced traditional deblurring methods")
+
+try:
+    if TORCH_AVAILABLE:
+        from basicsr.archs.restormer_arch import Restormer
+        RESTORMER_AVAILABLE = True
+except ImportError as e:
+    print(f"[INFO] Restormer not available: {e}")
+    print("[INFO] Using fallback advanced traditional methods")
 
 
 class RestormerDeblurrer:
@@ -38,7 +48,7 @@ class RestormerDeblurrer:
             model_type: 'motion' for motion deblurring, 'defocus' for defocus blur
         """
         self.model_type = model_type
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = 'cuda' if (TORCH_AVAILABLE and torch.cuda.is_available()) else 'cpu'
         self.model = None
         self._load_model()
     
@@ -46,9 +56,11 @@ class RestormerDeblurrer:
         """Load pre-trained Restormer model"""
         try:
             if RESTORMER_AVAILABLE:
-                print("✓ Restormer (SOTA CVPR2022) loaded - Transformer-based restoration")
+                print("✓ Restormer (SOTA CVPR2022) loaded")
+            else:
+                print("✓ Using advanced traditional deblurring methods")
         except Exception as e:
-            print(f"Note: Restormer not installed. Using advanced traditional methods.")
+            print(f"Note: Using traditional methods - {e}")
     
     def process_image(self, image_path, output_path, strength=1.0, iterations=1):
         """
@@ -59,21 +71,30 @@ class RestormerDeblurrer:
             strength: Deblurring strength (0.5-2.0)
             iterations: Number of iterative refinements
         """
-        # Load image
-        image = Image.open(image_path).convert('RGB')
-        img_np = np.array(image)
-        
-        # Use Restormer if available, otherwise advanced traditional
-        if RESTORMER_AVAILABLE and self.model is not None:
-            result = self._process_with_restormer(img_np, strength, iterations)
-        else:
-            result = self._process_with_advanced_traditional(
-                img_np, self.model_type, strength, iterations
-            )
-        
-        # Save result
-        Image.fromarray(result).save(output_path)
-        return result
+        try:
+            # Load image
+            image = Image.open(image_path).convert('RGB')
+            img_np = np.array(image)
+            
+            print(f"[DEBUG] Loaded image shape: {img_np.shape}, dtype: {img_np.dtype}")
+            
+            # Use Restormer if available, otherwise advanced traditional
+            if RESTORMER_AVAILABLE and self.model is not None:
+                result = self._process_with_restormer(img_np, strength, iterations)
+            else:
+                result = self._process_with_advanced_traditional(
+                    img_np, self.model_type, strength, iterations
+                )
+            
+            # Save result
+            Image.fromarray(result).save(output_path)
+            print(f"[DEBUG] Saved output to: {output_path}")
+            return result
+        except Exception as e:
+            print(f"[ERROR] In process_image: {str(e)}", file=sys.stderr)
+            import traceback
+            traceback.print_exc()
+            raise
     
     def _process_with_restormer(self, image, strength, iterations):
         """Process using Restormer model (when available)"""
@@ -255,14 +276,6 @@ class RestormerDeblurrer:
         return result
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='Restormer-based Image Deblurring (SOTA - CVPR 2022)'
-    )
-    parser.add_argument('--input', required=True, help='Input image path')
-    parser.add_argument('--output', required=True, help='Output image path')
-    parser.add_argument('--mode', default='motion',
-    
 def main():
     parser = argparse.ArgumentParser(
         description='Restormer-based Image Deblurring (SOTA - CVPR 2022)'
