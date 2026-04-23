@@ -143,6 +143,7 @@ function ToolsContent() {
                   onSearch={(query) => setSearchTerm(query)}
                   variant="header"
                   showSuggestions={true}
+                  limit={50}
                 />
               </div>
             </div>

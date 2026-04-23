@@ -268,6 +268,7 @@ export function HomeHeader() {
                 onSearch={(query) => router.push(`/all-tools?search=${encodeURIComponent(query)}`)}
                 variant="header"
                 showSuggestions={true}
+                limit={10}
               />
             </div>
 

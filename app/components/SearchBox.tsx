@@ -13,6 +13,7 @@ interface SearchBoxProps {
   showSuggestions?: boolean;
   variant?: 'header' | 'hero';
   onClose?: () => void;
+  limit?: number;
 }
 
 export function SearchBox({
@@ -22,6 +23,7 @@ export function SearchBox({
   showSuggestions = true,
   variant = 'header',
   onClose,
+  limit,
 }: SearchBoxProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +31,7 @@ export function SearchBox({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { suggestions, addRecentSearch } = useSearchSuggestions(query);
+  const { suggestions, addRecentSearch } = useSearchSuggestions(query, limit);
   const displayedSuggestions = showSuggestions ? suggestions : [];
 
   // Close on outside click

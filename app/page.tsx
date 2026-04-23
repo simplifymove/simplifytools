@@ -334,6 +334,7 @@ export default function Home() {
                       onSearch={(query) => router.push(`/all-tools?search=${encodeURIComponent(query)}`)}
                       variant="hero"
                       showSuggestions={true}
+                      limit={15}
                     />
                   </div>
                 </div>
