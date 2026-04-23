@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { allTools } from '@/app/data/tools';
 import { getAllPdfTools } from '@/app/lib/pdf-tools';
 import { getAllTools as getAllCodeTools } from '@/app/lib/code-tools';
+import { aiWriteTools } from '@/app/lib/ai-tools';
 
 export interface SearchSuggestion {
   id: string;
@@ -50,7 +51,7 @@ export function useSearchSuggestions(query: string, limit?: number) {
     const isToolName = query.length > 2 && !queryLower.includes('how') && !queryLower.includes('what');
     const isActionBased = queryLower.includes('to ') || queryLower.includes('convert') || queryLower.includes('remove') || queryLower.includes('compress') || queryLower.includes('resize');
 
-    // Combine all tools (regular + PDF tools + Code tools) for comprehensive search
+    // Combine all tools (regular + PDF + Code + AI Write tools) for comprehensive search
     const combinedTools = [
       ...allTools,
       ...getAllPdfTools().map(pdfTool => ({
@@ -66,6 +67,13 @@ export function useSearchSuggestions(query: string, limit?: number) {
         description: codeTool.description,
         category: 'Code Tools', // Code tools category
         route: `/all-tools/code`, // Code tools route
+      })),
+      ...Object.values(aiWriteTools).map(aiTool => ({
+        id: aiTool.id,
+        title: aiTool.title,
+        description: aiTool.description,
+        category: 'AI Write', // AI Write tools category
+        route: `/all-tools/ai-tools`, // AI tools route
       })),
     ];
 
