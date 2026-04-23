@@ -99,7 +99,15 @@ export function useSearchSuggestions(query: string, limit?: number) {
       // ===== WORD-BY-WORD MATCHING =====
       if (score === 0 && queryWords.length > 0) {
         const titleWords = titleLower.split(/\s+/);
-        const matchedWords = queryWords.filter(qw => titleWords.some(tw => tw.includes(qw)));
+        const matchedWords = queryWords.filter(qw => {
+          // Try exact match first
+          if (titleWords.some(tw => tw.includes(qw))) return true;
+          
+          // Try singular/plural variation (strip 's' for matching)
+          const singular = qw.endsWith('s') ? qw.slice(0, -1) : qw;
+          const plural = qw.endsWith('s') ? qw : qw + 's';
+          return titleWords.some(tw => tw.includes(singular) || tw.includes(plural));
+        });
         if (matchedWords.length > 0) {
           score = 2500 + (matchedWords.length * 100);
         }
@@ -107,7 +115,15 @@ export function useSearchSuggestions(query: string, limit?: number) {
 
       // ===== DESCRIPTION MATCHING =====
       if (score < 2000) {
-        if (queryWords.length > 0 && queryWords.every(w => descLower.includes(w))) {
+        // Check for singular/plural variations in description
+        const descWords = descLower.split(/\s+/);
+        const queryMatchesDesc = queryWords.every(qw => {
+          const singular = qw.endsWith('s') ? qw.slice(0, -1) : qw;
+          const plural = qw.endsWith('s') ? qw : qw + 's';
+          return descWords.some(dw => dw.includes(singular) || dw.includes(plural));
+        });
+
+        if (queryMatchesDesc) {
           score = Math.max(score, 1500);
         } else if (descLower.includes(queryLower)) {
           score = Math.max(score, 1000);
