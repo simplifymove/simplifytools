@@ -83,11 +83,12 @@ async function upscaleWithRealESRGAN(
 
     // Use virtual environment Python
     const venvPython = path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
+    const linuxVenvPython = '/var/www/simplifyconvertapp/venv/bin/python';
     const pythonExe = process.platform === 'win32' && existsSync(venvPython)
       ? venvPython
       : process.platform === 'win32' 
         ? 'python'
-        : '/usr/bin/python3';
+        : linuxVenvPython;
     
     const spawnEnv = {
       ...process.env,

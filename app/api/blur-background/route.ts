@@ -48,7 +48,7 @@ export async function POST(request: Request): Promise<Response> {
 
     // Build command
     const portraitFlag = portraitMode ? "--portrait" : "";
-    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
     const command = `${pythonExe} blur_background.py --input "${inputFile}" --output "${outputFile}" --blur ${blurStrength} --feather ${featherRadius} ${portraitFlag}`;
     
     console.log(`[API] Executing command: ${command}`);

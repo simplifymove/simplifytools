@@ -33,7 +33,7 @@ async function runPythonEngine(
       JSON.stringify(options),
     ];
 
-    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
     
     // Build environment with Python-specific variables
     const spawnEnv = {

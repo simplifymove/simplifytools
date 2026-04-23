@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Build command
     const pythonScript = path.join(process.cwd(), 'profile_photo_maker.py');
-    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
     let command = `${pythonExe} "${pythonScript}" --input "${inputImagePath}" --output "${outputImagePath}" --bg ${bgType} --size ${outputSize}`;
     
     if (bgType === 'gradient') {

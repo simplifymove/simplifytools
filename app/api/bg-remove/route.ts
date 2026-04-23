@@ -72,7 +72,7 @@ except Exception as e:
     await fs.writeFile(pythonScript, pythonCode);
     console.log(`[bg-remove] Processing with ${model} model (HQ: ${hqMode})`);
     
-    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
     const { stdout, stderr } = await execAsync(`${pythonExe} "${pythonScript}"`, { 
       timeout: 120000, 
       maxBuffer: 50 * 1024 * 1024

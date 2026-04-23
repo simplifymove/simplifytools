@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     // Use system python directly on VPS for access to installed packages
     let pythonExe = process.platform === 'win32' 
       ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
-      : '/usr/bin/python3';  // Use system python directly on Linux/VPS
+      : '/var/www/simplifyconvertapp/venv/bin/python';  // Use venv on Linux/VPS
     
     // On Windows dev, try venv first
     if (process.platform === 'win32' && fs.existsSync(path.join(process.cwd(), '.venv', 'Scripts', 'python.exe'))) {

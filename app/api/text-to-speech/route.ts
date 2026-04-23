@@ -196,7 +196,7 @@ else:
     try {
       console.log(`[TTS Edge] Processing: ${language} - Voice: ${selectedVoice} - Emotion: ${emotion} - Text length: ${text.length}`);
 
-      const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+      const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
       const { stdout, stderr } = await execAsync(
         `${pythonExe} "${scriptPath}"`,
         { timeout: 60000, maxBuffer: 1024 * 1024 * 10 }

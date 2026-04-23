@@ -7,5 +7,8 @@ numpy>=1.24.0
 rembg>=2.0.72
 onnxruntime>=1.16.0
 
+# Text-to-Speech
+edge_tts>=6.1.1
+
 # Note: Real-ESRGAN is optional for upscaling
 # Install manually if needed: pip install torch realesrgan basicsr

@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
       console.log(`[DEBUG] Spawning Python: ${pythonScript}`);
       console.log(`[DEBUG] Args: tool=${tool}, inputFile=${inputFile}, outputFile=${outputFile}`);
       
-      const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+      const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
       
       // Prepare environment with Python-specific variables
       const spawnEnv = {

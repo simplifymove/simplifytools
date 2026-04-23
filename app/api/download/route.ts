@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
           // Use spawn with URL passed as a direct argument (no batch file)
           // This avoids file path encoding issues entirely
           // OPTIMIZATION: MAXIMUM SPEED - 32 parallel, minimal timeout, smallest format
-          const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+          const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
           
           // Prepare environment with Python-specific variables
           const spawnEnv = {

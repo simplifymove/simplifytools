@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Call Python script
     const pythonScript = path.join(process.cwd(), 'remove_object.py');
-    const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
     const command = `${pythonExe} "${pythonScript}" --input "${inputImagePath}" --mask "${inputMaskPath}" --output "${outputImagePath}" --method ${method} --radius ${radius}`;
 
     try {

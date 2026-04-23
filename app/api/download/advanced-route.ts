@@ -103,7 +103,7 @@ function downloadWithYtDlp(url: string): Promise<{ filePath: string; fileName: s
       const urlFilePathFormatted = urlFilePath.replace(/\\/g, '/');
 
       // Use --batch-file to read URLs from file (avoids encoding issues)
-      const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+      const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
       
       // Prepare environment with Python-specific variables
       const spawnEnv = {
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
 
       try {
         // Check if yt-dlp is available
-        const pythonExe = process.platform === 'win32' ? 'python' : '/usr/bin/python3';
+        const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
         
         // Prepare environment with Python-specific variables
         const spawnEnv = {
