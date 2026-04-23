@@ -73,25 +73,37 @@ class PdfCoreEngine:
             pdf = PyPDF2.PdfReader(pdf_path)
             total_pages = len(pdf.pages)
             pages_to_split = []
+            skipped_pages = []
             
             if mode == 'all':
                 pages_to_split = list(range(len(pdf.pages)))
             elif mode == 'range' and page_range:
                 # Parse range like "1-5" or "1,3,5"
+                all_requested = []
                 for part in page_range.split(','):
                     if '-' in part:
                         start, end = map(int, part.split('-'))
-                        pages_to_split.extend(range(start-1, end))
+                        all_requested.extend(range(start, end+1))
                     else:
-                        pages_to_split.append(int(part)-1)
+                        all_requested.append(int(part))
                 
-                # Validate page numbers are within range
-                invalid_pages = [p+1 for p in pages_to_split if p >= total_pages]
-                if invalid_pages:
-                    raise Exception(f"PDF has only {total_pages} pages, but requested pages {invalid_pages} are out of range")
+                # Separate valid and invalid pages
+                for page_num in all_requested:
+                    if page_num > 0 and page_num <= total_pages:
+                        pages_to_split.append(page_num - 1)  # Convert to 0-based
+                    else:
+                        skipped_pages.append(page_num)
                 
-                # Filter out any negative indices or duplicates
-                pages_to_split = sorted(set(p for p in pages_to_split if p >= 0))
+                # Remove duplicates and sort
+                pages_to_split = sorted(set(pages_to_split))
+                
+                # If no valid pages, raise error
+                if not pages_to_split:
+                    raise Exception(f"No valid pages found. PDF has {total_pages} pages, but requested {skipped_pages}")
+                
+                # Log skipped pages for frontend warning
+                if skipped_pages:
+                    print(f"[WARNING] Skipping out-of-range pages: {skipped_pages} (PDF has only {total_pages} pages)")
                 
             elif mode == 'every_n':
                 pages_to_split = list(range(0, len(pdf.pages), every_n))
