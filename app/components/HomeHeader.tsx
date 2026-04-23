@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { 
   FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
-  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download
+  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -16,6 +16,7 @@ export function HomeHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showNotification, setShowNotification] = useState(true);
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -150,6 +151,33 @@ export function HomeHeader() {
 
   return (
     <>
+      {/* TOP NOTIFICATION BAR */}
+      {showNotification && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200 shadow-sm"
+        >
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <AlertCircle size={20} className="text-orange-500 flex-shrink-0" />
+              <p className="text-sm text-gray-700 text-center md:text-left">
+                🚧 We're currently improving some features. If you notice any issues, please report them—we appreciate your feedback!
+              </p>
+            </div>
+            <button
+              onClick={() => setShowNotification(false)}
+              className="flex-shrink-0 p-1 hover:bg-white/50 rounded-md transition-colors"
+              aria-label="Close notification"
+            >
+              <X size={18} className="text-gray-600" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* NAVBAR */}
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${
