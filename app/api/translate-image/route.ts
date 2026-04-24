@@ -97,7 +97,12 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     // Call Python script for OCR and translation
     const pythonScript = path.join(process.cwd(), 'python', 'translate_image_engine.py');
-    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
+    // Use venv Python on both Windows and Linux
+    const venvPython = process.platform === 'win32'
+      ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
+      : '/var/www/simplifyconvertapp/venv/bin/python';
+    
+    const pythonExe = fs.existsSync(venvPython) ? venvPython : 'python';
 
     try {
       await spawnPythonProcess(
