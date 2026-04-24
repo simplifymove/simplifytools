@@ -31,6 +31,7 @@ export default function CodeToolPage() {
   const [tool, setTool] = useState<CodeTool | null>(null);
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
+  const [previewContent, setPreviewContent] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -96,11 +97,19 @@ export default function CodeToolPage() {
           setError('✗ ' + result.message);
         }
         setOutput(JSON.stringify(result, null, 2));
+        setPreviewContent(null);
+      } else if (tool?.outputMode === 'preview') {
+        // Preview mode (for QR codes, images, etc.)
+        setPreviewContent(data.result);
+        setOutput('');
+        setSuccess('✓ Done');
       } else if (typeof data.result === 'string') {
         setOutput(data.result);
+        setPreviewContent(null);
         setSuccess('✓ Done');
       } else {
         setOutput(JSON.stringify(data.result, null, 2));
+        setPreviewContent(null);
         setSuccess('✓ Done');
       }
     } catch (err) {
@@ -117,6 +126,7 @@ export default function CodeToolPage() {
   const handleClear = () => {
     setInput('');
     setOutput('');
+    setPreviewContent(null);
     setError('');
     setSuccess('');
   };
@@ -397,31 +407,51 @@ export default function CodeToolPage() {
                 <h2 className="text-xl font-bold text-gray-900">Output</h2>
               </div>
 
-              <textarea
-                className="w-full h-80 p-4 border border-gray-300 rounded-lg font-mono text-sm bg-gray-50 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                readOnly
-                value={output}
-                placeholder="Output will appear here..."
-              />
-
-              {output && (
-                <div className="mt-4 flex gap-3">
-                  <button
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium duration-0 flex items-center justify-center gap-2"
-                    onClick={handleCopy}
-                  >
-                    <Copy size={16} />
-                    Copy
-                  </button>
-
-                  <button
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium duration-0 flex items-center justify-center gap-2"
-                    onClick={handleDownload}
-                  >
-                    <Download size={16} />
-                    Download
-                  </button>
+              {/* Preview Mode - Display Image/HTML */}
+              {tool?.outputMode === 'preview' && previewContent ? (
+                <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-6 min-h-80">
+                  {previewContent.result ? (
+                    <img 
+                      src={previewContent.result} 
+                      alt="Generated output"
+                      className="max-w-full h-auto"
+                    />
+                  ) : (
+                    <div className="text-gray-500 text-center">
+                      {typeof previewContent === 'string' ? previewContent : 'Preview not available'}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <>
+                  {/* Text Mode - Display Textarea */}
+                  <textarea
+                    className="w-full h-80 p-4 border border-gray-300 rounded-lg font-mono text-sm bg-gray-50 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                    readOnly
+                    value={output}
+                    placeholder="Output will appear here..."
+                  />
+
+                  {output && (
+                    <div className="mt-4 flex gap-3">
+                      <button
+                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium duration-0 flex items-center justify-center gap-2"
+                        onClick={handleCopy}
+                      >
+                        <Copy size={16} />
+                        Copy
+                      </button>
+
+                      <button
+                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium duration-0 flex items-center justify-center gap-2"
+                        onClick={handleDownload}
+                      >
+                        <Download size={16} />
+                        Download
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </motion.div>
 
