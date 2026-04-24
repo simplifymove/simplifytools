@@ -243,6 +243,7 @@ export async function POST(request: NextRequest) {
             '--no-warnings',
             '--quiet',
             '--force-ipv4',                  // IPv4 only (faster on most networks)
+            '--js-runtimes', 'node',         // Use Node.js to solve YouTube JS challenges (CRITICAL for VPS)
           ];
           
           // Add cookies for authentication if available (helps with VPS/datacenter IPs)

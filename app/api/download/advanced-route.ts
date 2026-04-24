@@ -139,6 +139,7 @@ function downloadWithYtDlp(url: string, format?: string): Promise<{ filePath: st
         outputTemplateFormatted,
         '--no-warnings',
         '--quiet',
+        '--js-runtimes', 'node',           // Use Node.js to solve YouTube JS challenges (CRITICAL for VPS)
       ];
       
       // Add cookies for authentication if available (helps with VPS/datacenter IPs)

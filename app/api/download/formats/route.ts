@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
         '-m',
         'yt_dlp',
         '--dump-json',
+        '--js-runtimes', 'node',           // Use Node.js to solve YouTube JS challenges (CRITICAL for VPS)
       ];
       
       // Add cookies for authentication if available (helps with VPS/datacenter IPs)
