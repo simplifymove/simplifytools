@@ -110,8 +110,17 @@ function downloadWithYtDlp(url: string, format?: string): Promise<{ filePath: st
       const spawnEnv = {
         ...process.env,
         PYTHONDONTWRITEBYTECODE: '1',
-        PYTHONHOME: '/usr',  // System Python home for VPS
       } as any;
+      
+      // CRITICAL: Clean environment to prevent Python path conflicts
+      delete spawnEnv.PYTHONHOME;
+      delete spawnEnv.PYTHONPATH_original;
+      delete spawnEnv.PYTHONPATH;
+      
+      // Set PYTHONHOME only if Linux
+      if (process.platform !== 'win32') {
+        spawnEnv.PYTHONHOME = '/usr';
+      }
       
       // Explicitly set PYTHONPATH for VPS deployment
       if (process.platform !== 'win32') {
@@ -282,8 +291,17 @@ export async function POST(request: NextRequest) {
         const spawnEnv = {
           ...process.env,
           PYTHONDONTWRITEBYTECODE: '1',
-          PYTHONHOME: '/usr',  // System Python home for VPS
         } as any;
+        
+        // CRITICAL: Clean environment to prevent Python path conflicts
+        delete spawnEnv.PYTHONHOME;
+        delete spawnEnv.PYTHONPATH_original;
+        delete spawnEnv.PYTHONPATH;
+        
+        // Set PYTHONHOME only if Linux
+        if (process.platform !== 'win32') {
+          spawnEnv.PYTHONHOME = '/usr';
+        }
         
         // Explicitly set PYTHONPATH for VPS deployment
         if (process.platform !== 'win32') {

@@ -95,6 +95,11 @@ async function upscaleWithRealESRGAN(
       PYTHONUNBUFFERED: '1',
       PYTHONDONTWRITEBYTECODE: '1',
     } as any;
+    
+    // CRITICAL: Clean environment to prevent Python path conflicts
+    delete spawnEnv.PYTHONHOME;
+    delete spawnEnv.PYTHONPATH_original;
+    delete spawnEnv.PYTHONPATH;
 
     // Set PYTHONPATH for Linux deployments
     if (process.platform !== 'win32') {

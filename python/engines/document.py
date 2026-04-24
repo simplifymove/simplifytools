@@ -47,17 +47,10 @@ def convert_psd_to_image(input_file: str, output_file: str, output_format: str, 
     try:
         quality = options.get('quality', 85)
         
-        # Use ImageMagick convert command with proper PSD handling
-        # PSD format needs explicit prefix, quality goes after input, and we flatten layers
-        cmd = [
-            'convert',
-            f'"{input_file}"[0]',  # PSD:input[0] gets first layer, quoted for spaces
-            '-flatten',  # Flatten all layers
-            '-quality', str(quality),  # Quality flag with proper spacing
-            f'"{output_file}"'  # Output quoted for spaces
-        ]
+        # Use ImageMagick magick command - simple direct conversion
+        # ImageMagick handles PSD format and layer merging automatically
+        cmd_str = f'magick "{input_file}" -quality {quality} "{output_file}"'
         
-        cmd_str = ' '.join(cmd)
         logger.info(f"[DocumentEngine-PSD] Executing: {cmd_str}")
         result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
         
@@ -85,17 +78,10 @@ def convert_psd_to_svg(input_file: str, output_file: str, options) -> bool:
         quality = options.get('quality', 85)
         temp_png = os.path.join(tempfile.gettempdir(), f'psd_temp_{id(input_file)}.png')
         
-        # Build proper ImageMagick command for PSD
-        # Input[0] selects first layer, -flatten merges layers, -quality goes after input
-        cmd_img = [
-            'convert',
-            f'"{input_file}"[0]',  # PSD file, first layer, quoted for spaces
-            '-flatten',  # Flatten layers
-            '-quality', str(quality),  # Quality as separate argument
-            f'"{temp_png}"'  # Output quoted for spaces
-        ]
+        # Build simple ImageMagick command for PSD
+        # ImageMagick handles PSD format and layer merging automatically
+        cmd_str = f'magick "{input_file}" -quality {quality} "{temp_png}"'
         
-        cmd_str = ' '.join(cmd_img)
         logger.info(f"[DocumentEngine-PSD-SVG Step1] Rasterizing: {cmd_str}")
         result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
         
@@ -125,18 +111,10 @@ def convert_psd_to_svg(input_file: str, output_file: str, options) -> bool:
         corner_thresh = options.get('corner_threshold', 100)
         curve_opt = options.get('curve_optimize', 2)
         
-        cmd_trace = [
-            'potrace',
-            f'"{temp_png}"',  # Input quoted for spaces
-            '-s',  # SVG output
-            '-o', f'"{output_file}"',  # Output quoted for spaces
-            '-t', str(corner_thresh),  # Corner threshold
-            '-O', str(curve_opt),  # Curve optimization
-        ]
+        cmd_str = f'potrace \"{temp_png}\" -s -o \"{output_file}\" -t {corner_thresh} -O {curve_opt}'
         
-        cmd_str = ' '.join(cmd_trace)
         logger.info(f"[DocumentEngine-PSD-SVG Step3] Vectorizing: {cmd_str}")
-        result = subprocess.run(cmd_str, capture_output=True, text=True, timeout=120)
+        result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
         
         if result.returncode != 0:
             raise RuntimeError(f"Potrace vectorization failed: {result.stderr}")

@@ -137,6 +137,12 @@ export async function POST(request: Request): Promise<Response> {
 
     // Execute Python script safely with execFile
     const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
+    
+    // CRITICAL: Clean environment to prevent Python path conflicts
+    const cleanEnv = { ...process.env };
+    delete cleanEnv.PYTHONHOME;
+    delete cleanEnv.PYTHONPATH;
+    
     return new Promise((resolve) => {
       execFile(
         pythonExe,
@@ -145,6 +151,7 @@ export async function POST(request: Request): Promise<Response> {
           timeout: 600000, // 10 min timeout
           maxBuffer: 100 * 1024 * 1024, // 100MB buffer
           cwd: process.cwd(),
+          env: cleanEnv,
         },
         (error, stdout, stderr) => {
           try {
