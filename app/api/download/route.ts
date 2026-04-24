@@ -35,6 +35,26 @@ type DownloadResult =
     };
 
 // ============================================================================
+// RATE LIMITING
+// ============================================================================
+
+let lastYouTubeDownloadTime = 0;
+const YOUTUBE_DOWNLOAD_COOLDOWN_MS = 5000; // 5 seconds between YouTube downloads
+
+async function enforceYouTubeCooldown(): Promise<void> {
+  const now = Date.now();
+  const timeSinceLastDownload = now - lastYouTubeDownloadTime;
+
+  if (timeSinceLastDownload < YOUTUBE_DOWNLOAD_COOLDOWN_MS) {
+    const waitTime = YOUTUBE_DOWNLOAD_COOLDOWN_MS - timeSinceLastDownload;
+    console.log(`[rate-limit] Waiting ${waitTime}ms before next YouTube download`);
+    await new Promise((resolve) => setTimeout(resolve, waitTime));
+  }
+
+  lastYouTubeDownloadTime = Date.now();
+}
+
+// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
@@ -199,6 +219,10 @@ async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadRe
     '3',
     '--socket-timeout',
     '30',
+    '--sleep-interval',
+    '2',
+    '--max-sleep-interval',
+    '5',
     '--user-agent',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
     '-f',
@@ -459,6 +483,10 @@ export async function POST(request: NextRequest) {
     // Normalize YouTube URLs (remove playlist params, etc)
     if (isYouTubeUrl(url)) {
       url = normalizeYoutubeUrl(url);
+      
+      // Enforce rate limiting for YouTube downloads
+      console.log('[download] Enforcing YouTube cooldown (5 seconds)');
+      await enforceYouTubeCooldown();
     }
 
     console.log('[download] Request for URL:', new URL(url).hostname);

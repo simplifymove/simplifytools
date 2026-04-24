@@ -64,17 +64,26 @@ export default function SaveFromOnline() {
   const [showFormats, setShowFormats] = useState(false);
   const [isYoutube, setIsYoutube] = useState(false);
 
-  const handleFetchFormats = async () => {
-    if (!url.trim()) {
-      setError('Please enter a URL');
-      return;
-    }
-
-    // Check if YouTube URL
-    if (isYoutubeUrl(url)) {
+  // Handle URL input change - auto-detect YouTube and show options
+  const handleUrlChange = (value: string) => {
+    setUrl(value);
+    
+    // Auto-detect YouTube and show options immediately
+    if (isYoutubeUrl(value)) {
       setIsYoutube(true);
       setShowFormats(true);
       setSelectedFormat(youtubeVideoOptions[0].value);
+    } else {
+      setIsYoutube(false);
+      setShowFormats(false);
+      setFormats([]);
+      setSelectedFormat('');
+    }
+  };
+
+  const handleFetchFormats = async () => {
+    if (!url.trim()) {
+      setError('Please enter a URL');
       return;
     }
 
@@ -83,7 +92,6 @@ export default function SaveFromOnline() {
     setError('');
     setFormats([]);
     setSelectedFormat('');
-    setIsYoutube(false);
 
     try {
       const response = await fetch('/api/download/formats', {
@@ -237,22 +245,22 @@ export default function SaveFromOnline() {
                 <input
                   type="url"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  onChange={(e) => handleUrlChange(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleDownload()}
                   placeholder="https://youtube.com/watch?v=... or any direct file URL"
                   className="w-full px-5 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 placeholder-gray-500"
                 />
                 <p className="text-xs text-green-600 mt-2">
-                  ✓ Supports YouTube, TikTok, Instagram, Facebook, Twitter, Vimeo, and direct file URLs
+                  ✓ YouTube URLs auto-detect quality options instantly
                 </p>
               </div>
 
-              {!showFormats && (
+              {!showFormats && !isYoutube && (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleFetchFormats}
-                  disabled={fetchingFormats}
+                  disabled={fetchingFormats || !url.trim()}
                   className="w-full bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 text-base shadow-lg"
                 >
                   {fetchingFormats ? <Loader2 className="animate-spin" size={20} /> : <Globe size={20} />}
