@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, ChevronRight, Loader, Zap } from 'lucide-react';
+import { Download, ChevronRight, Loader, Zap, FileText, X } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
@@ -22,11 +22,9 @@ export default function PsdToSvgPage() {
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
     setError(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(selectedFile);
+    // PSD files can't be displayed as images, so don't set preview
+    // Just acknowledge the file is selected
+    setPreview('psd-selected');
   };
 
   const handleClearPreview = () => {
@@ -123,12 +121,37 @@ export default function PsdToSvgPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload PSD File</h2>
-                  <ImageUploader
-                    onFileSelect={handleFileSelect}
-                    preview={preview}
-                    onClearPreview={handleClearPreview}
-                    accept=".psd"
-                  />
+                  
+                  {!file ? (
+                    <ImageUploader
+                      onFileSelect={handleFileSelect}
+                      preview={null}
+                      onClearPreview={handleClearPreview}
+                      accept=".psd"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="relative p-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200 w-full">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="p-4 bg-blue-100 rounded-lg">
+                            <FileText className="w-12 h-12 text-blue-600" />
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600">Selected File</p>
+                            <p className="font-semibold text-gray-900 break-all">{file.name}</p>
+                            <p className="text-xs text-gray-500 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleClearPreview}
+                          className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
                   {file && (
                     <p className="mt-4 text-sm text-gray-600">
                       File: <span className="font-semibold text-gray-900">{file.name}</span>
