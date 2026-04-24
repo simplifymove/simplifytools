@@ -159,6 +159,31 @@ export default function CodeToolPage() {
     }
   };
 
+  // Download preview (for images like QR codes)
+  const handleDownloadPreview = async () => {
+    try {
+      if (!previewContent?.result) {
+        setError('Nothing to download');
+        return;
+      }
+
+      const imageUrl = previewContent.result;
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      const element = document.createElement('a');
+      element.href = URL.createObjectURL(blob);
+      element.download = `${slug}-result.png`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      setSuccess('✓ Downloaded');
+      setTimeout(() => setSuccess(''), 2000);
+    } catch {
+      setError('Failed to download');
+    }
+  };
+
   if (!tool) {
     return (
       <>
@@ -411,11 +436,22 @@ export default function CodeToolPage() {
               {tool?.outputMode === 'preview' && previewContent ? (
                 <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-6 min-h-80">
                   {previewContent.result ? (
-                    <img 
-                      src={previewContent.result} 
-                      alt="Generated output"
-                      className="max-w-full h-auto"
-                    />
+                    <>
+                      <img 
+                        src={previewContent.result} 
+                        alt="Generated output"
+                        className="max-w-full h-auto"
+                      />
+                      <div className="mt-6 flex gap-3 w-full justify-center">
+                        <button
+                          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium duration-0 flex items-center justify-center gap-2"
+                          onClick={handleDownloadPreview}
+                        >
+                          <Download size={16} />
+                          Download
+                        </button>
+                      </div>
+                    </>
                   ) : (
                     <div className="text-gray-500 text-center">
                       {typeof previewContent === 'string' ? previewContent : 'Preview not available'}
