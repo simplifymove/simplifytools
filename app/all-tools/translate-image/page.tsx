@@ -4,8 +4,17 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
-import { Download, ChevronRight, Globe, Plus, X } from 'lucide-react';
+import { Download, ChevronRight, Globe, Plus, X, Loader } from 'lucide-react';
 import { Footer } from '../../components/Footer';
+
+interface DetectedText {
+  id: string;
+  original: string;
+  translated: string;
+  x: number;
+  y: number;
+  confidence: number;
+}
 
 interface TextOverlay {
   id: string;
@@ -36,15 +45,15 @@ export default function TranslateImagePage() {
   const [preview, setPreview] = useState<string>('');
   const [sourceLanguage, setSourceLanguage] = useState('en');
   const [targetLanguage, setTargetLanguage] = useState('es');
-  const [translationText, setTranslationText] = useState('');
-  const [newTranslationText, setNewTranslationText] = useState('');
+  const [detectedTexts, setDetectedTexts] = useState<DetectedText[]>([]);
   const [overlays, setOverlays] = useState<TextOverlay[]>([]);
   const [selectedOverlayId, setSelectedOverlayId] = useState<string | null>(null);
-  const [fontSize, setFontSize] = useState(24);
-  const [textColor, setTextColor] = useState('#000000');
+  const [fontSize, setFontSize] = useState(20);
+  const [textColor, setTextColor] = useState('#FFFFFF');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string>('');
+  const [ocrProcessing, setOcrProcessing] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -52,6 +61,7 @@ export default function TranslateImagePage() {
     setFile(selectedFile);
     setError('');
     setResult(null);
+    setDetectedTexts([]);
     setOverlays([]);
 
     const reader = new FileReader();
@@ -65,27 +75,70 @@ export default function TranslateImagePage() {
     setFile(null);
     setPreview('');
     setResult(null);
+    setDetectedTexts([]);
     setOverlays([]);
   };
 
-  const addTranslationOverlay = () => {
-    if (!newTranslationText.trim()) {
-      setError('Please enter translation text');
+  const performOCR = async () => {
+    if (!file) {
+      setError('Please upload an image first');
       return;
     }
 
-    const newOverlay: TextOverlay = {
-      id: String(Date.now()),
-      text: newTranslationText,
-      x: 50,
-      y: 50 + overlays.length * 40,
-      fontSize,
-      color: textColor,
-    };
-
-    setOverlays([...overlays, newOverlay]);
-    setNewTranslationText('');
+    setOcrProcessing(true);
     setError('');
+    setDetectedTexts([]);
+    setOverlays([]);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('sourceLanguage', sourceLanguage);
+      formData.append('targetLanguage', targetLanguage);
+
+      const response = await fetch('/api/translate-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Convert API response to DetectedText format
+      const detectedItems: DetectedText[] = (data.translations || []).map(
+        (translation: any, index: number) => ({
+          id: String(index),
+          original: translation.original,
+          translated: translation.translated || translation.original,
+          x: translation.x,
+          y: translation.y,
+          confidence: translation.confidence,
+        })
+      );
+
+      setDetectedTexts(detectedItems);
+
+      // Create initial overlays for detected text
+      const initialOverlays: TextOverlay[] = detectedItems.map((item, idx) => ({
+        id: String(idx),
+        text: item.translated,
+        x: item.x,
+        y: item.y,
+        fontSize,
+        color: textColor,
+      }));
+      setOverlays(initialOverlays);
+    } catch (err) {
+      setError('OCR failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      setDetectedTexts([]);
+      setOverlays([]);
+    } finally {
+      setOcrProcessing(false);
+    }
   };
 
   const removeOverlay = (id: string) => {
@@ -97,25 +150,6 @@ export default function TranslateImagePage() {
 
   const updateOverlay = (id: string, updates: Partial<TextOverlay>) => {
     setOverlays(overlays.map((o) => (o.id === id ? { ...o, ...updates } : o)));
-  };
-
-  const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (overlays.length === 0) return;
-    const canvas = previewCanvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Find if clicked on any overlay (approximate)
-    for (let i = overlays.length - 1; i >= 0; i--) {
-      const overlay = overlays[i];
-      if (x >= overlay.x && x <= overlay.x + 200 && y >= overlay.y - 20 && y <= overlay.y + 10) {
-        setSelectedOverlayId(overlay.id);
-        break;
-      }
-    }
   };
 
   const drawPreview = () => {
@@ -138,7 +172,15 @@ export default function TranslateImagePage() {
       overlays.forEach((overlay) => {
         ctx.font = `${overlay.fontSize}px Arial`;
         ctx.fillStyle = overlay.color;
+        
+        // Add text shadow for better visibility
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 3;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
+        
         ctx.fillText(overlay.text, overlay.x, overlay.y);
+        ctx.shadowColor = 'transparent';
 
         // Draw selection box if selected
         if (overlay.id === selectedOverlayId) {
@@ -154,7 +196,7 @@ export default function TranslateImagePage() {
 
   const generateImage = async () => {
     if (!file || !preview || overlays.length === 0) {
-      setError('Please upload an image and add at least one translation');
+      setError('Please upload an image and run OCR with translations');
       return;
     }
 
@@ -175,11 +217,19 @@ export default function TranslateImagePage() {
 
         ctx.drawImage(img, 0, 0);
 
-        // Draw overlays
+        // Draw overlays at original resolution
         overlays.forEach((overlay) => {
           ctx.font = `${overlay.fontSize}px Arial`;
           ctx.fillStyle = overlay.color;
+          
+          // Add text shadow
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+          ctx.shadowBlur = 3;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          
           ctx.fillText(overlay.text, overlay.x, overlay.y);
+          ctx.shadowColor = 'transparent';
         });
 
         canvas.toBlob(
@@ -227,7 +277,7 @@ export default function TranslateImagePage() {
       <HomeHeader />
 
       {/* Hero Header */}
-      <div className="bg-orange-500 overflow-hidden">
+      <div className="bg-blue-600 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
           <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
             <Link href="/" className="hover:text-white transition">Home</Link>
@@ -240,7 +290,7 @@ export default function TranslateImagePage() {
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Translate Image</h1>
               <p className="text-white/90 text-lg">
-                Add translated text overlays to your images
+                Automatically detect text in images and translate it
               </p>
             </div>
             <div className="bg-white/20 rounded-2xl p-4 shadow-lg hidden md:block">
@@ -256,8 +306,13 @@ export default function TranslateImagePage() {
           {/* Left Section - Upload */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Upload Image</h2>
-              <ImageUploader onFileSelect={handleFileSelect} preview={preview} onClearPreview={handleClearPreview} accept="image/*" />
+              <h2 className="text-xl font-bold text-gray-900 mb-4">1. Upload Image</h2>
+              <ImageUploader 
+                onFileSelect={handleFileSelect} 
+                preview={preview} 
+                onClearPreview={handleClearPreview} 
+                accept="image/*" 
+              />
               {file && (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800">
@@ -265,6 +320,59 @@ export default function TranslateImagePage() {
                   </p>
                 </div>
               )}
+
+              <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <h3 className="font-semibold text-amber-900 mb-2">Select Languages</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-amber-900 mb-1">Source</label>
+                    <select
+                      value={sourceLanguage}
+                      onChange={(e) => setSourceLanguage(e.target.value)}
+                      className="w-full border border-amber-300 rounded-lg p-2 text-sm"
+                    >
+                      {languages.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-amber-900 mb-1">Target</label>
+                    <select
+                      value={targetLanguage}
+                      onChange={(e) => setTargetLanguage(e.target.value)}
+                      className="w-full border border-amber-300 rounded-lg p-2 text-sm"
+                    >
+                      {languages.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={performOCR}
+                  disabled={!file || ocrProcessing}
+                  className="w-full mt-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm"
+                >
+                  {ocrProcessing ? (
+                    <>
+                      <Loader size={16} className="animate-spin" />
+                      Detecting Text...
+                    </>
+                  ) : (
+                    <>
+                      <Globe size={16} />
+                      2. Detect & Translate
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -272,7 +380,7 @@ export default function TranslateImagePage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Preview</h2>
-              <div className="flex items-center justify-center bg-gray-100 rounded-lg overflow-auto max-h-96 cursor-pointer" onClick={handleCanvasClick}>
+              <div className="flex items-center justify-center bg-gray-100 rounded-lg overflow-auto max-h-96">
                 {preview ? (
                   <canvas ref={previewCanvasRef} className="max-w-full" />
                 ) : (
@@ -281,87 +389,21 @@ export default function TranslateImagePage() {
                   </div>
                 )}
               </div>
+
+              {detectedTexts.length > 0 && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm font-semibold text-green-900 mb-2">
+                    ✓ Detected {detectedTexts.length} text {detectedTexts.length === 1 ? 'item' : 'items'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Right Section - Controls Sidebar */}
+          {/* Right Section - Translations */}
           <div className="lg:col-span-1 lg:sticky lg:top-6 lg:h-fit">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm max-h-96 overflow-y-auto">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Add Translation</h2>
-
-              {/* Language Selection */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Source Language</label>
-                <select
-                  value={sourceLanguage}
-                  onChange={(e) => setSourceLanguage(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Target Language</label>
-                <select
-                  value={targetLanguage}
-                  onChange={(e) => setTargetLanguage(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Translation Text Input */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Translated Text</label>
-                <textarea
-                  value={newTranslationText}
-                  onChange={(e) => setNewTranslationText(e.target.value)}
-                  placeholder="Enter translated text..."
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm h-16 resize-none"
-                />
-              </div>
-
-              {/* Font Size */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Font Size: {fontSize}px</label>
-                <input
-                  type="range"
-                  min="12"
-                  max="72"
-                  value={fontSize}
-                  onChange={(e) => setFontSize(parseInt(e.target.value))}
-                  className="w-full accent-orange-500"
-                />
-              </div>
-
-              {/* Text Color */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Text Color</label>
-                <div className="flex gap-2">
-                  <input
-                    type="color"
-                    value={textColor}
-                    onChange={(e) => setTextColor(e.target.value)}
-                    className="w-12 h-10 rounded cursor-pointer border border-gray-300"
-                  />
-                  <input
-                    type="text"
-                    value={textColor}
-                    readOnly
-                    className="flex-1 border border-gray-300 rounded-lg p-2 text-sm"
-                  />
-                </div>
-              </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">3. Edit Translations</h2>
 
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -369,78 +411,116 @@ export default function TranslateImagePage() {
                 </div>
               )}
 
-              {/* Add Text Button */}
-              <button
-                onClick={addTranslationOverlay}
-                disabled={!preview}
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2 px-4 rounded-lg transition mb-3 flex items-center justify-center gap-2 text-sm"
-              >
-                <Plus size={16} />
-                Add Translation
-              </button>
-
-              {/* Overlays List */}
-              {overlays.length > 0 && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 max-h-32 overflow-y-auto">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Translations ({overlays.length})</p>
-                  <div className="space-y-1">
-                    {overlays.map((overlay) => (
-                      <div
-                        key={overlay.id}
-                        className={`flex items-center justify-between p-2 rounded text-xs cursor-pointer ${
-                          selectedOverlayId === overlay.id
-                            ? 'bg-orange-100 border border-orange-300'
-                            : 'bg-white border border-gray-200'
-                        }`}
-                        onClick={() => setSelectedOverlayId(overlay.id)}
-                      >
-                        <span className="truncate">{overlay.text}</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeOverlay(overlay.id);
-                          }}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+              {detectedTexts.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-sm">Run OCR to detect text in image</p>
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Text Styling Controls */}
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Font Size: {fontSize}px</label>
+                    <input
+                      type="range"
+                      min="12"
+                      max="72"
+                      value={fontSize}
+                      onChange={(e) => {
+                        const newSize = parseInt(e.target.value);
+                        setFontSize(newSize);
+                        setOverlays(overlays.map(o => ({ ...o, fontSize: newSize })));
+                      }}
+                      className="w-full accent-blue-500"
+                    />
 
-              {/* Generate Button */}
-              <button
-                onClick={generateImage}
-                disabled={!file || overlays.length === 0 || processing}
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-lg transition mb-3 flex items-center justify-center gap-2"
-              >
-                <Globe size={18} className={processing ? 'animate-spin' : ''} />
-                {processing ? 'Generating...' : 'Generate Image'}
-              </button>
+                    <label className="block text-sm font-medium text-gray-700 mt-3 mb-2">Text Color</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={textColor}
+                        onChange={(e) => {
+                          setTextColor(e.target.value);
+                          setOverlays(overlays.map(o => ({ ...o, color: e.target.value })));
+                        }}
+                        className="w-12 h-10 rounded cursor-pointer border border-gray-300"
+                      />
+                      <input
+                        type="text"
+                        value={textColor}
+                        readOnly
+                        className="flex-1 border border-gray-300 rounded-lg p-2 text-sm"
+                      />
+                    </div>
+                  </div>
 
-              {/* Download Button */}
-              {result && (
-                <button
-                  onClick={handleDownload}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2"
-                >
-                  <Download size={18} />
-                  Download PNG
-                </button>
+                  {/* Overlays List */}
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 max-h-56 overflow-y-auto">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Detected Text ({overlays.length})</p>
+                    <div className="space-y-2">
+                      {overlays.map((overlay, idx) => (
+                        <div key={overlay.id} className="p-2 bg-white border border-gray-200 rounded text-xs">
+                          <div className="flex items-start gap-2 mb-1">
+                            <input
+                              type="text"
+                              value={overlay.text}
+                              onChange={(e) => updateOverlay(overlay.id, { text: e.target.value })}
+                              className="flex-1 border border-gray-300 rounded p-1 text-xs"
+                            />
+                            <button
+                              onClick={() => removeOverlay(overlay.id)}
+                              className="text-red-500 hover:text-red-700 flex-shrink-0"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          {detectedTexts[idx] && (
+                            <p className="text-gray-500">Original: {detectedTexts[idx].original}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Generate Button */}
+                  <button
+                    onClick={generateImage}
+                    disabled={overlays.length === 0 || processing}
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2 px-4 rounded-lg transition mb-3 flex items-center justify-center gap-2 text-sm"
+                  >
+                    {processing ? (
+                      <>
+                        <Loader size={16} className="animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      '✓ Generate Image'
+                    )}
+                  </button>
+
+                  {/* Download Button */}
+                  {result && (
+                    <button
+                      onClick={handleDownload}
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm"
+                    >
+                      <Download size={16} />
+                      Download PNG
+                    </button>
+                  )}
+                </>
               )}
             </div>
 
             {/* Info Box */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-6">
-              <h3 className="font-bold text-blue-900 mb-2">💡 About This Tool</h3>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Add translated text overlays</li>
-                <li>• Support 12+ languages</li>
-                <li>• Customize font size & color</li>
-                <li>• Click preview to select text</li>
-              </ul>
+              <h3 className="font-bold text-blue-900 mb-2">💡 How It Works</h3>
+              <ol className="text-sm text-blue-800 space-y-1">
+                <li>1. Upload your image</li>
+                <li>2. Select source & target languages</li>
+                <li>3. Click "Detect & Translate"</li>
+                <li>4. Edit translations if needed</li>
+                <li>5. Generate and download</li>
+              </ol>
             </div>
           </div>
         </div>
