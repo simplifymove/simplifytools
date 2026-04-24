@@ -65,12 +65,20 @@ export async function POST(request: NextRequest) {
     );
 
     const result = await new Promise<string>((resolve, reject) => {
-      const process_child = spawn(pythonExe, [
+      const ytdlpArgs = [
         '-m',
         'yt_dlp',
         '--dump-json',
-        url,
-      ], {
+      ];
+      
+      // Add cookies for authentication if available (helps with VPS/datacenter IPs)
+      if (process.env.YTDLP_COOKIES_PATH) {
+        ytdlpArgs.push('--cookies', process.env.YTDLP_COOKIES_PATH);
+      }
+      
+      ytdlpArgs.push(url);
+      
+      const process_child = spawn(pythonExe, ytdlpArgs, {
         env: {
           ...process.env,
           PYTHONDONTWRITEBYTECODE: '1',

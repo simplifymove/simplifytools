@@ -243,8 +243,15 @@ export async function POST(request: NextRequest) {
             '--no-warnings',
             '--quiet',
             '--force-ipv4',                  // IPv4 only (faster on most networks)
-            url,  // Pass URL directly - spawn handles it safely
           ];
+          
+          // Add cookies for authentication if available (helps with VPS/datacenter IPs)
+          if (process.env.YTDLP_COOKIES_PATH) {
+            console.log('[Download API] Using yt-dlp cookies for authentication');
+            ytdlpArgs.push('--cookies', process.env.YTDLP_COOKIES_PATH);
+          }
+          
+          ytdlpArgs.push(url);  // Pass URL directly - spawn handles it safely
           
           const ytdlpProcess = spawn(pythonExe, ytdlpArgs, {
             env: spawnEnv,

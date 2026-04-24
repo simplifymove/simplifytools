@@ -130,7 +130,7 @@ function downloadWithYtDlp(url: string, format?: string): Promise<{ filePath: st
       // Use user selected format or default to best
       const formatArg = format && format !== 'best' ? format : 'bestvideo+bestaudio/best';
       
-      const ytDlpProcess = spawn(pythonExe, [
+      const ytdlpArgs = [
         '-m',
         'yt_dlp',
         '-f',
@@ -139,9 +139,16 @@ function downloadWithYtDlp(url: string, format?: string): Promise<{ filePath: st
         outputTemplateFormatted,
         '--no-warnings',
         '--quiet',
-        '--batch-file',
-        urlFilePathFormatted,
-      ], {
+      ];
+      
+      // Add cookies for authentication if available (helps with VPS/datacenter IPs)
+      if (process.env.YTDLP_COOKIES_PATH) {
+        ytdlpArgs.push('--cookies', process.env.YTDLP_COOKIES_PATH);
+      }
+      
+      ytdlpArgs.push('--batch-file', urlFilePathFormatted);
+      
+      const ytDlpProcess = spawn(pythonExe, ytdlpArgs, {
         env: spawnEnv,
       });
 

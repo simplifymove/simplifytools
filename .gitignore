@@ -48,6 +48,11 @@ next-env.d.ts
 *.webm
 .env.local
 
+# Private data (cookies, authentication tokens, sensitive files)
+/private/
+*.cookies.txt
+youtube-cookies.txt
+
 # Python virtual environment
 venv/
 .venv/
