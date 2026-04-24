@@ -2,6 +2,7 @@
 import os
 import subprocess
 import logging
+import tempfile
 from PIL import Image
 from .utils import validate_file_exists, safe_remove, log_execution
 
@@ -12,6 +13,7 @@ def document_convert(input_file: str, output_file: str, from_format: str, to_for
     Convert document and design formats
     Supports:
     - PSD → JPG/PNG (using ImageMagick)
+    - PSD → SVG (PSD → PNG → SVG via Potrace)
     - VSDX/VSD → PDF/DOCX/PPTX (using LibreOffice)
     """
     validate_file_exists(input_file)
@@ -21,10 +23,12 @@ def document_convert(input_file: str, output_file: str, from_format: str, to_for
         from_fmt = from_format.lower()
         to_fmt = to_format.lower()
         
-        # PSD conversions (use ImageMagick)
+        # PSD conversions
         if from_fmt == 'psd':
             if to_fmt in ['jpg', 'jpeg', 'png']:
                 return convert_psd_to_image(input_file, output_file, to_fmt, options)
+            elif to_fmt == 'svg':
+                return convert_psd_to_svg(input_file, output_file, options)
         
         # Visio conversions (use LibreOffice)
         if from_fmt in ['vsdx', 'vsd', 'vdx']:
@@ -66,6 +70,86 @@ def convert_psd_to_image(input_file: str, output_file: str, output_format: str, 
     except Exception as e:
         logger.error(f"PSD conversion failed: {str(e)}")
         return False
+
+def convert_psd_to_svg(input_file: str, output_file: str, options) -> bool:
+    """
+    Convert PSD to SVG via PNG → Potrace pipeline
+    Industry standard: Rasterize → Vectorize
+    """
+    temp_png = None
+    try:
+        # Step 1: Convert PSD to PNG using ImageMagick (rasterization)
+        quality = options.get('quality', 85)
+        temp_png = os.path.join(tempfile.gettempdir(), f'psd_temp_{id(input_file)}.png')
+        
+        cmd_img = [
+            'convert',
+            f"-quality {quality}",
+            input_file,
+            temp_png
+        ]
+        
+        logger.info(f"[DocumentEngine-PSD-SVG Step1] Rasterizing: {' '.join(cmd_img)}")
+        result = subprocess.run(' '.join(cmd_img), shell=True, capture_output=True, text=True, timeout=120)
+        
+        if result.returncode != 0:
+            raise RuntimeError(f"ImageMagick rasterization failed: {result.stderr}")
+        
+        if not os.path.exists(temp_png):
+            raise RuntimeError("Temporary PNG not created")
+        
+        # Step 2: Prepare image for vectorization
+        logger.info(f"[DocumentEngine-PSD-SVG Step2] Preparing image for vectorization")
+        img = Image.open(temp_png)
+        
+        # Reduce colors if requested (industry standard for better tracing)
+        if options.get('color_reduce', True):
+            # Reduce to 256 colors for better edge detection
+            img = img.convert('P', palette=Image.ADAPTIVE, colors=256)
+        
+        # Convert to grayscale for better potrace results
+        if img.mode != 'L':
+            img = img.convert('L')
+        
+        # Save processed image
+        img.save(temp_png, 'PNG')
+        
+        # Step 3: Trace to SVG using Potrace (vectorization)
+        corner_thresh = options.get('corner_threshold', 100)
+        curve_opt = options.get('curve_optimize', 2)
+        
+        cmd_trace = [
+            'potrace',
+            temp_png,
+            '-s',  # SVG output
+            '-o', output_file,
+            '-t', str(corner_thresh),  # Corner threshold
+            '-O', str(curve_opt),  # Curve optimization
+        ]
+        
+        logger.info(f"[DocumentEngine-PSD-SVG Step3] Vectorizing: {' '.join(cmd_trace)}")
+        result = subprocess.run(cmd_trace, capture_output=True, text=True, timeout=120)
+        
+        if result.returncode != 0:
+            raise RuntimeError(f"Potrace vectorization failed: {result.stderr}")
+        
+        if not os.path.exists(output_file):
+            raise RuntimeError("SVG output file was not created")
+        
+        log_execution("document_psd_svg", input_file, output_file, options)
+        return True
+        
+    except Exception as e:
+        logger.error(f"PSD to SVG conversion failed: {str(e)}")
+        return False
+    finally:
+        # Cleanup temporary PNG
+        if temp_png and os.path.exists(temp_png):
+            try:
+                os.remove(temp_png)
+                logger.info(f"[DocumentEngine-PSD-SVG] Cleaned up temp file: {temp_png}")
+            except Exception as e:
+                logger.warning(f"Failed to cleanup temp file: {e}")
 
 def convert_visio_to_format(input_file: str, output_file: str, output_format: str, options) -> bool:
     """Convert Visio to PDF/DOCX/PPTX using LibreOffice"""
