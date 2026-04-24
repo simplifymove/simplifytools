@@ -152,7 +152,7 @@ function runCommand(
 // LOCAL YT-DLP DOWNLOADER
 // ============================================================================
 
-async function tryLocalYtDlp(url: string): Promise<DownloadResult> {
+async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadResult> {
   const pythonExe = getPythonPath();
 
   const tmpDir = path.join(os.tmpdir(), 'simplifyconvert-downloads');
@@ -181,7 +181,7 @@ async function tryLocalYtDlp(url: string): Promise<DownloadResult> {
     '--user-agent',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
     '-f',
-    'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/best',
+    formatId || 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/best',
     '--merge-output-format',
     'mp4',
     '-o',
@@ -411,6 +411,7 @@ function fileResponse(result: Extract<DownloadResult, { ok: true }>) {
 export async function POST(request: NextRequest) {
   try {
     let url = '';
+    let formatId: string | undefined;
 
     // Parse request body or form data
     const contentType = request.headers.get('content-type') || '';
@@ -418,9 +419,11 @@ export async function POST(request: NextRequest) {
     if (contentType.includes('application/json')) {
       const body = await request.json();
       url = body.url || '';
+      formatId = body.formatId || body.format;
     } else {
       const formData = await request.formData();
       url = String(formData.get('url') || '');
+      formatId = String(formData.get('formatId') || formData.get('format') || '');
     }
 
     // Validate URL
@@ -432,9 +435,12 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[download] Request for URL:', new URL(url).hostname);
+    if (formatId) {
+      console.log('[download] Using selected format:', formatId);
+    }
 
     // Try local yt-dlp first
-    const localResult = await tryLocalYtDlp(url);
+    const localResult = await tryLocalYtDlp(url, formatId);
 
     if (localResult.ok) {
       return fileResponse(localResult);
