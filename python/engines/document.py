@@ -47,9 +47,9 @@ def convert_psd_to_image(input_file: str, output_file: str, output_format: str, 
     try:
         quality = options.get('quality', 85)
         
-        # Use ImageMagick magick command - simple direct conversion
+        # Use ImageMagick convert command - simple direct conversion
         # ImageMagick handles PSD format and layer merging automatically
-        cmd_str = f'magick "{input_file}" -quality {quality} "{output_file}"'
+        cmd_str = f'convert "{input_file}" -quality {quality} "{output_file}"'
         
         logger.info(f"[DocumentEngine-PSD] Executing: {cmd_str}")
         result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
@@ -80,7 +80,7 @@ def convert_psd_to_svg(input_file: str, output_file: str, options) -> bool:
         
         # Build simple ImageMagick command for PSD
         # ImageMagick handles PSD format and layer merging automatically
-        cmd_str = f'magick "{input_file}" -quality {quality} "{temp_png}"'
+        cmd_str = f'convert "{input_file}" -quality {quality} "{temp_png}"'
         
         logger.info(f"[DocumentEngine-PSD-SVG Step1] Rasterizing: {cmd_str}")
         result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
