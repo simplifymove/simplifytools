@@ -494,6 +494,10 @@ export async function POST(request: NextRequest) {
       console.log('[download] Using selected format:', formatId);
     }
 
+    // Check if external API is enabled
+    const externalEnabled = process.env.DOWNLOADER_API_ENABLED === 'true';
+    console.log('[download] External API enabled:', externalEnabled);
+
     // Try local yt-dlp first
     const localResult = await tryLocalYtDlp(url, formatId);
 
@@ -501,39 +505,39 @@ export async function POST(request: NextRequest) {
       return fileResponse(localResult);
     }
 
-    // Decide whether to fallback to external API
-    const shouldUseExternal =
-      localResult.shouldFallback === true ||
-      isYouTubeUrl(url) ||
-      process.env.DOWNLOADER_API_ENABLED === 'true';
+    // Local download failed
+    console.log('[download] Local download failed:', localResult.error);
 
-    if (shouldUseExternal) {
-      console.log('[download] Local download failed, attempting fallback to external API');
-
-      const externalResult = await tryExternalApi(url);
-
-      if (externalResult.ok) {
-        return fileResponse(externalResult);
-      }
-
-      // Both methods failed
+    // If external API is disabled, return local error only
+    if (!externalEnabled) {
+      console.log('[download] External API disabled, returning local error');
       return NextResponse.json(
         {
-          error: 'Download failed from both local downloader and external provider.',
-          localError: localResult.details || localResult.error,
-          externalError: externalResult.details || externalResult.error,
+          error: 'Download failed.',
+          details: localResult.details || localResult.error,
+          provider: 'local_yt_dlp',
         },
-        { status: 502 }
+        { status: 500 }
       );
     }
 
-    // No fallback enabled, return local error
+    // External API is enabled, try it as fallback
+    console.log('[download] Local failed, attempting fallback to external API');
+    const externalResult = await tryExternalApi(url);
+
+    if (externalResult.ok) {
+      return fileResponse(externalResult);
+    }
+
+    // Both methods failed
+    console.log('[download] Both local and external API failed');
     return NextResponse.json(
       {
-        error: localResult.error,
-        details: localResult.details,
+        error: 'Download failed from both local downloader and external provider.',
+        localError: localResult.details || localResult.error,
+        externalError: externalResult.details || externalResult.error,
       },
-      { status: 500 }
+      { status: 502 }
     );
   } catch (error: any) {
     console.error('[download] Unexpected error:', error);
