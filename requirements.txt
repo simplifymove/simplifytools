@@ -76,6 +76,9 @@ basicsr>=1.4.2
 realesrgan>=0.3.0
 # Note: Restormer models will be auto-downloaded on first use
 
+# HTTP Requests & API Integration
+requests>=2.31.0
+
 # Social Media Download & APIs
 youtube-dl>=2021.12.17
 yt-dlp>=2024.1.1
