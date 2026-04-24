@@ -6,6 +6,7 @@ import * as os from 'os';
 
 interface DownloadRequest {
   url: string;
+  format?: string;
 }
 
 function getFileExtension(contentType: string, url: string): string {
@@ -78,7 +79,7 @@ function isSocialMediaUrl(urlString: string): boolean {
   return socialPatterns.some((pattern) => pattern.test(urlString));
 }
 
-function downloadWithYtDlp(url: string): Promise<{ filePath: string; fileName: string }> {
+function downloadWithYtDlp(url: string, format?: string): Promise<{ filePath: string; fileName: string }> {
   return new Promise((resolve, reject) => {
     // Create dedicated temp directory for this download (not system temp)
     let downloadDir: string;
@@ -103,7 +104,7 @@ function downloadWithYtDlp(url: string): Promise<{ filePath: string; fileName: s
       const urlFilePathFormatted = urlFilePath.replace(/\\/g, '/');
 
       // Use --batch-file to read URLs from file (avoids encoding issues)
-      const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
+      const pythonExe = process.env.PYTHON_PATH || (process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python');
       
       // Prepare environment with Python-specific variables
       const spawnEnv = {
@@ -126,11 +127,14 @@ function downloadWithYtDlp(url: string): Promise<{ filePath: string; fileName: s
         spawnEnv.PYTHONPATH = pythonPaths.join(':');
       }
       
+      // Use user selected format or default to best
+      const formatArg = format && format !== 'best' ? format : 'bestvideo+bestaudio/best';
+      
       const ytDlpProcess = spawn(pythonExe, [
         '-m',
         'yt_dlp',
         '-f',
-        'best[ext=mp4]/best',
+        formatArg,
         '-o',
         outputTemplateFormatted,
         '--no-warnings',
@@ -238,7 +242,7 @@ async function downloadDirectFile(url: string): Promise<ArrayBuffer> {
 export async function POST(request: NextRequest) {
   try {
     const body: DownloadRequest = await request.json();
-    const { url } = body;
+    const { url, format } = body;
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json({ error: 'Valid URL is required' }, { status: 400 });
@@ -264,7 +268,7 @@ export async function POST(request: NextRequest) {
 
       try {
         // Check if yt-dlp is available
-        const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
+        const pythonExe = process.env.PYTHON_PATH || (process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python');
         
         // Prepare environment with Python-specific variables
         const spawnEnv = {
@@ -309,7 +313,7 @@ export async function POST(request: NextRequest) {
           }, 5000);
         });
 
-        const { filePath, fileName: dlFileName } = await downloadWithYtDlp(url);
+        const { filePath, fileName: dlFileName } = await downloadWithYtDlp(url, format);
         fileName = dlFileName;
         const downloadDir = path.dirname(filePath);
 

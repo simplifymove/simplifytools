@@ -9,9 +9,51 @@ import { Footer } from '@/app/components/Footer';
 export default function SaveFromOnline() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fetchingFormats, setFetchingFormats] = useState(false);
   const [status, setStatus] = useState('');
   const [downloadedFile, setDownloadedFile] = useState<any>(null);
   const [error, setError] = useState('');
+  const [formats, setFormats] = useState<any[]>([]);
+  const [selectedFormat, setSelectedFormat] = useState<string>('');
+  const [showFormats, setShowFormats] = useState(false);
+
+  const handleFetchFormats = async () => {
+    if (!url.trim()) {
+      setError('Please enter a URL');
+      return;
+    }
+
+    setFetchingFormats(true);
+    setError('');
+    setFormats([]);
+    setSelectedFormat('');
+
+    try {
+      const response = await fetch('/api/download/formats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch formats');
+      }
+
+      const data = await response.json();
+      setFormats(data.formats || []);
+      setShowFormats(data.formats && data.formats.length > 0);
+      
+      if (data.formats && data.formats.length > 0) {
+        setSelectedFormat(data.formats[0].id);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch available formats');
+      setShowFormats(false);
+    } finally {
+      setFetchingFormats(false);
+    }
+  };
 
   const handleDownload = async () => {
     if (!url.trim()) {
@@ -24,10 +66,15 @@ export default function SaveFromOnline() {
     setStatus('Starting download...');
 
     try {
+      const downloadBody: any = { url: url.trim() };
+      if (selectedFormat && formats.length > 0) {
+        downloadBody.format = selectedFormat;
+      }
+
       const response = await fetch('/api/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify(downloadBody),
       });
 
       if (!response.ok) {
@@ -81,7 +128,7 @@ export default function SaveFromOnline() {
     { name: 'Vimeo', icon: Video, color: 'text-blue-500' },
   ];
 
-  const formats = [
+  const supportedFormatsData = [
     { category: 'Videos', types: 'MP4, WebM, MKV, AVI', icon: Video, color: 'from-pink-500 to-rose-500' },
     { category: 'Images', types: 'JPG, PNG, GIF, WebP, SVG', icon: ImageIcon, color: 'from-orange-500 to-yellow-500' },
     { category: 'Documents', types: 'PDF, DOCX, PPTX, XLSX', icon: FileText, color: 'from-blue-500 to-purple-500' },
@@ -140,6 +187,43 @@ export default function SaveFromOnline() {
                   ✓ Supports YouTube, TikTok, Instagram, Facebook, Twitter, Vimeo, and direct file URLs
                 </p>
               </div>
+
+              {!showFormats && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleFetchFormats}
+                  disabled={fetchingFormats}
+                  className="w-full bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 text-base shadow-lg"
+                >
+                  {fetchingFormats ? <Loader2 className="animate-spin" size={20} /> : <Globe size={20} />}
+                  {fetchingFormats ? 'Checking available formats...' : 'Check Available Formats'}
+                </motion.button>
+              )}
+
+              {showFormats && formats.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-2"
+                >
+                  <label htmlFor="quality-select" className="block text-sm font-semibold text-gray-900">
+                    Select Quality/Resolution
+                  </label>
+                  <select
+                    id="quality-select"
+                    value={selectedFormat}
+                    onChange={(e) => setSelectedFormat(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white cursor-pointer font-medium"
+                  >
+                    {formats.map((format) => (
+                      <option key={format.id} value={format.id}>
+                        {format.displayLabel}
+                      </option>
+                    ))}
+                  </select>
+                </motion.div>
+              )}
               
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -219,7 +303,7 @@ export default function SaveFromOnline() {
           <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Download any file format you need</p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
-            {formats.map((format, idx) => (
+            {supportedFormatsData.map((format, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}

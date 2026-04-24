@@ -7,6 +7,7 @@ import { Readable } from 'stream';
 
 interface DownloadRequest {
   url: string;
+  format?: string; // Optional format ID from yt-dlp
 }
 
 // Helper to get file extension from content-type or URL
@@ -129,7 +130,7 @@ function getContentTypeFromExt(ext: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body: DownloadRequest = await request.json();
-    const { url } = body;
+    const { url, format } = body;
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json(
@@ -188,14 +189,23 @@ export async function POST(request: NextRequest) {
           // Use spawn with URL passed as a direct argument (no batch file)
           // This avoids file path encoding issues entirely
           // OPTIMIZATION: MAXIMUM SPEED - 32 parallel, minimal timeout, smallest format
-          const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
+          // Use explicit Python path from environment variable
+          const pythonExe = process.env.PYTHON_PATH || (
+            process.platform === 'win32' 
+              ? 'python'  // Fallback on Windows
+              : '/usr/bin/python3'  // Fallback on Linux
+          );
+          console.log('[Download API] Using Python executable:', pythonExe);
           
           // Prepare environment with Python-specific variables
           const spawnEnv = {
             ...process.env,
             PYTHONDONTWRITEBYTECODE: '1',
-            PYTHONHOME: '/usr',  // System Python home for VPS
+            PYTHONHOME: process.platform !== 'win32' ? '/usr' : undefined,
           } as any;
+          
+          // Remove undefined values
+          Object.keys(spawnEnv).forEach(key => spawnEnv[key] === undefined && delete spawnEnv[key]);
           
           // Explicitly set PYTHONPATH for VPS deployment
           if (process.platform !== 'win32') {
@@ -210,14 +220,15 @@ export async function POST(request: NextRequest) {
             ];
             spawnEnv.PYTHONPATH = pythonPaths.join(':');
           }
+
+          // Build format argument - use user selected format or default to best
+          const formatArg = format && format !== 'best' ? format : 'bestvideo+bestaudio/best';
           
-          const ytdlpProcess = spawn(pythonExe, [
+          const ytdlpArgs = [
             '-m',
             'yt_dlp',
-            // Format: Download smallest video file possible (even worse than worst)
-            // Try: 144p video only → 240p → 360p, no audio
             '-f',
-            'worst[ext=mp4]/bestvideo[height<=144][ext=mp4]/bestvideo[height<=240][ext=mp4]/worst',
+            formatArg,
             '-o',
             outputTemplate,
             // EXTREME SPEED: Maximum parallelization and minimum timeouts
@@ -233,14 +244,25 @@ export async function POST(request: NextRequest) {
             '--quiet',
             '--force-ipv4',                  // IPv4 only (faster on most networks)
             url,  // Pass URL directly - spawn handles it safely
-          ], {
+          ];
+          
+          const ytdlpProcess = spawn(pythonExe, ytdlpArgs, {
             env: spawnEnv,
+            stdio: ['pipe', 'pipe', 'pipe'],  // Capture all stdio
+            shell: false,  // Don't use shell - spawn handles args array correctly without escaping issues
           });
 
           // Promise wrapper for spawn
           await new Promise<void>((resolve, reject) => {
             let stderr = '';
+            let stdout = '';
             let lastProgressLog = Date.now();
+            
+            ytdlpProcess.stdout?.on('data', (data) => {
+              const output = data.toString();
+              stdout += output;
+              console.log('[Download API] stdout:', output.substring(0, 200));
+            });
             
             ytdlpProcess.stderr.on('data', (data) => {
               const output = data.toString();
@@ -252,6 +274,11 @@ export async function POST(request: NextRequest) {
                 console.log('[Download API] Download in progress...');
                 lastProgressLog = now;
               }
+              
+              // Log any errors immediately
+              if (output.includes('Error') || output.includes('error')) {
+                console.log('[Download API] Error detected:', output.substring(0, 300));
+              }
             });
 
             // Add timeout for massive files (30 minutes max for very large videos)
@@ -260,7 +287,10 @@ export async function POST(request: NextRequest) {
             ytdlpProcess.on('close', (code) => {
               if (downloadTimeout) clearTimeout(downloadTimeout);
               if (code !== 0) {
-                reject(new Error(`yt-dlp failed: ${stderr || 'Unknown error'}`));
+                const fullError = stderr || stdout || 'Unknown error';
+                console.error('[Download API] Process failed with code:', code);
+                console.error('[Download API] Error output:', fullError.substring(0, 500));
+                reject(new Error(`yt-dlp failed: ${fullError}`));
               } else {
                 resolve();
               }
@@ -268,7 +298,10 @@ export async function POST(request: NextRequest) {
 
             ytdlpProcess.on('error', (error) => {
               if (downloadTimeout) clearTimeout(downloadTimeout);
-              reject(new Error(`Failed to spawn yt-dlp: ${error.message}`));
+              console.error('[Download API] spawn error:', error);
+              console.error('[Download API] Python exe:', pythonExe);
+              console.error('[Download API] Environment PATH:', spawnEnv.PATH ? spawnEnv.PATH.substring(0, 200) : 'NOT SET');
+              reject(new Error(`Failed to spawn yt-dlp: ${error.message}. Make sure Python executable is available at: ${pythonExe}`));
             });
             
             // Set timeout for very large downloads

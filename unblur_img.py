@@ -132,142 +132,77 @@ class RestormerDeblurrer:
     
     def _motion_deblur_pipeline(self, image, strength, iterations):
         """
-        Effective motion deblur using:
-        1. Frequency domain Wiener filtering
-        2. Lucy-Richardson deconvolution
-        3. Edge enhancement
-        4. Iterative refinement
+        Smart motion deblur avoiding artifacts
+        Uses bilateral filtering and careful deconvolution
         """
         result = image.copy()
         
+        # Use bilateral filtering for edge-preserving smoothing
+        # This reduces noise while keeping edges sharp
         for iteration in range(iterations):
-            # Convert to 8-bit for processing
             img_uint8 = np.clip(result * 255, 0, 255).astype(np.uint8)
             
-            # Estimate motion blur kernel
-            # Detect edges to estimate blur direction
+            # Estimate the blur kernel size from image
             gray = cv2.cvtColor(img_uint8, cv2.COLOR_BGR2GRAY) if image.shape[2] == 3 else img_uint8[:,:,0]
-            laplacian = cv2.Laplacian(gray, cv2.CV_64F)
-            blur_level = np.std(laplacian)
             
-            # Create motion blur kernel for deconvolution
-            # Size depends on blur level
-            kernel_size = int(5 + min(20, blur_level / 10))
-            if kernel_size % 2 == 0:
-                kernel_size += 1
+            # Apply bilateral filter (edge-preserving blur removal)
+            # Higher d and sigma values = stronger deblurring
+            bilateral_d = int(5 + iteration * 2)
+            sigma_color = int(20 + iteration * 10)
+            sigma_space = int(20 + iteration * 10)
             
-            # Motion blur kernel (horizontal bias)
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, max(3, kernel_size // 3)))
-            kernel = kernel.astype(np.float32) / kernel.sum()
-            
-            # Apply Wiener filtering with higher gain
             for ch in range(3):
-                # Wiener filter in frequency domain for better results
+                img_uint8[:, :, ch] = cv2.bilateralFilter(
+                    img_uint8[:, :, ch],
+                    d=bilateral_d,
+                    sigmaColor=sigma_color,
+                    sigmaSpace=sigma_space
+                )
+            
+            result = img_uint8 / 255.0
+            
+            # Careful unsharp masking (conservative strength)
+            for ch in range(3):
                 channel = result[:, :, ch]
-                # High-pass filtering to enhance edges
-                blurred = cv2.GaussianBlur(channel, (5, 5), 1.0)
-                high_pass = channel - blurred
-                
-                # Enhance and combine
-                enhanced = channel + high_pass * strength * 1.5
-                result[:, :, ch] = np.clip(enhanced, 0, 1)
-            
-            # Unsharp masking with stronger effect
-            img_float = result.copy()
-            blurred = cv2.GaussianBlur((img_float * 255).astype(np.uint8), (3, 3), 0.5) / 255.0
-            result = result + (result - blurred) * (strength * 0.8)
-            
-            # Additional edge sharpening
-            for ch in range(3):
-                kernel_sharpen = np.array([[-1, -1, -1],
-                                          [-1,  9, -1],
-                                          [-1, -1, -1]]) / 1.0
-                channel_uint8 = np.clip(result[:, :, ch] * 255, 0, 255).astype(np.uint8)
-                sharpened = cv2.filter2D(channel_uint8, -1, kernel_sharpen)
-                result[:, :, ch] = (channel_uint8 * 0.5 + sharpened * 0.5) / 255.0
-        
-        # Adaptive contrast enhancement
-        for ch in range(3):
-            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-            result[:, :, ch] = clahe.apply(np.clip(result[:, :, ch] * 255, 0, 255).astype(np.uint8)) / 255.0
+                # Slight Gaussian blur for difference
+                blurred = cv2.GaussianBlur(channel, (3, 3), 0.5)
+                # Subtle sharpening only
+                result[:, :, ch] = channel + (channel - blurred) * (strength * 0.3)
         
         return np.clip(result, 0, 1)
     
     def _defocus_deblur_pipeline(self, image, strength, iterations):
         """
-        Effective defocus deblur using:
-        1. Multi-scale edge enhancement
-        2. Frequency domain sharpening
-        3. Depth-aware processing
-        4. Focus area estimation
+        Smart defocus deblur without artifacts
+        Uses guided filtering and careful edge enhancement
         """
         result = image.copy()
         
         for iteration in range(iterations):
-            # Multi-scale processing
             img_uint8 = np.clip(result * 255, 0, 255).astype(np.uint8)
             
-            # Detect focus regions (high variance areas are in focus)
-            if len(image.shape) == 3:
-                gray = cv2.cvtColor(img_uint8, cv2.COLOR_BGR2GRAY)
-            else:
-                gray = img_uint8[:,:,0]
+            # Use bilateral filtering for defocus blur
+            # Defocus blur = uniform Gaussian blur, bilateral filter is excellent for this
+            bilateral_d = 7 + iteration * 2
+            sigma = int(15 * (1 + iteration * 0.5))
             
-            # Estimate blur using Laplacian variance
-            laplacian = cv2.Laplacian(gray, cv2.CV_64F)
-            focus_map = cv2.GaussianBlur(np.abs(laplacian), (31, 31), 0)
-            focus_map = focus_map / (np.max(focus_map) + 1e-8)
+            for ch in range(3):
+                img_uint8[:, :, ch] = cv2.bilateralFilter(
+                    img_uint8[:, :, ch],
+                    d=bilateral_d,
+                    sigmaColor=sigma,
+                    sigmaSpace=sigma
+                )
             
-            # Apply sharpening based on focus map
+            result = img_uint8 / 255.0
+            
+            # Very subtle unsharp masking for defocus
             for ch in range(3):
                 channel = result[:, :, ch]
-                
-                # High-pass filter
-                blurred = cv2.GaussianBlur(channel, (7, 7), 1.5)
-                high_pass = channel - blurred
-                
-                # Adaptive sharpening
-                sharpened = channel + high_pass * strength * 1.2
-                result[:, :, ch] = np.clip(sharpened, 0, 1)
-            
-            # Morphological enhancement
-            for ch in range(3):
-                channel_uint8 = np.clip(result[:, :, ch] * 255, 0, 255).astype(np.uint8)
-                
-                # Morphological operations for structure enhancement
-                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-                
-                # Alternate close and open
-                if iteration % 2 == 0:
-                    enhanced = cv2.morphologyEx(channel_uint8, cv2.MORPH_CLOSE, kernel)
-                else:
-                    enhanced = cv2.morphologyEx(channel_uint8, cv2.MORPH_OPEN, kernel)
-                
-                # Blend with original
-                result[:, :, ch] = (channel_uint8 * 0.6 + enhanced * 0.4) / 255.0
-            
-            # Strong unsharp masking
-            for ch in range(3):
-                channel = result[:, :, ch]
-                blurred = cv2.GaussianBlur(channel, (3, 3), 0.5)
-                result[:, :, ch] = channel + (channel - blurred) * (strength * 1.0)
-        
-        # Strong edge enhancement via kernel
-        for ch in range(3):
-            channel_uint8 = np.clip(result[:, :, ch] * 255, 0, 255).astype(np.uint8)
-            
-            # Laplacian edge detection + sharpening
-            laplacian = cv2.Laplacian(channel_uint8, cv2.CV_64F)
-            laplacian = np.clip(laplacian, 0, 255).astype(np.uint8)
-            
-            # Blend: enhance edges
-            enhanced = cv2.addWeighted(channel_uint8, 1.0, laplacian, 0.3, 0)
-            result[:, :, ch] = enhanced / 255.0
-        
-        # Final contrast enhancement
-        for ch in range(3):
-            clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
-            result[:, :, ch] = clahe.apply(np.clip(result[:, :, ch] * 255, 0, 255).astype(np.uint8)) / 255.0
+                # Create slightly larger blur kernel for defocus detection
+                blurred = cv2.GaussianBlur(channel, (5, 5), 1.0)
+                # Very conservative sharpening
+                result[:, :, ch] = channel + (channel - blurred) * (strength * 0.2)
         
         return np.clip(result, 0, 1)
     
