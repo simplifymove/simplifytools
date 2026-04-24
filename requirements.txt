@@ -97,9 +97,11 @@ tweepy>=4.14.0
 #   Ubuntu/Debian: sudo apt-get install -y libreoffice
 #   CentOS/RHEL: sudo yum install -y libreoffice
 #
-# For PSD to image conversion:
-#   Ubuntu/Debian: sudo apt-get install -y imagemagick imagemagick-6-common imagemagick-6.q16
-#   CentOS/RHEL: sudo yum install -y ImageMagick
+# For PSD to image/SVG conversion:
+#   Ubuntu/Debian: sudo apt-get install -y imagemagick imagemagick-6-common imagemagick-6.q16 potrace
+#   CentOS/RHEL: sudo yum install -y ImageMagick potrace
+#   macOS: brew install imagemagick potrace
+#   Windows: Download from https://potrace.sourceforge.net/
 #
 # For video processing & GIF creation:
 #   Ubuntu/Debian: sudo apt-get install -y ffmpeg
@@ -123,7 +125,7 @@ tweepy>=4.14.0
 #
 # 2. Install system dependencies (as root):
 #    sudo apt-get update
-#    sudo apt-get install -y libreoffice imagemagick ffmpeg tesseract-ocr ghostscript fonts-dejavu
+#    sudo apt-get install -y libreoffice imagemagick potrace ffmpeg tesseract-ocr ghostscript fonts-dejavu
 #
 # 3. Install Python packages:
 #    pip install --upgrade pip setuptools wheel
