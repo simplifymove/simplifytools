@@ -35,20 +35,42 @@ type DownloadResult =
     };
 
 // ============================================================================
-// RATE LIMITING
+// RATE LIMITING & GLOBAL QUEUE
 // ============================================================================
 
 let lastYouTubeDownloadTime = 0;
-const YOUTUBE_DOWNLOAD_COOLDOWN_MS = 5000; // 5 seconds between YouTube downloads
+const COOLDOWN_MS = 15000; // 15 seconds between YouTube downloads
+
+// Global queue for sequential YouTube downloads (only 1 yt-dlp process at a time)
+let youtubeDownloadInProgress = false;
+const youtubeWaiters: Array<() => void> = [];
+
+async function acquireYoutubeSlot(): Promise<void> {
+  while (youtubeDownloadInProgress) {
+    // Wait until the current download completes
+    await new Promise<void>((resolve) => {
+      youtubeWaiters.push(() => resolve());
+    });
+  }
+  youtubeDownloadInProgress = true;
+}
+
+function releaseYoutubeSlot(): void {
+  youtubeDownloadInProgress = false;
+  const waiter = youtubeWaiters.shift();
+  if (waiter) {
+    waiter();
+  }
+}
 
 async function enforceYouTubeCooldown(): Promise<void> {
   const now = Date.now();
   const timeSinceLastDownload = now - lastYouTubeDownloadTime;
 
-  if (timeSinceLastDownload < YOUTUBE_DOWNLOAD_COOLDOWN_MS) {
-    const waitTime = YOUTUBE_DOWNLOAD_COOLDOWN_MS - timeSinceLastDownload;
+  if (timeSinceLastDownload < COOLDOWN_MS) {
+    const waitTime = COOLDOWN_MS - timeSinceLastDownload;
     console.log(`[rate-limit] Waiting ${waitTime}ms before next YouTube download`);
-    await new Promise((resolve) => setTimeout(resolve, waitTime));
+    await new Promise<void>((resolve) => setTimeout(resolve, waitTime));
   }
 
   lastYouTubeDownloadTime = Date.now();
@@ -206,6 +228,10 @@ async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadRe
   const id = crypto.randomUUID();
   const outputTemplate = path.join(tmpDir, `${id}.%(ext)s`);
 
+  // For YouTube, use minimal retries (1) and increased sleep intervals
+  const isYT = isYouTubeUrl(url);
+  const retries = isYT ? '1' : '3';
+
   const args = [
     '-m',
     'yt_dlp',
@@ -214,15 +240,15 @@ async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadRe
     'node',
     '--force-ipv4',
     '--retries',
-    '3',
+    retries,
     '--fragment-retries',
     '3',
     '--socket-timeout',
     '30',
     '--sleep-interval',
-    '2',
+    '3',
     '--max-sleep-interval',
-    '5',
+    '6',
     '--user-agent',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
     '-f',
@@ -484,9 +510,49 @@ export async function POST(request: NextRequest) {
     if (isYouTubeUrl(url)) {
       url = normalizeYoutubeUrl(url);
       
-      // Enforce rate limiting for YouTube downloads
-      console.log('[download] Enforcing YouTube cooldown (5 seconds)');
-      await enforceYouTubeCooldown();
+      // Acquire exclusive slot for YouTube download (only 1 at a time)
+      console.log('[download] Acquiring YouTube download slot');
+      await acquireYoutubeSlot();
+      
+      try {
+        // Enforce cooldown before processing
+        console.log('[download] Enforcing YouTube cooldown (15 seconds)');
+        await enforceYouTubeCooldown();
+        
+        const externalEnabled = process.env.DOWNLOADER_API_ENABLED === 'true';
+        const localResult = await tryLocalYtDlp(url, formatId);
+        
+        if (localResult.ok) {
+          return fileResponse(localResult);
+        }
+        
+        if (!externalEnabled) {
+          return NextResponse.json(
+            {
+              error: 'Download failed.',
+              details: localResult.details || localResult.error,
+              provider: 'local_yt_dlp',
+            },
+            { status: 500 }
+          );
+        }
+        
+        const externalResult = await tryExternalApi(url);
+        if (externalResult.ok) {
+          return fileResponse(externalResult);
+        }
+        
+        return NextResponse.json(
+          {
+            error: 'Download failed from both local downloader and external provider.',
+            localError: localResult.details || localResult.error,
+            externalError: externalResult.details || externalResult.error,
+          },
+          { status: 502 }
+        );
+      } finally {
+        releaseYoutubeSlot();
+      }
     }
 
     console.log('[download] Request for URL:', new URL(url).hostname);
