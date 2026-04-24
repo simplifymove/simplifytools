@@ -29,49 +29,47 @@ def detect_language_name_to_code(lang_name: str) -> str:
     return lang_map.get(lang_name.lower(), 'en')
 
 def translate_text_deepl_api(text: str, source_lang: str, target_lang: str) -> str:
-    """Translate using free translation API"""
+    """Translate using free MyMemory translation API"""
     if source_lang == target_lang:
         return text
     
     try:
         import requests
         
-        # Map codes to full language names for API
-        api_lang_map = {
-            'en': 'EN',
-            'es': 'ES',
-            'fr': 'FR',
-            'de': 'DE',
-            'it': 'IT',
-            'pt': 'PT',
-            'ja': 'JA',
-            'ko': 'KO',
-            'zh': 'ZH',
-            'ru': 'RU',
-            'ar': 'AR',
-            'hi': 'HI',
+        # Map language codes to MyMemory format (en, es, fr, etc.)
+        lang_map = {
+            'en': 'en',
+            'es': 'es',
+            'fr': 'fr',
+            'de': 'de',
+            'it': 'it',
+            'pt': 'pt',
+            'ja': 'ja',
+            'ko': 'ko',
+            'zh': 'zh',
+            'ru': 'ru',
+            'ar': 'ar',
+            'hi': 'hi',
         }
         
-        src_code = api_lang_map.get(source_lang.lower(), 'EN')
-        tgt_code = api_lang_map.get(target_lang.lower(), 'EN')
+        src_code = lang_map.get(source_lang.lower(), 'en')
+        tgt_code = lang_map.get(target_lang.lower(), 'en')
         
-        # Try using LibreTranslate free API
-        api_url = "https://libretranslate.de/translate"
-        payload = {
-            "q": text,
-            "source": src_code.lower(),
-            "target": tgt_code.lower()
-        }
+        # Use MyMemory API (free, no authentication required)
+        api_url = f"https://api.mymemory.translated.net/get?q={text}&langpair={src_code}|{tgt_code}"
         
         try:
-            response = requests.post(api_url, json=payload, timeout=10)
+            response = requests.get(api_url, timeout=10)
             if response.status_code == 200:
                 result = response.json()
-                return result.get('translatedText', text)
-        except:
-            pass
+                if result.get('responseStatus') == 200:
+                    translated = result.get('responseData', {}).get('translatedText', '')
+                    if translated:
+                        return translated
+        except Exception as api_err:
+            print(f"MyMemory API error: {api_err}", file=sys.stderr)
         
-        # Fallback: return original
+        # Fallback: return original text if translation fails
         return text
         
     except Exception as e:
