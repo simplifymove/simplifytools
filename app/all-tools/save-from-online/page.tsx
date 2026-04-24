@@ -6,6 +6,52 @@ import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
+// YouTube predefined quality options
+const youtubeVideoOptions = [
+  {
+    label: 'Best Quality',
+    value: 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/best',
+  },
+  {
+    label: '1080p MP4',
+    value: 'bv*[height<=1080][ext=mp4]+ba[ext=m4a]/b[height<=1080][ext=mp4]/best[height<=1080]',
+  },
+  {
+    label: '720p MP4',
+    value: 'bv*[height<=720][ext=mp4]+ba[ext=m4a]/b[height<=720][ext=mp4]/best[height<=720]',
+  },
+  {
+    label: '480p MP4',
+    value: 'bv*[height<=480][ext=mp4]+ba[ext=m4a]/b[height<=480][ext=mp4]/best[height<=480]',
+  },
+  {
+    label: '360p MP4',
+    value: 'bv*[height<=360][ext=mp4]+ba[ext=m4a]/b[height<=360][ext=mp4]/best[height<=360]',
+  },
+];
+
+const youtubeAudioOptions = [
+  {
+    label: 'Best Audio',
+    value: 'bestaudio/best',
+  },
+  {
+    label: 'M4A Audio',
+    value: 'ba[ext=m4a]/bestaudio',
+  },
+];
+
+// Detect if URL is YouTube
+function isYoutubeUrl(input: string): boolean {
+  try {
+    const url = new URL(input);
+    const host = url.hostname.toLowerCase();
+    return host.includes('youtube.com') || host.includes('youtu.be');
+  } catch {
+    return false;
+  }
+}
+
 export default function SaveFromOnline() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,6 +62,7 @@ export default function SaveFromOnline() {
   const [formats, setFormats] = useState<any[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<string>('');
   const [showFormats, setShowFormats] = useState(false);
+  const [isYoutube, setIsYoutube] = useState(false);
 
   const handleFetchFormats = async () => {
     if (!url.trim()) {
@@ -23,10 +70,20 @@ export default function SaveFromOnline() {
       return;
     }
 
+    // Check if YouTube URL
+    if (isYoutubeUrl(url)) {
+      setIsYoutube(true);
+      setShowFormats(true);
+      setSelectedFormat(youtubeVideoOptions[0].value);
+      return;
+    }
+
+    // For non-YouTube URLs, fetch formats dynamically
     setFetchingFormats(true);
     setError('');
     setFormats([]);
     setSelectedFormat('');
+    setIsYoutube(false);
 
     try {
       const response = await fetch('/api/download/formats', {
@@ -67,8 +124,10 @@ export default function SaveFromOnline() {
 
     try {
       const downloadBody: any = { url: url.trim() };
-      if (selectedFormat && formats.length > 0) {
-        downloadBody.format = selectedFormat;
+      
+      // Pass formatId if we have a selected format
+      if (selectedFormat) {
+        downloadBody.formatId = selectedFormat;
       }
 
       const response = await fetch('/api/download', {
@@ -201,7 +260,52 @@ export default function SaveFromOnline() {
                 </motion.button>
               )}
 
-              {showFormats && formats.length > 0 && (
+              {showFormats && isYoutube && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label htmlFor="video-quality-select" className="block text-sm font-semibold text-gray-900 mb-2">
+                      📹 Video Quality
+                    </label>
+                    <select
+                      id="video-quality-select"
+                      value={selectedFormat}
+                      onChange={(e) => setSelectedFormat(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white cursor-pointer font-medium"
+                    >
+                      {youtubeVideoOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="audio-quality-select" className="block text-sm font-semibold text-gray-900 mb-2">
+                      🎵 Audio Only (Optional)
+                    </label>
+                    <select
+                      id="audio-quality-select"
+                      value={selectedFormat}
+                      onChange={(e) => setSelectedFormat(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white cursor-pointer font-medium"
+                    >
+                      <option value={youtubeVideoOptions[0].value}>→ Use video quality above</option>
+                      {youtubeAudioOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </motion.div>
+              )}
+
+              {showFormats && !isYoutube && formats.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

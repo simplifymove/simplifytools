@@ -69,6 +69,27 @@ function isYouTubeUrl(input: string): boolean {
   }
 }
 
+function normalizeYoutubeUrl(input: string): string {
+  try {
+    const url = new URL(input);
+    const host = url.hostname.toLowerCase();
+
+    if (host.includes('youtube.com')) {
+      const videoId = url.searchParams.get('v');
+      if (videoId) return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+
+    if (host.includes('youtu.be')) {
+      const videoId = url.pathname.replace('/', '').split('?')[0];
+      if (videoId) return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+
+    return input;
+  } catch {
+    return input;
+  }
+}
+
 function shouldFallbackToExternal(stderr: string): boolean {
   const text = stderr.toLowerCase();
 
@@ -423,7 +444,8 @@ export async function POST(request: NextRequest) {
     } else {
       const formData = await request.formData();
       url = String(formData.get('url') || '');
-      formatId = String(formData.get('formatId') || formData.get('format') || '');
+      const formFormatId = String(formData.get('formatId') || formData.get('format') || '');
+      formatId = formFormatId || undefined;
     }
 
     // Validate URL
@@ -432,6 +454,11 @@ export async function POST(request: NextRequest) {
         { error: 'Please provide a valid URL.' },
         { status: 400 }
       );
+    }
+
+    // Normalize YouTube URLs (remove playlist params, etc)
+    if (isYouTubeUrl(url)) {
+      url = normalizeYoutubeUrl(url);
     }
 
     console.log('[download] Request for URL:', new URL(url).hostname);
