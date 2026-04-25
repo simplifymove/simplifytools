@@ -409,7 +409,10 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
   try {
     console.log('[download] Attempting external API (Cobalt.tools)');
 
-    // Call Cobalt.tools API with POST request
+    // Map quality format: selectedQuality might be "720p" but Cobalt expects "720"
+    const qualityValue = (selectedQuality || '720').replace('p', '');
+
+    // Call Cobalt.tools API with POST request - EXACT REQUIRED FORMAT
     const apiResponse = await fetch(cobaltApiUrl, {
       method: 'POST',
       headers: {
@@ -419,35 +422,49 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
       },
       body: JSON.stringify({
         url: url,
-        vCodec: 'h264',
-        vQuality: selectedQuality || '720',
-        aFormat: 'best',
-        filenamePattern: 'basic',
-        isAudioOnly: false,
-        isTTOnly: false,
-        isNoAudio: false,
+        vQuality: qualityValue, // REQUIRED: "720", "1080", "480", etc
+        aFormat: 'mp3', // Optional: audio format
+        filenamePattern: 'basic', // Optional: filename pattern
       }),
     });
 
+    // ========================================
+    // Debug logging for error diagnosis
+    // ========================================
+    
+    const responseText = await apiResponse.text();
+    console.log('[download] Cobalt API HTTP status:', apiResponse.status);
+    
     if (!apiResponse.ok) {
-      const text = await apiResponse.text();
-      console.error('[download] Cobalt API HTTP error:', apiResponse.status);
+      console.error('[download] Cobalt API error response:', responseText.substring(0, 300));
       return {
         ok: false,
-        error: 'Download failed from Cobalt provider',
-        details: text.substring(0, 200),
+        error: `Cobalt API returned HTTP ${apiResponse.status}`,
+        details: responseText.substring(0, 200),
       };
     }
 
-    const data = await apiResponse.json();
-    console.log('[download] Cobalt API response received');
+    // Parse JSON response safely
+    let data: any;
+    try {
+      data = JSON.parse(responseText);
+      console.log('[download] Cobalt API response parsed successfully');
+    } catch (parseError) {
+      console.error('[download] Failed to parse Cobalt response as JSON:', responseText.substring(0, 200));
+      return {
+        ok: false,
+        error: 'Cobalt API returned invalid JSON',
+        details: responseText.substring(0, 200),
+      };
+    }
 
-    // Check for API errors
+    // Check for API errors in response body
     if (data.error || data.status === 'error') {
+      console.error('[download] Cobalt API error in response:', data.error || data.message);
       return {
         ok: false,
         error: 'Cobalt API returned an error',
-        details: data.errorMessage || data.message || 'Unknown error from Cobalt API',
+        details: data.errorMessage || data.message || data.error || 'Unknown error from Cobalt API',
       };
     }
 
@@ -464,10 +481,11 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     }
 
     if (!downloadUrl) {
+      console.error('[download] No download URL in Cobalt response:', JSON.stringify(data).substring(0, 200));
       return {
         ok: false,
         error: 'Cobalt API response does not contain a valid download URL',
-        details: 'No download URL found in response',
+        details: 'Response: ' + JSON.stringify(data).substring(0, 150),
       };
     }
 
@@ -485,6 +503,7 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     });
 
     if (!fileResponse.ok) {
+      console.error('[download] Failed to fetch video file from Cobalt URL, HTTP:', fileResponse.status);
       return {
         ok: false,
         error: 'Failed to fetch video file from Cobalt provider',
@@ -495,7 +514,7 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     const arrayBuffer = await fileResponse.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    console.log('[download] Cobalt API download successful');
+    console.log('[download] Cobalt API download successful, file size:', buffer.length);
 
     return {
       ok: true,
@@ -506,6 +525,7 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     };
   } catch (error: any) {
     console.error('[download] Cobalt API exception:', error?.message);
+    console.error('[download] Error stack:', error?.stack?.substring(0, 300));
 
     return {
       ok: false,
