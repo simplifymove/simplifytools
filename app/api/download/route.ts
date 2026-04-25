@@ -393,18 +393,8 @@ function findBestStream(
 }
 
 // ============================================================================
-// EXTERNAL DOWNLOADER API FALLBACK (RapidAPI youtube-media-downloader3)
+// EXTERNAL DOWNLOADER API FALLBACK (Cobalt.tools)
 // ============================================================================
-
-function extractVideoId(url: string): string | null {
-  try {
-    const urlObj = new URL(url);
-    const videoId = urlObj.searchParams.get('v');
-    return videoId;
-  } catch {
-    return null;
-  }
-}
 
 async function tryExternalApi(url: string, selectedQuality?: string): Promise<DownloadResult> {
   if (process.env.DOWNLOADER_API_ENABLED !== 'true') {
@@ -414,87 +404,70 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     };
   }
 
-  // Check for RapidAPI configuration
-  const apiHost = process.env.DOWNLOADER_API_HOST;
-  const apiKey = process.env.DOWNLOADER_API_KEY;
-  const apiBaseUrl = process.env.DOWNLOADER_API_URL ||
-    'https://youtube-media-downloader3.p.rapidapi.com/download';
-
-  if (!apiHost || !apiKey) {
-    return {
-      ok: false,
-      error: 'RapidAPI configuration is incomplete.',
-    };
-  }
+  const cobaltApiUrl = 'https://api.cobalt.tools/api/json';
 
   try {
-    console.log('[download] Attempting external API (RapidAPI youtube-media-downloader3)');
+    console.log('[download] Attempting external API (Cobalt.tools)');
 
-    // Extract videoId from URL
-    const videoId = extractVideoId(url);
-    if (!videoId) {
-      return {
-        ok: false,
-        error: 'Could not extract video ID from URL.',
-      };
-    }
-
-    console.log('[download] Extracted video ID for RapidAPI');
-
-    // Build API URL with query parameters
-    const quality = selectedQuality || '720p';
-    const apiUrl = `${apiBaseUrl}?videoId=${encodeURIComponent(videoId)}&quality=${encodeURIComponent(quality)}`;
-
-    // Call RapidAPI endpoint
-    const apiResponse = await fetch(apiUrl, {
-      method: 'GET',
+    // Call Cobalt.tools API with POST request
+    const apiResponse = await fetch(cobaltApiUrl, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-rapidapi-host': apiHost,
-        'x-rapidapi-key': apiKey,
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
       },
+      body: JSON.stringify({
+        url: url,
+        vCodec: 'h264',
+        vQuality: selectedQuality || '720',
+        aFormat: 'best',
+        filenamePattern: 'basic',
+        isAudioOnly: false,
+        isTTOnly: false,
+        isNoAudio: false,
+      }),
     });
 
     if (!apiResponse.ok) {
       const text = await apiResponse.text();
-      console.error('[download] RapidAPI HTTP error:', apiResponse.status);
+      console.error('[download] Cobalt API HTTP error:', apiResponse.status);
       return {
         ok: false,
-        error: 'Download failed from external provider',
+        error: 'Download failed from Cobalt provider',
         details: text.substring(0, 200),
       };
     }
 
     const data = await apiResponse.json();
-    console.log('[download] RapidAPI response received');
+    console.log('[download] Cobalt API response received');
 
-    // ========================================
-    // Parse RapidAPI response - support multiple formats
-    // ========================================
+    // Check for API errors
+    if (data.error || data.status === 'error') {
+      return {
+        ok: false,
+        error: 'Cobalt API returned an error',
+        details: data.errorMessage || data.message || 'Unknown error from Cobalt API',
+      };
+    }
 
+    // Extract download URL from Cobalt response
     let downloadUrl: string | null = null;
 
-    // Format 1: Direct URL property
     if (data.url && typeof data.url === 'string') {
       downloadUrl = data.url;
-      console.log('[download] Using url property from API response');
-    }
-    // Format 2: downloadUrl property
-    else if (data.downloadUrl && typeof data.downloadUrl === 'string') {
-      downloadUrl = data.downloadUrl;
-      console.log('[download] Using downloadUrl property from API response');
-    }
-    // Format 3: link property
-    else if (data.link && typeof data.link === 'string') {
-      downloadUrl = data.link;
-      console.log('[download] Using link property from API response');
+      console.log('[download] Using url from Cobalt API response');
+    } else if (data.downloads && Array.isArray(data.downloads) && data.downloads.length > 0) {
+      // Some Cobalt versions return array of downloads
+      downloadUrl = data.downloads[0].url || data.downloads[0];
+      console.log('[download] Using downloads array from Cobalt API response');
     }
 
     if (!downloadUrl) {
       return {
         ok: false,
-        error: 'API response does not contain a valid download URL',
-        details: 'No url, downloadUrl, or link property found in response.',
+        error: 'Cobalt API response does not contain a valid download URL',
+        details: 'No download URL found in response',
       };
     }
 
@@ -502,7 +475,7 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     // Fetch the video file from the URL
     // ========================================
 
-    console.log('[download] Fetching video from external URL');
+    console.log('[download] Fetching video from Cobalt download URL');
 
     const fileResponse = await fetch(downloadUrl, {
       headers: {
@@ -514,8 +487,7 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     if (!fileResponse.ok) {
       return {
         ok: false,
-        error: 'Failed to fetch video file from external provider',
-        provider: 'rapidapi_downloader3',
+        error: 'Failed to fetch video file from Cobalt provider',
         details: `HTTP ${fileResponse.status}`,
       };
     }
@@ -523,22 +495,21 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     const arrayBuffer = await fileResponse.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    console.log('[download] External API download successful');
+    console.log('[download] Cobalt API download successful');
 
     return {
       ok: true,
       buffer,
-      filename: safeFilename(`download-${quality}.mp4`),
+      filename: safeFilename(`download.mp4`),
       contentType: 'video/mp4',
       provider: 'external_api',
     };
   } catch (error: any) {
-    console.error('[download] external API exception:', error?.message);
+    console.error('[download] Cobalt API exception:', error?.message);
 
     return {
       ok: false,
-      error: 'Download failed from external provider',
-      provider: 'rapidapi_downloader3',
+      error: 'Download failed from Cobalt provider',
       details: error?.message || String(error),
     };
   }
