@@ -460,7 +460,6 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
       return {
         ok: false,
         error: 'Download failed from external provider',
-        provider: 'rapidapi_downloader3',
         details: text.substring(0, 200),
       };
     }
