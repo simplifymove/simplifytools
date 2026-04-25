@@ -392,8 +392,18 @@ function findBestStream(
 }
 
 // ============================================================================
-// EXTERNAL DOWNLOADER API FALLBACK (RapidAPI)
+// EXTERNAL DOWNLOADER API FALLBACK (RapidAPI youtube-media-downloader3)
 // ============================================================================
+
+function extractVideoId(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    const videoId = urlObj.searchParams.get('v');
+    return videoId;
+  } catch {
+    return null;
+  }
+}
 
 async function tryExternalApi(url: string, selectedQuality?: string): Promise<DownloadResult> {
   if (process.env.DOWNLOADER_API_ENABLED !== 'true') {
@@ -406,8 +416,8 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
   // Check for RapidAPI configuration
   const apiHost = process.env.DOWNLOADER_API_HOST;
   const apiKey = process.env.DOWNLOADER_API_KEY;
-  const apiUrl = process.env.DOWNLOADER_API_URL ||
-    'https://youtube-video-download-api.p.rapidapi.com/get-stream-info/';
+  const apiBaseUrl = process.env.DOWNLOADER_API_URL ||
+    'https://youtube-media-downloader3.p.rapidapi.com/download';
 
   if (!apiHost || !apiKey) {
     return {
@@ -417,106 +427,101 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
   }
 
   try {
-    console.log('[download] Attempting external API (RapidAPI)');
+    console.log('[download] Attempting external API (RapidAPI youtube-media-downloader3)');
 
+    // Extract videoId from URL
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      return {
+        ok: false,
+        error: 'Could not extract video ID from URL.',
+      };
+    }
+
+    console.log('[download] Extracted video ID for RapidAPI');
+
+    // Build API URL with query parameters
+    const quality = selectedQuality || '720p';
+    const apiUrl = `${apiBaseUrl}?videoId=${encodeURIComponent(videoId)}&quality=${encodeURIComponent(quality)}`;
+
+    // Call RapidAPI endpoint
     const apiResponse = await fetch(apiUrl, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'x-rapidapi-host': apiHost,
         'x-rapidapi-key': apiKey,
       },
-      body: JSON.stringify({ url }),
     });
 
     if (!apiResponse.ok) {
       const text = await apiResponse.text();
-      console.error('[download] external API HTTP error:', apiResponse.status);
+      console.error('[download] RapidAPI HTTP error:', apiResponse.status);
       return {
         ok: false,
-        error: 'External API request failed.',
-        details: text.substring(0, 500),
+        error: 'Download failed from external provider',
+        provider: 'rapidapi_downloader3',
+        details: text.substring(0, 200),
       };
     }
 
     const data = await apiResponse.json();
-    console.log('[download] External API response received');
+    console.log('[download] RapidAPI response received');
 
     // ========================================
-    // Parse RapidAPI response flexibly
+    // Parse RapidAPI response - support multiple formats
     // ========================================
 
-    let streamUrl: string | null = null;
-    let selectedFormat = selectedQuality || '720p';
+    let downloadUrl: string | null = null;
 
-    // Format 1: Direct URL in response
+    // Format 1: Direct URL property
     if (data.url && typeof data.url === 'string') {
-      streamUrl = data.url;
-      console.log('[download] Using direct URL from API response');
-    } else if (data.downloadUrl && typeof data.downloadUrl === 'string') {
-      streamUrl = data.downloadUrl;
-      console.log('[download] Using downloadUrl from API response');
+      downloadUrl = data.url;
+      console.log('[download] Using url property from API response');
+    }
+    // Format 2: downloadUrl property
+    else if (data.downloadUrl && typeof data.downloadUrl === 'string') {
+      downloadUrl = data.downloadUrl;
+      console.log('[download] Using downloadUrl property from API response');
+    }
+    // Format 3: link property
+    else if (data.link && typeof data.link === 'string') {
+      downloadUrl = data.link;
+      console.log('[download] Using link property from API response');
     }
 
-    // Format 2: Streams/formats array (RapidAPI typical response)
-    if (!streamUrl && (data.streams || data.formats)) {
-      const streamsArray = data.streams || data.formats;
-      const bestStream = findBestStream(streamsArray, selectedQuality);
-
-      if (bestStream) {
-        streamUrl = bestStream.url;
-        selectedFormat = bestStream.quality;
-        console.log(`[download] Selected stream quality: ${selectedFormat}`);
-      }
-    }
-
-    // Format 3: Nested structure with data object
-    if (!streamUrl && data.data) {
-      if (data.data.url) {
-        streamUrl = data.data.url;
-        console.log('[download] Using URL from data object');
-      } else if (data.data.streams || data.data.formats) {
-        const streamsArray = data.data.streams || data.data.formats;
-        const bestStream = findBestStream(streamsArray, selectedQuality);
-
-        if (bestStream) {
-          streamUrl = bestStream.url;
-          selectedFormat = bestStream.quality;
-          console.log(`[download] Selected stream quality: ${selectedFormat}`);
-        }
-      }
-    }
-
-    if (!streamUrl) {
+    if (!downloadUrl) {
       return {
         ok: false,
-        error: 'API response does not contain a valid download stream.',
-        details: 'No URL found in streams, formats, or direct response.',
+        error: 'API response does not contain a valid download URL',
+        provider: 'rapidapi_downloader3',
+        details: 'No url, downloadUrl, or link property found in response.',
       };
     }
 
     // ========================================
-    // Fetch the stream from the URL
+    // Fetch the video file from the URL
     // ========================================
 
-    console.log('[download] Fetching stream from external source');
+    console.log('[download] Fetching video from external URL');
 
-    const streamResponse = await fetch(streamUrl, {
+    const fileResponse = await fetch(downloadUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
       },
     });
 
-    if (!streamResponse.ok) {
+    if (!fileResponse.ok) {
       return {
         ok: false,
-        error: 'Failed to fetch stream from external API.',
-        details: `HTTP ${streamResponse.status}`,
+        error: 'Failed to fetch video file from external provider',
+        provider: 'rapidapi_downloader3',
+        details: `HTTP ${fileResponse.status}`,
       };
     }
 
-    const arrayBuffer = await streamResponse.arrayBuffer();
+    const arrayBuffer = await fileResponse.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     console.log('[download] External API download successful');
@@ -524,7 +529,7 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
     return {
       ok: true,
       buffer,
-      filename: safeFilename(`download-${selectedFormat}.mp4`),
+      filename: safeFilename(`download-${quality}.mp4`),
       contentType: 'video/mp4',
       provider: 'external_api',
     };
@@ -533,7 +538,8 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
 
     return {
       ok: false,
-      error: 'External API request failed.',
+      error: 'Download failed from external provider',
+      provider: 'rapidapi_downloader3',
       details: error?.message || String(error),
     };
   }
