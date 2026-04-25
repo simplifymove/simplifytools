@@ -32,6 +32,7 @@ type DownloadResult =
       error: string;
       details?: string;
       shouldFallback?: boolean;
+      provider?: string;
     };
 
 // ============================================================================
@@ -493,7 +494,6 @@ async function tryExternalApi(url: string, selectedQuality?: string): Promise<Do
       return {
         ok: false,
         error: 'API response does not contain a valid download URL',
-        provider: 'rapidapi_downloader3',
         details: 'No url, downloadUrl, or link property found in response.',
       };
     }
