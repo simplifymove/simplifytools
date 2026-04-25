@@ -135,19 +135,16 @@ function normalizeYoutubeUrl(input: string): string {
 function shouldFallbackToExternal(stderr: string): boolean {
   const text = stderr.toLowerCase();
 
+  // Check for conditions that warrant fallback to external API
   return (
+    text.includes('http error 429') ||
+    text.includes('too many requests') ||
     text.includes('sign in to confirm') ||
     text.includes('not a bot') ||
+    text.includes('rate-limited') ||
     text.includes('requested format is not available') ||
     text.includes('n challenge') ||
-    text.includes('signature') ||
-    text.includes('unable to extract') ||
-    text.includes('confirm your age') ||
-    text.includes('login') ||
-    text.includes('cookies') ||
-    text.includes('403') ||
-    text.includes('429') ||
-    text.includes('blocked')
+    text.includes('unable to extract')
   );
 }
 
@@ -228,10 +225,6 @@ async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadRe
   const id = crypto.randomUUID();
   const outputTemplate = path.join(tmpDir, `${id}.%(ext)s`);
 
-  // For YouTube, use minimal retries (1) and increased sleep intervals
-  const isYT = isYouTubeUrl(url);
-  const retries = isYT ? '1' : '3';
-
   const args = [
     '-m',
     'yt_dlp',
@@ -239,16 +232,16 @@ async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadRe
     '--js-runtimes',
     'node',
     '--force-ipv4',
-    '--retries',
-    retries,
-    '--fragment-retries',
-    '3',
-    '--socket-timeout',
-    '30',
     '--sleep-interval',
     '3',
     '--max-sleep-interval',
     '6',
+    '--retries',
+    '1',
+    '--fragment-retries',
+    '1',
+    '--socket-timeout',
+    '30',
     '--user-agent',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
     '-f',
@@ -259,12 +252,22 @@ async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadRe
     outputTemplate,
   ];
 
-  // Add cookies if available
+  // Add cookies if available (do not log path)
   if (
     process.env.YTDLP_COOKIES_PATH &&
     fs.existsSync(process.env.YTDLP_COOKIES_PATH)
   ) {
     args.push('--cookies', process.env.YTDLP_COOKIES_PATH);
+    console.log('[download] Using yt-dlp cookies file');
+  }
+
+  // Add proxy if enabled and configured (do not log proxy URL)
+  if (
+    process.env.YTDLP_PROXY_ENABLED === 'true' &&
+    process.env.YTDLP_PROXY_URL
+  ) {
+    args.push('--proxy', process.env.YTDLP_PROXY_URL);
+    console.log('[download] Using yt-dlp proxy');
   }
 
   args.push(url);
@@ -321,10 +324,78 @@ async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadRe
 }
 
 // ============================================================================
-// EXTERNAL DOWNLOADER API FALLBACK
+// QUALITY SELECTION UTILITIES
 // ============================================================================
 
-async function tryExternalApi(url: string): Promise<DownloadResult> {
+function getQualityOrder(): string[] {
+  return ['1080p', '720p', '480p', '360p', '240p'];
+}
+
+function extractQuality(label: string): string | null {
+  const match = label.match(/(\d+)p/);
+  return match ? match[1] + 'p' : null;
+}
+
+function findBestStream(
+  streams: any[],
+  selectedQuality?: string
+): { url: string; quality: string } | null {
+  if (!Array.isArray(streams) || streams.length === 0) {
+    return null;
+  }
+
+  // Filter for mp4 streams with both video and audio
+  const mp4Streams = streams.filter((stream: any) => {
+    const hasAudio = stream.hasAudio || stream.audio;
+    const hasVideo = stream.hasVideo || stream.video;
+    const isMp4 =
+      (stream.mimeType && stream.mimeType.includes('mp4')) ||
+      (stream.format && stream.format.toLowerCase().includes('mp4')) ||
+      (stream.type && stream.type.toLowerCase().includes('mp4'));
+
+    return isMp4 && hasAudio && hasVideo;
+  });
+
+  if (mp4Streams.length === 0) {
+    return null;
+  }
+
+  // If a specific quality was selected, try to find closest match
+  if (selectedQuality) {
+    const qualityOrder = getQualityOrder();
+    const selectedIndex = qualityOrder.indexOf(selectedQuality);
+
+    if (selectedIndex !== -1) {
+      // Look for exact match first, then fallback to closest lower quality
+      for (let i = selectedIndex; i < qualityOrder.length; i++) {
+        const targetQuality = qualityOrder[i];
+        const match = mp4Streams.find((stream: any) => {
+          const quality = extractQuality(stream.label || stream.quality || '');
+          return quality === targetQuality;
+        });
+        if (match) {
+          return {
+            url: match.url,
+            quality: targetQuality,
+          };
+        }
+      }
+    }
+  }
+
+  // Default: return highest quality (usually first)
+  const best = mp4Streams[0];
+  return {
+    url: best.url,
+    quality: extractQuality(best.label || best.quality || '') || 'best',
+  };
+}
+
+// ============================================================================
+// EXTERNAL DOWNLOADER API FALLBACK (RapidAPI)
+// ============================================================================
+
+async function tryExternalApi(url: string, selectedQuality?: string): Promise<DownloadResult> {
   if (process.env.DOWNLOADER_API_ENABLED !== 'true') {
     return {
       ok: false,
@@ -332,106 +403,137 @@ async function tryExternalApi(url: string): Promise<DownloadResult> {
     };
   }
 
-  if (!process.env.DOWNLOADER_API_URL || !process.env.DOWNLOADER_API_KEY) {
+  // Check for RapidAPI configuration
+  const apiHost = process.env.DOWNLOADER_API_HOST;
+  const apiKey = process.env.DOWNLOADER_API_KEY;
+  const apiUrl = process.env.DOWNLOADER_API_URL ||
+    'https://youtube-video-download-api.p.rapidapi.com/get-stream-info/';
+
+  if (!apiHost || !apiKey) {
     return {
       ok: false,
-      error: 'External downloader API is not configured.',
+      error: 'RapidAPI configuration is incomplete.',
     };
   }
 
   try {
-    console.log('[download] Attempting external downloader API');
+    console.log('[download] Attempting external API (RapidAPI)');
 
-    const apiResponse = await fetch(process.env.DOWNLOADER_API_URL, {
+    const apiResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.DOWNLOADER_API_KEY}`,
         'Content-Type': 'application/json',
+        'x-rapidapi-host': apiHost,
+        'x-rapidapi-key': apiKey,
       },
-      body: JSON.stringify({
-        url,
-        format: 'mp4',
-        quality: 'best',
-      }),
+      body: JSON.stringify({ url }),
     });
 
     if (!apiResponse.ok) {
       const text = await apiResponse.text();
-      console.error('[download] external API HTTP error:', apiResponse.status, text);
+      console.error('[download] external API HTTP error:', apiResponse.status);
       return {
         ok: false,
-        error: 'External downloader API returned error.',
+        error: 'External API request failed.',
         details: text.substring(0, 500),
       };
     }
 
     const data = await apiResponse.json();
+    console.log('[download] External API response received');
 
-    /**
-     * Expected external API response formats:
-     *
-     * Format A - Direct URL:
-     * {
-     *   "downloadUrl": "https://...",
-     *   "filename": "video.mp4",
-     *   "contentType": "video/mp4"
-     * }
-     *
-     * Format B - Base64 data:
-     * {
-     *   "base64": "...",
-     *   "filename": "video.mp4",
-     *   "contentType": "video/mp4"
-     * }
-     */
+    // ========================================
+    // Parse RapidAPI response flexibly
+    // ========================================
 
-    if (data.downloadUrl) {
-      console.log('[download] External API returned downloadUrl');
+    let streamUrl: string | null = null;
+    let selectedFormat = selectedQuality || '720p';
 
-      const fileResponse = await fetch(data.downloadUrl);
+    // Format 1: Direct URL in response
+    if (data.url && typeof data.url === 'string') {
+      streamUrl = data.url;
+      console.log('[download] Using direct URL from API response');
+    } else if (data.downloadUrl && typeof data.downloadUrl === 'string') {
+      streamUrl = data.downloadUrl;
+      console.log('[download] Using downloadUrl from API response');
+    }
 
-      if (!fileResponse.ok) {
-        return {
-          ok: false,
-          error: 'External API returned a download URL but file fetch failed.',
-          details: `HTTP ${fileResponse.status}`,
-        };
+    // Format 2: Streams/formats array (RapidAPI typical response)
+    if (!streamUrl && (data.streams || data.formats)) {
+      const streamsArray = data.streams || data.formats;
+      const bestStream = findBestStream(streamsArray, selectedQuality);
+
+      if (bestStream) {
+        streamUrl = bestStream.url;
+        selectedFormat = bestStream.quality;
+        console.log(`[download] Selected stream quality: ${selectedFormat}`);
       }
+    }
 
-      const arrayBuffer = await fileResponse.arrayBuffer();
+    // Format 3: Nested structure with data object
+    if (!streamUrl && data.data) {
+      if (data.data.url) {
+        streamUrl = data.data.url;
+        console.log('[download] Using URL from data object');
+      } else if (data.data.streams || data.data.formats) {
+        const streamsArray = data.data.streams || data.data.formats;
+        const bestStream = findBestStream(streamsArray, selectedQuality);
 
+        if (bestStream) {
+          streamUrl = bestStream.url;
+          selectedFormat = bestStream.quality;
+          console.log(`[download] Selected stream quality: ${selectedFormat}`);
+        }
+      }
+    }
+
+    if (!streamUrl) {
       return {
-        ok: true,
-        buffer: Buffer.from(arrayBuffer),
-        filename: safeFilename(data.filename || 'download.mp4'),
-        contentType: data.contentType || 'video/mp4',
-        provider: 'external_api',
+        ok: false,
+        error: 'API response does not contain a valid download stream.',
+        details: 'No URL found in streams, formats, or direct response.',
       };
     }
 
-    if (data.base64) {
-      console.log('[download] External API returned base64 data');
+    // ========================================
+    // Fetch the stream from the URL
+    // ========================================
 
+    console.log('[download] Fetching stream from external source');
+
+    const streamResponse = await fetch(streamUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+      },
+    });
+
+    if (!streamResponse.ok) {
       return {
-        ok: true,
-        buffer: Buffer.from(data.base64, 'base64'),
-        filename: safeFilename(data.filename || 'download.mp4'),
-        contentType: data.contentType || 'video/mp4',
-        provider: 'external_api',
+        ok: false,
+        error: 'Failed to fetch stream from external API.',
+        details: `HTTP ${streamResponse.status}`,
       };
     }
+
+    const arrayBuffer = await streamResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    console.log('[download] External API download successful');
 
     return {
-      ok: false,
-      error: 'External API response did not contain downloadable content.',
-      details: JSON.stringify(data).substring(0, 500),
+      ok: true,
+      buffer,
+      filename: safeFilename(`download-${selectedFormat}.mp4`),
+      contentType: 'video/mp4',
+      provider: 'external_api',
     };
   } catch (error: any) {
     console.error('[download] external API exception:', error?.message);
 
     return {
       ok: false,
-      error: 'External downloader API request failed.',
+      error: 'External API request failed.',
       details: error?.message || String(error),
     };
   }
@@ -537,7 +639,7 @@ export async function POST(request: NextRequest) {
           );
         }
         
-        const externalResult = await tryExternalApi(url);
+        const externalResult = await tryExternalApi(url, formatId);
         if (externalResult.ok) {
           return fileResponse(externalResult);
         }
@@ -589,7 +691,7 @@ export async function POST(request: NextRequest) {
 
     // External API is enabled, try it as fallback
     console.log('[download] Local failed, attempting fallback to external API');
-    const externalResult = await tryExternalApi(url);
+    const externalResult = await tryExternalApi(url, formatId);
 
     if (externalResult.ok) {
       return fileResponse(externalResult);
