@@ -4,17 +4,20 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useSession, signOut } from 'next-auth/react';
 import { 
   FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
-  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle
+  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle, ChevronDown, LogOut, Settings, LayoutDashboard
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SearchBox } from './SearchBox';
 
 export function HomeHeader() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(true);
 
   useEffect(() => {
@@ -272,17 +275,70 @@ export function HomeHeader() {
               />
             </div>
 
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                href="/all-tools"
-                className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
-              >
-                Browse Tools
-              </Link>
-            </motion.div>
+            {/* Auth Section */}
+            {session?.user ? (
+              // Logged In - User Dropdown
+              <div className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 border-2 border-orange-500 rounded-full hover:bg-orange-50 transition-colors"
+                >
+                  {session.user.image ? (
+                    <img src={session.user.image} alt={session.user.name || ''} className="w-6 h-6 rounded-full" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-bold">
+                      {session.user.name?.[0] || 'U'}
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-gray-900">{session.user.name || session.user.email}</span>
+                  <ChevronDown size={16} />
+                </motion.button>
+
+                {userMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2"
+                  >
+                    <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 transition-colors">
+                      <LayoutDashboard size={16} /> Dashboard
+                    </Link>
+                    <Link href="/account" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 transition-colors">
+                      <Settings size={16} /> Account
+                    </Link>
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut size={16} /> Sign Out
+                    </button>
+                  </motion.div>
+                )}
+              </div>
+            ) : (
+              // Not Logged In - Auth Buttons
+              <div className="hidden sm:flex items-center gap-3">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/auth/signin"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:border-orange-500 hover:text-orange-600 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/auth/signup"
+                    className="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600 transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </motion.div>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -329,6 +385,34 @@ export function HomeHeader() {
               <Link href="/all-tools/resume-maker/job-match" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Resume Maker
               </Link>
+
+              {/* Mobile Auth Buttons */}
+              {session?.user ? (
+                <>
+                  <Link href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                    Dashboard
+                  </Link>
+                  <Link href="/account" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                    Account
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="text-left px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/signin" className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded text-center hover:border-orange-500 transition-colors">
+                    Sign In
+                  </Link>
+                  <Link href="/auth/signup" className="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded text-center hover:bg-orange-600 transition-colors">
+                    Sign Up
+                  </Link>
+                </>
+              )}
+
               <Link href="/all-tools" className="px-4 py-2 bg-orange-500 text-white font-medium rounded-full text-center hover:bg-orange-600 transition-all">
                 Browse Tools
               </Link>
