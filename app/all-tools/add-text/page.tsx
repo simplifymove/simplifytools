@@ -233,7 +233,14 @@ export default function AddTextPage() {
               className="bg-white rounded-lg shadow-lg p-6 mb-6"
             >
               <h2 className="text-2xl font-bold mb-4">Upload Image</h2>
-              <ImageUploader onFileSelect={handleFileSelect} />
+              <ImageUploader
+                onFileSelect={handleFileSelect}
+                preview={preview}
+                onClearPreview={() => {
+                  setPreview(null);
+                  setFile(null);
+                }}
+              />
             </motion.div>
 
             {/* Preview */}
