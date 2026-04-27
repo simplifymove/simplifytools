@@ -4,12 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronDown, Search, Menu, X, FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2 } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { ChevronDown, Search, Menu, X, FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -168,17 +171,85 @@ export function Header() {
           {/* Right Actions - Desktop */}
           <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/tools"
+              href="/all-tools"
               className="px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 transition duration-0"
             >
               Browse Tools
             </Link>
-            <Link
-              href="/auth/signin"
-              className="px-6 py-2 border-2 border-orange-500 text-orange-500 font-medium rounded-full hover:bg-orange-50 transition duration-0"
-            >
-              Sign In
-            </Link>
+            
+            {session?.user ? (
+              // User Dropdown Menu
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 px-4 py-2 border-2 border-orange-500 rounded-full hover:bg-orange-50 transition"
+                >
+                  {session.user.image ? (
+                    <img 
+                      src={session.user.image} 
+                      alt={session.user.name || 'User'} 
+                      className="w-6 h-6 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-sm font-bold">
+                      {session.user.name?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+                  <span className="text-gray-700 font-medium hidden sm:inline max-w-[100px] truncate">
+                    {session.user.name || session.user.email}
+                  </span>
+                  <ChevronDown size={16} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-orange-50 transition"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <LayoutDashboard size={18} />
+                      Dashboard
+                    </Link>
+                    <Link
+                      href="/account"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-orange-50 transition"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Settings size={18} />
+                      Account
+                    </Link>
+                    <hr className="my-2" />
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        signOut({ callbackUrl: '/' });
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition text-left"
+                    >
+                      <LogOut size={18} />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/auth/signin"
+                  className="px-6 py-2 border-2 border-orange-500 text-orange-500 font-medium rounded-full hover:bg-orange-50 transition duration-0"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transition duration-0"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -231,12 +302,46 @@ export function Header() {
               >
                 Browse Tools
               </Link>
-              <Link
-                href="/auth/signin"
-                className="w-full px-4 py-2 border-2 border-orange-500 text-orange-500 font-medium rounded-lg hover:bg-orange-50 transition text-center"
-              >
-                Sign In
-              </Link>
+              {session?.user ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="w-full px-4 py-2 border-2 border-orange-500 text-orange-500 font-medium rounded-lg hover:bg-orange-50 transition text-center"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/account"
+                    className="w-full px-4 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition text-center"
+                  >
+                    Account
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      signOut({ callbackUrl: '/' });
+                    }}
+                    className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition text-center"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/signin"
+                    className="w-full px-4 py-2 border-2 border-orange-500 text-orange-500 font-medium rounded-lg hover:bg-orange-50 transition text-center"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition text-center"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
