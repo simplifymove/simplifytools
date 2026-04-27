@@ -6,6 +6,8 @@ import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { Header } from '@/app/components/Header'
+import { Footer } from '@/app/components/Footer'
 
 function SignInContent() {
   const router = useRouter()
@@ -31,7 +33,9 @@ function SignInContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center px-4">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+      <Header />
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -110,26 +114,24 @@ function SignInContent() {
             </Link>
           </div>
 
-          {/* Footer */}
-          <div className="text-center text-sm text-gray-500 space-y-1">
-            <Link href="/" className="hover:text-blue-600 transition-colors">
-              Back to Home
-            </Link>
+          {/* Footer Links */}
+          <div className="text-center text-sm text-gray-500 space-y-1 border-t border-gray-200 pt-6 mt-6">
+            <div className="flex gap-4 justify-center text-xs">
+              <Link href="/privacy" className="hover:text-blue-600 transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="hover:text-blue-600 transition-colors">
+                Terms of Service
+              </Link>
+              <Link href="/" className="hover:text-blue-600 transition-colors">
+                Back to Home
+              </Link>
+            </div>
           </div>
         </div>
-
-        {/* Branding */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-center mt-8"
-        >
-          <p className="text-gray-500 text-sm">
-            © 2026 SimplifyConvert. All rights reserved.
-          </p>
-        </motion.div>
       </motion.div>
+      </div>
+      <Footer />
     </div>
   )
 }
