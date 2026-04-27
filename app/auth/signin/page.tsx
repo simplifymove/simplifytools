@@ -6,7 +6,7 @@ import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Header } from '@/app/components/Header'
+import { HomeHeader } from '@/app/components/HomeHeader'
 import { Footer } from '@/app/components/Footer'
 
 function SignInContent() {
@@ -34,7 +34,7 @@ function SignInContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      <Header />
+      <HomeHeader />
       <div className="flex-1 flex items-center justify-center px-4 py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
