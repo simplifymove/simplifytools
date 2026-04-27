@@ -106,15 +106,6 @@ const aiEditingTools: Tool[] = [
     headerColor: 'from-indigo-400 via-blue-400 to-indigo-500',
   },
   {
-    id: 'remove-person',
-    title: 'Remove Person',
-    description: 'Remove people from photos effortlessly',
-    category: 'Image',
-    icon: Package,
-    route: '/all-tools/remove-person',
-    headerColor: 'bg-orange-500',
-  },
-  {
     id: 'unblur',
     title: 'Unblur IMG',
     description: 'Enhance and clarify blurry images',
@@ -183,6 +174,8 @@ const aiEditingTools: Tool[] = [
     description: 'Add custom text to images',
     category: 'Image',
     icon: Type,
+    route: '/all-tools/add-text',
+    headerColor: 'bg-blue-500',
   },
   {
     id: 'bw',

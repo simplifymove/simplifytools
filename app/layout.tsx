@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -111,6 +112,24 @@ export default function RootLayout({
                 query_input: "required name=search_term_string",
               },
             }),
+          }}
+        />
+        
+        {/* Google Tag Manager (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-1G9BR41W9G"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-1G9BR41W9G');
+            `,
           }}
         />
       </head>

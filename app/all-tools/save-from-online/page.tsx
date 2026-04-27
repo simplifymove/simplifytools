@@ -232,6 +232,24 @@ export default function SaveFromOnline() {
             </p>
           </motion.div>
 
+          {/* YOUTUBE NOTICE BANNER */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15 }}
+            className="max-w-3xl mx-auto mb-8 p-5 bg-amber-50 border-l-4 border-amber-500 rounded-lg shadow-md"
+          >
+            <div className="flex items-start gap-4">
+              <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={22} />
+              <div>
+                <h3 className="font-bold text-amber-900 mb-1">YouTube Downloads Temporarily Unavailable</h3>
+                <p className="text-amber-800 text-sm leading-relaxed">
+                  We're currently updating our YouTube download service to ensure better compatibility and performance. YouTube downloads will be restored shortly. Thank you for your patience! In the meantime, you can download from other supported platforms.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
           {/* MAIN DOWNLOADER */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}

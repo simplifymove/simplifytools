@@ -62,7 +62,13 @@ export default function MakeRoundImagePage() {
     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
     ctx.clip();
 
-    ctx.drawImage(img, borderWidth, borderWidth, diameter, diameter);
+    // Scale image to fill circle completely (cover approach)
+    const scale = Math.max(diameter / img.width, diameter / img.height);
+    const drawWidth = img.width * scale;
+    const drawHeight = img.height * scale;
+    const x = centerX - drawWidth / 2;
+    const y = centerY - drawHeight / 2;
+    ctx.drawImage(img, x, y, drawWidth, drawHeight);
 
     ctx.restore();
 
@@ -108,9 +114,13 @@ export default function MakeRoundImagePage() {
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         ctx.clip();
 
-        const x = (canvas.width - img.width) / 2;
-        const y = (canvas.height - img.height) / 2;
-        ctx.drawImage(img, x, y);
+        // Scale image to fill circle completely (cover approach)
+        const scale = Math.max(size / img.width, size / img.height);
+        const drawWidth = img.width * scale;
+        const drawHeight = img.height * scale;
+        const x = centerX - drawWidth / 2;
+        const y = centerY - drawHeight / 2;
+        ctx.drawImage(img, x, y, drawWidth, drawHeight);
 
         ctx.restore();
 

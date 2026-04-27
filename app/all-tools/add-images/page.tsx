@@ -16,8 +16,8 @@ interface CanvasImage {
 
 export default function AddImagesPage() {
   const [images, setImages] = useState<CanvasImage[]>([]);
-  const [canvasWidth, setCanvasWidth] = useState(800);
-  const [canvasHeight, setCanvasHeight] = useState(600);
+  const [canvasWidth, setCanvasWidth] = useState(1600);
+  const [canvasHeight, setCanvasHeight] = useState(1200);
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
@@ -29,25 +29,77 @@ export default function AddImagesPage() {
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.currentTarget.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    for (let i = 0; i < Math.min(files.length, 10); i++) {
+    const validFiles: File[] = [];
+    
+    // First, filter to get only image files
+    for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const newImage: CanvasImage = {
-            id: String(Date.now() + i),
-            blob: file,
-            preview: reader.result as string,
-            x: 50 + images.length * 20,
-            y: 50 + images.length * 20,
-          };
-          setImages((prev) => [...prev, newImage]);
-        };
-        reader.readAsDataURL(file);
+        if (validFiles.length < 10 - images.length) {
+          validFiles.push(file);
+        }
       }
     }
+
+    if (validFiles.length === 0) {
+      setError('No valid image files selected');
+      e.currentTarget.value = '';
+      return;
+    }
+
+    const newImages: CanvasImage[] = [];
+    let filesProcessed = 0;
+
+    validFiles.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onerror = () => {
+        setError(`Failed to read file: ${file.name}`);
+        filesProcessed++;
+        if (filesProcessed === validFiles.length && newImages.length > 0) {
+          setImages((prev) => [...prev, ...newImages]);
+        }
+      };
+      reader.onload = () => {
+        try {
+          // Auto-layout: arrange images in a grid to avoid overlap
+          // Industry standard: 320px images + 40px spacing
+          const imageSize = 360;
+          const gapSize = 40;
+          const imagesPerRow = Math.max(1, Math.floor(canvasWidth / (imageSize + gapSize)));
+          const totalIndex = images.length + newImages.length;
+          const row = Math.floor(totalIndex / imagesPerRow);
+          const col = totalIndex % imagesPerRow;
+          
+          const newImage: CanvasImage = {
+            id: String(Date.now() + index + Math.random()),
+            blob: file,
+            preview: reader.result as string,
+            x: 40 + col * (imageSize + gapSize),
+            y: 40 + row * (imageSize + gapSize),
+          };
+          newImages.push(newImage);
+        } catch (err) {
+          console.error('Error creating image object:', err);
+        }
+        
+        filesProcessed++;
+
+        // Add all images once all files are processed
+        if (filesProcessed === validFiles.length) {
+          if (newImages.length > 0) {
+            setImages((prev) => [...prev, ...newImages]);
+          } else {
+            setError('Failed to process images');
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Reset file input
+    e.currentTarget.value = '';
     setError(null);
   };
 
@@ -66,7 +118,7 @@ export default function AddImagesPage() {
 
   const drawPreview = () => {
     const canvas = previewCanvasRef.current;
-    if (!canvas) return;
+    if (!canvas || images.length === 0) return;
 
     // Scale preview to fit container
     const maxWidth = 400;
@@ -82,30 +134,39 @@ export default function AddImagesPage() {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw images
-    images.forEach((img) => {
+    // Draw images with proper async handling
+    let imagesDrawn = 0;
+    
+    images.forEach((img, idx) => {
       const imgElement = new Image();
+      imgElement.crossOrigin = 'anonymous';
+      imgElement.onerror = () => {
+        imagesDrawn++;
+      };
       imgElement.onload = () => {
-        const size = 80 * scale;
-        ctx.drawImage(
-          imgElement,
-          img.x * scale,
-          img.y * scale,
-          size,
-          size
-        );
+        try {
+          const size = 320 * scale;
+          const x = img.x * scale;
+          const y = img.y * scale;
+          
+          // Draw image
+          ctx.drawImage(imgElement, x, y, size, size);
 
-        // Draw selection box if selected
-        if (img.id === selectedImageId) {
-          ctx.strokeStyle = '#ff6b6b';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            img.x * scale,
-            img.y * scale,
-            size,
-            size
-          );
+          // Draw selection box if selected
+          if (img.id === selectedImageId) {
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, size, size);
+          }
+
+          // Draw image number
+          ctx.fillStyle = '#000000';
+          ctx.font = `bold ${12 * scale}px Arial`;
+          ctx.fillText(String(idx + 1), x + 5, y + 20);
+        } catch (err) {
+          console.error('Error drawing image:', err);
         }
+        imagesDrawn++;
       };
       imgElement.src = img.preview;
     });
@@ -120,10 +181,12 @@ export default function AddImagesPage() {
     const x = (e.clientX - rect.left) / scale;
     const y = (e.clientY - rect.top) / scale;
 
+    const size = 320;
+
     // Find if clicked on any image
     for (let i = images.length - 1; i >= 0; i--) {
       const img = images[i];
-      if (x >= img.x && x <= img.x + 80 && y >= img.y && y <= img.y + 80) {
+      if (x >= img.x && x <= img.x + size && y >= img.y && y <= img.y + size) {
         setSelectedImageId(img.id);
         return;
       }
@@ -144,40 +207,89 @@ export default function AddImagesPage() {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: false });
       if (!ctx) return;
 
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+      // High DPI rendering for crisp output (4K quality)
+      const dpi = 300;
+      const scale = dpi / 96; // Standard screen DPI is 96
+      
+      canvas.width = canvasWidth * scale;
+      canvas.height = canvasHeight * scale;
+      
+      // Set canvas style size for proper display
+      canvas.style.width = canvasWidth + 'px';
+      canvas.style.height = canvasHeight + 'px';
+
+      // High-quality rendering settings
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // Scale context without affecting text
+      ctx.scale(scale, scale);
 
       // Draw background
       ctx.fillStyle = backgroundColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      // Draw images
-      let loadedCount = 0;
-      images.forEach((img) => {
-        const imgElement = new Image();
-        imgElement.onload = () => {
-          ctx.drawImage(imgElement, img.x, img.y, 80, 80);
-          loadedCount++;
+      // Load all images using promises
+      const imagePromises = images.map((img) => {
+        return new Promise<void>((resolve, reject) => {
+          const imgElement = new Image();
+          imgElement.crossOrigin = 'anonymous';
+          imgElement.onerror = reject;
+          imgElement.onload = () => {
+            try {
+              // Industry standard: larger images for better visibility (300-350px)
+              const maxSize = 320;
+              const imgAspectRatio = imgElement.width / imgElement.height;
+              let drawWidth = maxSize;
+              let drawHeight = maxSize / imgAspectRatio;
 
-          // If all images loaded, convert to blob
-          if (loadedCount === images.length) {
-            canvas.toBlob(
-              (blob) => {
-                if (blob) {
-                  setResult(blob);
-                }
-                setProcessing(false);
-              },
-              'image/png',
-              0.95
-            );
-          }
-        };
-        imgElement.src = img.preview;
+              if (drawHeight > maxSize) {
+                drawHeight = maxSize;
+                drawWidth = maxSize * imgAspectRatio;
+              }
+
+              // Center image within the space with padding
+              const paddingX = (maxSize - drawWidth) / 2;
+              const paddingY = (maxSize - drawHeight) / 2;
+
+              // Add border for better presentation
+              ctx.strokeStyle = '#e5e7eb';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(img.x, img.y, maxSize, maxSize);
+
+              // Draw image with high quality
+              ctx.drawImage(
+                imgElement,
+                img.x + paddingX,
+                img.y + paddingY,
+                drawWidth,
+                drawHeight
+              );
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          };
+          imgElement.src = img.preview;
+        });
       });
+
+      // Wait for all images to load and draw
+      await Promise.all(imagePromises);
+
+      // Convert to blob with maximum quality
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            setResult(blob);
+          }
+          setProcessing(false);
+        },
+        'image/png'
+      );
     } catch (err) {
       setError((err as Error).message || 'Error generating image');
       setProcessing(false);
@@ -204,7 +316,7 @@ export default function AddImagesPage() {
   return (
     <>
       <HomeHeader />
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+      <main className="min-h-screen bg-linear-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Hero Header */}
         <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -237,6 +349,12 @@ export default function AddImagesPage() {
               {/* Upload & List Section */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Upload Images</h2>
+
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
 
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -296,9 +414,9 @@ export default function AddImagesPage() {
               {/* Preview Section */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Preview</h2>
-                <div className="flex items-center justify-center bg-gray-100 rounded cursor-pointer" onClick={handleCanvasClick}>
+                <div className="flex items-center justify-center bg-gray-100 rounded cursor-pointer min-h-64" onClick={handleCanvasClick}>
                   {images.length > 0 ? (
-                    <canvas ref={previewCanvasRef} />
+                    <canvas ref={previewCanvasRef} className="max-w-full h-auto" />
                   ) : (
                     <div className="text-gray-400 text-center p-8">
                       <p className="text-sm">Add images to preview</p>
@@ -318,8 +436,8 @@ export default function AddImagesPage() {
                   </label>
                   <input
                     type="range"
-                    min="400"
-                    max="1600"
+                    min="1200"
+                    max="4000"
                     step="100"
                     value={canvasWidth}
                     onChange={(e) => setCanvasWidth(parseInt(e.target.value))}
@@ -334,8 +452,8 @@ export default function AddImagesPage() {
                   </label>
                   <input
                     type="range"
-                    min="300"
-                    max="1200"
+                    min="900"
+                    max="3000"
                     step="100"
                     value={canvasHeight}
                     onChange={(e) => setCanvasHeight(parseInt(e.target.value))}
@@ -404,12 +522,15 @@ export default function AddImagesPage() {
               </div>
 
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-                <h3 className="font-bold text-purple-900 mb-3">🎨 Tips</h3>
+                <h3 className="font-bold text-purple-900 mb-3">🎨 Industry Standards</h3>
                 <ul className="text-sm text-purple-800 space-y-2">
-                  <li>• Images are 80x80px on the canvas</li>
-                  <li>• Click on preview to select images</li>
-                  <li>• Use light background for better visibility</li>
-                  <li>• Larger canvas sizes allow more positioning room</li>
+                  <li>• Each image: 320×320px (maintains aspect ratio)</li>
+                  <li>• 4K quality output (300 DPI / 3.13x scale)</li>
+                  <li>• Professional spacing: 40px gaps between images</li>
+                  <li>• Grid auto-arranges to prevent overlaps</li>
+                  <li>• Borders for clean, professional look</li>
+                  <li>• Default canvas: 1600×1200px (16:12 aspect)</li>
+                  <li>• Maximum 10 images per collage</li>
                 </ul>
               </div>
             </div>

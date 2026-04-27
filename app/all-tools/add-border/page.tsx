@@ -101,7 +101,7 @@ export default function AddBorderPage() {
   return (
     <>
       <HomeHeader />
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+      <main className="min-h-screen bg-linear-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Hero Header */}
         <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -150,18 +150,18 @@ export default function AddBorderPage() {
               {/* Preview Section */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Preview</h2>
-                <div className="min-h-64 bg-gray-100 rounded flex items-center justify-center overflow-auto">
+                <div className="w-full h-80 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
                   {result ? (
                     <img
                       src={URL.createObjectURL(result)}
                       alt="Border preview"
-                      className="max-h-64 max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain"
                     />
                   ) : preview ? (
                     <img
                       src={preview}
                       alt="Original"
-                      className="max-h-64 max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain"
                     />
                   ) : (
                     <div className="text-gray-400 text-center">

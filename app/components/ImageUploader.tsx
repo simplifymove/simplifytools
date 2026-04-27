@@ -41,11 +41,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   if (preview) {
     return (
-      <div className="relative inline-block">
+      <div className="relative inline-block overflow-hidden rounded-lg">
         <img 
           src={preview} 
           alt="Preview" 
-          className="max-w-md max-h-96 rounded-lg border-2 border-blue-500"
+          className="max-w-full max-h-96 rounded-lg border-2 border-blue-500 block"
         />
         <button
           onClick={onClearPreview}
