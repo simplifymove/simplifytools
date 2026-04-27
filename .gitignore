@@ -75,5 +75,4 @@ potrace.zip
 # Prisma
 prisma/*.db
 prisma/*.db-journal
-prisma/migrations/
 migration.lock
