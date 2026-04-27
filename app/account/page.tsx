@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Mail, Lock, Shield, Trash2 } from 'lucide-react'
-import { Header } from '@/app/components/Header'
+import { HomeHeader } from '@/app/components/HomeHeader'
 import { Footer } from '@/app/components/Footer'
 
 export default function AccountPage() {
@@ -39,7 +39,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <HomeHeader />
       
       <main className="flex-1 max-w-4xl mx-auto px-4 md:px-8 py-12 w-full">
         <motion.div
