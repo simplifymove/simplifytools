@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
+import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 export default function HeicToPngPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -57,7 +59,9 @@ export default function HeicToPngPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
       {/* Hero Header */}
       <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-6xl mx-auto relative z-10">
@@ -154,6 +158,8 @@ export default function HeicToPngPage() {
         </div>
       </div>
     </main>
+    <Footer />
+    </>
   );
 }
 

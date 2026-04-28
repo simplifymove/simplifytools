@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
+import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 export default function TiffToJpgPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -58,10 +60,12 @@ export default function TiffToJpgPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
-      {/* Hero Header */}
-      <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
-        <div className="max-w-6xl mx-auto relative z-10">
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Hero Header */}
+        <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
+          <div className="max-w-6xl mx-auto relative z-10">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
             <Link href="/" className="hover:text-white transition">Home</Link>
@@ -172,7 +176,9 @@ export default function TiffToJpgPage() {
           </div>
         </div>
       </div>
-    </main>
+      </main>
+      <Footer />
+    </>
   );
 }
 

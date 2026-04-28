@@ -576,6 +576,7 @@ const converterTools: Tool[] = [
     description: 'Convert EPS to scalable SVG',
     category: 'Image',
     icon: Mountain,
+    route: '/all-tools/eps-to-svg',
   },
   {
     id: 'tiff-text',
