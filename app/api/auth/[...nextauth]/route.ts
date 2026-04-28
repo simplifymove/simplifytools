@@ -25,16 +25,21 @@ const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       // Allow Google sign-in
       if (account?.provider === 'google') {
-        // Update lastLoginAt
-        if (user.id) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              lastLoginAt: new Date(),
-              provider: 'google',
-            },
-          })
-        }
+        // Upsert lastLoginAt
+        await prisma.user.upsert({
+          where: { email: user.email! },
+          update: {
+            lastLoginAt: new Date(),
+            provider: 'google',
+          },
+          create: {
+            email: user.email!,
+            name: user.name,
+            image: user.image,
+            provider: 'google',
+            lastLoginAt: new Date(),
+          },
+        })
         return true
       }
       return false
