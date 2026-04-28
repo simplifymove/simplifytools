@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Mail, Lock, Shield, Trash2 } from 'lucide-react'
+import { ArrowLeft, Mail, Lock, Shield, Trash2, Edit2, Check, X, User } from 'lucide-react'
 import { HomeHeader } from '@/app/components/HomeHeader'
 import { Footer } from '@/app/components/Footer'
 
@@ -14,6 +14,11 @@ export default function AccountPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editBio, setEditBio] = useState('')
+  const [saveMessage, setSaveMessage] = useState('')
 
   useEffect(() => {
     if (status === 'loading') return
@@ -21,8 +26,45 @@ export default function AccountPage() {
       router.push('/auth/signin')
     } else {
       setLoading(false)
+      setEditName(session.user.name || '')
+      setEditBio(session.user.bio || '')
     }
   }, [session, status, router])
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      alert('Name cannot be empty')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editName,
+          bio: editBio,
+        }),
+      })
+
+      if (response.ok) {
+        setSaveMessage('Profile updated successfully!')
+        setIsEditing(false)
+        setTimeout(() => setSaveMessage(''), 3000)
+        router.refresh()
+      } else {
+        setSaveMessage('Failed to update profile')
+      }
+    } catch (error) {
+      console.error('Save error:', error)
+      setSaveMessage('Error updating profile')
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   if (loading || !session?.user) {
     return (
@@ -55,7 +97,7 @@ export default function AccountPage() {
               <p className="text-gray-600 mt-2">Manage your account and preferences</p>
             </div>
             <Link
-              href="/dashboard"
+              href="/"
               className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
             >
               <ArrowLeft size={18} />
@@ -63,32 +105,143 @@ export default function AccountPage() {
             </Link>
           </div>
 
-          {/* Email & Security */}
+          {/* Profile Information - Editable Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="bg-white rounded-2xl shadow-lg p-8"
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Email & Security</h2>
-            
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Profile Information</h2>
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+                >
+                  <Edit2 size={18} />
+                  Edit Profile
+                </button>
+              )}
+            </div>
+
             <div className="space-y-6">
-              {/* Email */}
-              <div className="pb-6 border-b border-gray-200">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <Mail size={24} className="text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Email Address</h3>
-                      <p className="text-gray-600 mt-1">{user.email}</p>
-                      <p className="text-sm text-green-600 mt-2">✓ Verified</p>
-                    </div>
+              {/* Profile Picture */}
+              <div className="flex items-center justify-center md:justify-start">
+                {user.image ? (
+                  <img
+                    src={user.image}
+                    alt={user.name || 'User'}
+                    className="w-24 h-24 rounded-full border-4 border-blue-500 shadow-lg object-cover"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-4xl font-bold border-4 border-blue-500 shadow-lg">
+                    {user.name?.[0]?.toUpperCase() || 'U'}
                   </div>
+                )}
+              </div>
+
+              {/* Name Field */}
+              <div>
+                <label className="text-sm font-semibold text-gray-600">Full Name</label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full mt-2 px-4 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 font-medium text-gray-900"
+                    placeholder="Enter your full name"
+                  />
+                ) : (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mt-2">
+                    <User size={20} className="text-gray-400" />
+                    <p className="text-gray-900 font-medium">{editName || 'Not provided'}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Bio Field */}
+              <div>
+                <label className="text-sm font-semibold text-gray-600">Bio</label>
+                {isEditing ? (
+                  <textarea
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                    className="w-full mt-2 px-4 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 font-medium text-gray-900"
+                    placeholder="Tell us about yourself (optional)"
+                    rows={3}
+                  />
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-lg mt-2">
+                    <p className="text-gray-600">
+                      {editBio || <span className="text-gray-400">No bio added yet</span>}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Email Field (Read-only) */}
+              <div>
+                <label className="text-sm font-semibold text-gray-600">Email Address</label>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mt-2">
+                  <Mail size={20} className="text-gray-400" />
+                  <p className="text-gray-900 font-medium">{user.email}</p>
+                  <span className="ml-auto text-sm text-green-600">✓ Verified</span>
                 </div>
               </div>
 
+              {/* Save/Cancel Buttons */}
+              {isEditing && (
+                <div className="flex gap-4 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold disabled:opacity-50"
+                  >
+                    <Check size={18} />
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false)
+                      setEditName(user.name || '')
+                      setEditBio(user.bio || '')
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-300 text-gray-900 rounded-lg hover:bg-gray-400 transition font-semibold"
+                  >
+                    <X size={18} />
+                    Cancel
+                  </button>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {saveMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`p-4 rounded-lg ${
+                    saveMessage.includes('successfully')
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {saveMessage}
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Email & Security */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="bg-white rounded-2xl shadow-lg p-8"
+          >
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Email & Security</h2>
+            
+            <div className="space-y-6">
               {/* Password - Read Only for OAuth */}
               <div className="pb-6 border-b border-gray-200">
                 <div className="flex items-start justify-between">

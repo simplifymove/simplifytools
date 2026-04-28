@@ -5,6 +5,7 @@ declare module 'next-auth' {
     user: DefaultSession['user'] & {
       id: string
       provider?: string
+      bio?: string | null
       createdAt?: Date
       lastLoginAt?: Date
     }
@@ -12,6 +13,7 @@ declare module 'next-auth' {
 
   interface User {
     provider?: string
+    bio?: string | null
     createdAt?: Date
     lastLoginAt?: Date
   }

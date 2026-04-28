@@ -19,6 +19,7 @@ const authOptions: NextAuthOptions = {
         session.user.provider = user.provider
         session.user.createdAt = user.createdAt
         session.user.lastLoginAt = user.lastLoginAt
+        session.user.bio = user.bio
       }
       return session
     },
@@ -43,6 +44,12 @@ const authOptions: NextAuthOptions = {
         return true
       }
       return false
+    },
+    async redirect({ url, baseUrl }) {
+      // Redirect to account page after sign-in
+      if (url.startsWith(baseUrl)) return `${baseUrl}/account`
+      else if (url.startsWith('/')) return `${baseUrl}/account`
+      return baseUrl + '/account'
     },
   },
   pages: {
