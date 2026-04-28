@@ -31,7 +31,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    await signIn('google', { callbackUrl: '/' });
+    await signIn('google', { callbackUrl: '/account' });
     setIsLoading(false);
   };
 

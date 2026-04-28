@@ -23,7 +23,7 @@ function AuthContent() {
 
   // Only redirect if we're authenticated and fully loaded
   if (status === 'authenticated' && session) {
-    router.push('/');
+    router.push('/account');
     return null;
   }
 
@@ -47,7 +47,7 @@ function AuthContent() {
     setIsLoading(false);
   };
 
-  const handleGoogleSignIn = () => signIn('google', { callbackUrl: '/' });
+  const handleGoogleSignIn = () => signIn('google', { callbackUrl: '/account' });
 
   return (
     <main className="min-h-screen bg-white flex items-center justify-center px-4 md:px-8 py-16">

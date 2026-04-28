@@ -303,14 +303,20 @@ export function HomeHeader() {
                     exit={{ opacity: 0, y: -10 }}
                     className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2"
                   >
-                    <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 transition-colors">
-                      <LayoutDashboard size={16} /> Dashboard
-                    </Link>
-                    <Link href="/account" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 transition-colors">
-                      <Settings size={16} /> Account
-                    </Link>
                     <button
-                      onClick={() => signOut({ callbackUrl: '/' })}
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        router.push('/account');
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 transition-colors"
+                    >
+                      <Settings size={16} /> Account
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        signOut({ callbackUrl: '/' });
+                      }}
                       className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <LogOut size={16} /> Sign Out
@@ -389,14 +395,20 @@ export function HomeHeader() {
               {/* Mobile Auth Buttons */}
               {session?.user ? (
                 <>
-                  <Link href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                    Dashboard
-                  </Link>
-                  <Link href="/account" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                    Account
-                  </Link>
                   <button
-                    onClick={() => signOut({ callbackUrl: '/' })}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      router.push('/account');
+                    }}
+                    className="w-full text-left text-sm font-medium text-gray-600 hover:text-gray-900"
+                  >
+                    Account
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      signOut({ callbackUrl: '/' });
+                    }}
                     className="text-left px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
                   >
                     Sign Out

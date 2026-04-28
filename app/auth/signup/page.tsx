@@ -1,22 +1,26 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { HomeHeader } from '@/app/components/HomeHeader'
 import { Footer } from '@/app/components/Footer'
 
-export default function SignUpPage() {
+function SignUpContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Read callbackUrl from query params, default to /account
+  const callbackUrl = searchParams.get('callbackUrl') || '/account'
 
   const handleGoogleSignUp = async () => {
     setIsLoading(true)
     try {
       const result = await signIn('google', {
-        callbackUrl: '/',
+        callbackUrl: callbackUrl,
         redirect: true,
       })
       if (result?.error) {
@@ -140,5 +144,13 @@ export default function SignUpPage() {
       </div>
       <Footer />
     </div>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center"><div className="text-gray-600">Loading...</div></div>}>
+      <SignUpContent />
+    </Suspense>
   )
 }

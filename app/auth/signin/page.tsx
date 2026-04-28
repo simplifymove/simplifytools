@@ -14,12 +14,15 @@ function SignInContent() {
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const error = searchParams.get('error')
+  
+  // Read callbackUrl from query params, default to /account
+  const callbackUrl = searchParams.get('callbackUrl') || '/account'
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
       const result = await signIn('google', {
-        callbackUrl: '/',
+        callbackUrl: callbackUrl,
         redirect: true,
       })
       if (result?.error) {

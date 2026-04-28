@@ -6,8 +6,8 @@ declare module 'next-auth' {
       id: string
       provider?: string
       bio?: string | null
-      createdAt?: Date
-      lastLoginAt?: Date
+      createdAt?: string
+      lastLoginAt?: string
     }
   }
 
@@ -16,5 +16,15 @@ declare module 'next-auth' {
     bio?: string | null
     createdAt?: Date
     lastLoginAt?: Date
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id?: string
+    provider?: string
+    bio?: string | null
+    createdAt?: string
+    lastLoginAt?: string
   }
 }

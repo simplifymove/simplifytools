@@ -1,22 +1,25 @@
-import { withAuth } from 'next-auth/middleware'
+import { getToken } from 'next-auth/jwt'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export default withAuth(
-  function middleware(req) {
-    // You can add custom logic here if needed
-    return NextResponse.next()
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
-    pages: {
-      signIn: '/auth/signin',
-    },
+export async function middleware(req: NextRequest) {
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+  })
+
+  const isAuth = !!token
+
+  // Protect /account route
+  if (req.nextUrl.pathname.startsWith('/account') && !isAuth) {
+    const signInUrl = new URL('/auth/signin', req.url)
+    signInUrl.searchParams.set('callbackUrl', '/account')
+    return NextResponse.redirect(signInUrl)
   }
-)
 
-// Protect these routes
+  return NextResponse.next()
+}
+
 export const config = {
-  matcher: ['/dashboard', '/dashboard/:path*', '/account', '/account/:path*'],
+  matcher: ['/account', '/account/:path*'],
 }

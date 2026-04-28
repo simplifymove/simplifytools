@@ -205,14 +205,6 @@ export function Header() {
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
                     <Link
-                      href="/dashboard"
-                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-orange-50 transition"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <LayoutDashboard size={18} />
-                      Dashboard
-                    </Link>
-                    <Link
                       href="/account"
                       className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-orange-50 transition"
                       onClick={() => setUserMenuOpen(false)}
@@ -304,12 +296,6 @@ export function Header() {
               </Link>
               {session?.user ? (
                 <>
-                  <Link
-                    href="/dashboard"
-                    className="w-full px-4 py-2 border-2 border-orange-500 text-orange-500 font-medium rounded-lg hover:bg-orange-50 transition text-center"
-                  >
-                    Dashboard
-                  </Link>
                   <Link
                     href="/account"
                     className="w-full px-4 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition text-center"
