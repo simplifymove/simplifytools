@@ -207,7 +207,7 @@ export default function FontAwesomeToPngPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<Blob | null>(null);
+  const [result, setResult] = useState<HTMLCanvasElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [roundCorners, setRoundCorners] = useState(false);
@@ -284,12 +284,8 @@ export default function FontAwesomeToPngPage() {
       ctx.textBaseline = 'middle';
       ctx.fillText(selectedIcon.symbol, canvas.width / 2, canvas.height / 2);
 
-      // Convert canvas to blob
-      canvas.toBlob((blob) => {
-        if (blob) {
-          setResult(blob);
-        }
-      }, 'image/png');
+      // Store canvas for format-agnostic downloads
+      setResult(canvas);
     } catch (err) {
       setError((err as Error).message || 'Error generating icon');
     } finally {
@@ -297,16 +293,44 @@ export default function FontAwesomeToPngPage() {
     }
   };
 
-  const handleDownload = () => {
+  const downloadAsFormat = (format: 'png' | 'svg' | 'jpg' | 'webp') => {
     if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${selectedIcon.name}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    
+    if (format === 'svg') {
+      const svgContent = `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="${size}" height="${size}" fill="${backgroundColor}" ${roundCorners ? `rx="15"` : ''}/>
+        <text x="${size / 2}" y="${size / 2}" font-size="${size * 0.5}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${color}" font-family="Arial, sans-serif">
+          ${selectedIcon.symbol}
+        </text>
+      </svg>`;
+      
+      const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${selectedIcon.name}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      const mimeType = 
+        format === 'png' ? 'image/png' :
+        format === 'jpg' ? 'image/jpeg' :
+        'image/webp';
+      
+      result.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${selectedIcon.name}.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, mimeType, format === 'jpg' ? 0.95 : undefined);
+    }
   };
 
   const handleCopyName = () => {
@@ -571,15 +595,41 @@ export default function FontAwesomeToPngPage() {
                         )}
                       </button>
 
-                      {/* Download Button */}
+                      {/* Download Format Buttons */}
                       {result && (
-                        <button
-                          onClick={handleDownload}
-                          className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-                        >
-                          <Download size={20} />
-                          Download PNG
-                        </button>
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-gray-700 mb-2">Download Format:</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              onClick={() => downloadAsFormat('png')}
+                              className="py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                            >
+                              <Download size={16} />
+                              PNG
+                            </button>
+                            <button
+                              onClick={() => downloadAsFormat('svg')}
+                              className="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                            >
+                              <Download size={16} />
+                              SVG
+                            </button>
+                            <button
+                              onClick={() => downloadAsFormat('jpg')}
+                              className="py-2 px-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                            >
+                              <Download size={16} />
+                              JPG
+                            </button>
+                            <button
+                              onClick={() => downloadAsFormat('webp')}
+                              className="py-2 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                            >
+                              <Download size={16} />
+                              WEBP
+                            </button>
+                          </div>
+                        </div>
                       )}
 
                       {error && (
@@ -619,8 +669,8 @@ export default function FontAwesomeToPngPage() {
                     <div className="flex gap-3">
                       <div className="text-orange-500 text-2xl">✓</div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Quick Export</h4>
-                        <p className="text-sm text-gray-600">Instant PNG download with custom settings</p>
+                        <h4 className="font-semibold text-gray-900">Multi-Format Export</h4>
+                        <p className="text-sm text-gray-600">Download as PNG, SVG, JPG, or WEBP formats</p>
                       </div>
                     </div>
                     <div className="flex gap-3">
@@ -661,8 +711,18 @@ export default function FontAwesomeToPngPage() {
                       <p className="text-sm text-gray-600">The library includes 200+ most popular Font Awesome icons. Visit fontawesome.com for the complete collection or check back for updates.</p>
                     </div>
                     <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">What formats are available for download?</h4>
+                      <p className="text-sm text-gray-600 mb-2">We offer four download formats, each with specific advantages:</p>
+                      <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                        <li><strong>PNG:</strong> Universal raster format, supports transparency, best for web</li>
+                        <li><strong>SVG:</strong> Scalable vector format, infinitely scalable, smallest file size, best for web graphics</li>
+                        <li><strong>JPG:</strong> Compressed raster format, good for photos, smaller file sizes</li>
+                        <li><strong>WEBP:</strong> Modern compressed format, smallest file sizes, excellent quality, best for performance-critical sites</li>
+                      </ul>
+                    </div>
+                    <div>
                       <h4 className="font-semibold text-gray-900 mb-2">Can I customize the transparency?</h4>
-                      <p className="text-sm text-gray-600">The current version generates solid colors. For transparency effects, you can edit the PNG in design tools like Photoshop or use online PNG editors.</p>
+                      <p className="text-sm text-gray-600">The current version generates solid colors. For transparency effects, you can edit the PNG/SVG in design tools like Photoshop, Illustrator, or use online editors.</p>
                     </div>
                   </div>
                 </div>
