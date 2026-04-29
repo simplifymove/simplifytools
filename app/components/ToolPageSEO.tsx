@@ -37,7 +37,6 @@ export function ToolPageSEO({
     description,
     category,
     url: `https://simplifyconvert.com${url}`,
-    image: image ? `https://simplifyconvert.com${image}` : undefined,
   });
 
   const breadcrumbItems = breadcrumbs.map((item) => ({
