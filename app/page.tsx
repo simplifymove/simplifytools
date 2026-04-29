@@ -244,7 +244,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-white overflow-hidden">
+    <main className="min-h-screen bg-white">
       <HomeHeader />
 
       {/* TAG LINE */}
