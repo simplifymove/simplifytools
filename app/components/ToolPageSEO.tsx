@@ -33,7 +33,7 @@ export function ToolPageSEO({
   descriptionColor = 'text-white/95',
 }: ToolPageSEOProps) {
   const toolSchema = generateToolSchema({
-    title,
+    name: title,
     description,
     category,
     url: `https://simplifyconvert.com${url}`,
