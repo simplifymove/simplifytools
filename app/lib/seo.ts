@@ -86,6 +86,33 @@ export function generateSoftwareApplicationSchema(options: {
   };
 }
 
+export function generateToolSchema({
+  name,
+  description,
+  url,
+  category = "UtilityApplication",
+}: {
+  name: string;
+  description: string;
+  url: string;
+  category?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name,
+    description,
+    applicationCategory: category,
+    operatingSystem: "Web",
+    url,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  };
+}
+
 export function generateFAQSchema(faqs: Array<{ question: string; answer: string }>) {
   return {
     '@context': 'https://schema.org',
