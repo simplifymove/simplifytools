@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Instagram, Linkedin } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function Footer() {
@@ -18,8 +18,8 @@ export function Footer() {
     PopularTools: [
       { label: 'Remove Background', href: '/all-tools/remove-background' },
       { label: 'Compress Image', href: '/all-tools/compress-image' },
-      { label: 'Merge PDF', href: '/all-tools/pdf-tools' },
-      { label: 'AI Write', href: '/all-tools/ai-tools' },
+      { label: 'Merge PDF', href: '/all-tools/pdf/merge-pdf' },
+      { label: 'AI Writing', href: '/all-tools/ai-tools' },
     ],
     Company: [
       { label: 'About Us', href: '/about' },
@@ -28,11 +28,6 @@ export function Footer() {
       { label: 'Contact Us', href: '/contact' },
     ],
   };
-
-  const socialLinks = [
-    { icon: Instagram, href: 'https://instagram.com', label: 'Instagram' },
-    { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
-  ];
 
   return (
     <footer className="bg-gradient-to-b from-gray-900 to-black text-gray-300 pt-16 pb-8">
@@ -50,7 +45,7 @@ export function Footer() {
               <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center overflow-hidden shadow-md shadow-orange-500/40 p-1">
                 <Image 
                   src="/Logo-icon.gif" 
-                  alt="Logo" 
+                  alt="SimplifyConvert free online tools logo" 
                   width={28} 
                   height={28}
                   className="w-full h-full object-cover"
@@ -65,8 +60,8 @@ export function Footer() {
               <div className="flex items-center gap-2 text-sm text-gray-400">
 
                 <Mail size={16} />
-                <a href="mailto:info@simplifymove.com" className="hover:text-white transition">
-                  info@simplifymove.com
+                <a href="mailto:info@simplifyconvert.com" className="hover:text-white transition">
+                  info@simplifyconvert.com
                 </a>
               </div>
             </div>
@@ -136,31 +131,6 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </motion.div>
-
-          {/* Social Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            viewport={{ once: true }}
-          >
-            <h3 className="font-bold text-white mb-4">Follow Us</h3>
-            <div className="flex flex-wrap gap-3 mb-6">
-              {socialLinks.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    title={social.label}
-                    className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition group"
-                  >
-                    <Icon size={18} />
-                  </a>
-                );
-              })}
-            </div>
           </motion.div>
         </div>
 

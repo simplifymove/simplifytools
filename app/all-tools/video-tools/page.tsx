@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react';
 import { allTools } from '@/app/data/tools';
 import { ToolCard } from '@/app/components/ToolCard';
 import { SearchBox } from '@/app/components/SearchBox';
+import { FAQ } from '@/app/components/FAQ';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
@@ -74,9 +75,9 @@ export default function VideoToolsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">🎬 Video Tools</h1>
-                <p className="text-lg text-white/90 max-w-2xl">
-                  Professional tools for video conversion, editing, compression, and manipulation
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free Video Tools Online</h1>
+                <p className="text-lg text-white/90 max-w-3xl">
+                  Use our free video tools to convert, compress, trim, and edit videos instantly. Convert MP4, WebM, MKV, and more formats. No signup required, no watermarks, completely free.
                 </p>
               </motion.div>
             </div>
@@ -206,6 +207,150 @@ export default function VideoToolsPage() {
               )}
             </div>
           </div>
+
+          {/* SEO Content Section */}
+          <div className="py-12 px-4 md:px-8 bg-white border-b border-gray-200">
+            <div className="max-w-4xl mx-auto space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Video Tools?</h2>
+                
+                <p className="text-gray-700 leading-relaxed mb-6">
+                  SimplifyConvert offers a complete suite of free video tools to handle all your multimedia needs. Whether you need to convert videos between formats, compress large files for sharing, trim unwanted sections, or edit video properties, our free video tools deliver professional results without any cost, signup, or software installation.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                  <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
+                    <p className="text-gray-700 text-sm">All 58 video tools are permanently free. No hidden charges, premium tiers, or surprise fees. Use unlimited video conversions without payment or credit card.</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
+                    <p className="text-gray-700 text-sm">Works directly in your browser. Use video tools on Windows, Mac, iPhone, Android, and any device with internet. No software downloads or complex setup.</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Fast Processing</h3>
+                    <p className="text-gray-700 text-sm">Convert, compress, and edit videos in seconds. Advanced processing handles large files quickly without lag or delays. Get results instantly.</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
+                    <p className="text-gray-700 text-sm">Your video files are processed securely and never stored on servers. HTTPS encryption protects all transfers. Complete privacy guaranteed.</p>
+                  </div>
+                </div>
+
+                {/* Popular Video Tools - Internal Linking Section */}
+                <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Video Tools</h2>
+                  <p className="text-gray-700 mb-6">Quick access to our most-used video conversion and editing tools:</p>
+                  <div className="space-y-3">
+                    <Link href="/all-tools/video/video-to-gif" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-pink-500 hover:bg-pink-50 transition">
+                      <span className="text-pink-600 font-semibold">→</span>
+                      <span className="text-gray-900 font-medium hover:text-pink-600">Video to GIF Converter</span>
+                    </Link>
+                    <Link href="/all-tools/video/compress-video" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-pink-500 hover:bg-pink-50 transition">
+                      <span className="text-pink-600 font-semibold">→</span>
+                      <span className="text-gray-900 font-medium hover:text-pink-600">Video Compressor - Reduce file size</span>
+                    </Link>
+                    <Link href="/all-tools/video/trim-video" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-pink-500 hover:bg-pink-50 transition">
+                      <span className="text-pink-600 font-semibold">→</span>
+                      <span className="text-gray-900 font-medium hover:text-pink-600">Video Trimmer - Cut unwanted sections</span>
+                    </Link>
+                    <Link href="/all-tools/video/mp4-to-mp3" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-pink-500 hover:bg-pink-50 transition">
+                      <span className="text-pink-600 font-semibold">→</span>
+                      <span className="text-gray-900 font-medium hover:text-pink-600">MP4 to MP3 - Extract audio from video</span>
+                    </Link>
+                  </div>
+                </div>
+
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Free Video Tools</h2>
+                <p className="text-gray-700 leading-relaxed mb-6">
+                  Using SimplifyConvert video tools is simple and straightforward. Select the tool you need from our 58 options, upload your video file, configure options if needed, and click process. The tool handles complex video operations in seconds while maintaining quality. Download your converted or edited video instantly. No signup required, no registration needed, no learning curve.
+                </p>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* FAQ Section */}
+          <FAQ
+            items={[
+              {
+                name: 'Are all video tools really free?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes! All video tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any video tool unlimited times without payment.'
+                }
+              },
+              {
+                name: 'What video formats do you support?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'We support most common video formats including MP4, WebM, MKV, AVI, MOV, FLV, and more. Our video tools can convert between any formats while maintaining quality and preserving video properties.'
+                }
+              },
+              {
+                name: 'Is my video data safe?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. Your videos are processed securely and never stored on our servers. We use HTTPS encryption for all transfers. Videos are processed immediately and deleted after download.'
+                }
+              },
+              {
+                name: 'Can I use video tools on mobile?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. All video tools work on iOS, Android, tablets, and mobile browsers. No app installation required. Simply visit SimplifyConvert from your mobile device and start using any tool.'
+                }
+              },
+              {
+                name: 'How large can video files be?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Our video tools can handle files up to several gigabytes depending on your internet connection. Large files may take longer to process, but the tools handle them efficiently without losing quality.'
+                }
+              },
+              {
+                name: 'Which video tools are most popular?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Video compression, MP4 conversion, video trimming, and video to GIF conversion are our most popular tools. All are free, fast, and work without signup or installation. Perfect for social media, web design, and general video editing.'
+                }
+              }
+            ]}
+            colorClass="pink"
+            bgColor="white"
+          />
+
+          {/* Breadcrumb + Organization Schema */}
+          <script type="application/ld+json">
+            {JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Home',
+                  item: 'https://simplifyconvert.com'
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: 'All Tools',
+                  item: 'https://simplifyconvert.com/all-tools'
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 3,
+                  name: 'Video Tools',
+                  item: 'https://simplifyconvert.com/all-tools/video-tools'
+                }
+              ]
+            })}
+          </script>
         </div>
       </main>
       <Footer />

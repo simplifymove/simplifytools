@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import { FAQ } from '@/app/components/FAQ';
 
 export default function TextToSpeech() {
   // Voice map definition BEFORE any hooks
@@ -199,8 +200,6 @@ export default function TextToSpeech() {
             <ChevronRight size={16} />
             <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
             <ChevronRight size={16} />
-            <Link href="/all-tools/ai-tools" className="hover:text-white transition">AI Tools</Link>
-            <ChevronRight size={16} />
             <span>Text to Speech</span>
           </div>
 
@@ -209,11 +208,11 @@ export default function TextToSpeech() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 flex items-center gap-3">
-              🎤 Text to Speech
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+              Free Text to Speech Converter with AI Voices
             </h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert text to natural speech with neural voices in 20+ languages. Perfect for podcasts, presentations, and more
+              Convert text to speech instantly with 20+ natural neural voices in multiple languages. Control emotion, speed, and pitch. No signup required.
             </p>
           </motion.div>
         </div>
@@ -464,6 +463,236 @@ export default function TextToSpeech() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* SEO Content Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Choose Our Free Text to Speech?</h2>
+            
+            <p className="text-gray-700 leading-relaxed mb-6">
+              SimplifyConvert provides a free text to speech converter with advanced neural voice technology. Generate natural-sounding audio, adjust emotions and speed, and download high-quality MP3 files instantly. Perfect for content creators, educators, and developers who need a simple yet powerful <Link href="/all-tools" className="text-blue-600 font-medium hover:underline">online converter tool</Link>.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ 20+ Neural Voices</h3>
+                <p className="text-gray-700 text-sm">Natural-sounding AI voices in English, Hindi, Spanish, French, German, and more languages. Each voice is professionally trained for realistic pronunciation.</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Emotion Control</h3>
+                <p className="text-gray-700 text-sm">Choose from 8 emotions: neutral, happy, sad, angry, excited, serious, calm, and romantic. Customize speed and pitch for perfect tone and delivery.</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Instant Download</h3>
+                <p className="text-gray-700 text-sm">Generate audio in seconds and download as MP3. No registration required. Use for podcasts, videos, presentations, or voiceovers immediately.</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
+                <p className="text-gray-700 text-sm">No hidden fees, no premium tiers, no signup required. Convert unlimited text to speech without payment. Always free, always accessible.</p>
+              </div>
+            </div>
+
+            {/* Popular Features - Internal Linking */}
+            <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Use Cases</h2>
+              <p className="text-gray-700 mb-6">Our text to speech tool works great for:</p>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-600 font-bold">•</span>
+                  <span><strong>Podcast Creation:</strong> Generate consistent voiceovers for podcast episodes in multiple voices and languages</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-600 font-bold">•</span>
+                  <span><strong>Video Narration:</strong> Create professional voiceovers for YouTube videos, tutorials, and educational content</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-600 font-bold">•</span>
+                  <span><strong>E-Learning Content:</strong> Build accessible learning materials with natural audio for students</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-600 font-bold">•</span>
+                  <span><strong>Business Presentations:</strong> Add voiceovers to presentations and slideshows automatically</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-600 font-bold">•</span>
+                  <span><strong>Accessibility:</strong> Create audio versions of web content for visually impaired users</span>
+                </li>
+              </ul>
+            </div>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Our Text to Speech Tool</h2>
+            <p className="text-gray-700 leading-relaxed mb-6">
+              Using our free text to speech converter is simple. First, select your language and preferred neural voice from 20+ options. Then, type or paste your text into the main input field. Optional: add intro text (spoken at the beginning) and outro text (spoken at the end). Next, customize the emotion, speed, and pitch to match your needs—preview with the Play button before downloading. Finally, click Download to save your audio as an MP3 file. You can also <Link href="/all-tools/ai-tools" className="text-blue-600 font-medium hover:underline">explore other AI tools</Link> for additional content creation needs.
+            </p>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <FAQ
+        items={[
+          {
+            name: 'Is text to speech really free?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes! Our text to speech converter is completely free with no hidden costs, signup requirements, or premium features. Convert unlimited text to speech without payment. We believe everyone deserves access to professional voice generation tools.'
+            }
+          },
+          {
+            name: 'What languages and voices are supported?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'We support 20+ languages including English (US, UK), Spanish, French, German, Italian, Portuguese, Japanese, Chinese, and Indian languages (Hindi, Tamil, Telugu, Kannada, Malayalam, Marathi, Gujarati, Bengali, Punjabi). Each language has multiple male and female voices to choose from.'
+            }
+          },
+          {
+            name: 'Can I control the emotion, speed, and pitch?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Absolutely! Choose from 8 emotions (neutral, happy, sad, angry, excited, serious, calm, romantic). Adjust speed from 0.5x to 2x and pitch from 0.5x to 2x. Customize each setting to get the exact tone and delivery you want for your project.'
+            }
+          },
+          {
+            name: 'How do I download the audio file?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Click the Download button after entering your text and customizing settings. Your audio is generated instantly and downloads as an MP3 file. No signup or email verification required. Files are ready to use in videos, podcasts, presentations, or any project.'
+            }
+          },
+          {
+            name: 'Can I use generated audio commercially?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes! Audio generated from our text to speech tool can be used commercially in videos, podcasts, e-learning courses, business presentations, and other projects. No attribution required, though appreciated. Respect copyright for any text you use.'
+            }
+          },
+          {
+            name: 'What file format do you provide?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'All generated audio files are provided in MP3 format, which is compatible with all devices—computers, smartphones, tablets, and video editing software. MP3 offers excellent quality at a reasonable file size, perfect for any use case.'
+            }
+          }
+        ]}
+        colorClass="blue"
+        bgColor="white"
+      />
+
+      {/* TTS Features ItemList Schema for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          name: 'Free Text to Speech Features',
+          description: 'Complete text to speech converter with natural neural voices, emotion control, and multilingual support',
+          itemListElement: [
+            {
+              '@type': 'SoftwareApplication',
+              position: 1,
+              name: 'English Text to Speech',
+              description: 'Convert English text to natural speech with US and UK voices',
+              url: 'https://simplifyconvert.com/all-tools/text-to-speech',
+              applicationCategory: 'AudioApplication',
+              operatingSystem: 'Web',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD'
+              }
+            },
+            {
+              '@type': 'SoftwareApplication',
+              position: 2,
+              name: 'Multilingual Text to Speech',
+              description: 'Generate speech in 20+ languages including Spanish, French, German, Japanese, and Indian languages',
+              url: 'https://simplifyconvert.com/all-tools/text-to-speech',
+              applicationCategory: 'AudioApplication',
+              operatingSystem: 'Web',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD'
+              }
+            },
+            {
+              '@type': 'SoftwareApplication',
+              position: 3,
+              name: 'Emotion-Controlled Voice Generator',
+              description: 'Create speech with customizable emotions: happy, sad, angry, excited, serious, calm, romantic',
+              url: 'https://simplifyconvert.com/all-tools/text-to-speech',
+              applicationCategory: 'AudioApplication',
+              operatingSystem: 'Web',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD'
+              }
+            },
+            {
+              '@type': 'SoftwareApplication',
+              position: 4,
+              name: 'Speed and Pitch Control',
+              description: 'Adjust speech speed from 0.5x to 2x and pitch to customize voice delivery',
+              url: 'https://simplifyconvert.com/all-tools/text-to-speech',
+              applicationCategory: 'AudioApplication',
+              operatingSystem: 'Web',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD'
+              }
+            },
+            {
+              '@type': 'SoftwareApplication',
+              position: 5,
+              name: 'MP3 Download',
+              description: 'Download generated audio instantly as MP3 files for use in videos, podcasts, and presentations',
+              url: 'https://simplifyconvert.com/all-tools/text-to-speech',
+              applicationCategory: 'AudioApplication',
+              operatingSystem: 'Web',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD'
+              }
+            }
+          ]
+        })}
+      </script>
+
+      {/* Breadcrumb Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Home',
+              item: 'https://simplifyconvert.com'
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'All Tools',
+              item: 'https://simplifyconvert.com/all-tools'
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: 'Text to Speech',
+              item: 'https://simplifyconvert.com/all-tools/text-to-speech'
+            }
+          ]
+        })}
+      </script>
       </div>
     </main>
     <Footer />

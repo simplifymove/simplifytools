@@ -107,7 +107,7 @@ const aiEditingTools: Tool[] = [
   },
   {
     id: 'unblur',
-    title: 'Unblur IMG',
+    title: 'Unblur Image',
     description: 'Enhance and clarify blurry images',
     category: 'Image',
     icon: Zap,
@@ -495,7 +495,7 @@ const converterTools: Tool[] = [
   },
   {
     id: 'png-tif',
-    title: 'PNG to TIF',
+    title: 'PNG to TIFF',
     description: 'Convert PNG to TIFF format',
     category: 'Image',
     icon: RefreshCw,
@@ -503,7 +503,7 @@ const converterTools: Tool[] = [
   },
   {
     id: 'jpg-tif',
-    title: 'JPG to TIF',
+    title: 'JPG to TIFF',
     description: 'Convert JPG to TIFF format',
     category: 'Image',
     icon: RefreshCw,
@@ -592,6 +592,7 @@ const converterTools: Tool[] = [
     description: 'Convert EPS vector to JPG',
     category: 'Image',
     icon: RefreshCw,
+    route: '/all-tools/eps-to-jpg',
   },
   {
     id: 'gif-apng',

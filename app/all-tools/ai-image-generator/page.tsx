@@ -64,11 +64,11 @@ export default function AiImageGeneratorPage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-2xl">⚡</span>
-                    <span className="text-gray-700"><strong>Lightning Fast:</strong> Generate beautiful images in seconds</span>
+                    <span className="text-gray-700"><strong>Fast Generation:</strong> Create images in seconds with AI models</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-2xl">💯</span>
-                    <span className="text-gray-700"><strong>High Quality:</strong> Premium image generation at various resolutions</span>
+                    <span className="text-gray-700"><strong>Multiple Resolutions:</strong> Generate images at various quality levels</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-2xl">🎯</span>

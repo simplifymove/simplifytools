@@ -63,7 +63,7 @@ export default function Home() {
     },
     {
       id: 'ai',
-      title: 'AI Write',
+      title: 'AI Writing Tools',
       description: 'AI-powered writing, generation, and content creation',
       icon: PenTool,
       color: 'from-blue-500 via-blue-600 to-blue-700',
@@ -101,7 +101,7 @@ export default function Home() {
       icon: Volume2,
       color: 'from-indigo-500 via-indigo-600 to-indigo-700',
       bgColor: 'bg-indigo-50',
-      count: 'Multi',
+      count: 'Voice',
       link: '/all-tools/text-to-speech',
       glowColor: 'group-hover:shadow-indigo-500/20'
     }
@@ -110,8 +110,8 @@ export default function Home() {
   const features = [
     {
       icon: Zap,
-      title: 'Lightning Fast',
-      description: 'Powerful processing that works instantly without lag'
+      title: 'Fast Processing',
+      description: 'Converts most files in seconds without software installation'
     },
     {
       icon: Lock,
@@ -207,7 +207,7 @@ export default function Home() {
       icon: FileImage,
       category: 'Image',
       color: 'from-orange-500 to-orange-600',
-      link: '/all-tools/bmp-to-png'
+      link: '/all-tools/jpg-to-png'
     },
     {
       title: 'Upscale Image',
@@ -234,7 +234,7 @@ export default function Home() {
       link: '/all-tools/pdf-tools'
     },
     {
-      title: 'AI Write',
+      title: 'AI Writing Tools',
       description: 'AI-powered writing and content creation',
       icon: PenTool,
       category: 'AI',
@@ -296,7 +296,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                Convert, Edit, and Optimize<br />
+                Free Online Tools to Convert, Edit & Optimize<br />
                 <motion.span
                   className="relative inline-block"
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -305,7 +305,7 @@ export default function Home() {
                 >
                   <span className="absolute -inset-3 bg-orange-500/20 rounded-lg blur-lg opacity-50" />
                   <span className="relative text-orange-500 font-bold">
-                    Files in Seconds
+                    Your Files in Seconds
                   </span>
                 </motion.span>
               </motion.h1>
@@ -788,7 +788,7 @@ export default function Home() {
               Why Choose SimplifyConvert?
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              The most trusted platform for file conversion and editing with millions of happy users worldwide
+              Trusted by users for fast, secure file conversion and editing
             </p>
           </motion.div>
 
@@ -829,6 +829,172 @@ export default function Home() {
               );
             })}
           </motion.div>
+        </div>
+      </section>
+
+      {/* SEO CONTENT SECTION - What is SimplifyConvert */}
+      <section className="px-4 md:px-8 py-16 md:py-24 bg-gray-50">
+        <div className="max-w-4xl mx-auto prose prose-lg max-w-none">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8">
+              What are Free Online Tools?
+            </h2>
+            
+            <div className="space-y-6 text-gray-700 leading-relaxed">
+              <p>
+                <strong>SimplifyConvert</strong> is a comprehensive platform offering <strong>200+ free online tools</strong> for file conversion, image editing, video processing, PDF manipulation, and AI-powered content creation. Our free online tools eliminate the need for expensive software installations, subscriptions, or technical expertise. Whether you need to convert images, compress videos, merge PDFs, or generate AI content, SimplifyConvert provides instant solutions directly in your browser.
+              </p>
+
+              <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+                Why Choose Our Free Online Tools?
+              </h3>
+              
+              <p>
+                Users worldwide trust SimplifyConvert because our free online conversion tools are:
+              </p>
+
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start gap-3">
+                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
+                  <span><strong>Completely Free:</strong> All 200+ tools are permanently free with no hidden costs, premium tiers, or surprise fees</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
+                  <span><strong>No Installation Required:</strong> Works directly in your browser on Windows, Mac, iOS, and Android</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
+                  <span><strong>Fast Processing:</strong> Converts most files in seconds directly in your browser</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
+                  <span><strong>Privacy Focused:</strong> Your files are processed securely and never stored on our servers</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
+                  <span><strong>No Signup:</strong> Start using our free online tools immediately without creating an account</span>
+                </li>
+              </ul>
+
+              <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+                Popular Free Online Tool Categories
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="p-4 bg-white rounded-lg border border-gray-200">
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">📸 Image Tools</h4>
+                  <p className="text-sm text-gray-600">Convert JPG to PNG, compress images, remove backgrounds, upscale images, and apply filters with our free image converter tools.</p>
+                </div>
+                <div className="p-4 bg-white rounded-lg border border-gray-200">
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">📄 PDF Tools</h4>
+                  <p className="text-sm text-gray-600">Merge, compress, split, and convert PDFs with our free PDF tools. Extract text, edit content, and secure documents instantly.</p>
+                </div>
+                <div className="p-4 bg-white rounded-lg border border-gray-200">
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">🎬 Video Tools</h4>
+                  <p className="text-sm text-gray-600">Convert, compress, and edit videos in any format. Trim clips, adjust resolution, and create stunning content with our free video tools.</p>
+                </div>
+                <div className="p-4 bg-white rounded-lg border border-gray-200">
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">🤖 AI Tools</h4>
+                  <p className="text-sm text-gray-600">Generate images, write content, and create with AI. Use our free AI tools for writing, coding, and content generation.</p>
+                </div>
+              </div>
+
+              <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+                How Our Free Online Tools Work
+              </h3>
+
+              <p>
+                Using SimplifyConvert's free online tools is simple and straightforward. Just select your desired tool, upload your file, and click convert. No complicated settings, no learning curve. Our platform handles complex processing in the background while you get instant results. Whether you're converting a single file or working with batch operations, our free online tools make file conversion, editing, and optimization accessible to everyone.
+              </p>
+
+              <p>
+                With 200+ free online tools covering every conversion need, SimplifyConvert is your one-stop platform for all file transformation tasks. Start using our free online conversion tools today—no signup, no credit card, completely free forever.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* FAQ SECTION */}
+      <section className="px-4 md:px-8 py-16 md:py-24 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-gray-600">
+              Everything you need to know about SimplifyConvert and our free online tools
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="space-y-4"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            {[
+              {
+                question: "Are all SimplifyConvert tools really free?",
+                answer: "Yes! All 200+ free online tools at SimplifyConvert are completely free forever. No hidden costs, premium tiers, or surprise fees. You can use any tool unlimited times without signup or payment."
+              },
+              {
+                question: "Do I need to install software to use these free online tools?",
+                answer: "No! Our free online tools work directly in your web browser. No installation, downloads, or software setup required. Works on Windows, Mac, Linux, iPhone, iPad, and Android devices."
+              },
+              {
+                question: "Is my data safe when using SimplifyConvert free online tools?",
+                answer: "Yes, your privacy is our top priority. Files uploaded to our free online tools are processed securely and never stored on our servers. We use HTTPS encryption and follow strict data protection standards."
+              },
+              {
+                question: "Do I need to create an account to use the free online tools?",
+                answer: "No signup required! You can start using any of our 200+ free online tools immediately without creating an account, providing an email, or any registration."
+              },
+              {
+                question: "Which free online tools are most popular?",
+                answer: "Our most-used free online tools include: JPG to PNG converter, PDF merger, image compressor, video converter, background remover, and AI image generator. Users love these tools for their speed and simplicity."
+              },
+              {
+                question: "Can I use SimplifyConvert free online tools on mobile?",
+                answer: "Absolutely! Our free online tools are fully responsive and work perfectly on smartphones and tablets. Use any tool with the same features and speed as on desktop."
+              }
+            ].map((faq, index) => (
+              <motion.div
+                key={index}
+                className="border border-gray-200 rounded-xl overflow-hidden hover:border-orange-500 transition-colors"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <details className="group cursor-pointer">
+                  <summary className="flex items-center justify-between p-6 bg-gray-50 group-open:bg-orange-50 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {faq.question}
+                    </h3>
+                    <ChevronRight className="w-5 h-5 text-gray-600 group-open:rotate-90 transition-transform" />
+                  </summary>
+                  <div className="p-6 bg-white text-gray-700 leading-relaxed border-t border-gray-200">
+                    {faq.answer}
+                  </div>
+                </details>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* FAQ Schema - Note: FAQ schema will be added via next/script in layout.tsx for client components */}
         </div>
       </section>
 

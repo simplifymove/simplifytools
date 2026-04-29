@@ -394,7 +394,7 @@ export default function MakeBackgroundTransparentPage() {
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-2">Background Transparency</h1>
               <p className="text-lg text-orange-50">
-                Professional-grade background removal with edge refinement and advanced controls
+                Remove backgrounds instantly with clean edges and transparency
               </p>
             </div>
           </div>

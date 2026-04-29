@@ -29,7 +29,7 @@ export function Header() {
       title: 'PDF Tools',
       icon: FileText,
       color: 'from-purple-500 to-purple-700',
-      count: '54+',
+      count: '55+',
       link: '/all-tools/pdf-tools',
     },
     {
@@ -50,7 +50,7 @@ export function Header() {
     },
     {
       id: 'ai',
-      title: 'AI Write',
+      title: 'AI Writing',
       icon: PenTool,
       color: 'from-blue-500 to-blue-700',
       count: '60+',
@@ -70,14 +70,14 @@ export function Header() {
       icon: Code2,
       color: 'from-green-500 to-green-700',
       count: '44+',
-      link: '/all-tools/code',
+      link: '/all-tools/code-tools',
     },
     {
       id: 'text-to-speech',
       title: 'Text to Speech',
       icon: Volume2,
       color: 'from-indigo-500 to-indigo-700',
-      count: 'Multi',
+      count: 'Voice',
       link: '/all-tools/text-to-speech',
     },
   ];
@@ -85,7 +85,7 @@ export function Header() {
   const navItems = [
     { label: 'Image', href: '/all-tools/image-tools' },
     { label: 'Video', href: '/all-tools/video-tools' },
-    { label: 'AI Write', href: '/all-tools/ai-tools' },
+    { label: 'AI Writing', href: '/all-tools/ai-tools' },
     { label: 'Data', href: '/all-tools/data-converter' },
   ];
 
@@ -98,7 +98,7 @@ export function Header() {
             <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center overflow-hidden p-1">
               <Image 
                 src="/Logo-icon.gif" 
-                alt="Logo" 
+                alt="SimplifyConvert free online tools logo" 
                 width={28} 
                 height={28}
                 className="w-full h-full object-cover"

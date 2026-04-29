@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react';
 import { allTools } from '@/app/data/tools';
 import { ToolCard } from '@/app/components/ToolCard';
 import { SearchBox } from '@/app/components/SearchBox';
+import { FAQ } from '@/app/components/FAQ';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
@@ -74,9 +75,12 @@ export default function ImageToolsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">🖼️ Image Tools</h1>
-                <p className="text-lg text-white/90 max-w-2xl">
-                  Professional tools for image editing, conversion, enhancement, and optimization
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Free Image Tools Online</h1>
+                <p className="text-lg text-white/90 max-w-3xl mb-4">
+                  Use our free image tools to compress, convert, resize, and enhance images instantly. Supports JPG, PNG, WebP, and more. No signup required, no watermarks, completely free.
+                </p>
+                <p className="text-base text-white/80 max-w-3xl">
+                  Professional-grade image processing tools for everyone. Fast, secure, and easy to use on all devices.
                 </p>
               </motion.div>
             </div>
@@ -206,6 +210,161 @@ export default function ImageToolsPage() {
               )}
             </div>
           </div>
+
+          {/* SEO Content Section */}
+          <div className="py-16 px-4 md:px-8 bg-white border-t border-gray-200">
+            <div className="max-w-4xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="space-y-8"
+              >
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Image Tools?</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-900 text-lg">⚡ Lightning Fast Processing</h3>
+                    <p className="text-gray-700">Image compression and conversion happens instantly in your browser. No waiting, no delays. Process multiple images in seconds.</p>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-900 text-lg">🔒 100% Secure & Private</h3>
+                    <p className="text-gray-700">Your images are never stored on our servers. All processing happens locally in your browser using HTTPS encryption for complete privacy.</p>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-900 text-lg">📱 Works on All Devices</h3>
+                    <p className="text-gray-700">Use image tools on desktop, tablet, or mobile. No app installation needed. Works on Windows, Mac, iOS, and Android.</p>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-900 text-lg">🎨 Professional Results</h3>
+                    <p className="text-gray-700">Achieve professional-grade image editing and conversion without expensive software. Perfect for social media, web design, and more.</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Popular Image Tools Section */}
+          <div className="py-16 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+            <div className="max-w-4xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Popular Image Tools</h2>
+                <p className="text-gray-700 mb-6">SimplifyConvert offers 79 image tools. Here are our most popular ones:</p>
+                <div className="space-y-3">
+                  <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition">
+                    <span className="text-orange-600 font-semibold">→</span>
+                    <span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor - Reduce file size</span>
+                  </Link>
+                  <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition">
+                    <span className="text-orange-600 font-semibold">→</span>
+                    <span className="text-gray-900 font-medium hover:text-orange-600">Image Resizer - Change dimensions</span>
+                  </Link>
+                  <Link href="/all-tools/png-to-jpg" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition">
+                    <span className="text-orange-600 font-semibold">→</span>
+                    <span className="text-gray-900 font-medium hover:text-orange-600">PNG to JPG Converter</span>
+                  </Link>
+                  <Link href="/all-tools/crop-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition">
+                    <span className="text-orange-600 font-semibold">→</span>
+                    <span className="text-gray-900 font-medium hover:text-orange-600">Image Cropper - Trim & compose</span>
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* How to Use Section */}
+          <div className="py-16 px-4 md:px-8 bg-white border-t border-gray-200">
+            <div className="max-w-4xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Use Free Image Tools</h2>
+                <p className="text-gray-700 leading-relaxed mb-6">
+                  Using SimplifyConvert image tools is simple and straightforward. Select the tool you need from our 79 tools, upload your image file, configure options if needed, and click process. The tool handles complex image operations in seconds while maintaining quality. Download your edited or converted image instantly. No signup required, no registration needed, no learning curve.
+                </p>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Upload Your Image</h3>
+                      <p className="text-gray-700">Click on the tool and upload your image file. Supports JPG, PNG, WebP, BMP, GIF, and more.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Configure Settings (Optional)</h3>
+                      <p className="text-gray-700">Adjust quality, compression level, dimensions, or other options based on your needs.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Process & Download</h3>
+                      <p className="text-gray-700">Click the process button and download your result immediately. Files are never stored on our servers.</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          <FAQ
+            items={[
+              {
+                name: 'Are all image tools really free?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes! All image tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any image tool unlimited times without payment.'
+                }
+              },
+              {
+                name: 'What image formats do you support?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'We support most common image formats including JPG, PNG, WebP, BMP, GIF, TIFF, and more. Our image converter tools can transform between any of these formats while maintaining quality.'
+                }
+              },
+              {
+                name: 'Is my image data safe?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. Your images are processed securely in your browser and never stored on our servers. We use HTTPS encryption for all transfers. Images are processed immediately and deleted after download.'
+                }
+              },
+              {
+                name: 'Can I use image tools on mobile?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. All image tools work on iOS, Android, tablets, and mobile browsers. No app installation required. Simply visit SimplifyConvert from your mobile device and start using any tool.'
+                }
+              },
+              {
+                name: 'How many images can I process?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'There are no limits! Process as many images as you need, anytime. Unlike other tools, we don\'t restrict the number of files you can compress, convert, or edit.'
+                }
+              },
+              {
+                name: 'Which image tools are most popular?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Image compression, resizing, PNG to JPG conversion, and image cropping are our most popular tools. All are free, fast, and work without signup or installation. Perfect for social media, web design, and general photo editing.'
+                }
+              }
+            ]}
+            colorClass="orange"
+            bgColor="gray"
+          />
         </div>
       </main>
       <Footer />

@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { generateOrganizationSchema, generateWebSiteSchema } from "./lib/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +16,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SimplifyConvert - Free Image, Video, AI & Data Conversion Tools Online",
-  description: "Discover 100+ free online tools for image editing, video conversion, AI writing, PDF manipulation, and data transformation. No installation required. Fast, secure, and easy to use.",
-  keywords: ["image converter", "video converter", "PDF tools", "AI writing", "data conversion", "online tools", "free tools"],
+  title: "Free Online Tools to Convert PDFs, Images & Videos",
+  description: "Use 200+ free online tools to convert PDFs, images, videos, and files instantly. No signup needed. Fast, secure, and free forever.",
+  keywords: [
+    "free online tools",
+    "online converter",
+    "file converter",
+    "image converter",
+    "video converter",
+    "PDF tools",
+    "free image editor",
+    "free video converter",
+    "free PDF editor",
+    "online tool suite",
+    "file conversion tool",
+    "free conversion tool",
+  ],
   authors: [{ name: "SimplifyConvert" }],
   creator: "SimplifyConvert",
   publisher: "SimplifyConvert",
@@ -30,23 +44,24 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://simplifyconvert.com",
     siteName: "SimplifyConvert",
-    title: "SimplifyConvert - Free Online Tools for Image, Video & Data",
-    description: "100+ free online tools for image editing, video conversion, AI writing, PDF tools, and data conversion. No signup required.",
+    title: "Free Online Tools to Convert PDFs, Images & Videos",
+    description: "Convert images, videos, PDFs and more. 200+ free online tools, no signup required.",
     images: [
       {
         url: "https://simplifyconvert.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "SimplifyConvert - Free Online Tools",
+        alt: "Free Online Tools - Convert Images, Videos, PDFs Instantly",
         type: "image/jpeg",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SimplifyConvert - Free Online Tools",
-    description: "100+ free online tools for image, video, AI, PDF, and data conversion.",
+    title: "Free Online Tools to Convert PDFs, Images & Videos",
+    description: "200+ free online tools for image, video, PDF, and file conversion.",
     images: ["https://simplifyconvert.com/og-image.jpg"],
+    creator: "@simplifyconvert",
   },
   robots: {
     index: true,
@@ -72,46 +87,29 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationSchema = generateOrganizationSchema();
+  const websiteSchema = generateWebSiteSchema();
+
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="light" />
+        <meta name="theme-color" content="#ffffff" />
+        
+        {/* Preload fonts */}
+        <link rel="preload" as="font" href="/fonts/geist.ttf" type="font/ttf" crossOrigin="anonymous" />
+        
+        {/* JSON-LD Schemas */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "SimplifyConvert",
-              url: "https://simplifyconvert.com",
-              logo: "https://simplifyconvert.com/logo.png",
-              description: "Free online tools for image, video, AI, PDF, and data conversion",
-              sameAs: [
-                "https://twitter.com/simplifyconvert",
-                "https://facebook.com/simplifyconvert",
-              ],
-            }),
+            __html: JSON.stringify(organizationSchema),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              url: "https://simplifyconvert.com",
-              name: "SimplifyConvert",
-              description: "100+ free online tools for image, video, AI, PDF, and data conversion",
-              potentialAction: {
-                "@type": "SearchAction",
-                target: {
-                  "@type": "EntryPoint",
-                  urlTemplate: "https://simplifyconvert.com/all-tools?search={search_term_string}",
-                },
-                query_input: "required name=search_term_string",
-              },
-            }),
+            __html: JSON.stringify(websiteSchema),
           }}
         />
         

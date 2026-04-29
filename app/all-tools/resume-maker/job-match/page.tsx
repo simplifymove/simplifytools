@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Download, Eye, Edit2 } from 'lucide-react';
+import { ChevronRight, Download, Eye, Edit2, CheckCircle, Zap, Shield, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import { FAQ } from '@/app/components/FAQ';
 import { resumeTemplates, type ResumeTemplate } from '@/app/lib/resume-templates';
 import { resumeDesigns, type ResumeDesign } from '@/app/lib/resume-designs';
 import { generateResumeDOCX } from '@/app/lib/resume-docx-generator';
@@ -108,8 +109,8 @@ export default function ResumeBuilderPage() {
             >
               <div className="text-5xl">📄</div>
               <div className="flex-1">
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">Resume Maker</h1>
-                <p className="text-white/95 text-lg">Select a job, customize your resume, and download as Word document</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">Free Resume Maker Online with Job Match Templates</h1>
+                <p className="text-white/95 text-lg">Build professional resumes with AI job matching. Select templates, customize easily, download as Word documents instantly.</p>
               </div>
             </motion.div>
           </div>
@@ -416,6 +417,224 @@ export default function ResumeBuilderPage() {
             </div>
           </div>
         </div>
+
+        {/* SEO Content Section */}
+        <div className="py-16 px-4 md:px-8 bg-white border-t border-gray-200">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Resume Maker?</h2>
+              
+              <p className="text-gray-700 leading-relaxed mb-8">
+                SimplifyConvert's <Link href="/all-tools" className="text-blue-600 font-medium hover:underline">resume builder</Link> is the easiest way to create professional resumes that match job descriptions. Unlike complex software or generic templates, our free resume maker uses job matching to organize your content. Build your perfect resume in minutes, customize with multiple design templates, and download as a Word document immediately. Pair with our <Link href="/all-tools/pdf-tools" className="text-blue-600 font-medium hover:underline">PDF tools</Link> to format and optimize further.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
+                    <Zap className="text-blue-600" size={20} />
+                    AI Job Matching
+                  </h3>
+                  <p className="text-gray-700 text-sm">Get resume recommendations based on job descriptions. Our tool helps organize your resume keywords and formatting for clarity and relevance to job postings.</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
+                    <CheckCircle className="text-blue-600" size={20} />
+                    Multiple Professional Templates
+                  </h3>
+                  <p className="text-gray-700 text-sm">Choose from five industry-standard resume designs. Each template uses ATS-friendly formatting to improve resume clarity and relevance to job postings.</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
+                    <Shield className="text-blue-600" size={20} />
+                    Instant Download as Word
+                  </h3>
+                  <p className="text-gray-700 text-sm">Export your resume as .docx format immediately. Edit in Microsoft Word, Google Docs, or any text editor. No delays, no subscriptions required.</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
+                    <Users className="text-blue-600" size={20} />
+                    100% Free & No Signup
+                  </h3>
+                  <p className="text-gray-700 text-sm">Create unlimited resumes without registration, hidden fees, or premium tiers. Start building your perfect resume right now—completely free.</p>
+                </div>
+              </div>
+
+              {/* How to Use */}
+              <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">How to Use Our Resume Maker</h2>
+                <ol className="space-y-4 text-gray-700">
+                  <li className="flex gap-4">
+                    <span className="flex-shrink-0 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">1</span>
+                    <span><strong>Select a Job Template:</strong> Choose from pre-built resume templates matched to popular job positions. Each template includes relevant sections and formatting.</span>
+                  </li>
+                  <li className="flex gap-4">
+                    <span className="flex-shrink-0 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">2</span>
+                    <span><strong>Customize Your Details:</strong> Edit your name, contact info, professional summary, work experience, education, skills, and certifications in the left panel.</span>
+                  </li>
+                  <li className="flex gap-4">
+                    <span className="flex-shrink-0 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">3</span>
+                    <span><strong>Choose a Design Template:</strong> Browse five professional resume designs with different color schemes. Preview changes in real-time as you select designs.</span>
+                  </li>
+                  <li className="flex gap-4">
+                    <span className="flex-shrink-0 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">4</span>
+                    <span><strong>Preview & Download:</strong> Toggle between edit and preview mode. When satisfied, click "Download .docx" to save your professional resume as a Word document.</span>
+                  </li>
+                </ol>
+              </div>
+
+              {/* Popular Uses */}
+              <div className="mb-12">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Uses for Our Free Resume Maker</h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start gap-3">
+                    <span className="text-blue-600 font-bold">•</span>
+                    <span><strong>Job Applications:</strong> Create tailored resumes for each job posting. Use job matching to ensure your resume highlights relevant skills and experience.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-blue-600 font-bold">•</span>
+                    <span><strong>Career Changes:</strong> Build a resume that emphasizes transferable skills when transitioning to a new industry or role.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-blue-600 font-bold">•</span>
+                    <span><strong>Freelance & Consulting:</strong> Showcase your portfolio, projects, and client success stories in a professional format.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-blue-600 font-bold">•</span>
+                    <span><strong>LinkedIn Optimization:</strong> Use your resume content to update your LinkedIn profile with consistent achievements and skills. Check our <Link href="/all-tools/ai-tools" className="text-blue-600 font-medium hover:underline">AI tools</Link> for profile enhancement.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-blue-600 font-bold">•</span>
+                    <span><strong>Interview Preparation:</strong> Have a polished resume to review before interviews. Our templates help you prepare talking points. Use <Link href="/all-tools/text-to-speech" className="text-blue-600 font-medium hover:underline">text-to-speech</Link> to practice your talking points aloud.</span>
+                  </li>
+                </ul>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <section className="py-16 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+          <div className="max-w-4xl mx-auto">
+            <FAQ
+              items={[
+                {
+                  name: 'Is your resume maker really free?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes! Our resume maker is completely free with no hidden costs, subscriptions, or premium features. Create unlimited resumes, download as many times as needed, and customize all templates without any charges. No signup required.'
+                  }
+                },
+                {
+                  name: 'Can I export my resume as a Word document?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Absolutely! Click the "Download .docx" button to save your resume as a Microsoft Word document. You can then edit it further in Word, Google Docs, or any text editor. This gives you full control over your final resume.'
+                  }
+                },
+                {
+                  name: 'Are these resumes optimized for ATS systems?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Our resume templates use ATS-friendly formatting with clean, standard structures. ATS systems scan resumes for keywords and formatting. Our templates are designed to work well with these systems.'
+                  }
+                },
+                {
+                  name: 'Can I use the same resume for different job positions?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes, but tailoring is recommended. Create multiple versions of your resume highlighting different skills and experiences for different roles. Use our job matching feature to customize your resume for specific positions and increase your chances of getting hired.'
+                  }
+                },
+                {
+                  name: 'How many resume templates are available?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'We offer five professional resume design templates with different color schemes and layouts. Each template is fully editable, uses ATS-friendly formatting, and includes standard sections like experience, education, skills, and certifications.'
+                  }
+                },
+                {
+                  name: 'Do I need to create an account to use this resume maker?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'No account required! Our free resume maker works entirely in your browser with no signup, login, or registration. Your data is not stored on our servers. Just start building your resume immediately.'
+                  }
+                }
+              ]}
+              colorClass="blue"
+            />
+          </div>
+        </section>
+
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              'itemListElement': [
+                {
+                  '@type': 'ListItem',
+                  'position': 1,
+                  'name': 'Home',
+                  'item': 'https://simplifyconvert.com'
+                },
+                {
+                  '@type': 'ListItem',
+                  'position': 2,
+                  'name': 'All Tools',
+                  'item': 'https://simplifyconvert.com/all-tools'
+                },
+                {
+                  '@type': 'ListItem',
+                  'position': 3,
+                  'name': 'Resume Maker',
+                  'item': 'https://simplifyconvert.com/all-tools/resume-maker'
+                },
+                {
+                  '@type': 'ListItem',
+                  'position': 4,
+                  'name': 'Job Match Resume',
+                  'item': 'https://simplifyconvert.com/all-tools/resume-maker/job-match'
+                }
+              ]
+            })
+          }}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              'name': 'Free Resume Maker',
+              'description': 'Create professional resumes with AI job matching. Free resume builder with multiple templates. Create, customize, and download instantly.',
+              'applicationCategory': 'BusinessApplication',
+              'operatingSystem': 'Web',
+              'url': 'https://simplifyconvert.com/all-tools/resume-maker/job-match',
+              'offers': {
+                '@type': 'Offer',
+                'price': '0',
+                'priceCurrency': 'USD'
+              },
+              'featureList': [
+                'Job Matching',
+                'Multiple Professional Templates',
+                'Real-time Preview',
+                'Download as Word Document',
+                'ATS-Friendly Formatting',
+                'No Signup Required',
+                'Free Forever'
+              ]
+            })
+          }}
+        />
       </div>
       <Footer />
     </>

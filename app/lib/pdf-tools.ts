@@ -202,9 +202,9 @@ export const pdfTools: Record<string, PdfToolConfig> = {
     ],
   },
 
-  'pdf-page-deletor': {
-    id: 'pdf-page-deletor',
-    title: 'PDF Page Deletor',
+  'pdf-page-deleter': {
+    id: 'pdf-page-deleter',
+    title: 'PDF Page Deleter',
     description: 'Delete specific pages from PDF',
     category: 'Core',
     engine: 'core',

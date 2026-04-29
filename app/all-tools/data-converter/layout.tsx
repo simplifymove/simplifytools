@@ -1,29 +1,29 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Data Converter - JSON, CSV, XML Conversion Tools | SimplifyConvert',
-  description: 'Free data conversion tools online. Convert between JSON, CSV, XML, YAML, and more. Format, validate, and transform data instantly.',
-  keywords: ['data converter', 'JSON converter', 'CSV converter', 'XML converter', 'data transformation'],
+  title: 'Free Data Converter for CSV, JSON, XML & Excel',
+  description: 'Free data converter to transform CSV, JSON, XML, and Excel formats instantly. Convert between data formats online without signup. Fast, secure, and reliable.',
+  keywords: ['free data converter', 'convert CSV to JSON', 'data format converter', 'JSON to CSV converter', 'data transformation tool', 'online data converter'],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://simplifyconvert.com/all-tools/data-converter',
     siteName: 'SimplifyConvert',
-    title: 'Data Converter - Free Online Data Format Conversion',
-    description: 'Convert between JSON, CSV, XML, YAML and more formats instantly.',
+    title: 'Free Data Converter for CSV, JSON, XML & Excel',
+    description: 'Free data converter to transform CSV, JSON, XML, and Excel formats instantly. Convert between data formats online without signup.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Data Converter',
+        alt: 'Free data converter to convert between CSV, JSON, XML, and Excel formats',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Data Converter - Free Online Data Format Conversion',
-    description: 'Convert between JSON, CSV, XML, YAML and more formats instantly.',
+    title: 'Free Data Converter for CSV, JSON, XML & Excel',
+    description: 'Free data converter to transform CSV, JSON, XML, and Excel formats instantly. Convert without signup.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
   alternates: {

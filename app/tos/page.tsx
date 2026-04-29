@@ -8,10 +8,10 @@ import { motion } from 'framer-motion';
 import { Footer } from '@/app/components/Footer';
 
 const categories = [
-  { id: 'pdf', title: 'PDF Tools', icon: FileText, color: 'from-purple-500 via-purple-600 to-purple-700', count: '54+', link: '/all-tools/pdf-tools' },
+  { id: 'pdf', title: 'PDF Tools', icon: FileText, color: 'from-purple-500 via-purple-600 to-purple-700', count: '55+', link: '/all-tools/pdf-tools' },
   { id: 'image', title: 'Image Tools', icon: Image, color: 'from-orange-500 via-orange-600 to-orange-700', count: '80+', link: '/all-tools/image-tools' },
   { id: 'video', title: 'Video Tools', icon: Video, color: 'from-pink-500 via-pink-600 to-pink-700', count: '58+', link: '/all-tools/video-tools' },
-  { id: 'ai', title: 'AI Write', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '60+', link: '/all-tools/ai-tools' },
+  { id: 'ai', title: 'AI Writing', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '60+', link: '/all-tools/ai-tools' },
   { id: 'data', title: 'Data Conversion', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/all-tools/data-converter' },
   { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '44+', link: '/tools' }
 ];
@@ -172,7 +172,7 @@ export default function TermsPage() {
             </div>
 
             {/* Other Navigation Items */}
-            {['Image', 'Video', 'AI Write', 'Data'].map((item) => (
+            {['Image', 'Video', 'AI Writing', 'Data'].map((item) => (
               <motion.a 
                 key={item} 
                 href="#" 
@@ -233,7 +233,7 @@ export default function TermsPage() {
             exit={{ opacity: 0, height: 0 }}
           >
             <div className="space-y-3">
-              {['All Tools', 'Image', 'Video', 'AI Write', 'Data'].map((item) => (
+              {['All Tools', 'Image', 'Video', 'AI Writing', 'Data'].map((item) => (
                 <Link key={item} href="/tools" className="block px-4 py-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
                   {item}
                 </Link>

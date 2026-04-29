@@ -1,16 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { dataTools } from '@/app/lib/data-tools';
 import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import { FAQ } from '@/app/components/FAQ';
 
 export default function DataToolsPage() {
-  const router = useRouter();
-
   // Group tools by category
   const toolsByCategory = Object.values(dataTools).reduce(
     (acc, tool) => {
@@ -50,9 +48,9 @@ export default function DataToolsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">📊 Data Conversion Tools</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free Data Converter Online (CSV, JSON, XML, Excel)</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert between different file formats, merge files, split documents, and transform your data effortlessly
+              Transform between CSV, JSON, XML, Excel, and more formats instantly. Our free online tools let you convert data securely without signup, installation, or registration required.
             </p>
           </motion.div>
         </div>
@@ -85,10 +83,10 @@ export default function DataToolsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <motion.div
-                    className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 group border-2 border-gray-100 hover:border-gray-200 cursor-pointer overflow-hidden"
-                    onClick={() => router.push(`/all-tools/data-converter/${tool.id}`)}
-                  >
+                  <Link href={`/all-tools/data-converter/${tool.id}`}>
+                    <motion.div
+                      className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 group border-2 border-gray-100 hover:border-gray-200 cursor-pointer overflow-hidden"
+                    >
                     {/* Hover gradient */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-green-500/5 opacity-0 group-hover:opacity-100"
@@ -134,14 +132,79 @@ export default function DataToolsPage() {
                         <ChevronRight className="w-4 h-4" />
                       </div>
                     </div>
-                  </motion.div>
+                    </motion.div>
+                  </Link>
                 </motion.div>
               ))}
             </motion.div>
           </motion.div>
         ))}
       </div>
+      {/* SEO Content Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Online Tools?</h2>
+            
+            <p className="text-gray-700 leading-relaxed mb-6">
+              SimplifyConvert offers 12 free tools to transform between common data formats. <Link href="/all-tools/data-converter/csv-to-json" className="text-teal-600 font-medium hover:underline">Convert CSV to JSON</Link>, <Link href="/all-tools/data-converter/excel-to-xml" className="text-teal-600 font-medium hover:underline">export Excel as XML</Link>, split large files, or work with <Link href="/all-tools/data-converter/json-to-xml" className="text-teal-600 font-medium hover:underline">JSON and XML formats</Link>—all without any cost, signup, or installation. Our specialized tools cover the most frequently needed format conversions and deliver reliable results instantly.
+            </p>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
+                <p className="text-gray-700 text-sm">All data conversion tools are permanently free. No hidden charges, premium tiers, or surprise fees. Convert unlimited files without payment or credit card required.</p>
+              </div>
+              <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
+                <p className="text-gray-700 text-sm">Works directly in your browser. Use data converter tools on Windows, Mac, iPhone, Android, and any device with internet. No software downloads or complex setup required.</p>
+              </div>
+              <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Instant Results</h3>
+                <p className="text-gray-700 text-sm">Convert data formats in seconds. Our optimized conversion engines handle files quickly and deliver high-quality output instantly. No waiting, no delays, no complex procedures.</p>
+              </div>
+              <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
+                <p className="text-gray-700 text-sm">Your data is processed securely and never stored on servers. HTTPS encryption protects all transfers. Files are deleted immediately after conversion. Complete privacy guaranteed.</p>
+              </div>
+            </div>
+
+            {/* Popular Data Tools - Internal Linking Section */}
+            <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Data Conversion Tools</h2>
+              <p className="text-gray-700 mb-6">Quick access to our most-used data format conversion tools:</p>
+              <div className="space-y-3">
+                <Link href="/all-tools/data-converter/csv-to-json" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
+                  <span className="text-teal-600 font-semibold">→</span>
+                  <span className="text-gray-900 font-medium hover:text-teal-600">CSV to JSON Converter - Transform CSV files</span>
+                </Link>
+                <Link href="/all-tools/data-converter/excel-to-csv" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
+                  <span className="text-teal-600 font-semibold">→</span>
+                  <span className="text-gray-900 font-medium hover:text-teal-600">Excel to CSV Converter - Export spreadsheet data</span>
+                </Link>
+                <Link href="/all-tools/data-converter/csv-to-xml" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
+                  <span className="text-teal-600 font-semibold">→</span>
+                  <span className="text-gray-900 font-medium hover:text-teal-600">CSV to XML Converter - Create XML from CSV</span>
+                </Link>
+                <Link href="/all-tools/data-converter/json-to-xml" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
+                  <span className="text-teal-600 font-semibold">→</span>
+                  <span className="text-gray-900 font-medium hover:text-teal-600">JSON to XML Converter - Convert JSON data</span>
+                </Link>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Our Tools</h2>
+            <p className="text-gray-700 leading-relaxed mb-6">
+              It's simple and intuitive. Select the tool you need from our collection—try <Link href="/all-tools/data-converter/csv-to-json" className="text-teal-600 font-medium hover:underline">CSV to JSON</Link>, <Link href="/all-tools/data-converter/excel-to-csv" className="text-teal-600 font-medium hover:underline">Excel to CSV</Link>, or any other format pair. Upload your file or paste your data, then choose your desired output format. Our tools automatically process your input and generate results instantly. Download your file or copy the output to clipboard. No signup, no registration, no learning curve—just fast, secure format transformation in seconds.
+            </p>
+          </motion.div>
+        </div>
+      </div>
       {/* Feature Highlight */}
       <motion.div 
         className="max-w-7xl mx-auto px-4 py-12 pb-20"
@@ -149,32 +212,109 @@ export default function DataToolsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <motion.div 
-          className="bg-gradient-to-r from-teal-600 to-green-600 rounded-2xl shadow-xl p-12 text-white"
-          whileHover={{ y: -4 }}
-        >
-          <h2 className="text-3xl font-bold mb-8">
-            Why Use Our Data Conversion Tools?
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div whileHover={{ scale: 1.05 }}>
-              <div className="text-4xl mb-4">⚡</div>
-              <h3 className="text-lg font-semibold mb-2">Fast Processing</h3>
-              <p className="text-white/90">Optimized conversion engines handle files up to 100MB with blazing speed</p>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }}>
-              <div className="text-4xl mb-4">🔒</div>
-              <h3 className="text-lg font-semibold mb-2">Secure & Private</h3>
-              <p className="text-white/90">Files are processed securely and automatically deleted after conversion</p>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }}>
-              <div className="text-4xl mb-4">📊</div>
-              <h3 className="text-lg font-semibold mb-2">Multiple Formats</h3>
-              <p className="text-white/90">Support for CSV, Excel, JSON, XML, PDF and many more formats</p>
-            </motion.div>
-          </div>
-        </motion.div>
       </motion.div>
+
+      {/* FAQ Section */}
+      <FAQ
+        items={[
+          {
+            name: 'Are all data converter tools really free?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes! All data conversion tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Convert unlimited files without payment or credit card.'
+            }
+          },
+          {
+            name: 'What data formats can I convert?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Our free data converter supports CSV, JSON, XML, Excel, YAML, and more formats. You can transform data between any of these formats using our specialized conversion tools. Each tool is optimized for specific format pairs.'
+            }
+          },
+          {
+            name: 'Do I need to sign up to use the data converter?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'No signup required! Our free data converter works instantly without registration, login, or account creation. Simply select your conversion tool, upload or paste your data, and get results immediately. No personal information needed.'
+            }
+          },
+          {
+            name: 'Is my data safe when using the converter?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. Your data is processed securely and never stored on our servers. We use HTTPS encryption for all transfers. Files are processed immediately and deleted after download. Complete privacy guaranteed with no tracking.'
+            }
+          },
+          {
+            name: 'Can I use the data converter on mobile?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. All data conversion tools work on iOS, Android, tablets, and mobile browsers. No app installation required. Simply visit SimplifyConvert from your mobile device and start converting data formats instantly.'
+            }
+          },
+          {
+            name: 'What file sizes can the converter handle?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Our data converter tools can handle files up to 100MB depending on the format and your internet connection. Large files may take longer to process, but our tools handle them efficiently without losing data quality.'
+            }
+          }
+        ]}
+        colorClass="teal"
+        bgColor="white"
+      />
+
+      {/* Tools ItemList Schema for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          name: 'Free Data Conversion Tools',
+          description: '12 free online tools to convert between CSV, JSON, XML, Excel, and other data formats',
+          itemListElement: Object.values(dataTools).map((tool, idx) => ({
+            '@type': 'SoftwareApplication',
+            position: idx + 1,
+            name: tool.title,
+            description: tool.description,
+            url: `https://simplifyconvert.com/all-tools/data-converter/${tool.id}`,
+            applicationCategory: 'Utility',
+            operatingSystem: 'Web',
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD'
+            }
+          }))
+        })}
+      </script>
+
+      {/* Breadcrumb + Organization Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Home',
+              item: 'https://simplifyconvert.com'
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'All Tools',
+              item: 'https://simplifyconvert.com/all-tools'
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: 'Data Converter',
+              item: 'https://simplifyconvert.com/all-tools/data-converter'
+            }
+          ]
+        })}
+      </script>
         </div>
       </main>
       <Footer />

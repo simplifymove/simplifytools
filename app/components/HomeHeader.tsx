@@ -34,7 +34,7 @@ export function HomeHeader() {
       icon: FileText,
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
-      count: '54+',
+      count: '55+',
       link: '/all-tools/pdf-tools',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
@@ -45,7 +45,7 @@ export function HomeHeader() {
       icon: ImageIcon,
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
-      count: '80+',
+      count: '79',
       link: '/all-tools/image-tools',
       glowColor: 'group-hover:shadow-orange-500/20'
     },
@@ -56,13 +56,13 @@ export function HomeHeader() {
       icon: Video,
       color: 'from-pink-500 via-pink-600 to-pink-700',
       bgColor: 'bg-pink-50',
-      count: '58+',
+      count: '58',
       link: '/all-tools/video-tools',
       glowColor: 'group-hover:shadow-pink-500/20'
     },
     {
       id: 'ai',
-      title: 'AI Write',
+      title: 'AI Writing Tools',
       description: 'AI-powered writing, generation, and content creation',
       icon: PenTool,
       color: 'from-blue-500 via-blue-600 to-blue-700',
@@ -89,8 +89,8 @@ export function HomeHeader() {
       icon: Code2,
       color: 'from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-50',
-      count: '44',
-      link: '/all-tools/code',
+      count: '49',
+      link: '/all-tools/code-tools',
       glowColor: 'group-hover:shadow-green-500/20'
     },
     {
@@ -100,7 +100,7 @@ export function HomeHeader() {
       icon: Volume2,
       color: 'from-indigo-500 via-indigo-600 to-indigo-700',
       bgColor: 'bg-indigo-50',
-      count: 'Multi',
+      count: 'Voice',
       link: '/all-tools/text-to-speech',
       glowColor: 'group-hover:shadow-indigo-500/20'
     },
@@ -182,7 +182,7 @@ export function HomeHeader() {
             <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center overflow-hidden shadow-md shadow-orange-500/40 p-1">
               <Image 
                 src="/Logo-icon.gif" 
-                alt="Logo" 
+                alt="SimplifyConvert free online tools logo" 
                 width={20} 
                 height={20}
                 className="w-full h-full object-cover"
@@ -251,7 +251,7 @@ export function HomeHeader() {
               href="/all-tools/ai-tools"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
             >
-              AI Write
+              AI Writing
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
             </Link>
             <Link 
@@ -374,7 +374,7 @@ export function HomeHeader() {
                 Video
               </Link>
               <Link href="/all-tools/ai-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                AI Write
+                AI Writing
               </Link>
               <Link href="/all-tools/data-converter" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Data
