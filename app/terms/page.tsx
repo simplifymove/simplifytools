@@ -70,7 +70,7 @@ export default function TermsPage() {
     },
     {
       title: '16. Contact & Support',
-      content: 'If you have any questions, concerns, or disputes regarding these Terms of Service, please contact: SimplifyConvert Legal Team, info@simplifymove.com. We will respond to all inquiries within 5 business days. For urgent matters or to dispute a decision, clearly mark your email as "URGENT" or "DISPUTE." You can also initiate arbitration through the agreed-upon arbitration process. We are committed to resolving concerns fairly and promptly.'
+      content: 'If you have any questions, concerns, or disputes regarding these Terms of Service, please contact: SimplifyConvert Legal Team, info@simplifyconvert.com. We will respond to all inquiries within 5 business days. For urgent matters or to dispute a decision, clearly mark your email as "URGENT" or "DISPUTE." You can also initiate arbitration through the agreed-upon arbitration process. We are committed to resolving concerns fairly and promptly.'
     }
   ];
 

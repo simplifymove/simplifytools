@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Email content to admin
     const adminMailOptions = {
       from: process.env.SMTP_FROM_EMAIL,
-      to: 'info@simplifymove.com',
+      to: 'info@simplifyconvert.com',
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 8px;">
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
             </div>
             
             <p style="color: #6b7280; margin-bottom: 16px; line-height: 1.6;">
-              If you have any urgent matters, feel free to reach out directly to our team at info@simplifymove.com.
+              If you have any urgent matters, feel free to reach out directly to our team at info@simplifyconvert.com.
             </p>
             
             <p style="color: #6b7280;">Best regards,<br/><strong>SimplifyConvert Team</strong></p>

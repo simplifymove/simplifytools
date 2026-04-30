@@ -233,7 +233,6 @@ export default function BlogPage() {
         {mobileMenuOpen && (
           <motion.div
             className="lg:hidden border-t border-gray-200 bg-white px-4 py-4"
-            initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
           >
@@ -256,7 +255,6 @@ export default function BlogPage() {
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.h1
             className="text-4xl md:text-5xl font-bold text-white mb-4"
-            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
@@ -264,7 +262,6 @@ export default function BlogPage() {
           </motion.h1>
           <motion.p
             className="text-xl text-white/90 max-w-2xl"
-            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
@@ -278,7 +275,6 @@ export default function BlogPage() {
         {/* Featured Post */}
         <motion.div
           className="mb-16 p-8 bg-linear-to-br from-orange-50 to-orange-100/50 rounded-2xl border-2 border-orange-200"
-          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
@@ -316,7 +312,6 @@ export default function BlogPage() {
         {/* Blog Posts Grid */}
         <motion.div
           className="space-y-6"
-          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
@@ -326,7 +321,6 @@ export default function BlogPage() {
               <motion.article
                 key={post.id}
                 className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-lg transition-all group cursor-pointer"
-                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
                 whileHover={{ y: -8 }}

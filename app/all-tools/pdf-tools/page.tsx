@@ -86,7 +86,7 @@ export default function PdfToolsPage() {
         name: 'Is my data safe when using SimplifyConvert PDF tools?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes. Your files are processed securely and never stored on our servers. PDFs are processed immediately and deleted after download. We use HTTPS encryption for all transfers.',
+          text: 'Yes. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption for all transfers.',
         },
       },
       {
@@ -338,7 +338,7 @@ export default function PdfToolsPage() {
                   </div>
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                    <p className="text-gray-700 text-sm">Your files are processed securely and never stored on servers. HTTPS encryption protects all transfers. Complete privacy guaranteed.</p>
+                    <p className="text-gray-700 text-sm">Files are processed securely and automatically deleted after processing. HTTPS encryption protects all transfers. We do not store your files.</p>
                   </div>
                 </div>
 
@@ -394,7 +394,7 @@ export default function PdfToolsPage() {
                 name: 'Is my data safe when using SimplifyConvert PDF tools?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Your files are processed securely and never stored on our servers. PDFs are processed immediately and deleted after download. We use HTTPS encryption for all transfers.'
+                  text: 'Yes. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption for all transfers.'
                 }
               },
               {

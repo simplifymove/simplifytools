@@ -103,7 +103,7 @@ export default function TermsPage() {
     },
     {
       title: '16. Contact & Support',
-      content: 'If you have any questions, concerns, or disputes regarding these Terms of Service, please contact: SimplifyConvert Legal Team, info@simplifymove.com. We will respond to all inquiries within 5 business days. For urgent matters or to dispute a decision, clearly mark your email as "URGENT" or "DISPUTE." You can also initiate arbitration through the agreed-upon arbitration process. We are committed to resolving concerns fairly and promptly.'
+      content: 'If you have any questions, concerns, or disputes regarding these Terms of Service, please contact: SimplifyConvert Legal Team, info@simplifyconvert.com. We will respond to all inquiries within 5 business days. For urgent matters or to dispute a decision, clearly mark your email as "URGENT" or "DISPUTE." You can also initiate arbitration through the agreed-upon arbitration process. We are committed to resolving concerns fairly and promptly.'
     }
   ];
 
@@ -228,9 +228,9 @@ export default function TermsPage() {
         {mobileMenuOpen && (
           <motion.div
             className="lg:hidden border-t border-gray-200 bg-white px-4 py-4"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
           >
             <div className="space-y-3">
               {['All Tools', 'Image', 'Video', 'AI Writing', 'Data'].map((item) => (
@@ -251,7 +251,6 @@ export default function TermsPage() {
         <div className="max-w-4xl mx-auto relative z-10">
           <motion.h1
             className="text-4xl md:text-5xl font-bold text-white mb-4"
-            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
@@ -259,7 +258,7 @@ export default function TermsPage() {
           </motion.h1>
           <motion.p
             className="text-xl text-white/90"
-            initial={{ opacity: 0, y: 20 }}
+
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
@@ -272,7 +271,6 @@ export default function TermsPage() {
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-16 md:py-24">
         <motion.div
           className="space-y-8"
-          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
         >
@@ -284,7 +282,7 @@ export default function TermsPage() {
             <motion.div
               key={idx}
               className="border-l-4 border-orange-500 pl-6 py-4"
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ x: 0 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: idx * 0.05 }}
             >

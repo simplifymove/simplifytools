@@ -39,13 +39,14 @@ import {
 export interface PdfOption {
   id: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'file' | 'url' | 'visual-crop';
+  type: 'text' | 'password' | 'number' | 'select' | 'checkbox' | 'file' | 'url' | 'visual-crop';
   default?: any;
   options?: Array<{ label: string; value: any }>;
   min?: number;
   max?: number;
   step?: number;
   placeholder?: string;
+  hint?: string;
   required?: boolean;
 }
 
@@ -159,7 +160,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'rearrange-pdf': {
     id: 'rearrange-pdf',
     title: 'Rearrange PDF',
-    description: 'Rearrange PDF pages in custom order',
+    description: 'Easily rearrange PDF pages in any order using our free online tool. Upload your PDF, set the page sequence, and download instantly — no signup required.',
     category: 'Core',
     engine: 'core',
     icon: Shuffle,
@@ -180,7 +181,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'crop-pdf': {
     id: 'crop-pdf',
     title: 'Crop PDF',
-    description: 'Crop PDF pages to specific dimensions',
+    description: 'Crop PDF pages to exact dimensions with visual editor. Trim margins, resize pages, and extract specific areas instantly. Free online tool - no signup required.',
     category: 'Core',
     engine: 'core',
     icon: Scissors,
@@ -205,7 +206,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-page-deleter': {
     id: 'pdf-page-deleter',
     title: 'PDF Page Deleter',
-    description: 'Delete specific pages from PDF',
+    description: 'Remove unwanted pages from your PDF instantly. Upload your file, enter page numbers like 1,3,5, and download a clean PDF — free, online, and no signup required.',
     category: 'Core',
     engine: 'core',
     icon: Trash,
@@ -217,7 +218,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
         id: 'pagesToDelete',
         label: 'Pages to Delete (comma-separated, 1-indexed)',
         type: 'text',
-        placeholder: '1,3,5',
+        placeholder: '1,3,5 or 2-4',
         required: true,
       },
     ],
@@ -226,7 +227,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'create-pdf': {
     id: 'create-pdf',
     title: 'Create PDF',
-    description: 'Create PDF from images or blank pages',
+    description: 'Convert JPG, PNG, and TIFF images into a single PDF in seconds. Upload multiple images and download a high-quality PDF instantly — all in your browser. Images combine in the order you upload them.',
     category: 'Core',
     engine: 'core',
     icon: Plus,
@@ -236,9 +237,11 @@ export const pdfTools: Record<string, PdfToolConfig> = {
     options: [
       {
         id: 'numPages',
-        label: 'Number of Blank Pages (if no images)',
+        label: 'Add blank pages if you want to create an empty PDF document',
         type: 'number',
-        default: 1,
+        default: 0,
+        min: 0,
+        placeholder: 'Leave at 0 for image-only PDF',
       },
     ],
   },
@@ -247,7 +250,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'protect-pdf': {
     id: 'protect-pdf',
     title: 'Protect PDF',
-    description: 'Add password protection to PDF',
+    description: 'Add password protection to your PDF files online. Encrypt documents with user and owner passwords to prevent unauthorized access — fast, secure, and free.',
     category: 'Security',
     engine: 'security',
     icon: Lock,
@@ -258,15 +261,17 @@ export const pdfTools: Record<string, PdfToolConfig> = {
       {
         id: 'userPassword',
         label: 'User Password (to open file)',
-        type: 'text',
+        type: 'password',
         placeholder: 'Enter password',
+        hint: 'Use 8+ characters with letters, numbers & symbols for strong security',
         required: true,
       },
       {
         id: 'ownerPassword',
         label: 'Owner Password (for permissions)',
-        type: 'text',
+        type: 'password',
         placeholder: 'Optional',
+        hint: 'Controls printing, copying & editing permissions. Leave blank to skip.',
       },
     ],
   },
@@ -274,7 +279,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'unlock-pdf': {
     id: 'unlock-pdf',
     title: 'Unlock PDF',
-    description: 'Remove password protection from PDF',
+    description: 'Remove password protection from PDF files you own or have permission to access. Upload your PDF, enter the password, and download an unlocked copy online.',
     category: 'Security',
     engine: 'security',
     icon: LockOpen,
@@ -285,7 +290,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
       {
         id: 'password',
         label: 'PDF Password',
-        type: 'text',
+        type: 'password',
         placeholder: 'Enter password to unlock',
         required: true,
       },
@@ -416,7 +421,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-tiff': {
     id: 'pdf-to-tiff',
     title: 'PDF to TIFF',
-    description: 'Convert PDF pages to TIFF images',
+    description: 'Convert PDF pages to high-quality TIFF images online for free. Choose DPI settings (72–600) for archival storage, printing, or professional use. Fast, secure, and no installation required.',
     category: 'Convert',
     engine: 'convert',
     icon: ImageIcon,
@@ -458,11 +463,11 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'jpg-to-pdf': {
     id: 'jpg-to-pdf',
     title: 'JPG to PDF',
-    description: 'Convert JPG images to PDF',
+    description: 'Convert JPG, JPEG, and PNG images to high-quality PDF documents online for free. Merge multiple images into a single PDF, adjust compression (0–9), and download instantly. No installation required.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
-    accepts: ['.jpg', '.jpeg'],
+    accepts: ['.jpg', '.jpeg', '.png'],
     output: '.pdf',
     inputMode: 'multi-file',
   },
@@ -470,7 +475,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'png-to-pdf': {
     id: 'png-to-pdf',
     title: 'PNG to PDF',
-    description: 'Convert PNG images to PDF',
+    description: 'Convert PNG images to high-quality PDF documents online for free. Merge multiple PNGs, adjust compression (0–9), and download instantly. No installation required.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -482,7 +487,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'tiff-to-pdf': {
     id: 'tiff-to-pdf',
     title: 'TIFF to PDF',
-    description: 'Convert TIFF images to PDF',
+    description: 'Convert TIFF images to professional PDF documents online for free. Merge multiple TIFF files, adjust compression (0–9), and download instantly. No installation required.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -493,8 +498,8 @@ export const pdfTools: Record<string, PdfToolConfig> = {
 
   'webp-to-pdf': {
     id: 'webp-to-pdf',
-    title: 'WEBP to PDF',
-    description: 'Convert WEBP images to PDF',
+    title: 'WebP to PDF',
+    description: 'Convert WebP images to professional PDF documents online for free. Merge multiple WebP files, adjust compression (0–9), and download instantly. No installation required.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -506,7 +511,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'gif-to-pdf': {
     id: 'gif-to-pdf',
     title: 'GIF to PDF',
-    description: 'Convert GIF images to PDF',
+    description: 'Convert GIF to PDF online free. Merge multiple GIFs, adjust compression, and download instantly.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -518,7 +523,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'heic-to-pdf': {
     id: 'heic-to-pdf',
     title: 'HEIC to PDF',
-    description: 'Convert HEIC images to PDF',
+    description: 'Convert HEIC to PDF online free. Merge iPhone photos, adjust compression, and download instantly.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -532,7 +537,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'eps-to-pdf': {
     id: 'eps-to-pdf',
     title: 'EPS to PDF',
-    description: 'Convert EPS images to PDF',
+    description: 'Convert EPS files without Adobe. EPS to PDF converter online free - works as EPS file viewer. Merge multiple EPS, adjust compression, download instantly.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -544,7 +549,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'images-to-pdf': {
     id: 'images-to-pdf',
     title: 'Images to PDF',
-    description: 'Convert multiple images to PDF',
+    description: 'Convert multiple images (JPG, PNG, GIF, WEBP, TIFF, HEIC) to PDF instantly. Merge images into a single PDF document with compression control. Free batch converter online - no signup required.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,

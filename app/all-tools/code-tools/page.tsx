@@ -228,7 +228,7 @@ export default function CodeToolsPage() {
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                <p className="text-gray-700 text-sm">Your code is processed securely and never stored on servers. HTTPS encryption protects all transfers. Files are deleted immediately after processing. Complete privacy guaranteed.</p>
+                <p className="text-gray-700 text-sm">Code is processed securely and automatically deleted after a short period. HTTPS encryption protects all transfers. We do not permanently store your code. Complete privacy guaranteed.</p>
               </div>
             </div>
 
@@ -296,7 +296,7 @@ export default function CodeToolsPage() {
             name: 'Is my code safe when using these tools?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. Your code is processed securely and never stored on our servers. We use HTTPS encryption for all transfers. Code is processed immediately and deleted after download. Complete privacy guaranteed with no tracking or logging.'
+              text: 'Yes. Code is processed securely and automatically deleted after a short period. We use HTTPS encryption for all transfers. We do not permanently store your code. Complete privacy guaranteed with no tracking or logging.'
             }
           },
           {

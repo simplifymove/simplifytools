@@ -53,7 +53,6 @@ function AuthContent() {
     <main className="min-h-screen bg-white flex items-center justify-center px-4 md:px-8 py-16">
       <motion.div
         className="w-full max-w-md"
-        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
@@ -138,7 +137,6 @@ function AuthContent() {
         {error && (
           <motion.div
             className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
-            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             {error}

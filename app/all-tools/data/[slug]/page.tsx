@@ -439,7 +439,7 @@ export default function DataToolPage() {
               {
                 icon: Shield,
                 title: 'Secure & Private',
-                description: 'Your files are never stored or shared with anyone',
+                description: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
               },
               {
                 icon: CheckCircle,

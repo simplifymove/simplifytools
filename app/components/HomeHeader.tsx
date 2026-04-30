@@ -144,9 +144,9 @@ export function HomeHeader() {
       {/* TOP NOTIFICATION BAR */}
       {showNotification && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
+          initial={{ y: -20 }}
+          animate={{ y: 0 }}
+          exit={{ y: -20 }}
           transition={{ duration: 0.3 }}
           className="bg-linear-to-r from-yellow-50 to-orange-50 border-b border-yellow-200 shadow-sm"
         >

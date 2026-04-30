@@ -59,7 +59,7 @@ export default function CookiesPolicyPage() {
     },
     {
       title: '13. Contact Us',
-      content: 'If you have any questions or concerns about our cookie practices, please contact: Email: info@simplifymove.com, We will respond to all cookie-related inquiries within 5 business days. If you believe your cookie rights have been violated or you have privacy concerns related to cookies, you can also contact your local data protection authority (in the EU or other jurisdictions with data protection regulations).'
+      content: 'If you have any questions or concerns about our cookie practices, please contact: Email: info@simplifyconvert.com, We will respond to all cookie-related inquiries within 5 business days. If you believe your cookie rights have been violated or you have privacy concerns related to cookies, you can also contact your local data protection authority (in the EU or other jurisdictions with data protection regulations).'
     }
   ];
 
@@ -122,7 +122,7 @@ export default function CookiesPolicyPage() {
           >
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Questions About Our Cookie Policy?</h2>
             <p className="text-gray-600 text-lg mb-6">
-              If you have any questions or concerns about our cookie practices, please contact us at info@simplifymove.com
+              If you have any questions or concerns about our cookie practices, please contact us at info@simplifyconvert.com
             </p>
             <Link href="/contact" className="inline-block px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all">
               Contact Us

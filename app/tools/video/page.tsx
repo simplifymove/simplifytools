@@ -39,7 +39,6 @@ export default function VideoToolsPage() {
           </div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
@@ -64,7 +63,6 @@ export default function VideoToolsPage() {
           <motion.div 
             key={category} 
             className="mb-14"
-            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: catIdx * 0.1 }}
           >
@@ -78,14 +76,12 @@ export default function VideoToolsPage() {
 
             <motion.div 
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ staggerChildren: 0.05, delayChildren: 0.2 }}
             >
               {tools.map((tool) => (
                 <motion.div
                   key={tool.id}
-                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                 >

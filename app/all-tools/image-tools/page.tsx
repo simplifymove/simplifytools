@@ -229,7 +229,7 @@ export default function ImageToolsPage() {
                   </div>
                   <div className="space-y-3">
                     <h3 className="font-semibold text-gray-900 text-lg">🔒 100% Secure & Private</h3>
-                    <p className="text-gray-700">Your images are never stored on our servers. All processing happens locally in your browser using HTTPS encryption for complete privacy.</p>
+                    <p className="text-gray-700">Images are processed securely and automatically deleted after a short period. We do not permanently store your images. All processing uses HTTPS encryption for complete privacy.</p>
                   </div>
                   <div className="space-y-3">
                     <h3 className="font-semibold text-gray-900 text-lg">📱 Works on All Devices</h3>

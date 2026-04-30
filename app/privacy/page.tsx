@@ -34,15 +34,15 @@ export default function PrivacyPage() {
     },
     {
       title: '7. User Rights & Data Control',
-      content: 'You have the right to: Access your personal information (if stored), request deletion or correction of your data, opt-out of analytics and non-essential tracking, port your data to another service, and contact us with privacy concerns. To exercise these rights, email info@simplifymove.com with your request. We will respond to all requests within 30 days. If you delete your account or request data deletion, all associated information will be permanently removed from our servers.'
+      content: 'You have the right to: Access your personal information (if stored), request deletion or correction of your data, opt-out of analytics and non-essential tracking, port your data to another service, and contact us with privacy concerns. To exercise these rights, email info@simplifyconvert.com with your request. We will respond to all requests within 30 days. If you delete your account or request data deletion, all associated information will be permanently removed from our servers.'
     },
     {
       title: '8. Children\'s Privacy',
-      content: 'SimplifyConvert does not knowingly collect personal information from users under the age of 13. If we become aware that a child under 13 has provided us with personal information, we will take immediate steps to delete such information and terminate the child\'s account. Parents or guardians who believe their child has provided information to SimplifyConvert should contact us immediately at info@simplifymove.com.'
+      content: 'SimplifyConvert does not knowingly collect personal information from users under the age of 13. If we become aware that a child under 13 has provided us with personal information, we will take immediate steps to delete such information and terminate the child\'s account. Parents or guardians who believe their child has provided information to SimplifyConvert should contact us immediately at info@simplifyconvert.com.'
     },
     {
       title: '9. GDPR & CCPA Compliance',
-      content: 'If you are in the European Union, you are subject to GDPR (General Data Protection Regulation) rights. If you are in California, US, you are subject to CCPA (California Consumer Privacy Act) rights. We comply with both regulations. You have rights including access, deletion, portability, and opt-out of certain processing. We do not sell personal information as defined by CCPA. For GDPR/CCPA requests, email info@simplifymove.com with "GDPR REQUEST" or "CCPA REQUEST."'
+      content: 'If you are in the European Union, you are subject to GDPR (General Data Protection Regulation) rights. If you are in California, US, you are subject to CCPA (California Consumer Privacy Act) rights. We comply with both regulations. You have rights including access, deletion, portability, and opt-out of certain processing. We do not sell personal information as defined by CCPA. For GDPR/CCPA requests, email info@simplifyconvert.com with "GDPR REQUEST" or "CCPA REQUEST."'
     },
     {
       title: '10. International Data Transfers',
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
     },
     {
       title: '12. Contact Us',
-      content: 'If you have any questions, concerns, or requests regarding our privacy practices, please contact our Privacy Team at: info@simplifymove.com. We will respond to all inquiries within 5 business days. For urgent privacy concerns, mark your email as "URGENT" and we will prioritize your request.'
+      content: 'If you have any questions, concerns, or requests regarding our privacy practices, please contact our Privacy Team at: info@simplifyconvert.com. We will respond to all inquiries within 5 business days. For urgent privacy concerns, mark your email as "URGENT" and we will prioritize your request.'
     }
   ];
 
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
           >
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Questions About Our Privacy Policy?</h2>
             <p className="text-gray-600 text-lg mb-6">
-              If you have any questions or concerns about our privacy practices, please contact us at info@simplifymove.com
+              If you have any questions or concerns about our privacy practices, please contact us at info@simplifyconvert.com
             </p>
             <Link href="/contact" className="inline-block px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all">
               Contact Us

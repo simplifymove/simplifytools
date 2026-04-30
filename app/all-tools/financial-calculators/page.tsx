@@ -420,7 +420,7 @@ export default function FinancialCalculatorsPage() {
               name: 'Do I need an account to use the calculators?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'No account required! Access all financial calculators immediately. No registration, no email verification needed. Just select a calculator, enter your data, and get instant results. No signup required. Your data is not stored.'
+                text: 'No account required! Access all financial calculators immediately. No registration, no email verification needed. Just select a calculator, enter your data, and get instant results. No signup required. Data is processed securely and not permanently stored.'
               }
             },
             {

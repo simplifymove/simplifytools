@@ -873,7 +873,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
-                  <span><strong>Privacy Focused:</strong> Your files are processed securely and never stored on our servers</span>
+                  <span><strong>Privacy Focused:</strong> Files are processed securely and automatically deleted after processing. We do not store your files</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
@@ -956,7 +956,7 @@ export default function Home() {
               },
               {
                 question: "Is my data safe when using SimplifyConvert free online tools?",
-                answer: "Yes, your privacy is our top priority. Files uploaded to our free online tools are processed securely and never stored on our servers. We use HTTPS encryption and follow strict data protection standards."
+                answer: "Yes, your privacy is our top priority. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption and follow strict data protection standards."
               },
               {
                 question: "Do I need to create an account to use the free online tools?",

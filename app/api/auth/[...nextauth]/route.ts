@@ -65,7 +65,7 @@ const authOptions: NextAuthOptions = {
             token.id = dbUser.id
             token.createdAt = dbUser.createdAt?.toISOString()
             token.lastLoginAt = dbUser.lastLoginAt?.toISOString()
-            token.provider = dbUser.provider
+            token.provider = dbUser.provider ?? undefined
             token.bio = dbUser.bio
           } else {
             console.log('[NextAuth JWT] User NOT found in database!')

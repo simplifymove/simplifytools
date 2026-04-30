@@ -439,7 +439,7 @@ export default function CodeToolPage() {
               {
                 icon: Shield,
                 title: 'Secure & Safe',
-                description: 'Your code and data are never stored or logged',
+                description: 'Code is processed securely and automatically deleted after a short period. We do not permanently store your code or data',
               },
               {
                 icon: CheckCircle,

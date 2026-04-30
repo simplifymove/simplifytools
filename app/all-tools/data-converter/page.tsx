@@ -170,7 +170,7 @@ export default function DataToolsPage() {
               </div>
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                <p className="text-gray-700 text-sm">Your data is processed securely and never stored on servers. HTTPS encryption protects all transfers. Files are deleted immediately after conversion. Complete privacy guaranteed.</p>
+                <p className="text-gray-700 text-sm">Data is processed securely and automatically deleted after a short period. HTTPS encryption protects all transfers. We do not permanently store your files. Complete privacy guaranteed.</p>
               </div>
             </div>
 
@@ -242,7 +242,7 @@ export default function DataToolsPage() {
             name: 'Is my data safe when using the converter?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. Your data is processed securely and never stored on our servers. We use HTTPS encryption for all transfers. Files are processed immediately and deleted after download. Complete privacy guaranteed with no tracking.'
+              text: 'Yes. Data is processed securely and automatically deleted after a short period. We use HTTPS encryption for all transfers. We do not permanently store your files. Complete privacy guaranteed with no tracking.'
             }
           },
           {

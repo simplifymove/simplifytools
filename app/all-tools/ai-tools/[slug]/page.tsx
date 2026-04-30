@@ -391,7 +391,7 @@ export default function AIWriteToolPage() {
               {
                 icon: Shield,
                 title: 'Privacy First',
-                description: 'Your inputs and outputs are never stored or shared',
+                description: 'Content is processed securely and automatically deleted after a short period. We do not permanently store your inputs or outputs',
               },
               {
                 icon: CheckCircle,
