@@ -32,9 +32,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       keywords: ['split PDF', 'separate PDF pages', 'extract PDF', 'divide PDF', 'PDF splitter', 'free PDF tool'],
     },
     'rotate-pdf': {
-      title: 'Rotate PDF Online Free | Turn PDF Pages 90°',
-      description: 'Rotate PDF pages 90°, 180°, or 270° online for free. No software installation or registration needed. Instantly turn PDF pages to correct orientation. Fast, secure processing.',
-      keywords: ['rotate PDF', 'turn PDF', 'rotate PDF pages', 'PDF rotation online', 'rotate PDF free', 'correct PDF orientation'],
+      title: 'Rotate PDF Pages - Free Online Tool (No Signup)',
+      description: 'Rotate PDF pages 90°, 180°, or 270° online instantly. Free tool, no signup required. Fix PDF orientation, preserves quality, download in seconds.',
+      keywords: ['rotate PDF', 'rotate PDF pages', 'PDF rotation tool', 'rotate PDF 90 degrees', 'free PDF rotator', 'PDF page orientation'],
     },
     'rearrange-pdf': {
       title: 'Rearrange PDF Pages Online Free | Reorder PDF',

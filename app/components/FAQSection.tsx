@@ -30,11 +30,21 @@ export function FAQSection({
   py = 'py-16',
   px = 'px-4 md:px-8'
 }: FAQSectionProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndices, setOpenIndices] = useState<Set<number>>(() => new Set([0]));
 
   const bgClass = bgColor === 'white' ? 'bg-white' : 'bg-gray-50';
   const borderClass = borderTop ? 'border-t border-gray-200' : '';
   const paddingClass = `${py} ${px}`;
+
+  const toggleFAQ = (index: number) => {
+    const newOpenIndices = new Set(openIndices);
+    if (newOpenIndices.has(index)) {
+      newOpenIndices.delete(index);
+    } else {
+      newOpenIndices.add(index);
+    }
+    setOpenIndices(newOpenIndices);
+  };
 
   return (
     <>
@@ -72,9 +82,9 @@ export function FAQSection({
                 className="w-full bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
               >
                 <button
-                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                  onClick={() => toggleFAQ(index)}
                   className="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg"
-                  aria-expanded={openIndex === index}
+                  aria-expanded={openIndices.has(index)}
                 >
                   <h3 className="text-lg font-semibold text-gray-900 pr-4">
                     {faq.question}
@@ -82,13 +92,13 @@ export function FAQSection({
                   <ChevronDown
                     size={20}
                     className={`flex-shrink-0 text-gray-600 transition-transform ${
-                      openIndex === index ? 'transform rotate-180' : ''
+                      openIndices.has(index) ? 'transform rotate-180' : ''
                     }`}
                   />
                 </button>
 
                 {/* Answer */}
-                {openIndex === index && (
+                {openIndices.has(index) && (
                   <div className="px-6 pb-4 border-t border-gray-100">
                     <p className="text-gray-700 leading-relaxed">
                       {faq.answer}

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Download, Eye, Edit2, CheckCircle, Zap, Shield, Users } from 'lucide-react';
+import { ChevronRight, Download, Eye, Edit2, CheckCircle, Zap, Shield, Users, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
@@ -10,18 +10,103 @@ import { FAQ } from '@/app/components/FAQ';
 import { resumeTemplates, type ResumeTemplate } from '@/app/lib/resume-templates';
 import { resumeDesigns, type ResumeDesign } from '@/app/lib/resume-designs';
 import { generateResumeDOCX } from '@/app/lib/resume-docx-generator';
+import { industryJobTemplates, industries, getJobsForIndustry, getJobTemplate } from '@/app/lib/industry-job-templates';
 
 export default function ResumeBuilderPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>(resumeTemplates[0]);
+  // State for design (unchanged)
   const [selectedDesign, setSelectedDesign] = useState<ResumeDesign>(resumeDesigns[0]);
   const [isEditing, setIsEditing] = useState(true);
-  const [resumeData, setResumeData] = useState(selectedTemplate.template);
 
-  const handleTemplateChange = (templateId: string) => {
-    const template = resumeTemplates.find(t => t.id === templateId);
+  // State for industry and job selection
+  const [selectedIndustry, setSelectedIndustry] = useState<string>(industries[0] || 'Technology');
+  const [selectedJob, setSelectedJob] = useState<string>(() => {
+    const defaultIndustry = industries[0] || 'Technology';
+    const jobs = getJobsForIndustry(defaultIndustry);
+    return jobs[0] || '';
+  });
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [showJobSearch, setShowJobSearch] = useState(false);
+
+  // Get available jobs for current industry
+  const availableJobs = useMemo(() => {
+    return getJobsForIndustry(selectedIndustry);
+  }, [selectedIndustry]);
+
+  // Filter jobs based on search term
+  const filteredJobs = useMemo(() => {
+    return availableJobs.filter(job =>
+      job.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [availableJobs, searchTerm]);
+
+  // Get current job template
+  const currentJobTemplate = useMemo(() => {
+    return getJobTemplate(selectedIndustry, selectedJob);
+  }, [selectedIndustry, selectedJob]);
+
+  // Initialize resume data from job template
+  const [resumeData, setResumeData] = useState(() => {
+    const template = getJobTemplate(selectedIndustry, selectedJob);
     if (template) {
-      setSelectedTemplate(template);
-      setResumeData(template.template);
+      return {
+        fullName: 'Your Full Name',
+        email: 'your.email@example.com',
+        phone: '+1 (555) 123-4567',
+        location: 'City, State',
+        summary: template.summary,
+        experience: template.experience,
+        education: template.education,
+        skills: template.skills,
+        certifications: template.certifications,
+      };
+    }
+    return resumeTemplates[0].template;
+  });
+
+  // Handle industry change
+  const handleIndustryChange = (industry: string) => {
+    setSelectedIndustry(industry);
+    setSearchTerm('');
+    setShowJobSearch(false);
+    
+    // Set first job of new industry
+    const jobs = getJobsForIndustry(industry);
+    if (jobs.length > 0) {
+      const newJob = jobs[0];
+      setSelectedJob(newJob);
+      
+      // Update resume data with new job template
+      const template = getJobTemplate(industry, newJob);
+      if (template) {
+        setResumeData(prev => ({
+          ...prev,
+          summary: template.summary,
+          experience: template.experience,
+          education: template.education,
+          skills: template.skills,
+          certifications: template.certifications,
+        }));
+      }
+    }
+  };
+
+  // Handle job selection change
+  const handleJobChange = (job: string) => {
+    setSelectedJob(job);
+    setSearchTerm('');
+    setShowJobSearch(false);
+    
+    // Update resume data with new job template
+    const template = getJobTemplate(selectedIndustry, job);
+    if (template) {
+      setResumeData(prev => ({
+        ...prev,
+        summary: template.summary,
+        experience: template.experience,
+        education: template.education,
+        skills: template.skills,
+        certifications: template.certifications,
+      }));
     }
   };
 
@@ -119,24 +204,74 @@ export default function ResumeBuilderPage() {
         {/* Main Content */}
         <div className="px-4 sm:px-6 lg:px-8 py-12 flex-1">
           <div className="max-w-7xl mx-auto">
-            {/* Job Selection & Controls */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Job Template</label>
+            {/* Helper Text */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-gray-700">
+              Choose an industry and job role to generate a role-specific resume starter.
+            </div>
+
+            {/* Job Selection & Controls - Mobile Stack, Desktop Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {/* Industry Dropdown */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Industry</label>
                 <select
-                  value={selectedTemplate.id}
-                  onChange={(e) => handleTemplateChange(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base font-medium"
+                  value={selectedIndustry}
+                  onChange={(e) => handleIndustryChange(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base font-medium"
                 >
-                  {resumeTemplates.map(template => (
-                    <option key={template.id} value={template.id}>
-                      {template.jobTitle}
+                  {industries.map(industry => (
+                    <option key={industry} value={industry}>
+                      {industry}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="flex-1">
+              {/* Job Template Dropdown with Search */}
+              <div className="relative">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Job Role</label>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowJobSearch(!showJobSearch)}
+                    className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base font-medium text-left flex items-center justify-between bg-white hover:border-blue-400"
+                  >
+                    <span>{selectedJob || 'Select job role'}</span>
+                    <Search size={18} className="text-gray-500" />
+                  </button>
+                  
+                  {showJobSearch && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-blue-300 rounded-lg shadow-lg z-10">
+                      <input
+                        type="text"
+                        placeholder="Search jobs..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-2 border-b border-gray-200 focus:outline-none text-sm"
+                      />
+                      <div className="max-h-48 overflow-y-auto">
+                        {filteredJobs.length > 0 ? (
+                          filteredJobs.map((job) => (
+                            <button
+                              key={job}
+                              onClick={() => handleJobChange(job)}
+                              className={`w-full text-left px-4 py-2 hover:bg-blue-50 text-sm ${
+                                selectedJob === job ? 'bg-blue-100 font-semibold text-blue-700' : 'text-gray-700'
+                              }`}
+                            >
+                              {job}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-2 text-gray-500 text-sm">No jobs found</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Design Dropdown */}
+              <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Choose Design</label>
                 <select
                   value={selectedDesign.id}
@@ -153,28 +288,29 @@ export default function ResumeBuilderPage() {
                   ))}
                 </select>
               </div>
+            </div>
 
-              <div className="flex gap-2 items-end">
-                <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className={`px-4 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all ${
-                    isEditing
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-300'
-                  }`}
-                >
-                  {isEditing ? <Edit2 size={18} /> : <Eye size={18} />}
-                  {isEditing ? 'Edit Mode' : 'Preview'}
-                </button>
+            {/* Control Buttons - Responsive Layout */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-8 justify-end">
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className={`px-4 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all ${
+                  isEditing
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-300'
+                }`}
+              >
+                {isEditing ? <Edit2 size={18} /> : <Eye size={18} />}
+                {isEditing ? 'Edit Mode' : 'Preview'}
+              </button>
 
-                <button
-                  onClick={handleDownload}
-                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg flex items-center gap-2 transition-all shadow-lg"
-                >
-                  <Download size={18} />
-                  Download .docx
-                </button>
-              </div>
+              <button
+                onClick={handleDownload}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg flex items-center gap-2 transition-all shadow-lg"
+              >
+                <Download size={18} />
+                Download .docx
+              </button>
             </div>
 
             {/* Design Preview Cards */}
@@ -315,6 +451,98 @@ export default function ResumeBuilderPage() {
                           rows={3}
                           className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                         />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Education */}
+                  <div className="space-y-4 border-b pb-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-bold text-gray-800">Education</h3>
+                      <button
+                        onClick={() => {
+                          setResumeData(prev => ({
+                            ...prev,
+                            education: [...prev.education, {
+                              degree: 'Bachelor of Science',
+                              field: 'Your Field',
+                              institution: 'University Name',
+                              year: '2024'
+                            }],
+                          }));
+                        }}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold transition"
+                      >
+                        + Add Education
+                      </button>
+                    </div>
+                    {resumeData.education.map((edu, idx) => (
+                      <div key={idx} className="bg-gray-50 p-4 rounded-lg space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1 space-y-2">
+                            <div>
+                              <label className="text-xs font-semibold text-gray-600">Qualification Type</label>
+                              <select
+                                value={edu.degree}
+                                onChange={(e) => handleEducationChange(idx, 'degree', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                              >
+                                <option value="SSC">SSC (10th Standard)</option>
+                                <option value="Intermediate">Intermediate (12th Standard)</option>
+                                <option value="Diploma">Diploma</option>
+                                <option value="Associate Degree">Associate Degree</option>
+                                <option value="Bachelor of Science">Bachelor of Science (B.Sc)</option>
+                                <option value="Bachelor of Arts">Bachelor of Arts (B.A)</option>
+                                <option value="Bachelor of Commerce">Bachelor of Commerce (B.Com)</option>
+                                <option value="Bachelor of Technology">Bachelor of Technology (B.Tech)</option>
+                                <option value="Bachelor of Engineering">Bachelor of Engineering (B.E)</option>
+                                <option value="Master of Science">Master of Science (M.Sc)</option>
+                                <option value="Master of Arts">Master of Arts (M.A)</option>
+                                <option value="Master of Business Administration">Master of Business Administration (MBA)</option>
+                                <option value="Master of Technology">Master of Technology (M.Tech)</option>
+                                <option value="Master of Engineering">Master of Engineering (M.E)</option>
+                                <option value="Postgraduate Diploma">Postgraduate Diploma</option>
+                                <option value="Ph.D">Ph.D</option>
+                                <option value="Certificate Program">Certificate Program</option>
+                                <option value="Professional Certification">Professional Certification</option>
+                              </select>
+                            </div>
+                            <input
+                              type="text"
+                              value={edu.field}
+                              onChange={(e) => handleEducationChange(idx, 'field', e.target.value)}
+                              placeholder="Field of Study (e.g., Computer Science)"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                            <input
+                              type="text"
+                              value={edu.institution}
+                              onChange={(e) => handleEducationChange(idx, 'institution', e.target.value)}
+                              placeholder="Institution Name"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                            <input
+                              type="text"
+                              value={edu.year}
+                              onChange={(e) => handleEducationChange(idx, 'year', e.target.value)}
+                              placeholder="Graduation Year (e.g., 2024)"
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                          {resumeData.education.length > 1 && (
+                            <button
+                              onClick={() => {
+                                setResumeData(prev => ({
+                                  ...prev,
+                                  education: prev.education.filter((_, i) => i !== idx),
+                                }));
+                              }}
+                              className="ml-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

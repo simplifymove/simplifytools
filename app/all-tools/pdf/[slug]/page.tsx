@@ -283,9 +283,9 @@ export default function PdfToolPage({ params }: PageProps) {
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-center justify-center">
                   <Shield className="w-4 h-4 text-green-600 flex-shrink-0" />
                   <p className="text-sm text-gray-700">
-                    <span className="font-semibold text-green-700">✔ 100% Secure</span>
+                    <span className="font-semibold text-green-700">Secure processing</span>
                     <span className="text-gray-500"> • </span>
-                    <span>Files auto-deleted</span>
+                    <span>Files auto-deleted after processing</span>
                     <span className="text-gray-500"> • </span>
                     <span>No signup required</span>
                   </p>
@@ -431,6 +431,8 @@ export default function PdfToolPage({ params }: PageProps) {
                        tool.id === 'pdf-watermark-remover' ? 'Remove Watermark' :
                        tool.id === 'protect-pdf' ? 'Protect PDF' :
                        tool.id === 'merge-pdf' ? 'Merge PDF Files' :
+                       tool.id === 'split-pdf' ? 'Split PDF' :
+                       tool.id === 'rotate-pdf' ? 'Rotate PDF' :
                        tool.id === 'jpg-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'png-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'tiff-to-pdf' ? 'Convert to PDF' :
@@ -4887,6 +4889,215 @@ export default function PdfToolPage({ params }: PageProps) {
           </div>
         )}
 
+        {/* SEO Content for Split PDF */}
+        {tool.id === 'split-pdf' && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
+            {/* Introduction Section */}
+            <div className="mb-16">
+              <h1 className="text-4xl font-bold text-gray-900 mb-6">Free Online PDF Splitter - Extract & Split PDF Pages</h1>
+              <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                Split PDF files instantly with our free online PDF splitter. Extract specific pages, remove unwanted pages, or separate large PDF documents into smaller files. No installation required—just upload, select the pages you want, and download. Our tool preserves PDF quality while splitting, making it perfect for organizing documents, sharing specific pages, or creating custom PDF compilations.
+              </p>
+              <p className="text-base text-gray-600 mb-4">
+                Whether you need to extract a single page from a 200-page document or separate different sections into individual files, our PDF splitter handles all scenarios with ease. All processing happens securely in your browser, and files are automatically deleted after conversion.
+              </p>
+            </div>
+
+            {/* Quick Features */}
+            <div className="mb-16">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Extract specific PDF pages</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Remove unwanted pages</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">No signup required</span>
+                </div>
+              </div>
+            </div>
+
+            {/* How It Works Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Split PDF Files Online - 3 Simple Steps</h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  {
+                    step: '1',
+                    title: 'Upload Your PDF',
+                    description: 'Select a PDF file from your computer. Upload files up to 100MB. No account or registration needed.'
+                  },
+                  {
+                    step: '2',
+                    title: 'Select Pages to Extract',
+                    description: 'Enter the page range you want to extract, such as 1-5 or 1,3,5.'
+                  },
+                  {
+                    step: '3',
+                    title: 'Download Split PDF',
+                    description: 'Your split PDF files are ready instantly. Download individually or all at once. Files are securely deleted after download.'
+                  }
+                ].map((item, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all"
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                        {item.step}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                        <p className="text-sm text-gray-700">{item.description}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Benefits Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Split PDF Files?</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  {
+                    title: 'Better Organization',
+                    description: 'Keep only relevant pages in each file. Remove cover pages, unnecessary sections, or outdated information. Create cleaner, more focused documents.'
+                  },
+                  {
+                    title: 'Easy Sharing',
+                    description: 'Extract specific pages to share with others instead of sending entire documents. Reduce file sizes and improve email delivery speed.'
+                  },
+                  {
+                    title: 'Page Selection',
+                    description: 'Enter the page range you want to extract, such as 1-5 or 1,3,5.'
+                  },
+                  {
+                    title: 'No Software Needed',
+                    description: 'Works entirely online in your browser. No installation, no downloads, no compatibility issues. Just upload and split.'
+                  },
+                  {
+                    title: 'Preserve Quality',
+                    description: 'Split PDFs while maintaining original formatting, fonts, images, and document structure. No quality loss during splitting.'
+                  },
+                  {
+                    title: 'Completely Free',
+                    description: 'Split PDF files for free with no signup required.'
+                  }
+                ].map((benefit, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all"
+                    whileHover={{ x: 5 }}
+                  >
+                    <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-1">{benefit.title}</h3>
+                      <p className="text-sm text-gray-600">{benefit.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Use Cases Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">When to Split PDF Files - Real-World Scenarios</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  'Extracting specific chapters from long PDF books or e-books for easier reading',
+                  'Removing cover pages and appendices before sharing reports or proposals',
+                  'Separating different sections of multi-page contracts for different signatories',
+                  'Creating single-page documents from PDF scans for filing or archiving',
+                  'Splitting lecture slides into individual pages for study guides or handouts',
+                  'Removing confidential pages from documents before sharing with external parties'
+                ].map((useCase, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100"
+                    whileHover={{ x: 5 }}
+                  >
+                    <ChevronRight className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-gray-700">{useCase}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Related Tools Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Related PDF Tools</h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  {
+                    title: 'Merge PDF',
+                    description: 'Combine multiple PDF files into a single organized document.',
+                    link: '/all-tools/pdf/merge-pdf'
+                  },
+                  {
+                    title: 'Compress PDF',
+                    description: 'Reduce PDF file size while maintaining quality for easier sharing.',
+                    link: '/all-tools/pdf/compress-pdf'
+                  },
+                  {
+                    title: 'Rotate PDF',
+                    description: 'Turn PDF pages 90°, 180°, or 270° to correct orientation.',
+                    link: '/all-tools/pdf/rotate-pdf'
+                  }
+                ].map((relatedTool, idx) => (
+                  <Link
+                    key={idx}
+                    href={relatedTool.link}
+                    className="group p-6 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-lg transition-all"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 group-hover:text-indigo-600 transition-colors">
+                      {relatedTool.title}
+                      <ChevronRight className="w-4 h-4" />
+                    </h3>
+                    <p className="text-sm text-gray-600">{relatedTool.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* FAQ Section */}
+            <FAQSection
+              title="Split PDF - Frequently Asked Questions"
+              faqs={[
+                {
+                  question: 'How do I extract specific pages from a PDF?',
+                  answer: 'Upload your PDF file, then use the visual page selector to choose which pages you want to keep. You can select individual pages, ranges of pages, or use the remove option to exclude unwanted pages. Download your extracted PDF immediately.'
+                },
+                {
+                  question: 'Can I split a PDF into separate single-page files?',
+                  answer: 'Yes! Our PDF splitter can create individual files for each page or for page ranges you specify. Choose "Create separate PDFs" option, and each page or page group will be saved as a new PDF file ready for download.'
+                },
+                {
+                  question: 'Will splitting a PDF reduce its quality?',
+                  answer: 'No, splitting preserves the original PDF quality as much as possible. The original formatting, fonts, images, and document structure remain exactly as they were. We use lossless splitting technology that does not compress or alter your content.'
+                },
+                {
+                  question: 'Is there a file size limit for splitting PDFs?',
+                  answer: 'We support PDF files up to 100MB in size. Larger files may take longer to process but will split successfully. No registration or account is needed regardless of file size.'
+                },
+                {
+                  question: 'Are my PDFs safe when using this splitter?',
+                  answer: 'Absolutely! All files are processed using secure SSL encryption and are automatically deleted from our servers immediately after splitting. Files are automatically removed after processing. All processing happens securely in your browser.'
+                }
+              ]}
+              bgColor="white"
+              borderTop={true}
+              includeSchema={true}
+            />
+          </div>
+        )}
+
         {/* SEO Content for WebP to PDF Converter */}
         {tool.id === 'webp-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
@@ -5224,6 +5435,209 @@ export default function PdfToolPage({ params }: PageProps) {
                 }
               ]
             })}} />
+          </div>
+        )}
+
+        {/* SEO Content for PDF Rotation Tool */}
+        {tool.id === 'rotate-pdf' && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
+            {/* Introduction Section - Primary keyword in first 100 words */}
+            <div className="mb-16">
+              <h1 className="text-4xl font-bold text-gray-900 mb-6">Rotate PDF Pages Online - Free PDF Rotation Tool</h1>
+              <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                Need to rotate PDF pages? Our free online PDF rotation tool lets you rotate any PDF by 90°, 180°, or 270° in seconds. Rotate PDF pages while preserving quality, no signup required, and supports files up to 100MB. Whether you need to fix scanned document orientation or rotate individual pages, our PDF page rotator handles it all instantly.
+              </p>
+              
+              {/* Quick Benefits */}
+              <div className="grid md:grid-cols-3 gap-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Rotate all pages uniformly</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Preserves quality</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Instant download</span>
+                </div>
+              </div>
+            </div>
+
+            {/* How It Works Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Rotate PDF Pages in 3 Simple Steps</h2>
+              <div className="space-y-4">
+                {[
+                  {
+                    step: '1',
+                    title: 'Upload Your PDF',
+                    description: 'Select a PDF file from your computer to rotate. No account or registration needed. Files up to 100MB are supported.'
+                  },
+                  {
+                    step: '2',
+                    title: 'Choose Rotation Angle',
+                    description: 'Select your desired rotation angle: 90° clockwise, 180°, or 270° clockwise. All pages in the PDF will rotate uniformly.'
+                  },
+                  {
+                    step: '3',
+                    title: 'Download Rotated PDF',
+                    description: 'Your rotated PDF is ready instantly. Download and save your file. No watermarks, no quality loss, completely free.'
+                  }
+                ].map((item, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="flex gap-6 p-6 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all"
+                    whileHover={{ x: 5 }}
+                  >
+                    <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                      <span className="font-bold text-indigo-600 text-lg">{item.step}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                      <p className="text-gray-600">{item.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Benefits Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Use Our PDF Rotation Tool</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  {
+                    title: 'Fix Scanned Documents',
+                    description: 'Scanned documents often end up rotated incorrectly. Use our PDF rotator to fix page orientation instantly without losing quality.'
+                  },
+                  {
+                    title: 'No Installation Required',
+                    description: 'Works entirely online in your browser. No software to download, install, or maintain. Access from any device.'
+                  },
+                  {
+                    title: 'Batch Rotate Support',
+                    description: 'Rotate entire PDF documents with a single click. All pages rotate uniformly to the selected angle.'
+                  },
+                  {
+                    title: 'Preserve Quality',
+                    description: 'PDF page rotation uses lossless technology. Original content, resolution, and formatting remain completely unchanged.'
+                  },
+                  {
+                    title: 'Fast & Secure',
+                    description: 'Rotations complete in seconds. Files are automatically deleted after processing. Your PDFs stay private and secure.'
+                  },
+                  {
+                    title: 'Completely Free',
+                    description: 'Rotate PDF files for free with no signup required. No hidden fees, no watermarks, no credit card needed.'
+                  }
+                ].map((benefit, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all"
+                    whileHover={{ y: -2 }}
+                  >
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-1">{benefit.title}</h3>
+                      <p className="text-sm text-gray-600">{benefit.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Use Cases Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">When to Rotate PDF Pages - Real-World Use Cases</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  'Fixing incorrectly scanned documents that need 90° or 180° rotation',
+                  'Correcting portrait-oriented PDFs that should be landscape for printing',
+                  'Rotating multi-page documents where pages have mixed orientations',
+                  'Adjusting PDF page orientation before merging multiple documents',
+                  'Preparing PDFs for presentations or viewing on specific displays',
+                  'Correcting rotated images converted to PDF that need proper orientation'
+                ].map((useCase, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200"
+                    whileHover={{ y: -2 }}
+                  >
+                    <p className="text-gray-700">{useCase}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Related Tools Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Related PDF Tools</h2>
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  { href: '/all-tools/pdf/merge-pdf', label: 'Merge PDF Files' },
+                  { href: '/all-tools/pdf/split-pdf', label: 'Split PDF Pages' },
+                  { href: '/all-tools/pdf/compress-pdf', label: 'Compress PDF' }
+                ].map((link, idx) => (
+                  <Link
+                    key={idx}
+                    href={link.href}
+                    className="p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all text-center font-semibold text-indigo-600 hover:text-indigo-700"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* FAQ Section */}
+            <div className="mb-16">
+              <FAQSection
+                title="PDF Rotation - Frequently Asked Questions"
+                faqs={[
+                  {
+                    question: 'How do I rotate a PDF by 90 degrees?',
+                    answer: 'Upload your PDF using our free PDF rotation tool, select the "90°" rotation angle option, and click process. Your rotated PDF downloads instantly while preserving quality.'
+                  },
+                  {
+                    question: 'Can I rotate individual pages in a PDF?',
+                    answer: 'Yes! You can rotate all pages by leaving the page field empty, or enter specific pages such as 1-5 (to rotate pages 1 through 5) or 1,3,5 (to rotate only those specific pages).'
+                  },
+                  {
+                    question: 'Does rotating a PDF lose quality or add watermarks?',
+                    answer: 'No, PDF page rotation preserves original quality completely. Rotation is lossless—content, resolution, and formatting remain unchanged. No watermarks are added.'
+                  },
+                  {
+                    question: 'What rotation angles are supported?',
+                    answer: 'Our PDF rotator supports 90° (clockwise), 180° (upside down), and 270° (counterclockwise) rotation. Choose the angle that fixes your PDF orientation.'
+                  },
+                  {
+                    question: 'Is rotating a PDF secure and private?',
+                    answer: 'Files are processed securely and automatically deleted after processing.'
+                  }
+                ]}
+                bgColor="white"
+                borderTop={true}
+                includeSchema={true}
+              />
+            </div>
+
+            {/* Complementary Tools Section */}
+            <div className="mb-16 p-6 bg-indigo-50 border border-indigo-200 rounded-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Complementary Tools & Resources</h3>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                Beyond rotating PDFs, explore our complete PDF toolkit. After rotating your pages, you can <Link href="/all-tools/pdf/merge-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">merge multiple PDF files</Link> together or <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">split PDF pages</Link> to extract specific content. Need to reduce file size? Our <Link href="/all-tools/pdf/compress-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PDF compressor</Link> helps maintain quality while shrinking documents for easier sharing and storage.
+              </p>
+            </div>
+
+            {/* High-Intent SEO Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Free Online PDF Rotator - No Installation Needed</h2>
+              <p className="text-lg leading-relaxed text-gray-700">
+                Rotate PDF pages online instantly using our fast, free, and secure PDF rotation tool. Whether you need to fix document orientation, rotate scanned images, or adjust page angles for printing, our PDF rotator delivers results in seconds. No signup, no installation, no quality loss—just simple, effective PDF page rotation.
+              </p>
+            </div>
           </div>
         )}
         </div>
