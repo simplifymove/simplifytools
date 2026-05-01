@@ -4752,7 +4752,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 {[
                   {
                     title: 'Completely Free',
-                    description: 'Merge unlimited PDFs without paying anything. No hidden fees, watermarks, or premium tiers required.'
+                    description: 'Merge multiple PDFs for free with no signup required. No hidden fees, watermarks, or premium tiers.'
                   },
                   {
                     title: 'No Software Installation',
@@ -4861,7 +4861,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'How many PDFs can I merge at once?',
-                    a: 'You can merge unlimited PDF files together. There\'s no limit on the number of files you can upload and combine into a single merged PDF document.'
+                    a: 'You can merge multiple PDF files at once. For best performance, keep each file under 100MB.'
                   },
                   {
                     q: 'Will merging PDFs reduce their quality?',
@@ -4915,7 +4915,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'How many PDFs can I merge at once?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'You can merge unlimited PDF files together. There\'s no limit on the number of files you can upload and combine into a single merged PDF document.'
+                    text: 'You can merge multiple PDF files at once. For best performance, keep each file under 100MB.'
                   }
                 },
                 {
