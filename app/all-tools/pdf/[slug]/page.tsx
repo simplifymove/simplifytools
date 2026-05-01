@@ -524,7 +524,7 @@ export default function PdfToolPage({ params }: PageProps) {
             Secure & Private
           </h3>
           <p className="text-sm text-gray-600">
-            Files are processed securely and automatically deleted after processing. We do not store your files.
+            Files are processed securely. Files are automatically removed after processing.
           </p>
         </div>
 
@@ -4877,7 +4877,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my data safe when merging PDFs online?',
-                    a: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. We never store your files.'
+                    a: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. Files are automatically removed after processing.'
                   }
                 ].map((faq, idx) => (
                   <motion.details
