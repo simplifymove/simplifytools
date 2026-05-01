@@ -4689,6 +4689,271 @@ export default function PdfToolPage({ params }: PageProps) {
           </div>
         )}
 
+        {/* SEO Content for Merge PDF */}
+        {tool.id === 'merge-pdf' && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
+            {/* Introduction Section */}
+            <div className="mb-16">
+              <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                Merge multiple PDF files into a single, organized document instantly. Our free PDF merger combines all your files while preserving formatting, quality, and structure. No software installation required—just upload, arrange, and download your merged PDF in seconds. Whether you're combining reports, invoices, contracts, or scanned documents, our online PDF merger makes it simple and secure.
+              </p>
+            </div>
+
+            {/* How It Works Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Merge PDF Files Online - 4 Simple Steps</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  {
+                    step: '1',
+                    title: 'Upload Your PDFs',
+                    description: 'Select one or more PDF files from your computer. Upload up to 100MB per file. No account or registration required.'
+                  },
+                  {
+                    step: '2',
+                    title: 'Arrange Your Files',
+                    description: 'Drag and drop to reorder your PDFs in your preferred sequence. Choose the exact order for your merged document.'
+                  },
+                  {
+                    step: '3',
+                    title: 'Merge into One PDF',
+                    description: 'Our tool instantly combines all files into a single, organized PDF document while preserving quality and formatting.'
+                  },
+                  {
+                    step: '4',
+                    title: 'Download Your File',
+                    description: 'Your merged PDF is ready instantly. Download and use your combined document immediately.'
+                  }
+                ].map((item, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all"
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                        {item.step}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                        <p className="text-sm text-gray-700">{item.description}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Benefits Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Use Our Free PDF Merger?</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  {
+                    title: 'Completely Free',
+                    description: 'Merge unlimited PDFs without paying anything. No hidden fees, watermarks, or premium tiers required.'
+                  },
+                  {
+                    title: 'No Software Installation',
+                    description: 'Works entirely online in your browser. No downloads, installations, or system requirements needed.'
+                  },
+                  {
+                    title: 'Preserve Quality & Formatting',
+                    description: 'Merges PDFs while maintaining original formatting, fonts, images, and document structure.'
+                  },
+                  {
+                    title: 'Rearrange Easily',
+                    description: 'Drag and drop files to arrange them in your desired order before merging.'
+                  },
+                  {
+                    title: 'Fast & Secure Processing',
+                    description: 'Merge multiple large files in seconds. SSL encryption and automatic file deletion for security.'
+                  },
+                  {
+                    title: 'No Registration Required',
+                    description: 'Start merging PDFs immediately without creating an account or signing up.'
+                  }
+                ].map((benefit, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all"
+                    whileHover={{ x: 5 }}
+                  >
+                    <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-1">{benefit.title}</h3>
+                      <p className="text-sm text-gray-600">{benefit.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Use Cases Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">When to Merge PDF Files - Real-World Use Cases</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  'Combining multiple reports into a single master document for distribution',
+                  'Merging scanned documents and digital files into organized PDF archives',
+                  'Consolidating invoices, receipts, and financial documents for record-keeping',
+                  'Combining contracts and agreements into one comprehensive file for signing',
+                  'Merging presentation slides, notes, and supporting documents into one PDF',
+                  'Organizing multi-page documents from different sources into a single file'
+                ].map((useCase, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100"
+                    whileHover={{ x: 5 }}
+                  >
+                    <ChevronRight className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-gray-700">{useCase}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Related Tools Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Related PDF Tools</h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  {
+                    title: 'Split PDF',
+                    description: 'Extract specific pages or split PDFs into separate documents.',
+                    link: '/all-tools/pdf/split-pdf'
+                  },
+                  {
+                    title: 'Compress PDF',
+                    description: 'Reduce PDF file size while maintaining quality for easier sharing.',
+                    link: '/all-tools/pdf/compress-pdf'
+                  },
+                  {
+                    title: 'Rotate PDF',
+                    description: 'Turn PDF pages 90°, 180°, or 270° to correct orientation.',
+                    link: '/all-tools/pdf/rotate-pdf'
+                  }
+                ].map((relatedTool, idx) => (
+                  <Link
+                    key={idx}
+                    href={relatedTool.link}
+                    className="group p-6 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-lg transition-all"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 group-hover:text-indigo-600 transition-colors">
+                      {relatedTool.title}
+                      <ChevronRight className="w-4 h-4" />
+                    </h3>
+                    <p className="text-sm text-gray-600">{relatedTool.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* FAQ Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Merge PDF Files - Frequently Asked Questions</h2>
+              <div className="space-y-4">
+                {[
+                  {
+                    q: 'Can I merge PDF files of different sizes?',
+                    a: 'Yes! You can merge PDFs of any size together. Our tool supports files up to 100MB each and automatically combines them while preserving the original quality and formatting of each document.'
+                  },
+                  {
+                    q: 'How many PDFs can I merge at once?',
+                    a: 'You can merge unlimited PDF files together. There\'s no limit on the number of files you can upload and combine into a single merged PDF document.'
+                  },
+                  {
+                    q: 'Will merging PDFs reduce their quality?',
+                    a: 'No, your PDFs maintain full quality when merged. We use lossless merging technology that preserves all text, images, formatting, fonts, and document structure exactly as they were.'
+                  },
+                  {
+                    q: 'Can I rearrange the order of PDFs before merging?',
+                    a: 'Yes, absolutely! Simply drag and drop your uploaded PDFs to arrange them in your preferred order before merging. You have complete control over the final document structure.'
+                  },
+                  {
+                    q: 'Does merging encrypted or password-protected PDFs work?',
+                    a: 'You can merge password-protected PDFs if you have the correct password. Provide the password when uploading, and our tool will unlock and merge them for you.'
+                  },
+                  {
+                    q: 'Is my data safe when merging PDFs online?',
+                    a: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. We never store your files.'
+                  }
+                ].map((faq, idx) => (
+                  <motion.details
+                    key={idx}
+                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
+                    whileHover={{ x: 5 }}
+                  >
+                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                      <span>{faq.q}</span>
+                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
+                    </summary>
+                    <div className="px-6 py-4 bg-white border-t border-gray-100">
+                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
+                    </div>
+                  </motion.details>
+                ))}
+              </div>
+            </div>
+
+            {/* FAQ Schema JSON-LD */}
+            <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'Can I merge PDF files of different sizes?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes! You can merge PDFs of any size together. Our tool supports files up to 100MB each and automatically combines them while preserving the original quality and formatting of each document.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'How many PDFs can I merge at once?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'You can merge unlimited PDF files together. There\'s no limit on the number of files you can upload and combine into a single merged PDF document.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Will merging PDFs reduce their quality?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'No, your PDFs maintain full quality when merged. We use lossless merging technology that preserves all text, images, formatting, fonts, and document structure exactly as they were.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Can I rearrange the order of PDFs before merging?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes, absolutely! Simply drag and drop your uploaded PDFs to arrange them in your preferred order before merging. You have complete control over the final document structure.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Does merging encrypted or password-protected PDFs work?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'You can merge password-protected PDFs if you have the correct password. Provide the password when uploading, and our tool will unlock and merge them for you.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Is my data safe when merging PDFs online?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. We never store your files.'
+                  }
+                }
+              ]
+            })}} />
+          </div>
+        )}
+
         {/* SEO Content for WebP to PDF Converter */}
         {tool.id === 'webp-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
