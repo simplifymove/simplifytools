@@ -446,70 +446,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* POPULAR ACTIONS SECTION - THE MOST IMPORTANT */}
-      <section className="px-4 md:px-8 py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
-              Popular Actions
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              The most common tasks users perform. Start with what you need.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {popularActions.map((action, index) => {
-              const Icon = action.icon;
-              return (
-                <motion.div key={index} variants={itemVariants}>
-                  <Link href={action.link}>
-                    <motion.div
-                      className="group h-full p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-transparent hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
-                      whileHover={{ y: -12, scale: 1.02 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className={`inline-flex p-3 mb-4 bg-gradient-to-br ${action.color} rounded-xl shadow-lg`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition">
-                        {action.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                        {action.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
-                          {action.category}
-                        </span>
-                        <motion.div
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          <ArrowRight size={16} className="text-gray-400 group-hover:text-purple-600 transition" />
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-
       {/* CATEGORY CARDS SECTION */}
       <section id="categories" className="px-4 md:px-8 py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto">
@@ -569,6 +505,70 @@ export default function Home() {
                           <span className={`bg-gradient-to-r ${cat.color} bg-clip-text text-transparent font-bold`}>
                             {cat.count} tools
                           </span>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* POPULAR ACTIONS SECTION - THE MOST IMPORTANT */}
+      <section className="px-4 md:px-8 py-16 md:py-24 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
+              Popular Actions
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              The most common tasks users perform. Start with what you need.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {popularActions.map((action, index) => {
+              const Icon = action.icon;
+              return (
+                <motion.div key={index} variants={itemVariants}>
+                  <Link href={action.link}>
+                    <motion.div
+                      className="group h-full p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-transparent hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
+                      whileHover={{ y: -12, scale: 1.02 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className={`inline-flex p-3 mb-4 bg-gradient-to-br ${action.color} rounded-xl shadow-lg`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition">
+                        {action.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {action.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
+                          {action.category}
+                        </span>
+                        <motion.div
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          <ArrowRight size={16} className="text-gray-400 group-hover:text-purple-600 transition" />
                         </motion.div>
                       </div>
                     </motion.div>

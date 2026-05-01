@@ -188,7 +188,7 @@ export function HomeHeader() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="hidden sm:inline">SimplifyConvert</span>
+            <span className="inline text-lg sm:text-2xl">SimplifyConvert</span>
           </Link>
 
           {/* Desktop Nav */}
