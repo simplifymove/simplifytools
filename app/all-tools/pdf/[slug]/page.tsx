@@ -10,6 +10,7 @@ import type { PdfToolConfig } from '@/app/lib/pdf-tools';
 import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, Shield, Check } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import { FAQSection } from '@/app/components/FAQSection';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -4851,107 +4852,38 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Merge PDF Files - Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                {[
-                  {
-                    q: 'Can I merge PDF files of different sizes?',
-                    a: 'Yes! You can merge PDFs of any size together. Our tool supports files up to 100MB each and automatically combines them while preserving the original quality and formatting of each document.'
-                  },
-                  {
-                    q: 'How many PDFs can I merge at once?',
-                    a: 'You can merge multiple PDF files at once. For best performance, keep each file under 100MB.'
-                  },
-                  {
-                    q: 'Will merging PDFs reduce their quality?',
-                    a: 'No, your PDFs maintain full quality when merged. We use lossless merging technology that preserves all text, images, formatting, fonts, and document structure exactly as they were.'
-                  },
-                  {
-                    q: 'Can I rearrange the order of PDFs before merging?',
-                    a: 'Yes, absolutely! Simply drag and drop your uploaded PDFs to arrange them in your preferred order before merging. You have complete control over the final document structure.'
-                  },
-                  {
-                    q: 'Does merging encrypted or password-protected PDFs work?',
-                    a: 'Password-protected PDFs may need to be unlocked first before merging.'
-                  },
-                  {
-                    q: 'Is my data safe when merging PDFs online?',
-                    a: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. Files are automatically removed after processing.'
-                  }
-                ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
-                      <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
-                ))}
-              </div>
-            </div>
-
-            {/* FAQ Schema JSON-LD */}
-            <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'FAQPage',
-              mainEntity: [
+            <FAQSection
+              title="Merge PDF Files - Frequently Asked Questions"
+              faqs={[
                 {
-                  '@type': 'Question',
-                  name: 'Can I merge PDF files of different sizes?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'Yes! You can merge PDFs of any size together. Our tool supports files up to 100MB each and automatically combines them while preserving the original quality and formatting of each document.'
-                  }
+                  question: 'Can I merge PDF files of different sizes?',
+                  answer: 'Yes! You can merge PDFs of any size together. Our tool supports files up to 100MB each and automatically combines them while preserving the original quality and formatting of each document.'
                 },
                 {
-                  '@type': 'Question',
-                  name: 'How many PDFs can I merge at once?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'You can merge multiple PDF files at once. For best performance, keep each file under 100MB.'
-                  }
+                  question: 'How many PDFs can I merge at once?',
+                  answer: 'You can merge multiple PDF files at once. For best performance, keep each file under 100MB.'
                 },
                 {
-                  '@type': 'Question',
-                  name: 'Will merging PDFs reduce their quality?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'No, your PDFs maintain full quality when merged. We use lossless merging technology that preserves all text, images, formatting, fonts, and document structure exactly as they were.'
-                  }
+                  question: 'Will merging PDFs reduce their quality?',
+                  answer: 'No, your PDFs maintain full quality when merged. We use lossless merging technology that preserves all text, images, formatting, fonts, and document structure exactly as they were.'
                 },
                 {
-                  '@type': 'Question',
-                  name: 'Can I rearrange the order of PDFs before merging?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'Yes, absolutely! Simply drag and drop your uploaded PDFs to arrange them in your preferred order before merging. You have complete control over the final document structure.'
-                  }
+                  question: 'Can I rearrange the order of PDFs before merging?',
+                  answer: 'Yes, absolutely! Simply drag and drop your uploaded PDFs to arrange them in your preferred order before merging. You have complete control over the final document structure.'
                 },
                 {
-                  '@type': 'Question',
-                  name: 'Does merging encrypted or password-protected PDFs work?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'Password-protected PDFs may need to be unlocked first before merging.'
-                  }
+                  question: 'Does merging encrypted or password-protected PDFs work?',
+                  answer: 'Password-protected PDFs may need to be unlocked first before merging.'
                 },
                 {
-                  '@type': 'Question',
-                  name: 'Is my data safe when merging PDFs online?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. We never store your files.'
-                  }
+                  question: 'Is my data safe when merging PDFs online?',
+                  answer: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. Files are automatically removed after processing.'
                 }
-              ]
-            })}} />
+              ]}
+              bgColor="white"
+              borderTop={true}
+              includeSchema={true}
+            />
           </div>
         )}
 
