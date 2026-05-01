@@ -4873,7 +4873,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Does merging encrypted or password-protected PDFs work?',
-                    a: 'You can merge password-protected PDFs if you have the correct password. Provide the password when uploading, and our tool will unlock and merge them for you.'
+                    a: 'Password-protected PDFs may need to be unlocked first before merging.'
                   },
                   {
                     q: 'Is my data safe when merging PDFs online?',
@@ -4939,7 +4939,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Does merging encrypted or password-protected PDFs work?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'You can merge password-protected PDFs if you have the correct password. Provide the password when uploading, and our tool will unlock and merge them for you.'
+                    text: 'Password-protected PDFs may need to be unlocked first before merging.'
                   }
                 },
                 {
