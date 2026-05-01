@@ -429,6 +429,7 @@ export default function PdfToolPage({ params }: PageProps) {
                       {tool.id === 'unlock-pdf' ? 'Unlock PDF' : 
                        tool.id === 'pdf-watermark-remover' ? 'Remove Watermark' :
                        tool.id === 'protect-pdf' ? 'Protect PDF' :
+                       tool.id === 'merge-pdf' ? 'Merge PDF Files' :
                        tool.id === 'jpg-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'png-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'tiff-to-pdf' ? 'Convert to PDF' :
