@@ -96,9 +96,6 @@ export default function RootLayout({
         <meta name="color-scheme" content="light" />
         <meta name="theme-color" content="#ffffff" />
         
-        {/* Preload fonts */}
-        <link rel="preload" as="font" href="/fonts/geist.ttf" type="font/ttf" crossOrigin="anonymous" />
-        
         {/* JSON-LD Schemas */}
         <script
           type="application/ld+json"
