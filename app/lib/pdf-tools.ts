@@ -70,7 +70,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'merge-pdf': {
     id: 'merge-pdf',
     title: 'Merge PDF',
-    description: 'Merge multiple PDF files into one',
+    description: 'Combine multiple PDF files into one organized document online.',
     category: 'Core',
     engine: 'core',
     icon: Merge,
