@@ -140,7 +140,7 @@ class PdfSecurityEngine:
                             
                             if is_watermark:
                                 # Expand bbox slightly to ensure complete coverage
-                                expanded_bbox = bbox.get_area() + 2
+                                expanded_bbox = bbox + 2  # Expand by 2 points in all directions
                                 page_watermarks.append({
                                     'rect': expanded_bbox,
                                     'text': span_text[:40],
