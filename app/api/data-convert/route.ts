@@ -21,6 +21,18 @@ import {
 
 export const maxDuration = 60;
 
+/**
+ * Shared type for Python conversion result
+ * Includes debug output for troubleshooting
+ */
+type PythonResult = {
+  success: boolean;
+  error?: string;
+  output?: string;
+  stdout?: string;
+  stderr?: string;
+};
+
 export async function POST(request: NextRequest) {
   const tempFiles: string[] = [];
   
@@ -141,11 +153,7 @@ export async function POST(request: NextRequest) {
     ];
     
     // Spawn Python process with timeout
-    const result = await new Promise<{
-      success: boolean;
-      error?: string;
-      output?: string;
-    }>((resolve) => {
+    const result = await new Promise<PythonResult>((resolve) => {
       let timeoutId: NodeJS.Timeout | null = null;
       let resolved = false;
       
