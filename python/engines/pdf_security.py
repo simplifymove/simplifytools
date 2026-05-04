@@ -10,6 +10,22 @@ import pikepdf
 import tempfile
 import os
 import shutil
+import sys
+import platform
+import PIL
+
+# Debug: Print environment information at module load
+print(f"[ENV] Python: {sys.version}")
+print(f"[ENV] Platform: {platform.platform()}")
+print(f"[ENV] PyMuPDF version: {fitz.version}")
+print(f"[ENV] PyPDF2 version: {PyPDF2.__version__}")
+print(f"[ENV] pikepdf version: {pikepdf.__version__}")
+print(f"[ENV] Pillow version: {PIL.__version__}")
+try:
+    import numpy
+    print(f"[ENV] NumPy version: {numpy.__version__}")
+except ImportError:
+    print("[ENV] NumPy: not installed")
 
 
 class PdfSecurityEngine:
@@ -87,14 +103,25 @@ class PdfSecurityEngine:
         """
         try:
             pdf_path = input_paths[0]
-            print(f"[PDF] Watermark removal started")
+            print(f"[PDF] ========== WATERMARK REMOVAL START ==========")
             print(f"[PDF] Input: {pdf_path}")
+            print(f"[PDF] Platform: {platform.platform()}")
+            print(f"[PDF] PyMuPDF: {fitz.version}")
+            
+            # Verify file exists and get info
+            if not os.path.exists(pdf_path):
+                raise FileNotFoundError(f"Input PDF not found: {pdf_path}")
+            
+            file_size = os.path.getsize(pdf_path)
+            print(f"[PDF] File size: {file_size} bytes")
             
             doc = fitz.open(pdf_path)
+            print(f"[PDF] Opened PDF: {len(doc)} pages, Metadata: {doc.metadata}")
+            
             watermark_rects_found = []
             
             # Step 1: Detect watermark areas on all pages
-            print(f"[PDF] Step 1: Detecting watermarks...")
+            print(f"[PDF] ========== STEP 1: DETECTING WATERMARKS ==========")
             watermark_keywords = ["SAMPLE", "CONFIDENTIAL", "DRAFT", "WATERMARK", "INTERNAL", "PRIVATE", "COPY", "DUPLICATE"]
             
             for page_num in range(len(doc)):
@@ -104,7 +131,7 @@ class PdfSecurityEngine:
                 
                 # Debug: log text length on this page
                 text_content = page.get_text("text")
-                print(f"[PDF] text length: {len(text_content)}")
+                print(f"[PDF] Page {page_num}: size={page_rect.width}x{page_rect.height}, text_length={len(text_content)}, rotation={page.rotation}")
                 
                 text_dict = page.get_text("dict")
                 page_watermarks = []
@@ -148,20 +175,29 @@ class PdfSecurityEngine:
                                 })
                                 
                                 reason = "keyword" if is_keyword_watermark else "size+position"
-                                print(f"[PDF] Watermark detected on page {page_num}: '{span_text[:40]}' ({reason})")
+                                print(f"[PDF]   Page {page_num}: WATERMARK DETECTED")
+                                print(f"[PDF]     Text: '{span_text[:60]}'")
+                                print(f"[PDF]     Reason: {reason}")
+                                print(f"[PDF]     Size: {font_size}pt, Bbox: ({bbox.x0:.1f}, {bbox.y0:.1f}, {bbox.x1:.1f}, {bbox.y1:.1f})")
+                                print(f"[PDF]     Centered: {is_centered}, Large: {is_large_text}, Keyword: {is_keyword_watermark}")
                 
                 watermark_rects_found.extend([(page_num, w) for w in page_watermarks])
             
             # Step 2: If no watermarks detected, return original PDF
             if not watermark_rects_found:
-                print(f"[PDF] No watermarks detected - returning original PDF")
+                print(f"[PDF] ========== NO WATERMARKS DETECTED ==========")
+                print(f"[PDF] Returning original PDF unchanged (fallback)")
                 doc.close()
                 shutil.copy(pdf_path, output_path)
-                print(f"[PDF] Output saved (unchanged): {output_path}")
+                output_size = os.path.getsize(output_path)
+                print(f"[PDF] Output saved (unchanged): {output_path} ({output_size} bytes)")
                 return output_path
             
             # Step 3: Cover watermark areas with white rectangles
-            print(f"[PDF] Step 2: Covering {len(watermark_rects_found)} watermark area(s)...")
+            print(f"[PDF] ========== STEP 2: COVERING WATERMARKS ==========")
+            print(f"[PDF] Total watermark areas to cover: {len(watermark_rects_found)}")
+            
+            covering_errors = 0
             for page_num, watermark_info in watermark_rects_found:
                 page = doc[page_num]
                 rect = watermark_info['rect']
@@ -170,22 +206,35 @@ class PdfSecurityEngine:
                     # Draw white rectangle with overlay to cover the watermark
                     # color=(1,1,1) is white, fill=(1,1,1) is white fill, overlay=True ensures it's on top
                     page.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1), width=0, overlay=True)
-                    print(f"[PDF] Covered watermark on page {page_num}: {watermark_info['text']}")
+                    print(f"[PDF]   Page {page_num}: Covered '{watermark_info['text']}' at rect({rect.x0:.1f}, {rect.y0:.1f}, {rect.x1:.1f}, {rect.y1:.1f})")
                 except Exception as e:
-                    print(f"[PDF] WARN: Could not cover watermark on page {page_num}: {e}")
+                    covering_errors += 1
+                    print(f"[PDF]   ERROR on page {page_num}: {e}")
+            
+            print(f"[PDF] Watermarks covered: {len(watermark_rects_found) - covering_errors}/{len(watermark_rects_found)}")
             
             # Step 4: Save the cleaned PDF
-            print(f"[PDF] Step 3: Saving cleaned PDF...")
+            print(f"[PDF] ========== STEP 3: SAVING PDF ==========")
             doc.save(output_path, garbage=4, deflate=True)
             doc.close()
             
-            print(f"[PDF] Output saved to: {output_path}")
-            print(f"[PDF] Watermark removal complete!")
+            # Verify output file
+            if os.path.exists(output_path):
+                output_size = os.path.getsize(output_path)
+                print(f"[PDF] Output saved: {output_path}")
+                print(f"[PDF] Output size: {output_size} bytes (input was {file_size} bytes)")
+                size_diff = output_size - file_size
+                print(f"[PDF] Size difference: {size_diff:+d} bytes ({abs(size_diff/file_size)*100:.1f}%)")
+            else:
+                raise Exception(f"Output file was not created: {output_path}")
+            
+            print(f"[PDF] ========== WATERMARK REMOVAL COMPLETE ==========")
             
             return output_path
             
         except Exception as e:
-            print(f"[PDF] ERROR: {str(e)}")
+            print(f"[PDF] ========== ERROR ==========")
+            print(f"[PDF] {str(e)}")
             import traceback
             traceback.print_exc()
             raise Exception(f"Failed to remove watermark: {str(e)}")

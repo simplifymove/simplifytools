@@ -6,7 +6,7 @@
 # ============================================================================
 
 # Core Image Processing (REQUIRED)
-Pillow==12.2.0
+Pillow==11.3.0
 pillow-heif>=0.16.0
 opencv-python>=4.8.0
 numpy==2.4.4
@@ -20,7 +20,7 @@ onnxruntime>=1.16.0
 edge_tts>=6.1.1
 
 # PDF Processing & Manipulation (CRITICAL)
-PyPDF2>=3.0.0
+PyPDF2==3.0.1
 PyMuPDF==1.27.2.3
 pikepdf==10.5.1
 pdfminer.six>=6.0.1
