@@ -142,6 +142,86 @@ def test_no_watermark_fallback():
             import traceback
             traceback.print_exc()
 
+def test_text_rebuild_method():
+    """Test explicit text_rebuild method"""
+    print("\n" + "="*60)
+    print("TEST 3: text_rebuild Method (explicit)")
+    print("="*60)
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_pdf = os.path.join(tmpdir, "test_with_watermark.pdf")
+        output_pdf = os.path.join(tmpdir, "test_text_rebuild.pdf")
+        
+        # Create test PDF with watermark
+        create_test_pdf_with_watermark(input_pdf)
+        
+        # Remove watermark using text_rebuild method
+        try:
+            result = PdfSecurityEngine.remove_watermark(
+                input_paths=[input_pdf],
+                output_path=output_pdf,
+                options={'method': 'text_rebuild'}
+            )
+            print(f"[TEST] ✓ text_rebuild method succeeded")
+            print(f"[TEST] Output: {result}")
+            
+            # Verify output exists and has content
+            if os.path.exists(output_pdf):
+                size = os.path.getsize(output_pdf)
+                print(f"[TEST] ✓ Output file created: {size} bytes")
+                
+                # Check if it's valid PDF
+                doc = fitz.open(output_pdf)
+                print(f"[TEST] ✓ Valid PDF with {len(doc)} page(s)")
+                doc.close()
+            else:
+                print(f"[TEST] ✗ Output file not created")
+                
+        except Exception as e:
+            print(f"[TEST] ✗ Error: {e}")
+            import traceback
+            traceback.print_exc()
+
+def test_rectangle_overlay_method():
+    """Test explicit rectangle_overlay fallback method"""
+    print("\n" + "="*60)
+    print("TEST 4: rectangle_overlay Method (explicit)")
+    print("="*60)
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_pdf = os.path.join(tmpdir, "test_with_watermark.pdf")
+        output_pdf = os.path.join(tmpdir, "test_rectangle_overlay.pdf")
+        
+        # Create test PDF with watermark
+        create_test_pdf_with_watermark(input_pdf)
+        
+        # Remove watermark using rectangle_overlay method
+        try:
+            result = PdfSecurityEngine.remove_watermark(
+                input_paths=[input_pdf],
+                output_path=output_pdf,
+                options={'method': 'rectangle_overlay'}
+            )
+            print(f"[TEST] ✓ rectangle_overlay method succeeded")
+            print(f"[TEST] Output: {result}")
+            
+            # Verify output exists and has content
+            if os.path.exists(output_pdf):
+                size = os.path.getsize(output_pdf)
+                print(f"[TEST] ✓ Output file created: {size} bytes")
+                
+                # Check if it's valid PDF
+                doc = fitz.open(output_pdf)
+                print(f"[TEST] ✓ Valid PDF with {len(doc)} page(s)")
+                doc.close()
+            else:
+                print(f"[TEST] ✗ Output file not created")
+                
+        except Exception as e:
+            print(f"[TEST] ✗ Error: {e}")
+            import traceback
+            traceback.print_exc()
+
 if __name__ == "__main__":
     print("\n" + "="*60)
     print("PDF Watermark Removal Test Suite")
@@ -151,6 +231,8 @@ if __name__ == "__main__":
     
     test_watermark_removal()
     test_no_watermark_fallback()
+    test_text_rebuild_method()
+    test_rectangle_overlay_method()
     
     print("\n" + "="*60)
     print("Test Suite Complete")

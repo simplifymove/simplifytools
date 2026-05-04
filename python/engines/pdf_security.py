@@ -92,19 +92,29 @@ class PdfSecurityEngine:
     @staticmethod
     def remove_watermark(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """
-        Remove watermarks by:
-        1. Detect watermark areas (by keyword, size, position)
-        2. Draw white rectangles over them using page.draw_rect()
-        3. Keep all original content intact - only cover watermark areas
-        4. Fallback: if no watermark detected, return original PDF
+        Remove watermarks using configurable methods:
         
-        This approach avoids font rendering inconsistencies between Windows and Linux
-        by not re-extracting and re-inserting text.
+        Method: "text_rebuild" (DEFAULT)
+        - Extracts all text spans and identifies watermarks
+        - Paints over watermark areas, then rebuilds page with non-watermark content
+        - Most accurate for table/document PDFs without hiding real content
+        - May have minor font rendering differences between platforms
+        
+        Method: "rectangle_overlay"
+        - Detects watermark by keyword/size/position
+        - Covers watermark area with white rectangle overlay
+        - ⚠️ WARNING: May hide real content behind watermark if overlapping
+        - Use only if text_rebuild fails or for large isolated watermarks
+        
+        Usage: options={'method': 'text_rebuild'} or {'method': 'rectangle_overlay'}
         """
         try:
             pdf_path = input_paths[0]
+            method = options.get('method', 'text_rebuild')  # Default to text_rebuild
+            
             print(f"[PDF] ========== WATERMARK REMOVAL START ==========")
             print(f"[PDF] Input: {pdf_path}")
+            print(f"[PDF] Method: {method}")
             print(f"[PDF] Platform: {platform.platform()}")
             print(f"[PDF] PyMuPDF: {fitz.version}")
             
@@ -115,26 +125,51 @@ class PdfSecurityEngine:
             file_size = os.path.getsize(pdf_path)
             print(f"[PDF] File size: {file_size} bytes")
             
+            # Route to appropriate method
+            if method == 'rectangle_overlay':
+                print(f"[PDF] ⚠️  WARNING: Using rectangle_overlay method")
+                print(f"[PDF] ⚠️  This may hide real content behind watermark!")
+                return PdfSecurityEngine._remove_watermark_rectangle_overlay(pdf_path, output_path, file_size)
+            elif method == 'text_rebuild':
+                return PdfSecurityEngine._remove_watermark_text_rebuild(pdf_path, output_path, file_size)
+            else:
+                raise ValueError(f"Unknown watermark removal method: {method}")
+                
+        except Exception as e:
+            print(f"[PDF] ========== ERROR ==========")
+            print(f"[PDF] {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise Exception(f"Failed to remove watermark: {str(e)}")
+    
+    @staticmethod
+    def _remove_watermark_text_rebuild(pdf_path: str, output_path: str, file_size: int) -> str:
+        """
+        Text rebuild method: Extract non-watermark text, rebuild page
+        Default method - preserves document structure without hiding content
+        """
+        try:
             doc = fitz.open(pdf_path)
             print(f"[PDF] Opened PDF: {len(doc)} pages, Metadata: {doc.metadata}")
             
-            watermark_rects_found = []
-            
-            # Step 1: Detect watermark areas on all pages
+            # Step 1: Extract and identify watermark spans on all pages
             print(f"[PDF] ========== STEP 1: DETECTING WATERMARKS ==========")
             watermark_keywords = ["SAMPLE", "CONFIDENTIAL", "DRAFT", "WATERMARK", "INTERNAL", "PRIVATE", "COPY", "DUPLICATE"]
+            all_page_data = {}  # Store all page data for later use
+            total_watermarks = 0
             
             for page_num in range(len(doc)):
                 page = doc[page_num]
                 page_rect = page.rect
                 page_center = page_rect.tl + (page_rect.br - page_rect.tl) / 2
                 
-                # Debug: log text length on this page
+                text_dict = page.get_text("dict")
+                watermark_spans = set()  # Indices of watermark spans
+                span_data = []  # Store all spans with their properties
+                span_idx = 0
+                
                 text_content = page.get_text("text")
                 print(f"[PDF] Page {page_num}: size={page_rect.width}x{page_rect.height}, text_length={len(text_content)}, rotation={page.rotation}")
-                
-                text_dict = page.get_text("dict")
-                page_watermarks = []
                 
                 for block in text_dict.get("blocks", []):
                     if block.get("type") != 0:  # Only text blocks
@@ -144,6 +179,7 @@ class PdfSecurityEngine:
                         for span in line.get("spans", []):
                             span_text = span.get("text", "").strip()
                             if not span_text:
+                                span_idx += 1
                                 continue
                             
                             # Watermark detection: keyword, size, or position
@@ -153,11 +189,171 @@ class PdfSecurityEngine:
                             
                             # Check: Is this watermark text?
                             is_keyword_watermark = any(keyword in text_upper for keyword in watermark_keywords)
-                            
-                            # Check: Is this large text (>40pt is suspicious)?
                             is_large_text = font_size > 40
+                            is_centered = (
+                                bbox.x0 < page_center.x < bbox.x1 or
+                                bbox.y0 < page_center.y < bbox.y1
+                            )
                             
-                            # Check: Is this centered on the page?
+                            is_watermark = is_keyword_watermark or (is_large_text and is_centered)
+                            
+                            # Store span data
+                            span_data.append({
+                                'idx': span_idx,
+                                'text': span_text,
+                                'bbox': bbox,
+                                'font': span.get("font", "helv"),
+                                'size': font_size,
+                                'color': span.get("color", 0),
+                                'is_watermark': is_watermark
+                            })
+                            
+                            if is_watermark:
+                                watermark_spans.add(span_idx)
+                                total_watermarks += 1
+                                reason = "keyword" if is_keyword_watermark else "size+position"
+                                print(f"[PDF]   Page {page_num}: WATERMARK DETECTED ({reason})")
+                                print(f"[PDF]     Text: '{span_text[:60]}'")
+                                print(f"[PDF]     Size: {font_size}pt")
+                            
+                            span_idx += 1
+                
+                all_page_data[page_num] = {
+                    'text_dict': text_dict,
+                    'watermark_spans': watermark_spans,
+                    'span_data': span_data
+                }
+            
+            # Check if any watermarks found
+            if total_watermarks == 0:
+                print(f"[PDF] ========== NO WATERMARKS DETECTED ==========")
+                print(f"[PDF] Returning original PDF unchanged (fallback)")
+                doc.close()
+                shutil.copy(pdf_path, output_path)
+                output_size = os.path.getsize(output_path)
+                print(f"[PDF] Output saved (unchanged): {output_path} ({output_size} bytes)")
+                return output_path
+            
+            # Step 2: Paint watermarks and re-paste non-watermark text
+            print(f"[PDF] ========== STEP 2: REBUILDING PAGES ==========")
+            print(f"[PDF] Total watermarks to remove: {total_watermarks}")
+            
+            text_restored = 0
+            for page_num in range(len(doc)):
+                page = doc[page_num]
+                page_data = all_page_data[page_num]
+                watermarks_on_page = 0
+                
+                # Remove watermark spans by painting over them (white)
+                for span_info in page_data['span_data']:
+                    if span_info['is_watermark']:
+                        bbox = span_info['bbox']
+                        try:
+                            # Draw white rectangle over watermark area
+                            page.draw_rect(bbox, color=(1, 1, 1), fill=(1, 1, 1), width=0)
+                            watermarks_on_page += 1
+                        except Exception as e:
+                            print(f"[PDF]   WARN: Could not paint watermark on page {page_num}: {e}")
+                
+                # Re-paste only non-watermark text
+                text_on_page = 0
+                for span_info in page_data['span_data']:
+                    if not span_info['is_watermark']:
+                        try:
+                            # Handle color value
+                            color_val = span_info['color']
+                            if isinstance(color_val, int):
+                                color = (0, 0, 0)
+                            elif isinstance(color_val, (list, tuple)):
+                                color = tuple(float(c) for c in color_val[:3]) if len(color_val) >= 3 else (0, 0, 0)
+                            else:
+                                color = (0, 0, 0)
+                            
+                            bbox = span_info['bbox']
+                            # Use insert_text to place text at exact coordinates
+                            page.insert_text(
+                                point=(bbox.x0, bbox.y0 + span_info['size']),  # y0 + size for baseline
+                                text=span_info['text'],
+                                fontname=span_info['font'],
+                                fontsize=span_info['size'],
+                                color=color
+                            )
+                            text_on_page += 1
+                            text_restored += 1
+                        except Exception as e:
+                            print(f"[PDF]   WARN: Could not re-paste text on page {page_num}: {e}")
+                
+                print(f"[PDF] Page {page_num}: Covered {watermarks_on_page} watermark(s), Restored {text_on_page} text span(s)")
+            
+            print(f"[PDF] Total text spans restored: {text_restored}")
+            
+            # Step 3: Save the cleaned PDF
+            print(f"[PDF] ========== STEP 3: SAVING PDF ==========")
+            doc.save(output_path, garbage=4, deflate=True)
+            doc.close()
+            
+            # Verify output file
+            if os.path.exists(output_path):
+                output_size = os.path.getsize(output_path)
+                print(f"[PDF] Output saved: {output_path}")
+                print(f"[PDF] Output size: {output_size} bytes (input was {file_size} bytes)")
+                size_diff = output_size - file_size
+                print(f"[PDF] Size difference: {size_diff:+d} bytes ({abs(size_diff/file_size)*100:.1f}%)")
+            else:
+                raise Exception(f"Output file was not created: {output_path}")
+            
+            print(f"[PDF] ========== WATERMARK REMOVAL COMPLETE (text_rebuild) ==========")
+            
+            return output_path
+            
+        except Exception as e:
+            print(f"[PDF] ERROR in text_rebuild: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise
+    
+    @staticmethod
+    def _remove_watermark_rectangle_overlay(pdf_path: str, output_path: str, file_size: int) -> str:
+        """
+        Rectangle overlay method: Cover watermark with white rectangle
+        ⚠️ WARNING: May hide real content behind watermark if overlapping
+        """
+        try:
+            doc = fitz.open(pdf_path)
+            print(f"[PDF] Opened PDF: {len(doc)} pages, Metadata: {doc.metadata}")
+            
+            # Step 1: Detect watermark areas on all pages
+            print(f"[PDF] ========== STEP 1: DETECTING WATERMARKS ==========")
+            watermark_keywords = ["SAMPLE", "CONFIDENTIAL", "DRAFT", "WATERMARK", "INTERNAL", "PRIVATE", "COPY", "DUPLICATE"]
+            watermark_rects_found = []
+            
+            for page_num in range(len(doc)):
+                page = doc[page_num]
+                page_rect = page.rect
+                page_center = page_rect.tl + (page_rect.br - page_rect.tl) / 2
+                
+                text_content = page.get_text("text")
+                print(f"[PDF] Page {page_num}: size={page_rect.width}x{page_rect.height}, text_length={len(text_content)}, rotation={page.rotation}")
+                
+                text_dict = page.get_text("dict")
+                page_watermarks = []
+                
+                for block in text_dict.get("blocks", []):
+                    if block.get("type") != 0:
+                        continue
+                    
+                    for line in block.get("lines", []):
+                        for span in line.get("spans", []):
+                            span_text = span.get("text", "").strip()
+                            if not span_text:
+                                continue
+                            
+                            text_upper = span_text.upper()
+                            font_size = span.get("size", 12)
+                            bbox = fitz.Rect(span.get("bbox", [0, 0, 0, 0]))
+                            
+                            is_keyword_watermark = any(keyword in text_upper for keyword in watermark_keywords)
+                            is_large_text = font_size > 40
                             is_centered = (
                                 bbox.x0 < page_center.x < bbox.x1 or
                                 bbox.y0 < page_center.y < bbox.y1
@@ -166,8 +362,7 @@ class PdfSecurityEngine:
                             is_watermark = is_keyword_watermark or (is_large_text and is_centered)
                             
                             if is_watermark:
-                                # Expand bbox slightly to ensure complete coverage
-                                expanded_bbox = bbox + 2  # Expand by 2 points in all directions
+                                expanded_bbox = bbox + 2
                                 page_watermarks.append({
                                     'rect': expanded_bbox,
                                     'text': span_text[:40],
@@ -175,11 +370,8 @@ class PdfSecurityEngine:
                                 })
                                 
                                 reason = "keyword" if is_keyword_watermark else "size+position"
-                                print(f"[PDF]   Page {page_num}: WATERMARK DETECTED")
+                                print(f"[PDF]   Page {page_num}: WATERMARK DETECTED ({reason})")
                                 print(f"[PDF]     Text: '{span_text[:60]}'")
-                                print(f"[PDF]     Reason: {reason}")
-                                print(f"[PDF]     Size: {font_size}pt, Bbox: ({bbox.x0:.1f}, {bbox.y0:.1f}, {bbox.x1:.1f}, {bbox.y1:.1f})")
-                                print(f"[PDF]     Centered: {is_centered}, Large: {is_large_text}, Keyword: {is_keyword_watermark}")
                 
                 watermark_rects_found.extend([(page_num, w) for w in page_watermarks])
             
@@ -203,10 +395,8 @@ class PdfSecurityEngine:
                 rect = watermark_info['rect']
                 
                 try:
-                    # Draw white rectangle with overlay to cover the watermark
-                    # color=(1,1,1) is white, fill=(1,1,1) is white fill, overlay=True ensures it's on top
                     page.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1), width=0, overlay=True)
-                    print(f"[PDF]   Page {page_num}: Covered '{watermark_info['text']}' at rect({rect.x0:.1f}, {rect.y0:.1f}, {rect.x1:.1f}, {rect.y1:.1f})")
+                    print(f"[PDF]   Page {page_num}: Covered '{watermark_info['text']}'")
                 except Exception as e:
                     covering_errors += 1
                     print(f"[PDF]   ERROR on page {page_num}: {e}")
@@ -228,13 +418,12 @@ class PdfSecurityEngine:
             else:
                 raise Exception(f"Output file was not created: {output_path}")
             
-            print(f"[PDF] ========== WATERMARK REMOVAL COMPLETE ==========")
+            print(f"[PDF] ========== WATERMARK REMOVAL COMPLETE (rectangle_overlay) ==========")
             
             return output_path
             
         except Exception as e:
-            print(f"[PDF] ========== ERROR ==========")
-            print(f"[PDF] {str(e)}")
+            print(f"[PDF] ERROR in rectangle_overlay: {str(e)}")
             import traceback
             traceback.print_exc()
-            raise Exception(f"Failed to remove watermark: {str(e)}")
+            raise
