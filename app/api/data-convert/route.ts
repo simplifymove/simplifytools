@@ -120,7 +120,11 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const outputFile = join(tmpdir(), `output_${Date.now()}_${sanitizeFilename(outputFilename)}`);
+    // Get output extension from tool config (already validated above)
+    const outputExt = toolConfig.output || '.zip';
+    
+    // Create simple temp output file with proper extension
+    const outputFile = join(tmpdir(), `output_${Date.now()}${outputExt}`);
     tempFiles.push(outputFile);
     
     // Call Python converter via spawn
@@ -148,7 +152,9 @@ export async function POST(request: NextRequest) {
       console.log(`[DEBUG] Spawning Python: ${pythonScript}`);
       console.log(`[DEBUG] Args: tool=${tool}, inputFile=${inputFile}, outputFile=${outputFile}`);
       
-      const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
+      const pythonExe = process.platform === 'win32' 
+        ? join(process.cwd(), '.venv', 'Scripts', 'python.exe')
+        : '/var/www/simplifyconvertapp/venv/bin/python';
       
       // Prepare environment with Python-specific variables
       const spawnEnv = {
@@ -219,11 +225,15 @@ export async function POST(request: NextRequest) {
           if (code === 0) {
             resolve({ success: true });
           } else {
-            const errorMsg = stderr.trim() || `Process exited with code ${code}`;
+            const errorMsg = stderr.trim() || stdout.trim() || `Process exited with code ${code}`;
             console.error(`[ERROR] Conversion failed: ${errorMsg}`);
+            console.error(`[ERROR] Full stdout: ${stdout}`);
+            console.error(`[ERROR] Full stderr: ${stderr}`);
             resolve({
               success: false,
               error: errorMsg,
+              stdout: stdout,
+              stderr: stderr,
             });
           }
         }
@@ -241,7 +251,14 @@ export async function POST(request: NextRequest) {
     
     if (!result.success) {
       return NextResponse.json(
-        { ok: false, error: result.error || 'Conversion failed' },
+        { 
+          ok: false, 
+          error: result.error || 'Conversion failed',
+          debug: {
+            stdout: result.stdout || '',
+            stderr: result.stderr || '',
+          }
+        },
         { status: 500 }
       );
     }
@@ -249,7 +266,7 @@ export async function POST(request: NextRequest) {
     // Read output file
     const outputBuffer = await readFile(outputFile);
     
-    // Determine MIME type based on output extension
+    // Determine MIME type based on tool output extension
     const mimeTypes: Record<string, string> = {
       '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       '.xls': 'application/vnd.ms-excel',
@@ -260,15 +277,20 @@ export async function POST(request: NextRequest) {
       '.zip': 'application/zip',
     };
     
-    const outputExt = '.' + outputFilename.split('.').pop();
     const mimeType = mimeTypes[outputExt] || 'application/octet-stream';
+    
+    // Create clean download filename with proper extension
+    const baseName = outputFilename.split('.')[0] || 'converted';
+    const downloadFilename = `${baseName}_converted${outputExt}`;
+    
+    console.log(`[API] Download: baseName="${baseName}", downloadFilename="${downloadFilename}", mimeType="${mimeType}"`);
     
     // Return file as response
     return new NextResponse(outputBuffer, {
       status: 200,
       headers: {
         'Content-Type': mimeType,
-        'Content-Disposition': `attachment; filename="${outputFilename}"`,
+        'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(downloadFilename)}`,
         'Cache-Control': 'no-store',
       },
     });

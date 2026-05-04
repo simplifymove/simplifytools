@@ -11,9 +11,27 @@ import pandas as pd
 import csv
 import zipfile
 import os
+import io
 from pathlib import Path
 from typing import Dict, List, Any, Tuple
 from io import StringIO
+
+
+def normalize_delimiter(value):
+    """Convert delimiter string representation to actual character"""
+    mapping = {
+        "comma": ",",
+        "tab": "\t",
+        "semicolon": ";",
+        "pipe": "|",
+        ",": ",",
+        "\t": "\t",
+        ";": ";",
+        "|": "|",
+    }
+    result = mapping.get(str(value).lower(), ",")
+    print(f"[DEBUG] normalize_delimiter({repr(value)}) -> {repr(result)}")
+    return result
 
 
 class SplitEngine:
@@ -37,12 +55,13 @@ class SplitEngine:
         mode = options.get('split_mode', 'by_rows')  # by_rows, by_parts, by_column_value
         
         try:
-            delimiter = options.get('delimiter', ',')
-            if delimiter == 'tab':
-                delimiter = '\t'
+            # Normalize and convert delimiter
+            delimiter = normalize_delimiter(options.get('delimiter', ','))
+            print(f"[DEBUG] CSV split mode: {mode}, delimiter: {repr(delimiter)}")
             
             # Read CSV
-            df = pd.read_csv(input_file, delimiter=delimiter)
+            df = pd.read_csv(input_file, sep=delimiter, engine="python")
+            print(f"[DEBUG] CSV loaded: {len(df)} rows, {len(df.columns)} columns")
             
             if mode == 'by_rows':
                 self._split_by_row_count(df, output_file, options, delimiter, is_csv=True)
@@ -98,38 +117,35 @@ class SplitEngine:
         total_rows = len(df)
         num_parts = (total_rows + rows_per_file - 1) // rows_per_file
         
-        if num_parts == 1:
-            # Single file - just save as the output file
+        # Always create zip for split operations
+        temp_files = []
+        output_dir = os.path.dirname(output_file)
+        base_name = Path(output_file).stem
+        file_ext = '.csv' if is_csv else '.xlsx'
+        
+        print(f"[DEBUG] Splitting into {num_parts} parts. base_name='{base_name}', file_ext='{file_ext}', output_dir='{output_dir}'")
+        
+        for i in range(num_parts):
+            start_idx = i * rows_per_file
+            end_idx = min((i + 1) * rows_per_file, total_rows)
+            part_df = df.iloc[start_idx:end_idx]
+            
+            # Create part filename
+            part_filename = f"{base_name}_part_{i+1}{file_ext}"
+            part_path = os.path.join(output_dir, part_filename)
+            
+            print(f"[DEBUG] Part {i+1}: {part_filename} ({len(part_df)} rows)")
+            
+            # Save part
             if is_csv:
-                df.to_csv(output_file, index=False, delimiter=delimiter)
+                part_df.to_csv(part_path, index=False, sep=delimiter, encoding="utf-8-sig")
             else:
-                df.to_excel(output_file, sheet_name='Sheet1', index=False)
-        else:
-            # Multiple files - create zip
-            temp_files = []
-            output_dir = os.path.dirname(output_file)
-            base_name = Path(output_file).stem
-            file_ext = '.csv' if is_csv else '.xlsx'
+                part_df.to_excel(part_path, sheet_name='Sheet1', index=False)
             
-            for i in range(num_parts):
-                start_idx = i * rows_per_file
-                end_idx = min((i + 1) * rows_per_file, total_rows)
-                part_df = df.iloc[start_idx:end_idx]
-                
-                # Create part filename
-                part_filename = f"{base_name}_part_{i+1}{file_ext}"
-                part_path = os.path.join(output_dir, part_filename)
-                
-                # Save part
-                if is_csv:
-                    part_df.to_csv(part_path, index=False, delimiter=delimiter)
-                else:
-                    part_df.to_excel(part_path, sheet_name='Sheet1', index=False)
-                
-                temp_files.append((part_filename, part_path))
-            
-            # Create zip
-            self._create_zip(output_file, temp_files)
+            temp_files.append((part_filename, part_path))
+        
+        # Create zip
+        self._create_zip(output_file, temp_files)
     
     def _split_by_part_count(self, df: pd.DataFrame, output_file: str, options: Dict[str, Any],
                              delimiter: str = None, is_csv: bool = True):
@@ -147,6 +163,8 @@ class SplitEngine:
         base_name = Path(output_file).stem
         file_ext = '.csv' if is_csv else '.xlsx'
         
+        print(f"[DEBUG] Splitting into {num_parts} parts by part count. base_name='{base_name}', file_ext='{file_ext}'")
+        
         for i in range(num_parts):
             start_idx = i * rows_per_part
             end_idx = min((i + 1) * rows_per_part, total_rows)
@@ -160,20 +178,18 @@ class SplitEngine:
             part_filename = f"{base_name}_part_{i+1}{file_ext}"
             part_path = os.path.join(output_dir, part_filename)
             
+            print(f"[DEBUG] Part {i+1}: {part_filename} ({len(part_df)} rows)")
+            
             # Save part
             if is_csv:
-                part_df.to_csv(part_path, index=False, delimiter=delimiter)
+                part_df.to_csv(part_path, index=False, sep=delimiter, encoding="utf-8-sig")
             else:
                 part_df.to_excel(part_path, sheet_name='Sheet1', index=False)
             
             temp_files.append((part_filename, part_path))
         
-        if len(temp_files) == 1:
-            # Single file - just save as output
-            os.rename(temp_files[0][1], output_file)
-        else:
-            # Multiple files - create zip
-            self._create_zip(output_file, temp_files)
+        # Create zip
+        self._create_zip(output_file, temp_files)
     
     def _split_by_column_value(self, df: pd.DataFrame, output_file: str, options: Dict[str, Any],
                                delimiter: str = None, is_csv: bool = True):
@@ -187,36 +203,33 @@ class SplitEngine:
         unique_values = df[column_name].unique()
         num_groups = len(unique_values)
         
-        if num_groups == 1:
-            # Only one unique value - save as single file
+        # Always create zip for split operations
+        temp_files = []
+        output_dir = os.path.dirname(output_file)
+        base_name = Path(output_file).stem
+        file_ext = '.csv' if is_csv else '.xlsx'
+        
+        print(f"[DEBUG] Splitting by column '{column_name}' into {num_groups} groups. base_name='{base_name}', file_ext='{file_ext}'")
+        
+        for i, value in enumerate(unique_values):
+            group_df = df[df[column_name] == value]
+            
+            # Create filename for this group
+            part_filename = f"{base_name}_{str(value)[:20]}{file_ext}"
+            part_path = os.path.join(output_dir, part_filename)
+            
+            print(f"[DEBUG] Group {i+1} (value={repr(value)}): {part_filename} ({len(group_df)} rows)")
+            
+            # Save group
             if is_csv:
-                df.to_csv(output_file, index=False, delimiter=delimiter)
+                group_df.to_csv(part_path, index=False, sep=delimiter, encoding="utf-8-sig")
             else:
-                df.to_excel(output_file, sheet_name='Sheet1', index=False)
-        else:
-            # Multiple groups - create zip
-            temp_files = []
-            output_dir = os.path.dirname(output_file)
-            base_name = Path(output_file).stem
-            file_ext = '.csv' if is_csv else '.xlsx'
+                group_df.to_excel(part_path, sheet_name='Sheet1', index=False)
             
-            for i, value in enumerate(unique_values):
-                group_df = df[df[column_name] == value]
-                
-                # Create filename for this group
-                part_filename = f"{base_name}_{str(value)[:20]}{file_ext}"
-                part_path = os.path.join(output_dir, part_filename)
-                
-                # Save group
-                if is_csv:
-                    group_df.to_csv(part_path, index=False, delimiter=delimiter)
-                else:
-                    group_df.to_excel(part_path, sheet_name='Sheet1', index=False)
-                
-                temp_files.append((part_filename, part_path))
-            
-            # Create zip
-            self._create_zip(output_file, temp_files)
+            temp_files.append((part_filename, part_path))
+        
+        # Create zip
+        self._create_zip(output_file, temp_files)
     
     def _split_by_sheet(self, input_file: str, output_file: str, options: Dict[str, Any]):
         """Split Excel by sheets (export all sheets as separate files and zip)"""
@@ -225,48 +238,76 @@ class SplitEngine:
         excel_file = pd.ExcelFile(input_file)
         sheet_names = excel_file.sheet_names
         
-        if len(sheet_names) == 1:
-            # Only one sheet - just save as xlsx
-            df = pd.read_excel(input_file, sheet_name=0)
-            df.to_excel(output_file, sheet_name='Sheet1', index=False)
-        else:
-            # Multiple sheets - create separate files and zip
-            temp_files = []
-            output_dir = os.path.dirname(output_file)
-            base_name = Path(output_file).stem
+        # Always create zip for split operations
+        temp_files = []
+        output_dir = os.path.dirname(output_file)
+        base_name = Path(output_file).stem
+        
+        print(f"[DEBUG] Splitting by sheets into {len(sheet_names)} files. base_name='{base_name}'")
+        
+        for sheet_name in sheet_names:
+            # Read sheet
+            df = pd.read_excel(input_file, sheet_name=sheet_name)
             
-            for sheet_name in sheet_names:
-                # Read sheet
-                df = pd.read_excel(input_file, sheet_name=sheet_name)
-                
-                # Create filename for this sheet
-                safe_sheet_name = self._sanitize_filename(sheet_name)
-                sheet_filename = f"{base_name}_{safe_sheet_name}.xlsx"
-                sheet_path = os.path.join(output_dir, sheet_filename)
-                
-                # Save sheet
-                df.to_excel(sheet_path, sheet_name='Sheet1', index=False)
-                
-                temp_files.append((sheet_filename, sheet_path))
+            # Create filename for this sheet
+            safe_sheet_name = self._sanitize_filename(sheet_name)
+            sheet_filename = f"{base_name}_{safe_sheet_name}.xlsx"
+            sheet_path = os.path.join(output_dir, sheet_filename)
             
-            # Create zip
-            self._create_zip(output_file, temp_files)
+            print(f"[DEBUG] Sheet '{sheet_name}': {sheet_filename} ({len(df)} rows)")
+            
+            # Save sheet
+            df.to_excel(sheet_path, sheet_name='Sheet1', index=False)
+            
+            temp_files.append((sheet_filename, sheet_path))
+        
+        # Create zip
+        self._create_zip(output_file, temp_files)
     
     # ==================== Utility Methods ====================
     
     def _create_zip(self, output_file: str, temp_files: List[Tuple[str, str]]):
         """Create zip file from list of temporary files"""
         
-        with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for filename, filepath in temp_files:
-                zipf.write(filepath, arcname=filename)
-        
-        # Clean up temporary files
-        for _, filepath in temp_files:
+        try:
+            # Create ZIP in memory first for reliability
+            zip_buffer = io.BytesIO()
+            print(f"[DEBUG] Creating ZIP with {len(temp_files)} files: {[f[0] for f in temp_files]}")
+            
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_STORED) as zipf:
+                for filename, filepath in temp_files:
+                    try:
+                        with open(filepath, 'rb') as f:
+                            file_data = f.read()
+                        print(f"[DEBUG] Adding to ZIP: '{filename}' (size: {len(file_data)} bytes)")
+                        zipf.writestr(filename, file_data, compress_type=zipfile.ZIP_STORED)
+                    except Exception as e:
+                        print(f"[WARNING] Failed to add {filename} to ZIP: {str(e)}")
+            
+            # Write in-memory ZIP to disk
+            zip_buffer.seek(0)
+            with open(output_file, 'wb') as f:
+                f.write(zip_buffer.getvalue())
+            
+            # Verify ZIP file is valid
             try:
-                os.remove(filepath)
-            except:
-                pass
+                with zipfile.ZipFile(output_file, 'r') as verify_zf:
+                    test_result = verify_zf.testzip()
+                    if test_result is not None:
+                        raise Exception(f"ZIP file corrupt at: {test_result}")
+            except Exception as e:
+                raise Exception(f"ZIP file validation failed: {str(e)}")
+        
+        except Exception as e:
+            print(f"[ERROR] Failed to create ZIP file: {str(e)}")
+            raise
+        finally:
+            # Clean up temporary files
+            for _, filepath in temp_files:
+                try:
+                    os.remove(filepath)
+                except:
+                    pass
     
     def _sanitize_filename(self, filename: str) -> str:
         """Remove invalid filename characters"""

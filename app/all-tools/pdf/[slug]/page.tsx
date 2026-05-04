@@ -23,6 +23,11 @@ const PdfAnnotator = dynamic(() => import('@/app/components/PdfAnnotator'), {
   ssr: false,
 });
 
+const PdfPageReorderer = dynamic(() => import('@/app/components/PdfPageReorderer'), {
+  loading: () => <div className="p-4">Loading page reorderer...</div>,
+  ssr: false,
+});
+
 interface PageProps {
   params: Promise<{
     slug: string;
@@ -56,6 +61,8 @@ export default function PdfToolPage({ params }: PageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
+  const [totalPages, setTotalPages] = useState(0);
+  const [pageOrder, setPageOrder] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!tool) {
@@ -102,12 +109,43 @@ export default function PdfToolPage({ params }: PageProps) {
       return;
     }
 
+    // Special validation for rearrange-pdf
+    if (tool.id === 'rearrange-pdf') {
+      if (!pageOrder || pageOrder.length === 0) {
+        setError('Please arrange pages before submitting');
+        return;
+      }
+      if (pageOrder.length !== totalPages) {
+        setError(`Page order mismatch: you have ${pageOrder.length} pages but the PDF has ${totalPages} pages`);
+        return;
+      }
+      // Check for valid indices
+      const invalidIndices = pageOrder.filter(idx => idx < 0 || idx >= totalPages);
+      if (invalidIndices.length > 0) {
+        setError(`Invalid page indices: ${invalidIndices.join(', ')}`);
+        return;
+      }
+      // Check for duplicates
+      const uniqueIndices = new Set(pageOrder);
+      if (uniqueIndices.size !== pageOrder.length) {
+        setError('Duplicate page indices detected');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
       const formData = new FormData();
       formData.append('tool', tool.id);
-      formData.append('options', JSON.stringify(options));
+      
+      // Include pageOrder for rearrange-pdf
+      const submissionOptions = { ...options };
+      if (tool.id === 'rearrange-pdf' && pageOrder.length > 0) {
+        submissionOptions.pageOrder = pageOrder;
+      }
+      
+      formData.append('options', JSON.stringify(submissionOptions));
 
       // Add files or URL
       if (tool.inputMode === 'url') {
@@ -295,6 +333,25 @@ export default function PdfToolPage({ params }: PageProps) {
                 {tool.options && tool.options.length > 0 && (
                   <div className="space-y-4">
                     {tool.options.map((option) => {
+                      // Handle rearrange-pdf page reorderer
+                      if (tool.id === 'rearrange-pdf' && option.id === 'pageOrder') {
+                        return (
+                          <div key={option.id}>
+                            {files.length > 0 ? (
+                              <PdfPageReorderer
+                                pdfFile={files[0]}
+                                onReorder={(order) => setPageOrder(order)}
+                                onTotalPagesChange={(total) => setTotalPages(total)}
+                              />
+                            ) : (
+                              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                                Upload a PDF to see page preview and reorder.
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
                       // Handle visual crop editor
                       if (option.type === 'visual-crop') {
                         return (

@@ -127,6 +127,8 @@ export default function RootLayout({
             `,
           }}
         />
+
+        {/* PDF.js Library is imported directly in PdfPageReorderer component */}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

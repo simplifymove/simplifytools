@@ -14,6 +14,23 @@ import pandas as pd
 from typing import Dict, List, Any, Union
 
 
+def normalize_delimiter(value):
+    """Convert delimiter string representation to actual character"""
+    mapping = {
+        "comma": ",",
+        "tab": "\t",
+        "semicolon": ";",
+        "pipe": "|",
+        ",": ",",
+        "\t": "\t",
+        ";": ";",
+        "|": "|",
+    }
+    result = mapping.get(str(value).lower(), ",")
+    print(f"[DEBUG] normalize_delimiter({repr(value)}) -> {repr(result)}")
+    return result
+
+
 class StructuredDataEngine:
     """Engine for structured data format conversions"""
     
@@ -36,12 +53,12 @@ class StructuredDataEngine:
     def _csv_to_json(self, input_file: str, output_file: str, options: Dict[str, Any]):
         """Convert CSV to JSON"""
         try:
-            delimiter = options.get('delimiter', ',')
-            if delimiter == 'tab':
-                delimiter = '\t'
+            delimiter = normalize_delimiter(options.get('delimiter', ','))
+            print(f"[DEBUG] CSV to JSON: delimiter={repr(delimiter)}")
             
             # Read CSV
-            df = pd.read_csv(input_file, delimiter=delimiter)
+            df = pd.read_csv(input_file, sep=delimiter, engine="python")
+            print(f"[DEBUG] CSV loaded: {len(df)} rows, {len(df.columns)} columns")
             
             # Convert to JSON
             data = df.to_dict('records')
@@ -212,12 +229,12 @@ class StructuredDataEngine:
     def _csv_to_xml(self, input_file: str, output_file: str, options: Dict[str, Any]):
         """Convert CSV to XML"""
         try:
-            delimiter = options.get('delimiter', ',')
-            if delimiter == 'tab':
-                delimiter = '\t'
+            delimiter = normalize_delimiter(options.get('delimiter', ','))
+            print(f"[DEBUG] CSV to XML: delimiter={repr(delimiter)}")
             
             # Read CSV
-            df = pd.read_csv(input_file, delimiter=delimiter)
+            df = pd.read_csv(input_file, sep=delimiter, engine="python")
+            print(f"[DEBUG] CSV loaded: {len(df)} rows, {len(df.columns)} columns")
             
             # Create root element
             root = ET.Element('data')

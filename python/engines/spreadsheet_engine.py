@@ -22,6 +22,23 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.units import inch
 
 
+def normalize_delimiter(value):
+    """Convert delimiter string representation to actual character"""
+    mapping = {
+        "comma": ",",
+        "tab": "\t",
+        "semicolon": ";",
+        "pipe": "|",
+        ",": ",",
+        "\t": "\t",
+        ";": ";",
+        "|": "|",
+    }
+    result = mapping.get(str(value).lower(), ",")
+    print(f"[DEBUG] normalize_delimiter({repr(value)}) -> {repr(result)}")
+    return result
+
+
 class TableData:
     """Common intermediate format for tabular data"""
     
@@ -68,12 +85,11 @@ class SpreadsheetConvertEngine:
     def _csv_to_excel(self, input_file: str, output_file: str, options: Dict[str, Any]):
         """Convert CSV to Excel (XLSX)"""
         try:
-            delimiter = options.get('delimiter', ',')
-            if delimiter == 'tab':
-                delimiter = '\t'
+            delimiter = normalize_delimiter(options.get('delimiter', ','))
             
             # Read CSV
-            df = pd.read_csv(input_file, delimiter=delimiter)
+            df = pd.read_csv(input_file, sep=delimiter, engine="python")
+            print(f"[DEBUG] CSV loaded: {len(df)} rows, {len(df.columns)} columns")
             
             # Write to Excel
             df.to_excel(output_file, sheet_name='Sheet1', index=False)
@@ -84,24 +100,54 @@ class SpreadsheetConvertEngine:
     def _excel_to_csv(self, input_file: str, output_file: str, options: Dict[str, Any]):
         """Convert Excel to CSV"""
         try:
+            print(f"[DEBUG] Excel to CSV conversion starting", flush=True)
+            print(f"[DEBUG] Input file: {input_file}", flush=True)
+            print(f"[DEBUG] Output file: {output_file}", flush=True)
+            print(f"[DEBUG] Options: {options}", flush=True)
+            
+            # Check if input file exists
+            import os
+            if not os.path.exists(input_file):
+                raise FileNotFoundError(f"Input file not found: {input_file}")
+            print(f"[DEBUG] Input file exists, size: {os.path.getsize(input_file)} bytes", flush=True)
+            
             # Determine which sheet to export
             sheet_mode = options.get('sheet_mode', 'first')  # first or all
+            print(f"[DEBUG] Sheet mode: {sheet_mode}", flush=True)
             
             if sheet_mode == 'all':
                 # Export all sheets as single CSV with all rows (first sheet only for CSV format)
+                print(f"[DEBUG] Reading all sheets from Excel...", flush=True)
+                df = pd.read_excel(input_file, sheet_name=None)  # Get all sheets as dict
+                print(f"[DEBUG] Found {len(df)} sheet(s)", flush=True)
+                # For CSV, we can only export the first sheet
+                # So concatenate all sheets or just use first
                 df = pd.read_excel(input_file, sheet_name=0)
+                print(f"[DEBUG] Using first sheet with {len(df)} rows", flush=True)
             else:
                 # Export first sheet
+                print(f"[DEBUG] Reading first sheet from Excel...", flush=True)
                 df = pd.read_excel(input_file, sheet_name=0)
+                print(f"[DEBUG] Read {len(df)} rows, {len(df.columns)} columns", flush=True)
             
             # Write to CSV
             delimiter = options.get('delimiter', ',')
             if delimiter == 'tab':
                 delimiter = '\t'
+            print(f"[DEBUG] Writing CSV with separator: {repr(delimiter)}", flush=True)
             
-            df.to_csv(output_file, index=False, delimiter=delimiter)
+            df.to_csv(output_file, index=False, sep=delimiter, encoding="utf-8-sig")
+            print(f"[DEBUG] CSV written successfully to {output_file}", flush=True)
+            
+            # Verify output file
+            if not os.path.exists(output_file):
+                raise FileNotFoundError(f"Output file was not created: {output_file}")
+            print(f"[DEBUG] Output file size: {os.path.getsize(output_file)} bytes", flush=True)
             
         except Exception as e:
+            import traceback
+            print(f"[ERROR] Excel to CSV conversion failed: {str(e)}", flush=True)
+            print(f"[ERROR] Traceback: {traceback.format_exc()}", flush=True)
             raise ValueError(f"Excel to CSV conversion failed: {e}")
     
     # ==================== XML Conversions ====================
@@ -200,7 +246,7 @@ class SpreadsheetConvertEngine:
             else:
                 df = pd.DataFrame(rows)
             
-            df.to_csv(output_file, index=False, delimiter=delimiter)
+            df.to_csv(output_file, index=False, sep=delimiter, encoding="utf-8-sig")
             
         except Exception as e:
             raise ValueError(f"XML to CSV conversion failed: {e}")

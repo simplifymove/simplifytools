@@ -8,6 +8,7 @@ from typing import Dict, Any, List
 from pathlib import Path
 import PyPDF2
 import fitz  # PyMuPDF
+import io
 from PIL import Image, ImageDraw
 
 
@@ -124,10 +125,58 @@ class PdfCoreEngine:
                 return results[0]
             else:
                 import zipfile
-                with zipfile.ZipFile(output_path, 'w') as zf:
+                try:
+                    # Create ZIP in memory first for reliability
+                    zip_buffer = io.BytesIO()
+                    
+                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_STORED) as zf:
+                        for pdf_file in results:
+                            try:
+                                with open(pdf_file, 'rb') as f:
+                                    file_data = f.read()
+                                zf.writestr(Path(pdf_file).name, file_data, compress_type=zipfile.ZIP_STORED)
+                            except Exception as e:
+                                print(f"[WARNING] Failed to add {pdf_file} to ZIP: {str(e)}")
+                    
+                    # Write in-memory ZIP to disk
+                    zip_buffer.seek(0)
+                    with open(output_path, 'wb') as f:
+                        f.write(zip_buffer.getvalue())
+                    
+                    # Verify ZIP was created and is valid
+                    if not Path(output_path).exists():
+                        raise Exception("ZIP file was not created")
+                    
+                    zip_size = Path(output_path).stat().st_size
+                    if zip_size == 0:
+                        raise Exception("ZIP file is empty")
+                    
+                    try:
+                        with zipfile.ZipFile(output_path, 'r') as verify_zf:
+                            test_result = verify_zf.testzip()
+                            if test_result is not None:
+                                raise Exception(f"ZIP file corrupt at: {test_result}")
+                    except Exception as e:
+                        raise Exception(f"ZIP file validation failed: {str(e)}")
+                    
+                    # Clean up temporary PDF files
+                    import os
                     for pdf_file in results:
-                        zf.write(pdf_file, arcname=Path(pdf_file).name)
-                return output_path
+                        try:
+                            os.remove(pdf_file)
+                        except Exception as e:
+                            print(f"[WARNING] Failed to clean up {pdf_file}: {str(e)}")
+                    
+                    return output_path
+                except Exception as e:
+                    # Clean up on error
+                    import os
+                    for pdf_file in results:
+                        try:
+                            os.remove(pdf_file)
+                        except:
+                            pass
+                    raise Exception(f"Failed to create ZIP file: {str(e)}")
         except Exception as e:
             raise Exception(f"Failed to split PDF: {str(e)}")
     

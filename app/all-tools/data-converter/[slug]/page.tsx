@@ -107,11 +107,45 @@ export default function DataToolPage() {
     setError(null);
 
     try {
+      // Build options with defaults applied
+      const optionsWithDefaults: Record<string, any> = {};
+      
+      if (tool.options && tool.options.length > 0) {
+        for (const option of tool.options) {
+          // Use formData value if set, otherwise use default
+          optionsWithDefaults[option.name] = 
+            formData[option.name] !== undefined 
+              ? formData[option.name] 
+              : option.default;
+        }
+      }
+      
+      // Merge with any user-set formData values
+      let finalOptions = { ...optionsWithDefaults, ...formData };
+
+      // Convert camelCase option names to snake_case for Python backend
+      const camelToSnakeMap: Record<string, string> = {
+        rowsPerFile: 'rows_per_file',
+        columnName: 'column_name',
+        parts: 'num_parts',
+        numParts: 'num_parts',
+      };
+      
+      const snakeCaseOptions: Record<string, any> = {};
+      for (const [key, value] of Object.entries(finalOptions)) {
+        const snakeKey = camelToSnakeMap[key] || key;
+        snakeCaseOptions[snakeKey] = value;
+      }
+      finalOptions = snakeCaseOptions;
+
+      // Debug logging
+      console.log(`[${tool.id}] final options (snake_case):`, finalOptions);
+
       // Prepare form data
       const form = new FormData();
       form.append('tool', tool.id);
       form.append('file', selectedFile);
-      form.append('options', JSON.stringify(formData));
+      form.append('options', JSON.stringify(finalOptions));
 
       // Send to API
       const response = await fetch('/api/data-convert', {

@@ -12,6 +12,7 @@ from PIL import Image
 import zipfile
 import os
 import time
+import io
 
 # Enable HEIC support for Pillow
 try:
@@ -28,13 +29,22 @@ class PdfConvertEngine:
     def pdf_to_image(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Convert PDF to JPG/PNG/TIFF images at specified DPI"""
         try:
+            print(f"[PDF_TO_IMAGE] ===== START PDF TO IMAGE CONVERSION =====")
+            print(f"[PDF_TO_IMAGE] Input paths: {input_paths}")
+            print(f"[PDF_TO_IMAGE] Output path: {output_path}")
+            print(f"[PDF_TO_IMAGE] Output path type: {type(output_path)}")
+            print(f"[PDF_TO_IMAGE] Options: {options}")
+            
             pdf_path = input_paths[0]
             output_format = options.get('format', 'jpg')  # jpg, png, tiff
             dpi = int(options.get('dpi', 150))
             page_mode = options.get('pageMode', 'all')  # all, selected
             page_range = options.get('pageRange', '')
             
+            print(f"[PDF_TO_IMAGE] Opening PDF: {pdf_path}")
             doc = fitz.open(pdf_path)
+            print(f"[PDF_TO_IMAGE] PDF opened successfully. Total pages: {len(doc)}")
+            
             zoom = dpi / 72.0
             mat = fitz.Matrix(zoom, zoom)
             
@@ -49,7 +59,12 @@ class PdfConvertEngine:
                     else:
                         pages_to_convert.append(int(part)-1)
             
+            print(f"[PDF_TO_IMAGE] Pages to convert: {pages_to_convert}")
+            
             output_dir = Path(output_path).parent
+            print(f"[PDF_TO_IMAGE] Output directory: {output_dir}")
+            print(f"[PDF_TO_IMAGE] Output directory exists: {output_dir.exists()}")
+            
             output_files = []
             
             # Determine output format
@@ -68,11 +83,14 @@ class PdfConvertEngine:
                 ext = output_format_lower
                 needs_alpha = False
             
+            print(f"[PDF_TO_IMAGE] Output format: {output_format_lower}, Extension: {ext}")
+            
             for page_num in pages_to_convert:
                 page = doc[page_num]
                 pix = page.get_pixmap(matrix=mat, alpha=needs_alpha)
                 
                 out_file = output_dir / f"page_{page_num+1}.{ext}"
+                print(f"[PDF_TO_IMAGE] Creating page {page_num+1}: {out_file}")
                 
                 if output_format_lower == 'jpeg':
                     img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
@@ -89,18 +107,101 @@ class PdfConvertEngine:
                     img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
                     img.save(out_file, str(ext).upper())
                 
-                output_files.append(str(out_file))
+                # Verify file was created
+                if Path(out_file).exists():
+                    size = Path(out_file).stat().st_size
+                    print(f"[PDF_TO_IMAGE] [OK] File created: {out_file} ({size} bytes)")
+                    output_files.append(str(out_file))
+                else:
+                    print(f"[PDF_TO_IMAGE] [FAIL] ERROR: File NOT created: {out_file}")
             
             doc.close()
+            print(f"[PDF_TO_IMAGE] Closed PDF. Total files created: {len(output_files)}")
             
             # If single page return it, else zip
             if len(output_files) == 1:
+                print(f"[PDF_TO_IMAGE] Single page detected, returning image directly")
                 return output_files[0]
             else:
-                with zipfile.ZipFile(output_path, 'w') as zf:
+                try:
+                    print(f"[PDF_TO_IMAGE] Multiple pages detected, creating ZIP from {len(output_files)} files")
+                    print(f"[PDF_TO_IMAGE] Creating ZIP file: {output_path}")
+                    
+                    # Verify all files exist before zipping
                     for img_file in output_files:
-                        zf.write(img_file, arcname=Path(img_file).name)
-                return output_path
+                        if Path(img_file).exists():
+                            size = Path(img_file).stat().st_size
+                            print(f"[PDF_TO_IMAGE] File exists: {img_file} ({size} bytes)")
+                        else:
+                            print(f"[PDF_TO_IMAGE] ERROR: File not found: {img_file}")
+                    
+                    # Create ZIP in memory first for reliability
+                    zip_buffer = io.BytesIO()
+                    files_added = 0
+                    
+                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_STORED) as zf:
+                        for img_file in output_files:
+                            img_path = Path(img_file)
+                            if img_path.exists():
+                                try:
+                                    with open(img_file, 'rb') as f:
+                                        file_data = f.read()
+                                    filename = img_path.name
+                                    zf.writestr(filename, file_data, compress_type=zipfile.ZIP_STORED)
+                                    files_added += 1
+                                    print(f"[PDF_TO_IMAGE] Added to ZIP: {filename} ({len(file_data)} bytes)")
+                                except Exception as e:
+                                    print(f"[PDF_TO_IMAGE] Failed to add {img_file}: {str(e)}")
+                            else:
+                                print(f"[PDF_TO_IMAGE] Skipping missing file: {img_file}")
+                    
+                    print(f"[PDF_TO_IMAGE] Files added to ZIP: {files_added}")
+                    
+                    # Write in-memory ZIP to disk
+                    zip_buffer.seek(0)
+                    zip_data = zip_buffer.getvalue()
+                    print(f"[PDF_TO_IMAGE] ZIP buffer size: {len(zip_data)} bytes")
+                    
+                    with open(output_path, 'wb') as f:
+                        bytes_written = f.write(zip_data)
+                    print(f"[PDF_TO_IMAGE] Bytes written to disk: {bytes_written}")
+                    
+                    # Verify ZIP was created and is valid
+                    if not Path(output_path).exists():
+                        raise Exception("ZIP file was not created")
+                    
+                    zip_size = Path(output_path).stat().st_size
+                    print(f"[PDF_TO_IMAGE] ZIP file size on disk: {zip_size} bytes")
+                    
+                    if zip_size == 0:
+                        raise Exception("ZIP file is empty - no files were added")
+                    
+                    try:
+                        with zipfile.ZipFile(output_path, 'r') as verify_zf:
+                            file_list = verify_zf.namelist()
+                            print(f"[PDF_TO_IMAGE] ZIP contains {len(file_list)} files: {file_list}")
+                            test_result = verify_zf.testzip()
+                            if test_result is not None:
+                                raise Exception(f"ZIP file corrupt at: {test_result}")
+                    except Exception as e:
+                        raise Exception(f"ZIP file validation failed: {str(e)}")
+                    
+                    # Clean up temporary image files
+                    for img_file in output_files:
+                        try:
+                            os.remove(img_file)
+                        except Exception as e:
+                            print(f"[WARNING] Failed to clean up {img_file}: {str(e)}")
+                    
+                    return output_path
+                except Exception as e:
+                    # Clean up on error
+                    for img_file in output_files:
+                        try:
+                            os.remove(img_file)
+                        except:
+                            pass
+                    raise Exception(f"Failed to create ZIP file: {str(e)}")
         except Exception as e:
             raise Exception(f"Failed to convert PDF to image: {str(e)}")
     

@@ -417,15 +417,15 @@ export const dataTools: Record<string, DataTool> = {
     output: '.zip',
     options: [
       {
-        name: 'splitMode',
+        name: 'split_mode',
         label: 'Split Mode',
         type: 'select',
         required: true,
-        default: 'rows',
+        default: 'by_rows',
         options: [
-          { value: 'rows', label: 'By Number of Rows' },
-          { value: 'parts', label: 'Into Equal Parts' },
-          { value: 'column', label: 'By Column Value' },
+          { value: 'by_rows', label: 'By Number of Rows' },
+          { value: 'by_parts', label: 'Into Equal Parts' },
+          { value: 'by_column_value', label: 'By Column Value' },
         ],
         description: 'How to split the CSV file',
       },
@@ -480,15 +480,15 @@ export const dataTools: Record<string, DataTool> = {
     output: '.zip',
     options: [
       {
-        name: 'splitMode',
+        name: 'split_mode',
         label: 'Split Mode',
         type: 'select',
         required: true,
-        default: 'sheet',
+        default: 'by_sheet',
         options: [
-          { value: 'sheet', label: 'By Sheet' },
-          { value: 'rows', label: 'By Number of Rows' },
-          { value: 'parts', label: 'Into Equal Parts' },
+          { value: 'by_sheet', label: 'By Sheet' },
+          { value: 'by_rows', label: 'By Number of Rows' },
+          { value: 'by_parts', label: 'Into Equal Parts' },
         ],
       },
       {

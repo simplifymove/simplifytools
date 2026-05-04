@@ -224,11 +224,15 @@ export async function POST(request: NextRequest) {
           console.error('[PDF API] Python process failed with exit code:', code);
           console.error('[PDF API] STDERR (full):', stderr);
           console.error('[PDF API] STDOUT (full):', stdout);
-          reject(new Error(`Python process failed (code ${code}): ${errorMsg}`));
+          reject(new Error(`Python process failed (code ${code}): ${errorMsg}\n\nDebug output:\n${stdout}\n\nErrors:\n${stderr}`));
           return;
         }
 
         try {
+          // Log all output for debugging
+          console.log('[PDF API] Full stdout:', stdout);
+          console.log('[PDF API] Full stderr:', stderr);
+          
           // Extract JSON from stdout (may have debug logs before it)
           const lines = stdout.split('\n');
           let jsonLine = '';

@@ -149,7 +149,7 @@ class PdfRouter:
                 'rotate-pdf': ('core', 'rotate'),
                 'rearrange-pdf': ('core', 'rearrange'),
                 'crop-pdf': ('core', 'crop'),
-                'pdf-page-deletor': ('core', 'delete_pages'),
+                'pdf-page-deleter': ('core', 'delete_pages'),
                 'create-pdf': ('core', 'create'),
                 
                 # Convert operations
@@ -250,8 +250,16 @@ class PdfRouter:
                 elif 'rtf' in tool_id:
                     options['format'] = 'rtf'
             
+            # Log before calling operation
+            print(f"[PDF_ROUTER] Calling {engine_key}.{operation}", flush=True)
+            print(f"[PDF_ROUTER] Input paths: {input_paths}", flush=True)
+            print(f"[PDF_ROUTER] Output path: {output_path}", flush=True)
+            print(f"[PDF_ROUTER] Options: {options}", flush=True)
+            
             # Call the operation
             result = method(input_paths, output_path, options)
+            
+            print(f"[PDF_ROUTER] Operation completed. Result: {result}", flush=True)
             return result
             
         except Exception as e:

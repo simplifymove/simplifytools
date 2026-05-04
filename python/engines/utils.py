@@ -36,11 +36,37 @@ def create_zip(files: List[str], output_zip: str) -> bool:
     """Create zip file from list of files"""
     try:
         logger.info(f"Creating zip: {output_zip}")
-        with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
+        
+        # Create ZIP in memory first for reliability
+        zip_buffer = __import__('io').BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_STORED) as zf:
             for filepath in files:
                 if os.path.exists(filepath):
                     arcname = os.path.basename(filepath)
-                    zf.write(filepath, arcname=arcname)
+                    try:
+                        with open(filepath, 'rb') as f:
+                            file_data = f.read()
+                        zf.writestr(arcname, file_data, compress_type=zipfile.ZIP_STORED)
+                    except Exception as e:
+                        logger.warning(f"Failed to add {arcname} to ZIP: {e}")
+        
+        # Write in-memory ZIP to disk
+        zip_buffer.seek(0)
+        with open(output_zip, 'wb') as f:
+            f.write(zip_buffer.getvalue())
+        
+        # Verify ZIP file is valid
+        try:
+            with zipfile.ZipFile(output_zip, 'r') as verify_zf:
+                test_result = verify_zf.testzip()
+                if test_result is not None:
+                    logger.error(f"ZIP file corrupt at: {test_result}")
+                    return False
+        except Exception as e:
+            logger.error(f"ZIP file validation failed: {e}")
+            return False
+        
         logger.info(f"Zip created successfully: {output_zip}")
         return True
     except Exception as e:

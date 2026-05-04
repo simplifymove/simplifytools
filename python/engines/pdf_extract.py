@@ -11,6 +11,7 @@ import zipfile
 import pandas as pd
 import sys
 import traceback
+import io
 
 
 class PdfExtractEngine:
@@ -175,18 +176,30 @@ class PdfExtractEngine:
             else:
                 print(f"[PDF_EXTRACT_IMAGES] Multiple images found ({len(image_files)}), creating ZIP archive: {output_path}")
                 try:
-                    # Use ZIP_DEFLATED for compression
-                    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                    # Create ZIP in memory first for reliability
+                    zip_buffer = io.BytesIO()
+                    
+                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_STORED) as zf:
                         for idx, img_file in enumerate(image_files):
                             img_file_str = str(img_file)
                             if Path(img_file_str).exists():
                                 file_size = Path(img_file_str).stat().st_size
                                 arcname = Path(img_file_str).name
                                 print(f"[PDF_EXTRACT_IMAGES] Adding image {idx+1}/{len(image_files)}: {arcname} ({file_size} bytes)")
-                                zf.write(img_file_str, arcname=arcname)
-                                print(f"[PDF_EXTRACT_IMAGES] Successfully added to ZIP: {arcname}")
+                                try:
+                                    with open(img_file_str, 'rb') as f:
+                                        file_data = f.read()
+                                    zf.writestr(arcname, file_data, compress_type=zipfile.ZIP_STORED)
+                                    print(f"[PDF_EXTRACT_IMAGES] Successfully added to ZIP: {arcname}")
+                                except Exception as e:
+                                    print(f"[PDF_EXTRACT_IMAGES] WARNING: Failed to add {arcname} to ZIP: {str(e)}", file=sys.stderr)
                             else:
                                 print(f"[PDF_EXTRACT_IMAGES] WARNING: Image file not found, skipping: {img_file_str}", file=sys.stderr)
+                    
+                    # Write in-memory ZIP to disk
+                    zip_buffer.seek(0)
+                    with open(output_path, 'wb') as f:
+                        f.write(zip_buffer.getvalue())
                     
                     # Verify zip file was created and has content
                     zip_size = Path(output_path).stat().st_size if Path(output_path).exists() else 0
@@ -194,8 +207,25 @@ class PdfExtractEngine:
                     print(f"[PDF_EXTRACT_IMAGES] ZIP file size: {zip_size} bytes")
                     print(f"[PDF_EXTRACT_IMAGES] ZIP file path: {output_path}")
                     
+                    # Verify ZIP file is valid
+                    try:
+                        with zipfile.ZipFile(output_path, 'r') as verify_zf:
+                            test_result = verify_zf.testzip()
+                            if test_result is not None:
+                                raise Exception(f"ZIP file corrupt at: {test_result}")
+                    except Exception as e:
+                        raise Exception(f"ZIP file validation failed: {str(e)}")
+                    
                     if zip_size == 0:
                         raise Exception("ZIP file is empty - images may not have been added")
+                    
+                    # Clean up temporary image files
+                    import os
+                    for img_file in image_files:
+                        try:
+                            os.remove(str(img_file))
+                        except Exception as e:
+                            print(f"[WARNING] Failed to clean up {img_file}: {str(e)}")
                     
                     return output_path
                 except Exception as zip_error:
