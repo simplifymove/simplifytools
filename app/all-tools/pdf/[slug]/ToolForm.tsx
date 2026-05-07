@@ -282,6 +282,7 @@ export default function ToolForm({ tool, onProcess, loading, error, result, setE
                          tool.id === 'split-pdf' ? 'Split PDF' :
                          tool.id === 'rotate-pdf' ? 'Rotate PDF' :
                          tool.id === 'crop-pdf' ? 'Crop PDF' :
+                         tool.id === 'pdf-page-deleter' ? 'Delete PDF Pages' :
                          `Process ${tool.output.replace('.', '').toUpperCase()}`}
                       </>
                     )}

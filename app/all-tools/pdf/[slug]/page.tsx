@@ -505,6 +505,7 @@ export default function PdfToolPage({ params }: PageProps) {
                        tool.id === 'split-pdf' ? 'Split PDF' :
                        tool.id === 'rotate-pdf' ? 'Rotate PDF' :
                        tool.id === 'crop-pdf' ? 'Crop PDF' :
+                       tool.id === 'pdf-page-deleter' ? 'Delete PDF Pages' :
                        tool.id === 'jpg-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'png-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'tiff-to-pdf' ? 'Convert to PDF' :
@@ -5799,7 +5800,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <div className="grid md:grid-cols-2 gap-6">
                 {[
                   { step: '1', title: 'Upload Your PDF', description: 'Select the PDF file from your computer. We support files up to 100MB. No account or registration required.' },
-                  { step: '2', title: 'Select Pages to Delete', description: 'Choose specific page numbers or ranges to remove (e.g., 1-5, 10, or 15-20). See preview before confirming.' },
+                  { step: '2', title: 'Select Pages to Delete', description: 'Choose specific page numbers or ranges to remove (e.g., 1-5, 10, or 15-20). Enter page numbers or ranges carefully before processing.' },
                   { step: '3', title: 'Remove Selected Pages', description: 'Our tool instantly removes your selected pages while preserving all remaining content and formatting.' },
                   { step: '4', title: 'Download Edited PDF', description: 'Your edited PDF without removed pages is ready instantly. Download your cleaned document.' }
                 ].map((item, idx) => (
@@ -5822,7 +5823,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   { title: 'Clean Up Scans', description: 'Remove blank pages, cover sheets, or duplicate pages from scanned document batches.' },
                   { title: 'Extract Key Information', description: 'Keep only the pages you need and discard everything else for focused documents.' },
                   { title: 'Organize Documents', description: 'Create custom PDFs by removing irrelevant sections, appendices, or front matter.' },
-                  { title: 'No Quality Loss', description: 'Deleting pages preserves PDF quality—remaining pages stay perfect and unchanged.' }
+                  { title: 'Preserves Quality', description: 'Deleting pages preserves PDF quality—remaining pages keep their original formatting as much as possible.' }
                 ].map((item, idx) => (
                   <motion.div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all" whileHover={{ x: 5 }}>
                     <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
@@ -5846,12 +5847,12 @@ export default function PdfToolPage({ params }: PageProps) {
 
             <div className="mb-16">
               <FAQSection title="Delete PDF Pages - Frequently Asked Questions" faqs={[
-                { question: 'Can I delete multiple pages at once?', answer: 'Yes! Delete single pages, ranges (1-5), or multiple selections (1,3,5) all at once. Our tool handles batch deletion instantly.' },
-                { question: 'What happens if I delete the wrong pages?', answer: 'Simply re-upload your original PDF and delete again. Your original file is never modified—only your download is affected.' },
-                { question: 'Does deleting pages reduce file size?', answer: 'Yes, significantly! Removing pages reduces PDF file size, making it easier to email, share, and store.' },
-                { question: 'Can I see which pages I\'m deleting before confirming?', answer: 'Yes! Our tool shows a preview of pages to be deleted. Confirm your selection before processing.' },
-                { question: 'Does page deletion affect PDF quality?', answer: 'No, deleting pages is lossless. Remaining pages maintain perfect quality, formatting, and all content.' },
-                { question: 'Is my PDF secure when deleting pages?', answer: 'Files are processed securely and automatically deleted after processing. Your data is never stored permanently.' }
+                { question: 'Can I delete multiple pages at once?', answer: 'Yes! Our tool supports flexible deletion options. You can delete single pages (page 3), page ranges (pages 1-5), or multiple non-consecutive selections (pages 1, 3, 5, 10). Simply enter the page numbers or ranges you want to remove, and our tool processes all deletions instantly without any delay.' },
+                { question: 'What happens if I delete the wrong pages?', answer: 'No problem! Your original file is always safe and never modified on our servers. If you delete the wrong pages, simply re-upload your original PDF file and try again. You can perform the operation as many times as you need until you get it exactly right. This flexibility ensures you\'re never stuck with an unwanted result.' },
+                { question: 'Does deleting pages reduce file size?', answer: 'Yes, absolutely! Removing pages significantly reduces your PDF file size. Fewer pages mean a much smaller file, making it easier to email, upload, and share with others. This is especially helpful for large documents where size matters. File size reduction also speeds up download and upload times, and makes storage more efficient.' },
+                { question: 'Can I see which pages I\'m deleting before confirming?', answer: 'Yes, you can review your deletion selections before processing. Enter the specific page numbers or ranges you want to delete (such as pages 1-5 or pages 2, 8, 15), and review them carefully to ensure accuracy. Take your time to double-check your selections before clicking the delete button to process your PDF.' },
+                { question: 'Does page deletion affect PDF quality?', answer: 'No, deleting pages is a lossless operation that doesn\'t degrade quality. Remaining pages preserve their original formatting, text, images, and all content as much as possible. Since we\'re only removing pages rather than recompressing the PDF, the quality of the remaining pages stays intact. Your document will look exactly the same, just with fewer pages.' },
+                { question: 'Is my PDF secure when deleting pages?', answer: 'Yes, your PDF is completely secure. All files are processed using encrypted, secure connections. Files are automatically removed after processing. We don\'t store your data, keep backups, or share information with third parties. Your privacy is protected throughout the entire process.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
