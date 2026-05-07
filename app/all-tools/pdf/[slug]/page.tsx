@@ -242,6 +242,7 @@ export default function PdfToolPage({ params }: PageProps) {
                    tool.id === 'eps-to-pdf' ? 'Convert EPS to PDF Online Free (Vector Graphics)' :
                    tool.id === 'images-to-pdf' ? 'Convert Images to PDF Online Free (Merge JPG, PNG, HEIC)' :
                    tool.id === 'pdf-to-word' ? 'Convert PDF to Word Online Free (DOCX Converter)' :
+                   tool.id === 'protect-pdf' ? 'Password Protect PDF Online Free' :
                    tool.title}
                 </h1>
                 <p className="text-lg text-white/90 max-w-2xl">
@@ -318,15 +319,14 @@ export default function PdfToolPage({ params }: PageProps) {
                 </div>
 
                 {/* Trust Reinforcement Badge */}
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-center justify-center">
-                  <Shield className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <p className="text-sm text-gray-700">
-                    <span className="font-semibold text-green-700">Secure processing</span>
-                    <span className="text-gray-500"> • </span>
-                    <span>Files auto-deleted after processing</span>
-                    <span className="text-gray-500"> • </span>
-                    <span>No signup required</span>
-                  </p>
+                <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-green-700 mb-1">Your PDF is processed securely and automatically removed after processing</p>
+                      <p className="text-xs text-gray-600">No account needed • Files never stored • Encrypted transmission</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Tool Options */}
@@ -500,12 +500,13 @@ export default function PdfToolPage({ params }: PageProps) {
                       <Download className="w-5 h-5" />
                       {tool.id === 'unlock-pdf' ? 'Unlock PDF' : 
                        tool.id === 'pdf-watermark-remover' ? 'Remove Watermark' :
-                       tool.id === 'protect-pdf' ? 'Protect PDF' :
+                       tool.id === 'protect-pdf' ? 'Protect & Download PDF' :
                        tool.id === 'merge-pdf' ? 'Merge PDF Files' :
                        tool.id === 'split-pdf' ? 'Split PDF' :
                        tool.id === 'rotate-pdf' ? 'Rotate PDF' :
                        tool.id === 'crop-pdf' ? 'Crop PDF' :
                        tool.id === 'pdf-page-deleter' ? 'Delete PDF Pages' :
+                       tool.id === 'create-pdf' ? 'Create PDF' :
                        tool.id === 'jpg-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'png-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'tiff-to-pdf' ? 'Convert to PDF' :
@@ -5863,7 +5864,7 @@ export default function PdfToolPage({ params }: PageProps) {
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Create PDF documents from images instantly with our free online image to PDF converter. Merge multiple JPG, PNG, TIFF, GIF, HEIC, WebP, and EPS images into professional PDF documents. No software needed—upload your images, adjust compression, arrange pages, and download your PDF in seconds. Perfect for archiving photos, scanning documents, creating e-books, and document organization.
+                Convert JPG, PNG, and TIFF images into professional PDF documents. Merge multiple images instantly with our free online image to PDF converter. No software needed—upload your images, adjust compression, arrange pages, and download your PDF in seconds. Perfect for archiving photos, scanning documents, creating e-books, and document organization.
               </p>
             </div>
 
@@ -5871,9 +5872,9 @@ export default function PdfToolPage({ params }: PageProps) {
               <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Create PDF from Images - 4 Simple Steps</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 {[
-                  { step: '1', title: 'Upload Image Files', description: 'Select one or multiple image files (JPG, PNG, TIFF, GIF, HEIC, WebP, EPS). We support up to 100MB per file.' },
-                  { step: '2', title: 'Arrange Image Order', description: 'Drag and drop to reorder your images. Choose the exact page sequence for your final PDF document.' },
-                  { step: '3', title: 'Adjust Settings', description: 'Set compression level (0-9), page size, and orientation. Control file size and quality balance.' },
+                  { step: '1', title: 'Upload Image Files', description: 'Select one or multiple image files (JPG, PNG, TIFF). We support up to 100MB per file.' },
+                  { step: '2', title: 'Arrange Image Order', description: 'Upload your images in the order you want them to appear in the PDF.' },
+                  { step: '3', title: 'Adjust Settings', description: 'Add blank pages if needed, then create and download your PDF.' },
                   { step: '4', title: 'Download Your PDF', description: 'Your PDF is ready instantly. Download your merged document with all images combined into one file.' }
                 ].map((item, idx) => (
                   <motion.div key={idx} className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all" whileHover={{ y: -5 }}>
@@ -5919,12 +5920,12 @@ export default function PdfToolPage({ params }: PageProps) {
 
             <div className="mb-16">
               <FAQSection title="Image to PDF Converter - FAQ" faqs={[
-                { question: 'What image formats can I convert to PDF?', answer: 'We support JPG, PNG, TIFF, GIF, HEIC (iPhone), WebP, and EPS formats. Mix and match different formats in one PDF.' },
-                { question: 'Can I merge multiple images into one PDF?', answer: 'Yes! Upload unlimited images and merge them into a single organized PDF document with your preferred page order.' },
-                { question: 'How do I control PDF file size?', answer: 'Use the compression slider (0-9) during conversion. Higher values compress more, creating smaller files but slightly lower quality.' },
-                { question: 'Does conversion reduce image quality?', answer: 'Our converter preserves image quality at all compression levels. You control the balance between file size and quality.' },
-                { question: 'Can I reorder images before converting?', answer: 'Yes! Drag and drop to arrange images in your preferred order. This controls the final page sequence in your PDF.' },
-                { question: 'Is my image data kept private?', answer: 'Files are processed securely and automatically deleted after conversion. We never store your images permanently.' }
+                { question: 'What image formats can I convert to PDF?', answer: 'We support multiple image formats including JPG, PNG, TIFF, GIF, HEIC (iPhone photos), WebP, and EPS. You can upload images in different formats and merge them all into a single PDF document. This flexibility makes it easy to work with images from various sources—cameras, phones, scanners, and more.' },
+                { question: 'Can I merge multiple images into one PDF?', answer: 'Yes! Upload as many images as you need and merge them into a single organized PDF document. You can arrange them in your preferred order to control the final page sequence. This is perfect for combining scanned pages, photos, or screenshots into one cohesive document for sharing or archiving.' },
+                { question: 'How do I control PDF file size?', answer: 'You can adjust the compression level to control file size and quality balance. Note that the exact compression options may vary, but our tool optimizes file sizes automatically. For most uses, the default settings provide an excellent balance between reducing file size for easy sharing while maintaining good image clarity and detail.' },
+                { question: 'Does conversion reduce image quality?', answer: 'Our converter preserves image quality as much as possible during the conversion process. The final quality depends on your source images and settings. We use optimized conversion methods to maintain clarity and detail while creating professional PDF documents. For best results, start with high-quality source images.' },
+                { question: 'Can I reorder images before converting?', answer: 'Yes! When uploading multiple images, you can arrange them in your preferred order before conversion. Upload images in the sequence you want them to appear in the final PDF. This controls the page order in your document, making it easy to organize scanned pages, photo collections, or mixed document batches exactly as you need them.' },
+                { question: 'Is my image data kept private?', answer: 'Your privacy is our priority. Files are processed securely using encrypted connections and are automatically deleted from our servers after processing completes. We do not store, share, or use your images for any other purpose. Your data remains private throughout the entire conversion process, and you have complete control over your files.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
@@ -5944,8 +5945,8 @@ export default function PdfToolPage({ params }: PageProps) {
               <div className="grid md:grid-cols-2 gap-6">
                 {[
                   { step: '1', title: 'Upload Your PDF', description: 'Select the PDF file you want to protect. We support files up to 100MB. No account or registration needed.' },
-                  { step: '2', title: 'Set Password & Permissions', description: 'Create a strong password and choose what users can do (view, edit, copy, print). Set open password and/or permissions password.' },
-                  { step: '3', title: 'Apply Protection', description: 'Our tool encrypts your PDF with AES-256 encryption standards. Protection is applied instantly and securely.' },
+                  { step: '2', title: 'Set Password & Permissions', description: 'Create a strong password to protect your PDF from unauthorized access. You can optionally add an owner password for additional document protection.' },
+                  { step: '3', title: 'Apply Protection', description: 'Your PDF is encrypted with industry-standard security. Protection is applied instantly and securely.' },
                   { step: '4', title: 'Download Protected PDF', description: 'Your encrypted PDF is ready immediately. Download and share securely. Recipients need your password to open.' }
                 ].map((item, idx) => (
                   <motion.div key={idx} className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all" whileHover={{ y: -5 }}>
@@ -5963,9 +5964,9 @@ export default function PdfToolPage({ params }: PageProps) {
               <div className="grid md:grid-cols-2 gap-6">
                 {[
                   { title: 'Prevent Unauthorized Access', description: 'Password protection ensures only authorized recipients with your password can open and view documents.' },
-                  { title: 'Control What Others Can Do', description: 'Allow viewing but restrict editing, copying, and printing. Keep document content secure while sharing.' },
+                  { title: 'Control What Others Can Do', description: 'Use password protection to help prevent unauthorized access and document changes.' },
                   { title: 'Secure Sensitive Information', description: 'Protect financial records, personal data, contracts, medical information, and confidential business documents.' },
-                  { title: 'Military-Grade Encryption', description: 'Uses AES-256 encryption—the same standard used by governments and financial institutions.' },
+                  { title: 'Strong PDF Encryption', description: 'Uses strong PDF encryption to help secure sensitive documents and private information.' },
                   { title: 'Easy to Share Securely', description: 'Send protected PDFs via email or cloud storage. Only intended recipients with passwords can access.' },
                   { title: 'Maintain Document Integrity', description: 'Prevent accidental or intentional modifications. Lock documents to their original format and content.' }
                 ].map((item, idx) => (
@@ -5991,12 +5992,12 @@ export default function PdfToolPage({ params }: PageProps) {
 
             <div className="mb-16">
               <FAQSection title="Protect PDF - Frequently Asked Questions" faqs={[
-                { question: 'What is the difference between open password and permissions password?', answer: 'Open password prevents viewing the document. Permissions password restricts editing, copying, and printing while allowing viewing.' },
-                { question: 'How secure is AES-256 encryption?', answer: 'AES-256 is military-grade encryption used by governments and banks. It\'s virtually impossible to crack with current technology.' },
-                { question: 'Can I change the password later?', answer: 'Yes! Download the protected PDF, then re-upload it to set a new password. Or share the password with authorized recipients.' },
-                { question: 'What if someone forgets the password?', answer: 'Passwords cannot be recovered or reset. You\'ll need the original password to unlock the PDF or use the unprotected original file.' },
-                { question: 'Can protected PDFs still be printed?', answer: 'You control printing permissions. You can allow printing but restrict copying, or prevent both—your choice.' },
-                { question: 'Is password protection secure and private?', answer: 'Files are processed securely and automatically deleted after encryption. Your password is never stored or logged.' }
+                { question: 'What is the difference between user password and owner password?', answer: 'A user password restricts who can open and view the document—recipients need this password to access it. An owner password provides additional protection and is typically used when sharing sensitive documents with specific authorized people. You can set one or both passwords depending on your security needs.' },
+                { question: 'How secure is PDF password protection?', answer: 'PDF password protection uses industry-standard encryption to help secure your documents from unauthorized access. Strong passwords are difficult to crack, especially when combined with modern encryption standards. Always use a strong, unique password combining uppercase, lowercase, numbers, and special characters for maximum security.' },
+                { question: 'Can I change the password after protection?', answer: 'Yes, you can change passwords by downloading your protected PDF and re-uploading it to our tool to apply a new password. Alternatively, you can share your current password with trusted recipients and later communicate a new password if needed. Keep password records in a secure location for future reference.' },
+                { question: 'What if someone forgets the password?', answer: 'Passwords cannot be recovered or reset once set. Make sure to keep your password stored securely in a password manager or safe location. If the password is lost, you\'ll need the original unprotected PDF file to create a new protected version with a different password. Always maintain backups of unprotected files.' },
+                { question: 'Can recipients print protected PDFs?', answer: 'Password-protected PDFs can typically still be printed by anyone who has the password to open the file. The primary function of password protection is to control who can access the document. For more granular control over printing, editing, or copying specific features, check if your PDF reader offers additional security options.' },
+                { question: 'Is password protection secure and private?', answer: 'Yes, our tool processes your files securely using encrypted connections. Your files are automatically deleted from our servers immediately after protection is applied—we don\'t store or keep copies of your documents or passwords. Your data remains completely private and is never used for any other purpose.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
