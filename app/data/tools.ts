@@ -494,14 +494,6 @@ const converterTools: Tool[] = [
     headerColor: 'from-emerald-400 via-teal-400 to-emerald-500',
   },
   {
-    id: 'png-tif',
-    title: 'PNG to TIFF',
-    description: 'Convert PNG to TIFF format',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/png-to-tiff',
-  },
-  {
     id: 'jpg-tif',
     title: 'JPG to TIFF',
     description: 'Convert JPG to TIFF format',
@@ -600,7 +592,7 @@ const converterTools: Tool[] = [
     description: 'Convert GIF to animated PNG',
     category: 'Image',
     icon: RefreshCw,
-    route: '/all-tools/gif-to-png',
+    route: '/all-tools/gif-to-apng',
   },
   {
     id: 'jpg-avif',
@@ -791,14 +783,6 @@ const aiWriteTools: Tool[] = [
     icon: Combine,
     route: '/all-tools/ai-tools/story-generator',
   },
-  {
-    id: 'ai-write-all',
-    title: 'View All AI Write Tools',
-    description: 'Access 50+ AI writing tools',
-    category: 'AI Write',
-    icon: Sparkles,
-    route: '/all-tools/ai-tools',
-  },
 ];
 
 const videoTools: Tool[] = [
@@ -877,7 +861,7 @@ const videoTools: Tool[] = [
     route: '/all-tools/video/mute-video',
   },
   {
-    id: 'extract-audio',
+    id: 'extract-audio-from-video',
     title: 'Extract Audio from Video',
     description: 'Extract audio track from video as MP3 or WAV',
     category: 'Video',
