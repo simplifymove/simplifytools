@@ -338,11 +338,18 @@ export default function PdfToolPage({ params }: PageProps) {
                         return (
                           <div key={option.id}>
                             {files.length > 0 ? (
-                              <PdfPageReorderer
-                                pdfFile={files[0]}
-                                onReorder={(order) => setPageOrder(order)}
-                                onTotalPagesChange={(total) => setTotalPages(total)}
-                              />
+                              <Suspense fallback={
+                                <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-center">
+                                  <p className="text-gray-600 font-medium">Page Reorderer Loading</p>
+                                  <p className="text-sm text-gray-500 mt-2">View and reorder pages from your PDF document. Drag and drop pages to arrange them in your preferred order.</p>
+                                </div>
+                              }>
+                                <PdfPageReorderer
+                                  pdfFile={files[0]}
+                                  onReorder={(order) => setPageOrder(order)}
+                                  onTotalPagesChange={(total) => setTotalPages(total)}
+                                />
+                              </Suspense>
                             ) : (
                               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
                                 Upload a PDF to see page preview and reorder.
@@ -356,12 +363,19 @@ export default function PdfToolPage({ params }: PageProps) {
                       if (option.type === 'visual-crop') {
                         return (
                           <div key={option.id}>
-                            <PdfCropEditor
-                              pdfFile={files.length > 0 ? files[0] : undefined}
-                              onCropChange={(cropBox) => {
-                                handleOptionChange('cropBox', cropBox);
-                              }}
-                            />
+                            <Suspense fallback={
+                              <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-center">
+                                <p className="text-gray-600 font-medium">Visual PDF Crop Editor</p>
+                                <p className="text-sm text-gray-500 mt-2">Upload your PDF to see the visual crop editor and select areas to crop. Use the editor to remove margins, trim pages, and extract specific regions from your PDF document.</p>
+                              </div>
+                            }>
+                              <PdfCropEditor
+                                pdfFile={files.length > 0 ? files[0] : undefined}
+                                onCropChange={(cropBox) => {
+                                  handleOptionChange('cropBox', cropBox);
+                                }}
+                              />
+                            </Suspense>
                           </div>
                         );
                       }
@@ -6166,10 +6180,19 @@ function AnnotatePdfPage({ tool }: { tool: PdfToolConfig }) {
                 </div>
 
                 <div style={{ height: '600px', overflow: 'hidden' }}>
-                  <PdfAnnotator
-                    file={files[0]}
-                    onAnnotationsChange={handleAnnotationsChange}
-                  />
+                  <Suspense fallback={
+                    <div className="w-full h-full flex items-center justify-center bg-gray-50 border-2 border-gray-200 rounded-xl">
+                      <div className="text-center p-6">
+                        <p className="text-gray-600 font-medium">PDF Annotation Editor</p>
+                        <p className="text-sm text-gray-500 mt-2">Loading annotation tools. You can add notes, highlights, and comments to your PDF document.</p>
+                      </div>
+                    </div>
+                  }>
+                    <PdfAnnotator
+                      file={files[0]}
+                      onAnnotationsChange={handleAnnotationsChange}
+                    />
+                  </Suspense>
                 </div>
               </motion.div>
             )}
