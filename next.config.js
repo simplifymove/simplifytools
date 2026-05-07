@@ -50,6 +50,11 @@ const nextConfig = {
         destination: '/all-tools/:path*',
         permanent: true, // 301 redirect
       },
+      {
+        source: '/all-tools/video',
+        destination: '/all-tools/video-tools',
+        permanent: true, // 301 redirect
+      },
     ];
   },
 };
