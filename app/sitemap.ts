@@ -29,6 +29,23 @@ const EXCLUDED_PATTERNS = [
 ];
 
 /**
+ * Tools that exist in registries but don't have actual pages
+ * These should be excluded from the sitemap
+ */
+const TOOLS_WITHOUT_PAGES = [
+  'blur-background',
+  'compress-image',
+  'grayscale-image',
+  'profile-photo-maker',
+  'remove-object',
+  'resize-image',
+  'rotate-image',
+  'upscale-image',
+  'eps-to-jpg',
+  'gif-to-apng',
+];
+
+/**
  * Extract tool IDs from nested tool libraries
  * Handles Record<string, Tool> structures
  */
@@ -43,20 +60,30 @@ function extractToolIds(toolsObject: any): string[] {
     const keys = Object.keys(toolsObject);
     const filtered = keys.filter(key => {
       // Skip non-tool properties (functions, special keys, etc.)
-      return typeof toolsObject[key] === 'object' && 
+      const isValidTool = typeof toolsObject[key] === 'object' && 
              toolsObject[key] !== null &&
              (toolsObject[key].id !== undefined || true);
+      
+      // Also skip tools that don't have pages
+      const toolId = (toolsObject[key].id || key).toLowerCase();
+      const hasNoPage = TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolId);
+      
+      return isValidTool && !hasNoPage;
     });
-    console.log(`    Object type: ${keys.length} keys → ${filtered.length} valid tools`);
+    console.log(`    Object type: ${keys.length} keys → ${filtered.length} valid tools (excluded ${keys.length - filtered.length} without pages)`);
     return filtered;
   }
 
   // Handle array of tools
   if (Array.isArray(toolsObject)) {
     const filtered = toolsObject
-      .filter(tool => tool && (tool.id || tool.key))
+      .filter(tool => {
+        if (!tool || !(tool.id || tool.key)) return false;
+        const toolId = (tool.id || tool.key).toLowerCase();
+        return !TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolId);
+      })
       .map(tool => tool.id || tool.key);
-    console.log(`    Array type: ${toolsObject.length} items → ${filtered.length} valid tools`);
+    console.log(`    Array type: ${toolsObject.length} items → ${filtered.length} valid tools (excluded ${toolsObject.length - filtered.length} without pages)`);
     return filtered;
   }
 
@@ -114,8 +141,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       (pattern) =>
         toolIdLower.includes(pattern) || titleLower.includes(pattern)
     );
+    
+    // Also exclude tools that don't have actual pages
+    const hasNoPage = TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolIdLower);
 
-    return !isExcluded;
+    return !isExcluded && !hasNoPage;
   });
 
   console.log('✓ Valid main tools (with routes, not excluded):', validMainTools.length);
@@ -147,11 +177,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       route: '/all-tools/pdf',
       label: 'PDF Tools',
     },
-    {
-      tools: extractToolIds(videoTools),
-      route: '/all-tools/video',
-      label: 'Video Tools',
-    },
+    // DO NOT INCLUDE VIDEO CATEGORY - /all-tools/video returns 308 redirect
+    // {
+    //   tools: extractToolIds(videoTools),
+    //   route: '/all-tools/video',
+    //   label: 'Video Tools',
+    // },
     {
       tools: extractToolIds(codeTools),
       route: '/all-tools/code',
@@ -255,40 +286,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   });
 
-  // 4. ADD CATEGORY PAGES FROM MAIN TOOLS
-  console.log('\n🏷️  CATEGORY PAGES (from main tools)');
+  // 4. DO NOT ADD MAIN TOOL CATEGORY PAGES
+  // These don't have actual pages, so they return 404
+  // Only nested category pages (ai-tools, pdf, code, data, image-tools) are real pages
+  console.log('\n🏷️  CATEGORY PAGES');
   console.log('─────────────────────────────');
-  
-  const categoriesSet = new Set<string>();
-  validMainTools.forEach((tool) => {
-    const categorySlug = tool.category
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]/g, '');
-    categoriesSet.add(categorySlug);
-  });
-
-  console.log('Main tool categories found:', categoriesSet.size);
-  let categoriesAdded = 0;
-
-  Array.from(categoriesSet)
-    .sort()
-    .forEach((categorySlug) => {
-      const categoryUrl = `${BASE_URL}/all-tools/${categorySlug}`;
-      if (!addedCategories.has(categoryUrl)) {
-        sitemapEntries.push({
-          url: categoryUrl,
-          lastModified: new Date(),
-          changeFrequency: 'weekly',
-          priority: 0.8,
-        });
-        addedCategories.add(categoryUrl);
-        console.log(`  → Added main category: /all-tools/${categorySlug}`);
-        categoriesAdded++;
-      }
-    });
-  
-  console.log('✓ Added main tool category pages:', categoriesAdded);
+  console.log('⚠️  NOT adding main tool categories (downloader, financial-calculator, image, video - these pages don\'t exist)');
+  console.log('✓ Only including nested category pages that have actual pages');
 
   // 5. REMOVE DUPLICATES using Set
   console.log('\n🔄 DEDUPLICATION');
