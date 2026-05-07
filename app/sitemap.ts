@@ -41,7 +41,6 @@ const TOOLS_WITHOUT_PAGES = [
   'resize-image',
   'rotate-image',
   'upscale-image',
-  'gif-to-apng',
 ];
 
 /**

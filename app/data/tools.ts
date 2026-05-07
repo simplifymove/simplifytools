@@ -587,14 +587,6 @@ const converterTools: Tool[] = [
     route: '/all-tools/eps-to-jpg',
   },
   {
-    id: 'gif-apng',
-    title: 'GIF to APNG',
-    description: 'Convert GIF to animated PNG',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/gif-to-apng',
-  },
-  {
     id: 'jpg-avif',
     title: 'JPG to AVIF',
     description: 'Convert JPG to modern AVIF format',
