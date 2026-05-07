@@ -5697,6 +5697,294 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
           </div>
         )}
+
+        {/* SEO Content for Crop PDF */}
+        {tool.id === 'crop-pdf' && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
+            <div className="mb-16">
+              <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                Crop PDF pages online with our free visual PDF cropper tool. Remove unnecessary margins, trim blank areas, resize pages, and extract specific regions from your PDFs instantly. No software installation required—just upload, select crop areas visually, and download your optimized PDF in seconds. Perfect for scanners, presentations, documents, and images.
+              </p>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Crop PDF Pages Online - 4 Simple Steps</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { step: '1', title: 'Upload Your PDF', description: 'Select the PDF file you want to crop. We support files up to 100MB. No account or registration needed.' },
+                  { step: '2', title: 'Select Pages to Crop', description: 'Choose which pages to crop. Crop all pages, a single page, or specific page ranges like 1-5 or 1,3,5.' },
+                  { step: '3', title: 'Set Crop Area', description: 'Use the visual editor to select the crop area on your pages. Adjust margins, trim whitespace, or extract specific regions.' },
+                  { step: '4', title: 'Download Cropped PDF', description: 'Your cropped PDF is ready instantly. Download your optimized document with removed margins and unnecessary space.' }
+                ].map((item, idx) => (
+                  <motion.div key={idx} className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all" whileHover={{ y: -5 }}>
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">{item.step}</div>
+                      <div><h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3><p className="text-sm text-gray-700">{item.description}</p></div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Crop PDF Files?</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { title: 'Remove Unnecessary Margins', description: 'Eliminate white space and unwanted borders to create professional-looking documents.' },
+                  { title: 'Reduce File Size', description: 'Cropping can significantly reduce PDF file size, making it easier to email and share.' },
+                  { title: 'Improve Readability', description: 'Zoom in on important content by removing distracting margins and whitespace.' },
+                  { title: 'Prepare for Print', description: 'Crop to standard paper sizes (letter, A4) for proper printing and professional output.' },
+                  { title: 'Extract Specific Content', description: 'Isolate and extract specific regions or text areas from multi-content pages.' },
+                  { title: 'No Quality Loss', description: 'Cropping preserves PDF quality perfectly - it\'s lossless editing without compression artifacts.' }
+                ].map((item, idx) => (
+                  <motion.div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all" whileHover={{ x: 5 }}>
+                    <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <div><h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3><p className="text-sm text-gray-600">{item.description}</p></div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Common PDF Cropping Use Cases</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {['Removing wide margins from scanned documents for compact storage and viewing', 'Cropping presentation slides to standard aspect ratios for consistent viewing', 'Extracting specific chapters or sections from long PDF documents', 'Trimming extra whitespace from invoices and receipts before filing', 'Resizing document pages to fit mobile screens or specific display sizes', 'Preparing PDFs for professional printing with correct bleed and margin specifications'].map((useCase, idx) => (
+                  <motion.div key={idx} className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100" whileHover={{ x: 5 }}>
+                    <ChevronRight className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-gray-700">{useCase}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <FAQSection title="Crop PDF - Frequently Asked Questions" faqs={[
+                { question: 'Can I crop specific pages in my PDF?', answer: 'Yes! Select which pages to crop (all, single, or ranges like 1-5). Leave other pages unchanged while cropping only the ones you need.' },
+                { question: 'Will cropping a PDF reduce file size?', answer: 'Yes, cropping removes content and whitespace, which can reduce file size. The exact reduction depends on how much you crop.' },
+                { question: 'Does PDF cropping lose image quality?', answer: 'No, cropping is lossless editing. Your PDF quality remains perfect—we\'re just removing the areas you don\'t need.' },
+                { question: 'Can I adjust crop areas manually?', answer: 'Yes! Our visual editor lets you precisely select crop areas by dragging and adjusting borders on preview pages.' },
+                { question: 'What if I make a mistake while cropping?', answer: 'Simply re-upload your original PDF and crop again. Your original file remains untouched.' },
+                { question: 'Is my PDF data secure when cropping?', answer: 'Files are processed securely and automatically deleted after processing. Your data is never stored on our servers.' }
+              ]} bgColor="white" borderTop={true} includeSchema={true} />
+            </div>
+          </div>
+        )}
+
+        {/* SEO Content for PDF Page Deleter */}
+        {tool.id === 'pdf-page-deleter' && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
+            <div className="mb-16">
+              <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                Delete unwanted pages from PDF files instantly with our free online PDF page deleter tool. Remove specific pages, page ranges, or individual pages from your PDFs without losing document quality. No software needed—just select pages to remove and download your edited PDF in seconds. Perfect for removing blank pages, confidential content, duplicate pages, and unwanted sections.
+              </p>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Delete PDF Pages Online - 4 Easy Steps</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { step: '1', title: 'Upload Your PDF', description: 'Select the PDF file from your computer. We support files up to 100MB. No account or registration required.' },
+                  { step: '2', title: 'Select Pages to Delete', description: 'Choose specific page numbers or ranges to remove (e.g., 1-5, 10, or 15-20). See preview before confirming.' },
+                  { step: '3', title: 'Remove Selected Pages', description: 'Our tool instantly removes your selected pages while preserving all remaining content and formatting.' },
+                  { step: '4', title: 'Download Edited PDF', description: 'Your edited PDF without removed pages is ready instantly. Download your cleaned document.' }
+                ].map((item, idx) => (
+                  <motion.div key={idx} className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all" whileHover={{ y: -5 }}>
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">{item.step}</div>
+                      <div><h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3><p className="text-sm text-gray-700">{item.description}</p></div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Delete Unwanted PDF Pages?</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { title: 'Remove Sensitive Content', description: 'Delete confidential, private, or sensitive pages before sharing documents with others.' },
+                  { title: 'Reduce File Size', description: 'Removing unnecessary pages makes PDFs smaller, faster to email, upload, and share.' },
+                  { title: 'Clean Up Scans', description: 'Remove blank pages, cover sheets, or duplicate pages from scanned document batches.' },
+                  { title: 'Extract Key Information', description: 'Keep only the pages you need and discard everything else for focused documents.' },
+                  { title: 'Organize Documents', description: 'Create custom PDFs by removing irrelevant sections, appendices, or front matter.' },
+                  { title: 'No Quality Loss', description: 'Deleting pages preserves PDF quality—remaining pages stay perfect and unchanged.' }
+                ].map((item, idx) => (
+                  <motion.div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all" whileHover={{ x: 5 }}>
+                    <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <div><h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3><p className="text-sm text-gray-600">{item.description}</p></div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">When to Delete PDF Pages</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {['Removing confidential pages or sensitive information before sharing contracts or agreements', 'Deleting blank pages that appear between double-sided scans or copies', 'Removing cover letters, signatures, or personal information from documents', 'Extracting specific chapters from e-books and long-form PDFs', 'Cleaning up bulk scanned documents by removing duplicates and incorrect pages', 'Preparing documents for distribution by removing internal notes, drafts, or revisions'].map((useCase, idx) => (
+                  <motion.div key={idx} className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100" whileHover={{ x: 5 }}>
+                    <ChevronRight className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-gray-700">{useCase}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <FAQSection title="Delete PDF Pages - Frequently Asked Questions" faqs={[
+                { question: 'Can I delete multiple pages at once?', answer: 'Yes! Delete single pages, ranges (1-5), or multiple selections (1,3,5) all at once. Our tool handles batch deletion instantly.' },
+                { question: 'What happens if I delete the wrong pages?', answer: 'Simply re-upload your original PDF and delete again. Your original file is never modified—only your download is affected.' },
+                { question: 'Does deleting pages reduce file size?', answer: 'Yes, significantly! Removing pages reduces PDF file size, making it easier to email, share, and store.' },
+                { question: 'Can I see which pages I\'m deleting before confirming?', answer: 'Yes! Our tool shows a preview of pages to be deleted. Confirm your selection before processing.' },
+                { question: 'Does page deletion affect PDF quality?', answer: 'No, deleting pages is lossless. Remaining pages maintain perfect quality, formatting, and all content.' },
+                { question: 'Is my PDF secure when deleting pages?', answer: 'Files are processed securely and automatically deleted after processing. Your data is never stored permanently.' }
+              ]} bgColor="white" borderTop={true} includeSchema={true} />
+            </div>
+          </div>
+        )}
+
+        {/* SEO Content for Create PDF */}
+        {tool.id === 'create-pdf' && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
+            <div className="mb-16">
+              <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                Create PDF documents from images instantly with our free online image to PDF converter. Merge multiple JPG, PNG, TIFF, GIF, HEIC, WebP, and EPS images into professional PDF documents. No software needed—upload your images, adjust compression, arrange pages, and download your PDF in seconds. Perfect for archiving photos, scanning documents, creating e-books, and document organization.
+              </p>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Create PDF from Images - 4 Simple Steps</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { step: '1', title: 'Upload Image Files', description: 'Select one or multiple image files (JPG, PNG, TIFF, GIF, HEIC, WebP, EPS). We support up to 100MB per file.' },
+                  { step: '2', title: 'Arrange Image Order', description: 'Drag and drop to reorder your images. Choose the exact page sequence for your final PDF document.' },
+                  { step: '3', title: 'Adjust Settings', description: 'Set compression level (0-9), page size, and orientation. Control file size and quality balance.' },
+                  { step: '4', title: 'Download Your PDF', description: 'Your PDF is ready instantly. Download your merged document with all images combined into one file.' }
+                ].map((item, idx) => (
+                  <motion.div key={idx} className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all" whileHover={{ y: -5 }}>
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">{item.step}</div>
+                      <div><h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3><p className="text-sm text-gray-700">{item.description}</p></div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Convert Images to PDF?</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { title: 'Universal Compatibility', description: 'PDFs work everywhere—all devices, all browsers, all operating systems without compatibility issues.' },
+                  { title: 'Merge Multiple Images', description: 'Combine unlimited images from different formats into one organized, professional PDF document.' },
+                  { title: 'Preserve Quality', description: 'High-quality conversion maintains clarity and detail. Choose compression levels (0-9) for your needs.' },
+                  { title: 'Reduce File Sizes', description: 'PDF compression options create smaller files perfect for emailing, sharing, and cloud storage.' },
+                  { title: 'Professional Appearance', description: 'Create polished documents from photos, scans, or images with consistent formatting and layout.' },
+                  { title: 'Easy Sharing & Printing', description: 'PDFs are standard for distribution, printing, and archiving. Works perfectly on any printer or device.' }
+                ].map((item, idx) => (
+                  <motion.div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all" whileHover={{ x: 5 }}>
+                    <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <div><h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3><p className="text-sm text-gray-600">{item.description}</p></div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Common Image to PDF Conversion Use Cases</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {['Converting scanned photos and documents into searchable, shareable PDF archives', 'Merging multiple receipt or invoice photos into organized PDF records for accounting', 'Creating PDF photo albums from image collections for sharing with family and friends', 'Organizing mobile phone screenshots and photos into professional PDF presentations', 'Converting batch scans from scanners into single consolidated PDF documents', 'Preparing image portfolios and galleries for professional distribution and archiving'].map((useCase, idx) => (
+                  <motion.div key={idx} className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100" whileHover={{ x: 5 }}>
+                    <ChevronRight className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-gray-700">{useCase}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <FAQSection title="Image to PDF Converter - FAQ" faqs={[
+                { question: 'What image formats can I convert to PDF?', answer: 'We support JPG, PNG, TIFF, GIF, HEIC (iPhone), WebP, and EPS formats. Mix and match different formats in one PDF.' },
+                { question: 'Can I merge multiple images into one PDF?', answer: 'Yes! Upload unlimited images and merge them into a single organized PDF document with your preferred page order.' },
+                { question: 'How do I control PDF file size?', answer: 'Use the compression slider (0-9) during conversion. Higher values compress more, creating smaller files but slightly lower quality.' },
+                { question: 'Does conversion reduce image quality?', answer: 'Our converter preserves image quality at all compression levels. You control the balance between file size and quality.' },
+                { question: 'Can I reorder images before converting?', answer: 'Yes! Drag and drop to arrange images in your preferred order. This controls the final page sequence in your PDF.' },
+                { question: 'Is my image data kept private?', answer: 'Files are processed securely and automatically deleted after conversion. We never store your images permanently.' }
+              ]} bgColor="white" borderTop={true} includeSchema={true} />
+            </div>
+          </div>
+        )}
+
+        {/* SEO Content for Protect PDF */}
+        {tool.id === 'protect-pdf' && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
+            <div className="mb-16">
+              <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                Protect your PDF documents with password encryption online instantly. Add password protection to prevent unauthorized viewing, editing, copying, and printing. Our free PDF password protector uses industry-standard AES encryption to secure your sensitive documents. No software needed—just upload, set a password, and download your encrypted PDF in seconds.
+              </p>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Password Protect PDF - 4 Easy Steps</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { step: '1', title: 'Upload Your PDF', description: 'Select the PDF file you want to protect. We support files up to 100MB. No account or registration needed.' },
+                  { step: '2', title: 'Set Password & Permissions', description: 'Create a strong password and choose what users can do (view, edit, copy, print). Set open password and/or permissions password.' },
+                  { step: '3', title: 'Apply Protection', description: 'Our tool encrypts your PDF with AES-256 encryption standards. Protection is applied instantly and securely.' },
+                  { step: '4', title: 'Download Protected PDF', description: 'Your encrypted PDF is ready immediately. Download and share securely. Recipients need your password to open.' }
+                ].map((item, idx) => (
+                  <motion.div key={idx} className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all" whileHover={{ y: -5 }}>
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">{item.step}</div>
+                      <div><h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3><p className="text-sm text-gray-700">{item.description}</p></div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Protect Your PDF Documents?</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { title: 'Prevent Unauthorized Access', description: 'Password protection ensures only authorized recipients with your password can open and view documents.' },
+                  { title: 'Control What Others Can Do', description: 'Allow viewing but restrict editing, copying, and printing. Keep document content secure while sharing.' },
+                  { title: 'Secure Sensitive Information', description: 'Protect financial records, personal data, contracts, medical information, and confidential business documents.' },
+                  { title: 'Military-Grade Encryption', description: 'Uses AES-256 encryption—the same standard used by governments and financial institutions.' },
+                  { title: 'Easy to Share Securely', description: 'Send protected PDFs via email or cloud storage. Only intended recipients with passwords can access.' },
+                  { title: 'Maintain Document Integrity', description: 'Prevent accidental or intentional modifications. Lock documents to their original format and content.' }
+                ].map((item, idx) => (
+                  <motion.div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all" whileHover={{ x: 5 }}>
+                    <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <div><h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3><p className="text-sm text-gray-600">{item.description}</p></div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">When to Password Protect PDFs</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {['Sharing sensitive financial documents, bank statements, tax returns, and investment records securely', 'Protecting legal contracts, agreements, and intellectual property before distribution', 'Securing medical records, health information, and confidential healthcare documents', 'Preventing unauthorized viewing of personal information, addresses, phone numbers, and contact details', 'Restricting editing of templates, forms, and branded documents to maintain consistency', 'Controlling permissions on published work—allow viewing but prevent copying or modification'].map((useCase, idx) => (
+                  <motion.div key={idx} className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100" whileHover={{ x: 5 }}>
+                    <ChevronRight className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-gray-700">{useCase}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-16">
+              <FAQSection title="Protect PDF - Frequently Asked Questions" faqs={[
+                { question: 'What is the difference between open password and permissions password?', answer: 'Open password prevents viewing the document. Permissions password restricts editing, copying, and printing while allowing viewing.' },
+                { question: 'How secure is AES-256 encryption?', answer: 'AES-256 is military-grade encryption used by governments and banks. It\'s virtually impossible to crack with current technology.' },
+                { question: 'Can I change the password later?', answer: 'Yes! Download the protected PDF, then re-upload it to set a new password. Or share the password with authorized recipients.' },
+                { question: 'What if someone forgets the password?', answer: 'Passwords cannot be recovered or reset. You\'ll need the original password to unlock the PDF or use the unprotected original file.' },
+                { question: 'Can protected PDFs still be printed?', answer: 'You control printing permissions. You can allow printing but restrict copying, or prevent both—your choice.' },
+                { question: 'Is password protection secure and private?', answer: 'Files are processed securely and automatically deleted after encryption. Your password is never stored or logged.' }
+              ]} bgColor="white" borderTop={true} includeSchema={true} />
+            </div>
+          </div>
+        )}
         </div>
       </main>
       <Footer />
