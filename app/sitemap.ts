@@ -9,6 +9,11 @@ import { pdfTools } from '@/app/lib/pdf-tools';
 import { videoTools } from '@/app/lib/video-tools';
 import { imageToolsRegistry } from '@/app/lib/image-tools-registry';
 
+// CRITICAL: Force Next.js to regenerate sitemap on every request
+// This prevents caching of stale sitemap data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const BASE_URL = 'https://simplifyconvert.com';
 
 // Tool patterns to exclude: YouTube, Instagram, TikTok downloaders
@@ -91,6 +96,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     return !isExcluded;
   });
 
+  console.log('🔍 SITEMAP DEBUG: Main Tools from tools.ts:', validMainTools.length);
+
   // Add main tool pages
   validMainTools.forEach((tool) => {
     sitemapEntries.push({
@@ -134,6 +141,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       label: 'Image Tools Registry',
     },
   ];
+
+  // DEBUG: Log nested tool counts
+  nestedToolMappings.forEach(({ tools, label }) => {
+    console.log(`🔍 SITEMAP DEBUG: ${label}:`, tools.length);
+  });
 
   const addedCategories = new Set<string>();
 
@@ -210,6 +222,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     if (b.url === BASE_URL) return 1;
     return a.url.localeCompare(b.url);
   });
+
+  // DEBUG: Log final sitemap count
+  console.log('✅ SITEMAP DEBUG: Total URLs generated:', deduplicatedSitemap.length);
+  console.log('📊 SITEMAP BREAKDOWN:');
+  console.log('   Homepage: 1');
+  console.log('   Main Tools: ' + validMainTools.length);
+  console.log('   Nested Tools: ' + (deduplicatedSitemap.length - validMainTools.length - nestedToolMappings.filter(m => m.tools.length > 0).length - 1));
+  console.log('   Category Pages: ' + nestedToolMappings.filter(m => m.tools.length > 0).length);
 
   return deduplicatedSitemap;
 }
