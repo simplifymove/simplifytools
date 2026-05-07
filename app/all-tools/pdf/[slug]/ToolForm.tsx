@@ -281,6 +281,7 @@ export default function ToolForm({ tool, onProcess, loading, error, result, setE
                          tool.id === 'merge-pdf' ? 'Merge PDF Files' :
                          tool.id === 'split-pdf' ? 'Split PDF' :
                          tool.id === 'rotate-pdf' ? 'Rotate PDF' :
+                         tool.id === 'crop-pdf' ? 'Crop PDF' :
                          `Process ${tool.output.replace('.', '').toUpperCase()}`}
                       </>
                     )}

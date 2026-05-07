@@ -504,6 +504,7 @@ export default function PdfToolPage({ params }: PageProps) {
                        tool.id === 'merge-pdf' ? 'Merge PDF Files' :
                        tool.id === 'split-pdf' ? 'Split PDF' :
                        tool.id === 'rotate-pdf' ? 'Rotate PDF' :
+                       tool.id === 'crop-pdf' ? 'Crop PDF' :
                        tool.id === 'jpg-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'png-to-pdf' ? 'Convert to PDF' :
                        tool.id === 'tiff-to-pdf' ? 'Convert to PDF' :
@@ -5749,7 +5750,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   { title: 'Improve Readability', description: 'Zoom in on important content by removing distracting margins and whitespace.' },
                   { title: 'Prepare for Print', description: 'Crop to standard paper sizes (letter, A4) for proper printing and professional output.' },
                   { title: 'Extract Specific Content', description: 'Isolate and extract specific regions or text areas from multi-content pages.' },
-                  { title: 'No Quality Loss', description: 'Cropping preserves PDF quality perfectly - it\'s lossless editing without compression artifacts.' }
+                  { title: 'Preserves Quality', description: 'Cropping preserves PDF quality—it\'s lossless editing without compression artifacts.' }
                 ].map((item, idx) => (
                   <motion.div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all" whileHover={{ x: 5 }}>
                     <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
@@ -5773,12 +5774,12 @@ export default function PdfToolPage({ params }: PageProps) {
 
             <div className="mb-16">
               <FAQSection title="Crop PDF - Frequently Asked Questions" faqs={[
-                { question: 'Can I crop specific pages in my PDF?', answer: 'Yes! Select which pages to crop (all, single, or ranges like 1-5). Leave other pages unchanged while cropping only the ones you need.' },
-                { question: 'Will cropping a PDF reduce file size?', answer: 'Yes, cropping removes content and whitespace, which can reduce file size. The exact reduction depends on how much you crop.' },
-                { question: 'Does PDF cropping lose image quality?', answer: 'No, cropping is lossless editing. Your PDF quality remains perfect—we\'re just removing the areas you don\'t need.' },
-                { question: 'Can I adjust crop areas manually?', answer: 'Yes! Our visual editor lets you precisely select crop areas by dragging and adjusting borders on preview pages.' },
-                { question: 'What if I make a mistake while cropping?', answer: 'Simply re-upload your original PDF and crop again. Your original file remains untouched.' },
-                { question: 'Is my PDF data secure when cropping?', answer: 'Files are processed securely and automatically deleted after processing. Your data is never stored on our servers.' }
+                { question: 'Can I crop specific pages in my PDF?', answer: 'Yes, absolutely! You can choose to crop all pages uniformly, crop a single page, or select specific page ranges such as pages 1-5 or 10-15. Our tool lets you leave other pages completely unchanged while only cropping the specific pages you need. This gives you precise control over which pages get cropped and which remain untouched.' },
+                { question: 'Will cropping a PDF reduce file size?', answer: 'Yes, cropping typically reduces PDF file size because you are removing content and whitespace from your document. When you trim margins, remove blank areas, or extract specific regions, you are eliminating unnecessary data that contributes to file size. The exact amount of file size reduction depends on how much content you crop from your PDF pages. Removing large whitespace areas or blank sections can result in significantly smaller files, making them easier to email and share.' },
+                { question: 'Does PDF cropping lose image quality?', answer: 'No, PDF cropping does not lose image quality because it is a lossless editing process. Unlike compression or re-encoding, cropping simply removes the areas you don\'t need without modifying or re-compressing the remaining content. Your PDF quality is preserved as much as possible throughout the cropping process. The text, images, and formatting in the cropped area remain intact and unchanged. No quality loss, compression artifacts, or degradation occurs—we are simply extracting the portions of the document you want to keep.' },
+                { question: 'Can I adjust crop areas manually?', answer: 'Yes, you can adjust crop areas manually with complete precision! Our visual PDF crop editor displays your pages and lets you select crop areas by dragging and adjusting borders directly on the preview. You can click and drag to define exact crop boundaries, resize the crop box as needed, and see real-time previews of your changes. This gives you full control over which parts of each page to keep and which areas to remove.' },
+                { question: 'What if I make a mistake while cropping?', answer: 'No problem! If you make a mistake or are unhappy with your crop, simply re-upload your original PDF file and crop it again. Your original file remains completely untouched and safe—we never modify your uploaded files. You can crop the same PDF multiple times until you get the exact result you want, trying different crop areas each time. This risk-free approach means you can experiment and refine your cropping without any consequences.' },
+                { question: 'Is my PDF data secure when cropping?', answer: 'Yes, your PDF data is completely secure when you crop with our tool. Files are automatically deleted and permanently removed from our servers immediately after processing, ensuring your documents never remain in our system. We use secure, encrypted connections for all file transfers and processing. Your PDFs are processed securely on our servers and are never stored, accessed, or shared with anyone. We prioritize your privacy and data security throughout the entire cropping process.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
