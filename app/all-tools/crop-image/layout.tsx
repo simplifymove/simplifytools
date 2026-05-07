@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://simplifyconvert.com/all-tools/converters/crop-image',
+    url: 'https://simplifyconvert.com/all-tools/crop-image',
     siteName: 'SimplifyConvert',
     title: 'Crop Image - Free Online Image Cropping Tool',
     description: 'Crop and resize images to your exact dimensions.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'Crop Image' }],
   },
   twitter: { card: 'summary_large_image', title: 'Crop Image - Free Online Image Cropping Tool', description: 'Crop and resize images to your exact dimensions.', images: ['https://simplifyconvert.com/og-image.jpg'] },
-  alternates: { canonical: 'https://simplifyconvert.com/all-tools/converters/crop-image' },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/crop-image' },
 };
 
 export default function CropImageLayout({ children }: { children: React.ReactNode }) {

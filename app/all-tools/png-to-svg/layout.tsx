@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://simplifyconvert.com/all-tools/converters/png-to-svg',
+    url: 'https://simplifyconvert.com/all-tools/png-to-svg',
     siteName: 'SimplifyConvert',
     title: 'PNG to SVG - Free Raster to Vector Converter',
     description: 'Convert PNG images to SVG vector format.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'PNG to SVG' }],
   },
   twitter: { card: 'summary_large_image', title: 'PNG to SVG - Free Raster to Vector Converter', description: 'Convert PNG images to SVG vector format.', images: ['https://simplifyconvert.com/og-image.jpg'] },
-  alternates: { canonical: 'https://simplifyconvert.com/all-tools/converters/png-to-svg' },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/png-to-svg' },
 };
 
 export default function PngToSvgLayout({ children }: { children: React.ReactNode }) {

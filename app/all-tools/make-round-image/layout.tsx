@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://simplifyconvert.com/all-tools/converters/make-round-image',
+    url: 'https://simplifyconvert.com/all-tools/make-round-image',
     siteName: 'SimplifyConvert',
     title: 'Make Round Image - Free Circular Image Converter',
     description: 'Convert square images to perfect circles.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'Make Round Image' }],
   },
   twitter: { card: 'summary_large_image', title: 'Make Round Image - Free Circular Image Converter', description: 'Convert square images to perfect circles.', images: ['https://simplifyconvert.com/og-image.jpg'] },
-  alternates: { canonical: 'https://simplifyconvert.com/all-tools/converters/make-round-image' },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/make-round-image' },
 };
 
 export default function MakeRoundImageLayout({ children }: { children: React.ReactNode }) {

@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://simplifyconvert.com/all-tools/converters/colorize-photo',
+    url: 'https://simplifyconvert.com/all-tools/colorize-photo',
     siteName: 'SimplifyConvert',
     title: 'Colorize Photo - Free AI Photo Colorization',
     description: 'Add colors to black and white photos using AI.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'Colorize Photo' }],
   },
   twitter: { card: 'summary_large_image', title: 'Colorize Photo - Free AI Photo Colorization', description: 'Add colors to black and white photos using AI.', images: ['https://simplifyconvert.com/og-image.jpg'] },
-  alternates: { canonical: 'https://simplifyconvert.com/all-tools/converters/colorize-photo' },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/colorize-photo' },
 };
 
 export default function ColorizePhotoLayout({ children }: { children: React.ReactNode }) {

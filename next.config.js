@@ -40,6 +40,18 @@ const nextConfig = {
       },
     ],
   },
+  // 301 Redirects for old /converters/ URLs to clean /all-tools/[slug] URLs
+  // Fixes canonical URL issue where pages were under /all-tools/converters/ but should be /all-tools/
+  // Handles both direct routes (/all-tools/converters/add-border) and nested routes (/all-tools/converters/ai-tools/...)
+  async redirects() {
+    return [
+      {
+        source: '/all-tools/converters/:path*',
+        destination: '/all-tools/:path*',
+        permanent: true, // 301 redirect
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

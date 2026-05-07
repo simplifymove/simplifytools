@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://simplifyconvert.com/all-tools/converters/vsdx-to-docx',
+    url: 'https://simplifyconvert.com/all-tools/vsdx-to-docx',
     siteName: 'SimplifyConvert',
     title: 'VSDX to DOCX - Free Visio to Word Converter',
     description: 'Convert Visio VSDX files to DOCX Word documents.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'VSDX to DOCX' }],
   },
   twitter: { card: 'summary_large_image', title: 'VSDX to DOCX - Free Visio to Word Converter', description: 'Convert Visio VSDX files to DOCX format.', images: ['https://simplifyconvert.com/og-image.jpg'] },
-  alternates: { canonical: 'https://simplifyconvert.com/all-tools/converters/vsdx-to-docx' },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/vsdx-to-docx' },
 };
 
 export default function VsdxToDocxLayout({ children }: { children: React.ReactNode }) {
