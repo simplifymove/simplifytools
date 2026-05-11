@@ -403,18 +403,21 @@ export default function AddTextToPdfPage() {
     lastExtractedPageRef.current = -1;
 
     try {
-      // Import PDF.js library dynamically to support both browser and Node.js
+      // Import PDF.js library dynamically
       let pdfjs: any;
+      
       try {
-        pdfjs = await import('pdfjs-dist');
+        // Try to use pdfjs-dist with proper initialization
+        const pdfjsModule = await import('pdfjs-dist/legacy/build/pdf');
+        pdfjs = pdfjsModule.default || pdfjsModule;
       } catch (error) {
         console.error('Failed to load pdfjs-dist:', error);
         throw new Error('Failed to load PDF library');
       }
       
       // Set worker from the same distribution
-      if (pdfjs.GlobalWorkerOptions) {
-        pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.js`;
+      if (pdfjs && pdfjs.GlobalWorkerOptions) {
+        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
       }
       
       const arrayBuffer = await file.arrayBuffer();
