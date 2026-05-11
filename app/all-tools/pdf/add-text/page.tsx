@@ -100,9 +100,26 @@ export default function AddTextToPdfPage() {
     }
   };
 
-  // Initialize client-side flag
+  // Initialize PDF.js from CDN
   useEffect(() => {
-    setIsClient(true);
+    // Load PDF.js library from CDN
+    if (!(window as any).pdfjsLib) {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.async = true;
+      document.head.appendChild(script);
+
+      // Set worker URL
+      script.onload = () => {
+        const pdfjsLib = (window as any).pdfjsLib;
+        if (pdfjsLib) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        setIsClient(true);
+      };
+    } else {
+      setIsClient(true);
+    }
   }, []);
 
   // Keyboard shortcuts for undo/redo, delete, and copy/paste
@@ -403,30 +420,26 @@ export default function AddTextToPdfPage() {
     lastExtractedPageRef.current = -1;
 
     try {
-      // Import PDF.js library dynamically
-      let pdfjs: any;
+      // Wait for PDF.js to be available
+      let pdfjs = (window as any).pdfjsLib;
       
-      try {
-        // Try to use pdfjs-dist with proper initialization
-        const pdfjsModule = await import('pdfjs-dist/legacy/build/pdf');
-        pdfjs = pdfjsModule.default || pdfjsModule;
-      } catch (error) {
-        console.error('Failed to load pdfjs-dist:', error);
-        throw new Error('Failed to load PDF library');
-      }
-      
-      // Set worker from the same distribution
-      if (pdfjs && pdfjs.GlobalWorkerOptions) {
-        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+      if (!pdfjs) {
+        // If PDF.js isn't loaded yet, try waiting
+        let attempts = 0;
+        while (!pdfjs && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          pdfjs = (window as any).pdfjsLib;
+          attempts++;
+        }
+        
+        if (!pdfjs) {
+          throw new Error('PDF.js library failed to load');
+        }
       }
       
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
       const pagePromises: any[] = [];
-
-      for (let i = 1; i <= Math.min(pdf.numPages, 200); i++) {
-        pagePromises.push(pdf.getPage(i));
-      }
 
       const pages = await Promise.all(pagePromises);
       setPdfPages(pages);
