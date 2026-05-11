@@ -984,7 +984,7 @@ class PdfConvertEngine:
     
     @staticmethod
     def url_to_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
-        """Convert URL to PDF (requires Playwright/headless browser)"""
+        """Convert URL to PDF using full-page screenshot (higher quality output)"""
         try:
             url = options.get('url', '')
             if not url:
@@ -992,12 +992,37 @@ class PdfConvertEngine:
             
             # Use Playwright for headless browser
             from playwright.sync_api import sync_playwright
+            from PIL import Image
+            import io
             
             with sync_playwright() as p:
                 browser = p.chromium.launch()
-                page = browser.new_page()
+                
+                # Set a standard viewport for consistent capture
+                page = browser.new_page(viewport={'width': 1920, 'height': 1080})
+                
+                # Navigate to URL and wait for network idle
                 page.goto(url, wait_until='networkidle')
-                page.pdf(path=output_path)
+                
+                # Wait for any dynamic content to load
+                page.wait_for_load_state('domcontentloaded')
+                
+                # Capture full page screenshot
+                screenshot_bytes = page.screenshot(full_page=True)
+                
+                # Convert screenshot to PDF using PIL
+                image = Image.open(io.BytesIO(screenshot_bytes))
+                
+                # Convert RGBA to RGB if necessary
+                if image.mode in ('RGBA', 'LA', 'P'):
+                    # Create white background
+                    background = Image.new('RGB', image.size, (255, 255, 255))
+                    background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
+                    image = background
+                
+                # Save as PDF with high quality
+                image.save(output_path, 'PDF', quality=95)
+                
                 browser.close()
             
             return output_path

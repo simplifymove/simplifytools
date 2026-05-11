@@ -13,6 +13,75 @@ class PdfEditEngine:
     """PDF editing operations"""
     
     @staticmethod
+    def edit(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
+        """Edit PDF text content by replacing text elements"""
+        try:
+            pdf_path = input_paths[0]
+            text_elements = options.get('textElements', [])
+            
+            if not text_elements:
+                # If no text elements provided, just copy the file
+                import shutil
+                shutil.copy(pdf_path, output_path)
+                return output_path
+            
+            doc = fitz.open(pdf_path)
+            
+            # Group text elements by page
+            elements_by_page = {}
+            for element in text_elements:
+                page_num = element.get('page', 1) - 1  # Convert to 0-indexed
+                if page_num not in elements_by_page:
+                    elements_by_page[page_num] = []
+                elements_by_page[page_num].append(element)
+            
+            # Process each page
+            for page_num, elements in elements_by_page.items():
+                if page_num < 0 or page_num >= len(doc):
+                    continue
+                
+                page = doc[page_num]
+                
+                # Get all text blocks from the page for replacement
+                text_dict = page.get_text('dict')
+                
+                # For each element, we'll search and replace the text
+                for element in elements:
+                    old_text = element.get('text', '')
+                    new_text = element.get('text', '')  # Get updated text from element
+                    
+                    # Search for the text and replace it
+                    # This is a simple implementation - searches for text blocks containing the old text
+                    # Note: This approach is simplified. For production, consider using pdfminer or more advanced PDF manipulation
+                    
+                    # Use PyMuPDF's search and replace feature if available
+                    try:
+                        # Find text location and replace
+                        text_instances = page.search_for(old_text)
+                        if text_instances:
+                            for rect in text_instances:
+                                # Delete the old text by drawing white background
+                                page.draw_rect(rect, color=None, fill=(1, 1, 1), stroke_width=0)
+                                # Add new text
+                                page.insert_text(
+                                    rect.top_left,
+                                    new_text,
+                                    fontsize=12,
+                                    color=(0, 0, 0)
+                                )
+                    except Exception as e:
+                        # If search fails, continue with other elements
+                        print(f"Warning: Could not replace '{old_text}': {str(e)}")
+                        continue
+            
+            doc.save(output_path)
+            doc.close()
+            return output_path
+            
+        except Exception as e:
+            raise Exception(f"Failed to edit PDF: {str(e)}")
+    
+    @staticmethod
     def add_text(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Add text to PDF"""
         try:

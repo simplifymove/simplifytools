@@ -752,7 +752,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'edit-pdf': {
     id: 'edit-pdf',
     title: 'Edit PDF',
-    description: 'Edit PDF content (basic operations)',
+    description: 'Edit PDF text content with visual preview and inline editing',
     category: 'Edit',
     engine: 'edit',
     icon: Settings,

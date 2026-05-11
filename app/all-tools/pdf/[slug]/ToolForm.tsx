@@ -22,6 +22,11 @@ const PdfAnnotator = dynamic(() => import('@/app/components/PdfAnnotator'), {
   ssr: false,
 });
 
+const PdfTextEditor = dynamic(() => import('@/app/components/PdfTextEditor'), {
+  loading: () => <div className="p-4">Loading PDF text editor...</div>,
+  ssr: false,
+});
+
 interface ToolFormProps {
   tool: PdfToolConfig;
   onProcess: (files: File[], options: Record<string, any>, url: string) => Promise<void>;
@@ -144,6 +149,31 @@ export default function ToolForm({ tool, onProcess, loading, error, result, setE
                   {tool.options && tool.options.length > 0 && (
                     <div className="space-y-4">
                       {tool.options.map((option) => {
+                        // Handle edit-pdf text editor
+                        if (tool.id === 'edit-pdf' && option.id === 'textEditor') {
+                          return (
+                            <div key={option.id}>
+                              {files.length > 0 ? (
+                                <Suspense fallback={
+                                  <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-center">
+                                    <p className="text-gray-600 font-medium">PDF Text Editor Loading</p>
+                                    <p className="text-sm text-gray-500 mt-2">Preview and edit text content in your PDF document.</p>
+                                  </div>
+                                }>
+                                  <PdfTextEditor
+                                    file={files[0]}
+                                    onChanges={(textElements) => handleOptionChange('textElements', textElements)}
+                                  />
+                                </Suspense>
+                              ) : (
+                                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                                  Upload a PDF to start editing text content.
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
                         // Handle rearrange-pdf page reorderer
                         if (tool.id === 'rearrange-pdf' && option.id === 'pageOrder') {
                           return (
@@ -283,6 +313,7 @@ export default function ToolForm({ tool, onProcess, loading, error, result, setE
                          tool.id === 'rotate-pdf' ? 'Rotate PDF' :
                          tool.id === 'crop-pdf' ? 'Crop PDF' :
                          tool.id === 'pdf-page-deleter' ? 'Delete PDF Pages' :
+                         tool.id === 'edit-pdf' ? 'Save & Download Edited PDF' :
                          tool.id === 'create-pdf' ? 'Create PDF' :
                          `Process ${tool.output.replace('.', '').toUpperCase()}`}
                       </>
