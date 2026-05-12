@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { HomeHeader } from '@/app/components/HomeHeader';
+import { Footer } from '@/app/components/Footer';
 import { Download, ChevronRight, Combine, Trash2, Plus } from 'lucide-react';
 
 export default function CombineImagesPage() {
@@ -456,17 +457,160 @@ export default function CombineImagesPage() {
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Footer */}
-      <footer className="bg-slate-800 text-white py-12 mt-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <p className="text-center text-slate-400">
-            © 2024 Image Tools. All rights reserved.
-          </p>
+      {/* How to Use Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Combine Images</h2>
+          <ol className="space-y-4 text-gray-700">
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">1.</span>
+              <span><strong>Upload Images:</strong> Click the upload area or drag & drop multiple images. Supports JPG, PNG, WebP and more.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">2.</span>
+              <span><strong>Choose Layout:</strong> Select horizontal, vertical, or grid layout from the settings panel.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">3.</span>
+              <span><strong>Customize Settings:</strong> Adjust spacing, background color, and grid columns to your preference.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">4.</span>
+              <span><strong>Preview:</strong> View the preview to see how your combined image will look.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">5.</span>
+              <span><strong>Combine & Download:</strong> Click "Combine Images" and download your result as a PNG file.</span>
+            </li>
+          </ol>
         </div>
-      </footer>
+      </div>
+
+      {/* Benefits Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Benefits of Our Combine Images Tool</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Layout Options</h3>
+              <p className="text-gray-700">Arrange images horizontally, vertically, or in a grid layout. Perfect for creating collages and compositions.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Flexible Customization</h3>
+              <p className="text-gray-700">Adjust spacing, background color, and grid columns. Fine-tune every aspect of your image.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Preview Before Download</h3>
+              <p className="text-gray-700">See exactly how your combined image will look before exporting. Make changes instantly.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ High Quality Output</h3>
+              <p className="text-gray-700">Exports as PNG with full quality preservation. No compression or loss of detail.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
+              <p className="text-gray-700">No sign-up required. All processing happens locally in your browser. Your data stays private.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Batch Processing</h3>
+              <p className="text-gray-700">Combine unlimited images in one session. Perfect for creating multi-image collages and compositions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
+              <p className="text-gray-700 mt-2">Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The output is always PNG format for maximum quality.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">How many images can I combine?</summary>
+              <p className="text-gray-700 mt-2">You can combine as many images as you want. Upload 2 or 100+ images - the tool handles any number. Just note that very large numbers may take longer to process.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Can I change the layout after uploading?</summary>
+              <p className="text-gray-700 mt-2">Yes! Switch between horizontal, vertical, and grid layouts at any time. The preview updates instantly so you can see the changes in real-time.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Is my data safe and private?</summary>
+              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally in your browser. Your images are never uploaded to any server. They are completely private and secure.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">What size images does it support?</summary>
+              <p className="text-gray-700 mt-2">The tool can handle images up to your browser's memory limit. Typically this allows files up to several hundred megapixels combined. For very large images, consider resizing first.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Can I reorder images?</summary>
+              <p className="text-gray-700 mt-2">Currently, images are arranged in the order you upload them. You can remove an image using the delete button and re-upload it in a different position.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      {/* Related Tools Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Tools</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Link href="/all-tools/crop-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Crop Image</h3>
+              <p className="text-sm text-gray-600">Resize and crop images</p>
+            </Link>
+            <Link href="/all-tools/resize-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Resize Image</h3>
+              <p className="text-sm text-gray-600">Change image dimensions</p>
+            </Link>
+            <Link href="/all-tools/add-opacity" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Add Opacity</h3>
+              <p className="text-sm text-gray-600">Make images transparent</p>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'Combine Images - Free Online Image Merger & Collage Maker',
+        description: 'Combine multiple images into one with flexible layout options. Create stunning collages and image compositions.',
+        url: 'https://simplifyconvert.com/all-tools/combine-images',
+        applicationCategory: 'Multimedia',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+        },
+        author: {
+          '@type': 'Organization',
+          name: 'SimplifyConvert',
+          url: 'https://simplifyconvert.com',
+        },
+        datePublished: '2024-01-01',
+        image: 'https://simplifyconvert.com/og-image.jpg',
+        featureList: [
+          'Horizontal, vertical, and grid layout options',
+          'Customizable spacing and background color',
+          'Real-time preview',
+          'PNG export with full quality',
+          'Support for multiple image formats',
+          'No sign-up required',
+          'Privacy-focused local processing',
+        ],
+      })}} />
     </div>
   );
 }
+
+
+
 
 
 

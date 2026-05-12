@@ -6,6 +6,7 @@ import { Download, ChevronRight, Loader, RotateCw } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { rotateImage } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 export default function RotateImagePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -241,82 +242,151 @@ export default function RotateImagePage() {
           </div>
         </div>
       </main>
-      {/* FOOTER */}
-      <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            {/* Brand */}
-            <div>
-              <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
-                  SC
-                </div>
-                <span>SimplifyConvert</span>
-              </div>
-              <p className="text-sm text-gray-400">
-                Free online tools for PDF, Image, Video, AI Write, Data, Code, and Text to Speech conversion.
-              </p>
-            </div>
 
-            {/* Categories */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Categories</h4>
-              <ul className="space-y-2 text-sm">
-                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+      {/* How To Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Rotate Images</h2>
+          <div className="space-y-4">
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+              <div><p className="text-gray-700"><strong>Upload your image:</strong> Select a photo from your device</p></div>
             </div>
-
-            {/* Popular Tools */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Popular</h4>
-              <ul className="space-y-2 text-sm">
-                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+              <div><p className="text-gray-700"><strong>Choose rotation method:</strong> Use quick buttons (90°, 180°, 270°), slider, or enter custom degrees</p></div>
             </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                {[
-                  { label: 'About', href: '/about' },
-                  { label: 'Privacy Policy', href: '/privacy' },
-                  { label: 'Terms of Service', href: '/terms' },
-                  { label: 'Contact', href: '/contact' },
-                  { label: 'Blog', href: '/blog' }
-                ].map((item) => (
-                  <li key={item.label}>
-                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+              <div><p className="text-gray-700"><strong>Click Rotate Image:</strong> Process your image instantly in the browser</p></div>
             </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-8">
-            <p className="text-center text-sm text-gray-400">
-              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
-            </p>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">4</div>
+              <div><p className="text-gray-700"><strong>Download your result:</strong> Save the rotated image to your device</p></div>
+            </div>
           </div>
         </div>
-      </footer>
+      </div>
+
+      {/* Benefits Section */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Rotate Images?</h2>
+          <ul className="space-y-3 text-gray-700">
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Fix sideways photos - correct images taken in the wrong orientation</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Adjust composition - rotate any angle (not just 90°) for perfect framing</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Prepare for printing - get images to the right orientation before printing</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Align graphics - rotate logos and designs to match your layout</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> No quality loss - rotation preserves full image quality</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Can I rotate images by any angle?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes, use the slider for 1° precision from 0-360° or enter custom degrees manually for exact control.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What formats does the image rotator support?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">All common formats: JPG, PNG, WebP, GIF, BMP, and more. Output is saved as PNG.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Will my image quality be affected by rotation?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No, rotation doesn't reduce quality. Your image maintains full resolution and clarity.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                How do I rotate an image 45 degrees?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Use the custom angle slider or enter "45" in the degree input field for precise rotation.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Can I preview before downloading?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes, after clicking Rotate Image, you'll see the success message and can download immediately.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Is image rotation completely free?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Rotate unlimited images, no signup or hidden costs.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "Can I rotate images by any angle?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, use the slider for 1° precision from 0-360° or enter custom degrees." } },
+          { "@type": "Question", "name": "What formats does the image rotator support?", "acceptedAnswer": { "@type": "Answer", "text": "All common formats including JPG, PNG, WebP, GIF, BMP." } },
+          { "@type": "Question", "name": "Will my image quality be affected by rotation?", "acceptedAnswer": { "@type": "Answer", "text": "No, rotation doesn't reduce quality. Full resolution maintained." } },
+          { "@type": "Question", "name": "How do I rotate an image 45 degrees?", "acceptedAnswer": { "@type": "Answer", "text": "Use the custom angle slider or enter 45 in the degree input field." } },
+          { "@type": "Question", "name": "Can I preview before downloading?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, after clicking Rotate Image, you'll see the success message." } },
+          { "@type": "Question", "name": "Is image rotation completely free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+        ]
+      })}</script>
+
+      {/* Related Tools */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Editors</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/all-tools/crop-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Crop Image</span><p className="text-xs text-gray-600">Trim unwanted areas</p></div>
+            </Link>
+            <Link href="/all-tools/flip-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Flip Image</span><p className="text-xs text-gray-600">Mirror horizontally/vertically</p></div>
+            </Link>
+            <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Resize Image</span><p className="text-xs text-gray-600">Change dimensions</p></div>
+            </Link>
+            <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size</p></div>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
     </>
   );
 }
+
 
 
 

@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { HomeHeader } from '@/app/components/HomeHeader';
+import { Footer } from '@/app/components/Footer';
 import { ImageUploader } from '@/app/components/ImageUploader';
 import { Download, ChevronRight, Palette } from 'lucide-react';
 
@@ -474,17 +475,157 @@ export default function ColorizePhotoPage() {
         </div>
       )}
 
+      {/* How to Use Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Colorize a Photo</h2>
+          <ol className="space-y-4 text-gray-700">
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">1.</span>
+              <span><strong>Upload Photo:</strong> Select a black and white or grayscale image. Supports JPG, PNG, WebP and more.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">2.</span>
+              <span><strong>Choose Tone:</strong> Select from preset tones (Sepia, Warm, Cool) or pick a custom color.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">3.</span>
+              <span><strong>Adjust Intensity:</strong> Use the slider to control how vibrant or subtle the colorization appears.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">4.</span>
+              <span><strong>Preview:</strong> See the colorized result in real-time before applying.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">5.</span>
+              <span><strong>Download:</strong> Save your colorized photo as a PNG file.</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      {/* Benefits Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Benefits of Our Colorize Tool</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Tone Options</h3>
+              <p className="text-gray-700">Choose from preset tones like sepia, warm, and cool, or use a custom color for unique effects.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-Time Preview</h3>
+              <p className="text-gray-700">See changes instantly as you adjust tone, color, and intensity without applying.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Restore Vintage Photos</h3>
+              <p className="text-gray-700">Bring old black and white photographs back to life with beautiful, natural-looking colors.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Precise Control</h3>
+              <p className="text-gray-700">Adjust intensity from subtle to vibrant to get exactly the look you want.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ High Quality Output</h3>
+              <p className="text-gray-700">Exports as PNG with full quality preservation. No compression or loss of detail.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
+              <p className="text-gray-700">No sign-up required. All processing happens locally. Your photos stay completely private.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
+              <p className="text-gray-700 mt-2">Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The output is always PNG format for maximum quality.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Can I colorize a color photo?</summary>
+              <p className="text-gray-700 mt-2">While designed for B&W photos, you can use this tool on color photos to apply tonal overlays. The grayscale values are calculated from existing RGB data.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between sepia, warm, and cool tones?</summary>
+              <p className="text-gray-700 mt-2">Sepia adds a classic brown tone (vintage look), Warm adds orange/gold (nostalgic feel), and Cool adds blue/cyan (modern touch). Custom lets you pick any color.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Does colorization affect photo quality?</summary>
+              <p className="text-gray-700 mt-2">No, colorization preserves all original quality. The output PNG maintains the same resolution and detail as your input image.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Is my photo data secure?</summary>
+              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally in your browser. Your photos are never uploaded to any server and remain completely private.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Can I use colorized photos commercially?</summary>
+              <p className="text-gray-700 mt-2">Yes, colorized photos can be used for personal or commercial purposes without any restrictions.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      {/* Related Tools Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Photo Tools</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Link href="/all-tools/enhance-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Enhance Image</h3>
+              <p className="text-sm text-gray-600">Improve photo quality and clarity</p>
+            </Link>
+            <Link href="/all-tools/grayscale-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Grayscale Image</h3>
+              <p className="text-sm text-gray-600">Convert to black and white</p>
+            </Link>
+            <Link href="/all-tools/sepia-effect" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Sepia Effect</h3>
+              <p className="text-sm text-gray-600">Apply classic vintage tone</p>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Footer */}
-      <footer className="bg-slate-800 text-white py-12 mt-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <p className="text-center text-slate-400">
-            © 2024 Image Tools. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'Colorize Photo - Free Online Photo Colorization Tool',
+        description: 'Add colors to black and white photos. Restore vintage photographs with sepia, warm, cool, or custom color tones.',
+        url: 'https://simplifyconvert.com/all-tools/colorize-photo',
+        applicationCategory: 'Multimedia',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+        },
+        author: {
+          '@type': 'Organization',
+          name: 'SimplifyConvert',
+          url: 'https://simplifyconvert.com',
+        },
+        datePublished: '2024-01-01',
+        image: 'https://simplifyconvert.com/og-image.jpg',
+        featureList: [
+          'Multiple tone options (sepia, warm, cool)',
+          'Custom color selection',
+          'Intensity control slider',
+          'Real-time preview',
+          'High quality PNG export',
+          'No sign-up required',
+          'Privacy-focused local processing',
+        ],
+      })}} />
     </div>
   );
 }

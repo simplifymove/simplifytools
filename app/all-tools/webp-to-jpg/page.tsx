@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
+import { Download, ChevronRight, Loader, FileUp, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 export default function WebpToJpgPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -181,7 +182,189 @@ export default function WebpToJpgPage() {
           </div>
         </div>
       </main>
-      {/* FOOTER */}
+
+      {/* How To Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Convert WebP to JPG</h2>
+          <div className="space-y-4">
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">1</div>
+              <div><p className="text-gray-700"><strong>Upload your WebP file:</strong> Click and select your WebP image</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">2</div>
+              <div><p className="text-gray-700"><strong>Adjust quality (optional):</strong> Use the slider to set quality from 60% to 95%</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
+              <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> Processing happens instantly in your browser</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
+              <div><p className="text-gray-700"><strong>Download your JPG:</strong> Save the converted file</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Use Cases */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">When to Convert WebP to JPG</h2>
+          <ul className="space-y-3 text-gray-700">
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Converting modern WebP images for older system compatibility</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Sharing WebP images with users who can't open the format</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Uploading to platforms that don't support WebP</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Creating JPG versions for email or older software</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Archiving images in widely-compatible JPG format</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What is WebP format?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">WebP is a modern image format developed by Google that provides superior compression compared to JPG and PNG. It's smaller in file size but not all older systems support it yet.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Will converting WebP to JPG affect image quality?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Quality depends on your settings. Using 85-90% quality preserves excellent visual quality. Lower settings (60-70%) are acceptable for web use but show more compression artifacts.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What quality should I use?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">For best results: 85-90% for general use, 75-80% for web sharing, 90-95% for professional or print use. Higher quality = larger file size.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Can JPG handle transparency like WebP?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No. JPG doesn't support transparency. If your WebP has a transparent background, it will be filled with white in the JPG conversion.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Is the converter secure and private?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes. Conversion happens entirely in your browser. Images are never uploaded to servers or stored anywhere. Complete privacy guaranteed.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Do I need to pay or sign up?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No. Completely free with no limits, no signup required, and no hidden costs. Convert as many WebP files as you want.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Schema */}
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is WebP format?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "WebP is a modern image format developed by Google that provides superior compression. It's smaller than JPG and PNG but not all older systems support it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Will converting WebP to JPG affect image quality?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Quality depends on settings. 85-90% preserves excellent quality. Lower settings (60-70%) acceptable for web but show more compression artifacts."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What quality should I use?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Use 85-90% for general use, 75-80% for web, 90-95% for professional/print. Higher quality means larger file size."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can JPG handle transparency like WebP?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. JPG doesn't support transparency. Transparent areas will be filled with white in the conversion."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the converter secure and private?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Conversion happens in your browser. Images never uploaded to servers. Complete privacy guaranteed."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need to pay or sign up?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Completely free with no limits, no signup, no hidden costs."
+            }
+          }
+        ]
+      })}</script>
+
+      {/* Related Tools */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Tools</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/all-tools/png-to-jpg" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">PNG to JPG Converter</span><p className="text-xs text-gray-600">Convert PNG to JPG</p></div>
+            </Link>
+            <Link href="/all-tools/jpg-to-png" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Add transparency to images</p></div>
+            </Link>
+            <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size</p></div>
+            </Link>
+            <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Resizer</span><p className="text-xs text-gray-600">Change dimensions</p></div>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">

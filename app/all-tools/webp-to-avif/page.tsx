@@ -155,6 +155,188 @@ export default function WebpToAvifPage() {
             </div>
           </div>
         </div>
+
+      {/* How To Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Convert WebP to AVIF</h2>
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">1</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Upload Your WebP File</h3>
+                <p className="text-gray-600 mt-2">Select or drag and drop your WebP image to begin conversion to the even more efficient AVIF format.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">2</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Click Convert Button</h3>
+                <p className="text-gray-600 mt-2">Press "Convert to AVIF" to instantly transform your WebP using next-generation compression algorithms.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">3</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Download AVIF File</h3>
+                <p className="text-gray-600 mt-2">Download your converted AVIF file instantly with superior compression compared to WebP.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Convert WebP to AVIF?</h2>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Even Better Compression</h3>
+                <p className="text-gray-600 text-sm">AVIF provides 30-40% better compression than WebP while maintaining superior image quality for optimal web performance.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Future-Proof Format</h3>
+                <p className="text-gray-600 text-sm">AVIF is the next-generation standard for web images, offering superior compression and quality for the future of web.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Maximized Performance</h3>
+                <p className="text-gray-600 text-sm">Significantly faster page loads, improved SEO, and better user experience across all modern devices and browsers.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than WebP?</h3>
+              <p className="text-gray-700">AVIF files are typically 30-40% smaller than equivalent WebP files while maintaining or exceeding image quality, depending on content and settings.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF better than WebP?</h3>
+              <p className="text-gray-700">Yes, AVIF offers superior compression compared to WebP with excellent quality. It's the next-generation image format for modern web use.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Are both formats supported by browsers?</h3>
+              <p className="text-gray-700">Both WebP and AVIF are supported by modern browsers. AVIF support is growing rapidly with Chrome 85+, Firefox 93+, and Safari 16+.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will quality be lost in conversion?</h3>
+              <p className="text-gray-700">No. AVIF maintains excellent quality during conversion from WebP, often with improved efficiency due to better compression algorithms.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
+              <p className="text-gray-700">Yes, all conversions happen locally in your browser. Your WebP files are never uploaded to any server and remain completely private.</p>
+            </div>
+            <div className="pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Should I convert all WebP files to AVIF?</h3>
+              <p className="text-gray-700">For web optimization, converting WebP to AVIF is beneficial for modern browsers. Use HTML picture tags with fallbacks for maximum compatibility.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* JSON-LD FAQ Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How much smaller is AVIF than WebP?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "AVIF files are typically 30-40% smaller than equivalent WebP files while maintaining or exceeding image quality, depending on content and settings."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is AVIF better than WebP?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, AVIF offers superior compression compared to WebP with excellent quality. It's the next-generation image format for modern web use."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Are both formats supported by browsers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Both WebP and AVIF are supported by modern browsers. AVIF support is growing rapidly with Chrome 85+, Firefox 93+, and Safari 16+."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Will quality be lost in conversion?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. AVIF maintains excellent quality during conversion from WebP, often with improved efficiency due to better compression algorithms."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is the conversion process secure?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, all conversions happen locally in your browser. Your WebP files are never uploaded to any server and remain completely private."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Should I convert all WebP files to AVIF?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "For web optimization, converting WebP to AVIF is beneficial for modern browsers. Use HTML picture tags with fallbacks for maximum compatibility."
+              }
+            }
+          ]
+        })}
+      </script>
+
+      {/* Related Tools */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link href="/all-tools/jpg-to-avif" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to AVIF Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG to next-generation AVIF format</p>
+            </Link>
+            <Link href="/all-tools/png-to-avif" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to AVIF Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert PNG to AVIF with transparency</p>
+            </Link>
+            <Link href="/all-tools/jpg-to-webp" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to WebP Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG to modern WebP format</p>
+            </Link>
+            <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert WebP to universally compatible JPG</p>
+            </Link>
+          </div>
+        </div>
+      </section>
       </main>
       <Footer />
     </>

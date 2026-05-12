@@ -178,6 +178,197 @@ export default function PngToAvifPage() {
             </div>
           </div>
         </div>
+
+      {/* How To Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Convert PNG to AVIF</h2>
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">1</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Upload Your PNG File</h3>
+                <p className="text-gray-600 mt-2">Click or drag and drop your PNG image. Transparency will be preserved in the AVIF format.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">2</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Select Quality Level</h3>
+                <p className="text-gray-600 mt-2">Set the quality (60-95%) to balance between file size and image quality.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">3</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Start Conversion</h3>
+                <p className="text-gray-600 mt-2">Click "Convert to AVIF" to instantly transform your PNG using advanced compression algorithms.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">4</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Download Your File</h3>
+                <p className="text-gray-600 mt-2">Download the converted AVIF file instantly. Free, secure, and no signup required.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Convert PNG to AVIF?</h2>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Significantly Smaller Files</h3>
+                <p className="text-gray-600 text-sm">AVIF provides 40-60% better compression than PNG while preserving superior transparency and quality.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Full Transparency Support</h3>
+                <p className="text-gray-600 text-sm">AVIF preserves PNG transparency perfectly while using far fewer bytes, ideal for graphics and logos.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Better Performance</h3>
+                <p className="text-gray-600 text-sm">Dramatically faster page loads, improved SEO rankings, and superior user experience across all devices.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will PNG transparency be preserved?</h3>
+              <p className="text-gray-700">Yes, absolutely. AVIF fully supports alpha channel transparency. If your PNG has a transparent background, it will be perfectly preserved in the AVIF file.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than PNG?</h3>
+              <p className="text-gray-700">AVIF files are typically 40-60% smaller than PNG files while maintaining the same transparency and image quality.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF supported by modern browsers?</h3>
+              <p className="text-gray-700">AVIF is supported by Chrome 85+, Firefox 93+, and Safari 16+. For older browsers, use PNG as a fallback with HTML picture tags.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is this suitable for web graphics and logos?</h3>
+              <p className="text-gray-700">Absolutely! AVIF is perfect for logos, icons, and web graphics. It provides excellent compression while preserving transparency and quality.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my data kept private?</h3>
+              <p className="text-gray-700">Yes, complete privacy guaranteed. All conversions happen in your browser. Your PNG files never leave your device and no data is stored.</p>
+            </div>
+            <div className="pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple files?</h3>
+              <p className="text-gray-700">Our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files one after another.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* JSON-LD FAQ Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Will PNG transparency be preserved?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, absolutely. AVIF fully supports alpha channel transparency. If your PNG has a transparent background, it will be perfectly preserved in the AVIF file."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How much smaller is AVIF than PNG?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "AVIF files are typically 40-60% smaller than PNG files while maintaining the same transparency and image quality."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is AVIF supported by modern browsers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "AVIF is supported by Chrome 85+, Firefox 93+, and Safari 16+. For older browsers, use PNG as a fallback with HTML picture tags."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is this suitable for web graphics and logos?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Absolutely! AVIF is perfect for logos, icons, and web graphics. It provides excellent compression while preserving transparency and quality."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is my data kept private?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, complete privacy guaranteed. All conversions happen in your browser. Your PNG files never leave your device and no data is stored."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I batch convert multiple files?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files one after another."
+              }
+            }
+          ]
+        })}
+      </script>
+
+      {/* Related Tools */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link href="/all-tools/jpg-to-avif" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to AVIF Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG to next-generation AVIF format</p>
+            </Link>
+            <Link href="/all-tools/png-to-webp" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to WebP Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert PNG to modern WebP format</p>
+            </Link>
+            <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+            </Link>
+            <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert PNG to JPG without transparency</p>
+            </Link>
+          </div>
+        </div>
+      </section>
       </main>
       <Footer />
     </>

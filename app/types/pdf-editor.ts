@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PDF Editor Types and Interfaces
  * Defines the complete data model for the PDF editing system
  */
@@ -12,7 +12,7 @@ export type DrawingType = 'pen' | 'highlighter' | 'strikethrough' | 'underline';
 // Edit object interface - represents any edit/annotation on a PDF
 export interface PdfEdit {
   id: string;
-  type: 'text' | 'image' | 'shape' | 'whiteout' | 'highlight' | 'signature' | 'drawing' | 'link';
+  type: 'text' | 'image' | 'shape' | 'whiteout' | 'highlight' | 'signature' | 'drawing' | 'link' | 'form';
   pageNumber: number;
   
   // Position and dimensions

@@ -25,7 +25,7 @@ interface Props {
   currentPage: number;
   totalPages: number;
   zoom: number;
-  activeTool: string;
+  activeTool: any;
   canUndo: boolean;
   canRedo: boolean;
   onUndo?: () => void;
@@ -34,7 +34,7 @@ interface Props {
   onZoomOut?: () => void;
   onPrevPage?: () => void;
   onNextPage?: () => void;
-  onToolSelect?: (tool: string) => void;
+  onToolSelect?: (tool: any) => void;
   onSave?: () => void;
   onExtractText?: () => void;
   isExtractingText?: boolean;

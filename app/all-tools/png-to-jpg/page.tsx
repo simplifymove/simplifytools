@@ -284,10 +284,194 @@ export default function PngToJpgPage() {
         </motion.div>
       </motion.div>
     </div>
-  </main>
-  <Footer />
-  </>
-);
+
+    {/* How To Section */}
+    <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Convert PNG to JPG</h2>
+        <div className="space-y-4">
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">1</div>
+            <div><p className="text-gray-700"><strong>Upload your PNG file:</strong> Click the upload area and select your PNG image</p></div>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">2</div>
+            <div><p className="text-gray-700"><strong>Adjust quality slider (optional):</strong> Choose your desired quality level from 10% to 100%</p></div>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
+            <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> The tool will process your image instantly</p></div>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
+            <div><p className="text-gray-700"><strong>Download your JPG:</strong> Click the download button to save your file</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Use Cases Section */}
+    <div className="py-12 px-4 md:px-8 bg-gray-50">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">When to Convert PNG to JPG</h2>
+        <ul className="space-y-3 text-gray-700">
+          <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Compressing PNG images for faster website loading</li>
+          <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Reducing storage space for photo backups and archives</li>
+          <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Preparing images for universal compatibility across devices</li>
+          <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Removing transparency when not needed (solid background)</li>
+          <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Sharing photos on social media with smaller file sizes</li>
+          <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Converting graphics-based PNGs to photos for printing</li>
+        </ul>
+      </div>
+    </div>
+
+    {/* FAQ Section */}
+    <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+        <div className="space-y-4">
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              What happens to transparency when converting PNG to JPG?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">JPG doesn't support transparency. Our converter fills transparent areas with white by default. You can upload a background color if needed.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              What quality setting should I use?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">For most use cases, 85-90% quality provides excellent results with good file size reduction. For web use, 75% is often sufficient. Increase to 95%+ only for professional printing.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              How much smaller will my file be?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">File size reduction depends on your image content. Typically, JPG files are 30-70% smaller than PNG files. Graphics with solid colors may compress less than photos.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              Are my files stored or shared?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">No. Conversion happens entirely in your browser. Files are never uploaded to our servers and are automatically deleted after download.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              Can I convert multiple PNG files at once?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">Currently, this tool processes one image at a time. For batch conversion of multiple files, check out our Batch Convert Images tool.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              Is this converter really free?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">Yes, completely free with no limits. No signup required, no hidden costs, no watermarks on your converted images.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    {/* FAQ Schema */}
+    <script type="application/ld+json">{JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What happens to transparency when converting PNG to JPG?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "JPG doesn't support transparency. Our converter fills transparent areas with white by default. You can upload a background color if needed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What quality setting should I use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For most use cases, 85-90% quality provides excellent results with good file size reduction. For web use, 75% is often sufficient. Increase to 95%+ only for professional printing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much smaller will my file be?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "File size reduction depends on your image content. Typically, JPG files are 30-70% smaller than PNG files. Graphics with solid colors may compress less than photos."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are my files stored or shared?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Conversion happens entirely in your browser. Files are never uploaded to our servers and are automatically deleted after download."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I convert multiple PNG files at once?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Currently, this tool processes one image at a time. For batch conversion of multiple files, check out our Batch Convert Images tool."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is this converter really free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, completely free with no limits. No signup required, no hidden costs, no watermarks on your converted images."
+          }
+        }
+      ]
+    })}</script>
+
+    {/* Related Tools */}
+    <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Tools</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Link href="/all-tools/jpg-to-png" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <span className="text-orange-600 font-bold">→</span>
+            <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Add transparency support</p></div>
+          </Link>
+          <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <span className="text-orange-600 font-bold">→</span>
+            <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce any image size</p></div>
+          </Link>
+          <Link href="/all-tools/webp-to-jpg" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <span className="text-orange-600 font-bold">→</span>
+            <div><span className="text-gray-900 font-medium hover:text-orange-600">WebP to JPG Converter</span><p className="text-xs text-gray-600">Convert modern WebP format</p></div>
+          </Link>
+          <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <span className="text-orange-600 font-bold">→</span>
+            <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Resizer</span><p className="text-xs text-gray-600">Change image dimensions</p></div>
+          </Link>
+        </div>
+      </div>
+    </div>
+      </main>
+
+      <Footer />
+    </>
+  );
 }
 
 

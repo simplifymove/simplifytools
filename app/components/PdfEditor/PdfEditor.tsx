@@ -373,7 +373,7 @@ export default function PdfEditor({ file, onSave }: Props) {
         onZoomOut={handleZoomOut}
         onPrevPage={handlePrevPage}
         onNextPage={handleNextPage}
-        onToolSelect={(tool) => setState((prev) => ({ ...prev, activeTool: tool }))}
+        onToolSelect={(tool: any) => setState((prev) => ({ ...prev, activeTool: tool }))}
         onSave={handleSave}
         onExtractText={handleExtractText}
         isExtractingText={isExtractingText}

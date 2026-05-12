@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function LinkTool({ isActive, edit, onUpdate }: Props) {
-  const [url, setUrl] = useState(edit?.url || '');
+  const [url, setUrl] = useState(edit?.linkTarget || '');
   const [linkType, setLinkType] = useState<'external' | 'internal'>(
     edit?.linkType || 'external'
   );
@@ -19,7 +19,7 @@ export default function LinkTool({ isActive, edit, onUpdate }: Props) {
 
   const handleUrlChange = (newUrl: string) => {
     setUrl(newUrl);
-    onUpdate?.({ url: newUrl });
+    onUpdate?.({ linkTarget: newUrl });
   };
 
   const handleLinkTypeChange = (type: 'external' | 'internal') => {
@@ -135,3 +135,4 @@ export default function LinkTool({ isActive, edit, onUpdate }: Props) {
 
   return null;
 }
+

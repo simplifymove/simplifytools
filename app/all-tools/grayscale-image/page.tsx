@@ -191,6 +191,146 @@ export default function GrayscaleImagePage() {
         </div>
       </div>
     </main>
+
+    {/* How To Section */}
+    <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Convert Images to Grayscale</h2>
+        <div className="space-y-4">
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+            <div><p className="text-gray-700"><strong>Upload your image:</strong> Select any photo from your computer</p></div>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+            <div><p className="text-gray-700"><strong>Preview the image:</strong> Your photo appears in the preview area</p></div>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+            <div><p className="text-gray-700"><strong>Click Convert to Grayscale:</strong> Instantly convert to black and white</p></div>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-sm">4</div>
+            <div><p className="text-gray-700"><strong>Download your result:</strong> Save the grayscale image</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Benefits Section */}
+    <div className="py-12 px-4 md:px-8 bg-gray-50">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Grayscale Conversion?</h2>
+        <ul className="space-y-3 text-gray-700">
+          <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Classic aesthetic - black and white photos have timeless elegance and emotional impact</li>
+          <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Professional printing - grayscale reduces printing costs and works on any printer</li>
+          <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Focus on details - remove color distractions to emphasize composition and texture</li>
+          <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Reduce file sizes - grayscale images are smaller for web and archival</li>
+          <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Artistic expression - create dramatic moods with black and white photography</li>
+        </ul>
+      </div>
+    </div>
+
+    {/* FAQ Section */}
+    <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+        <div className="space-y-4">
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              What does grayscale conversion do exactly?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">Grayscale conversion removes all color information, creating a black and white image with shades of gray based on brightness values.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              Is grayscale the same as black and white?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">Grayscale includes shades of gray for smooth tones, while true black and white only has pure black and pure white. Our tool creates grayscale.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              What image formats are supported?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">All formats: JPG, PNG, WebP, GIF, BMP. Output is JPG format for optimal compatibility.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              Can I convert back from grayscale to color?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">Not automatically. Grayscale removes color data permanently. Use your original image to revert, or use colorization tools for artistic effects.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              Does grayscale reduce image quality?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">No, it preserves image quality and detail. Only color information is removed, brightness and contrast remain intact.</p>
+          </details>
+
+          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+              Is grayscale conversion completely free?
+              <span className="text-gray-500 group-open:hidden">+</span>
+              <span className="text-gray-500 hidden group-open:inline">−</span>
+            </summary>
+            <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Convert unlimited images with no signup or hidden costs.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <script type="application/ld+json">{JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What does grayscale conversion do exactly?", "acceptedAnswer": { "@type": "Answer", "text": "Grayscale conversion removes color and creates black and white with shades of gray." } },
+        { "@type": "Question", "name": "Is grayscale the same as black and white?", "acceptedAnswer": { "@type": "Answer", "text": "Grayscale includes shades of gray, while black and white is only pure black and white." } },
+        { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is JPG." } },
+        { "@type": "Question", "name": "Can I convert back from grayscale to color?", "acceptedAnswer": { "@type": "Answer", "text": "Not automatically. Use your original image to revert, or use colorization tools." } },
+        { "@type": "Question", "name": "Does grayscale reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, it preserves quality. Only color information is removed." } },
+        { "@type": "Question", "name": "Is grayscale conversion completely free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+      ]
+    })}</script>
+
+    {/* Related Tools */}
+    <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Effects</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Link href="/all-tools/colorize-photo" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-500 hover:shadow-md transition">
+            <span className="text-gray-600 font-bold">→</span>
+            <div><span className="text-gray-900 font-medium hover:text-gray-600">Colorize Photo</span><p className="text-xs text-gray-600">Add color to grayscale images</p></div>
+          </Link>
+          <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-500 hover:shadow-md transition">
+            <span className="text-gray-600 font-bold">→</span>
+            <div><span className="text-gray-900 font-medium hover:text-gray-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size</p></div>
+          </Link>
+          <Link href="/all-tools/rotate-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-500 hover:shadow-md transition">
+            <span className="text-gray-600 font-bold">→</span>
+            <div><span className="text-gray-900 font-medium hover:text-gray-600">Rotate Image</span><p className="text-xs text-gray-600">Rotate any angle</p></div>
+          </Link>
+          <Link href="/all-tools/crop-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-500 hover:shadow-md transition">
+            <span className="text-gray-600 font-bold">→</span>
+            <div><span className="text-gray-900 font-medium hover:text-gray-600">Crop Image</span><p className="text-xs text-gray-600">Trim unwanted areas</p></div>
+          </Link>
+        </div>
+      </div>
+    </div>
+
     <Footer />
     </>
   );

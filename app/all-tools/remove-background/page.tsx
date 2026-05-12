@@ -372,7 +372,179 @@ export default function RemoveBackgroundPage() {
           </div>
         </div>
       </main>
-      {/* FOOTER */}
+
+      {/* How It Works Section */}
+      <section className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Remove Background from Images</h2>
+          <div className="space-y-4">
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">1</div>
+              <div><p className="text-gray-700"><strong>Upload your image:</strong> Select any JPG, PNG, or WebP image from your computer</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">2</div>
+              <div><p className="text-gray-700"><strong>Choose your output format:</strong> PNG for transparency, WebP for modern web, or JPEG for solid background</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
+              <div><p className="text-gray-700"><strong>Optional: Enable High Quality Mode</strong> for better edge detection and cleaner results</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
+              <div><p className="text-gray-700"><strong>Click Remove Background:</strong> Our AI instantly processes and removes the background</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">5</div>
+              <div><p className="text-gray-700"><strong>Download your result:</strong> Save your image with transparent or custom background</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                How accurate is the AI background removal?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Our AI is highly accurate for most images, especially with distinct backgrounds. For complex hair, fur, or intricate edges, enabling High Quality Mode provides better results. Some manual touch-ups may be needed for very fine details.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What image formats are supported?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">We support JPG, PNG, WebP, and most common image formats. Maximum file size is 50MB. For best results, use clear, well-lit images with distinct subject-background contrast.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Can I edit the result after download?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes! Downloaded PNG files with transparent backgrounds can be edited in any image editor like Photoshop, GIMP, or even Paint. You can add custom backgrounds or make further adjustments.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Are my images stored on your servers?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No. Processing happens on our servers for AI analysis, but images are never stored or viewed by anyone. They're automatically deleted after processing completes.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                How long does background removal take?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Most images process in 2-10 seconds. High Quality Mode may take 15-30 seconds. Processing time depends on image size and complexity. You'll see the duration after processing completes.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Do I need to sign up or pay to use this tool?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No signup or payment required. Our background remover is completely free, with no limits on the number of images you can process.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Schema */}
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How accurate is the AI background removal?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Our AI is highly accurate for most images, especially with distinct backgrounds. For complex hair, fur, or intricate edges, enabling High Quality Mode provides better results."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What image formats are supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "We support JPG, PNG, WebP, and most common image formats. Maximum file size is 50MB."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I edit the result after download?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, downloaded PNG files can be edited in any image editor. You can add custom backgrounds or make further adjustments."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my images stored on your servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Images are automatically deleted after processing completes. They're not stored or viewed by anyone."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How long does background removal take?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Most images process in 2-10 seconds. High Quality Mode may take 15-30 seconds depending on image size and complexity."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need to sign up or pay to use this tool?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No signup or payment required. Completely free with no limits on the number of images."
+            }
+          }
+        ]
+      })}</script>
+
+      {/* Related Tools */}
+      <section className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Tools</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size after removal</p></div>
+            </Link>
+            <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Resizer</span><p className="text-xs text-gray-600">Adjust image dimensions</p></div>
+            </Link>
+            <Link href="/all-tools/crop-image" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Crop Image</span><p className="text-xs text-gray-600">Remove unwanted areas</p></div>
+            </Link>
+            <Link href="/all-tools/background-color-changer" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Background Color Changer</span><p className="text-xs text-gray-600">Change background color</p></div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">

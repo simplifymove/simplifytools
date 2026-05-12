@@ -176,6 +176,197 @@ export default function TiffToJpgPage() {
           </div>
         </div>
       </div>
+
+      {/* How To Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Convert TIFF to JPG</h2>
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">1</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Upload Your TIFF Image</h3>
+                <p className="text-gray-600 mt-2">Click the upload area or drag and drop your TIFF file to get started.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">2</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Adjust Quality Settings</h3>
+                <p className="text-gray-600 mt-2">Use the quality slider to find the perfect balance between file size and image quality.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">3</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Convert to JPG</h3>
+                <p className="text-gray-600 mt-2">Click the "Convert to JPG" button to start the conversion process.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">4</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Download Your JPG</h3>
+                <p className="text-gray-600 mt-2">Once conversion is complete, download your JPG file instantly. No signup required.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Convert TIFF to JPG?</h2>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Smaller File Size</h3>
+                <p className="text-gray-600 text-sm">JPG compression significantly reduces file size compared to uncompressed TIFF, making files easier to share and store.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Universal Compatibility</h3>
+                <p className="text-gray-600 text-sm">JPG is supported by all browsers, devices, and applications. TIFF files are less commonly supported, especially on the web.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Web-Ready Format</h3>
+                <p className="text-gray-600 text-sm">JPG is optimized for web use, providing excellent quality at smaller sizes. Perfect for websites, blogs, and social media.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is TIFF format?</h3>
+              <p className="text-gray-700">TIFF (Tagged Image File Format) is a lossless image format commonly used for professional photography and scanning. It stores uncompressed or minimally compressed image data, resulting in large file sizes but excellent quality.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why is JPG better for web use?</h3>
+              <p className="text-gray-700">JPG uses lossy compression, which significantly reduces file size while maintaining acceptable image quality. This makes it ideal for web use where load times matter. TIFF files are much larger and impractical for online use.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will I lose quality converting TIFF to JPG?</h3>
+              <p className="text-gray-700">Our converter allows you to adjust quality settings to minimize quality loss. Higher quality settings (80-100%) provide excellent results with minimal visible difference from the original.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple TIFF files?</h3>
+              <p className="text-gray-700">Currently, our converter handles one file at a time. However, the conversion is very fast, so you can quickly process multiple files by uploading them sequentially.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What TIFF compression types are supported?</h3>
+              <p className="text-gray-700">Our converter supports all common TIFF compression types including uncompressed, LZW, and JPEG compression. Most TIFF files will convert without any issues.</p>
+            </div>
+            <div className="pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
+              <p className="text-gray-700">Yes, all conversions happen locally in your browser. Your TIFF images are never uploaded to any server and remain completely private. No data is stored after conversion.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* JSON-LD FAQ Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is TIFF format?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "TIFF (Tagged Image File Format) is a lossless image format commonly used for professional photography and scanning. It stores uncompressed or minimally compressed image data, resulting in large file sizes but excellent quality."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Why is JPG better for web use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "JPG uses lossy compression, which significantly reduces file size while maintaining acceptable image quality. This makes it ideal for web use where load times matter. TIFF files are much larger and impractical for online use."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Will I lose quality converting TIFF to JPG?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Our converter allows you to adjust quality settings to minimize quality loss. Higher quality settings (80-100%) provide excellent results with minimal visible difference from the original."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I batch convert multiple TIFF files?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Currently, our converter handles one file at a time. However, the conversion is very fast, so you can quickly process multiple files by uploading them sequentially."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What TIFF compression types are supported?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Our converter supports all common TIFF compression types including uncompressed, LZW, and JPEG compression. Most TIFF files will convert without any issues."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is the conversion process secure?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, all conversions happen locally in your browser. Your TIFF images are never uploaded to any server and remain completely private. No data is stored after conversion."
+              }
+            }
+          ]
+        })}
+      </script>
+
+      {/* Related Tools */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency support</p>
+            </Link>
+            <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert PNG to JPG with quality control</p>
+            </Link>
+            <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+            </Link>
+            <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert modern WebP to JPG</p>
+            </Link>
+          </div>
+        </div>
+      </section>
       </main>
       <Footer />
     </>

@@ -2,16 +2,17 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, Loader, ChevronRight, Image } from 'lucide-react';
+import { Download, Loader, ChevronRight, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
+import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 export default function HeicToJpgPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
-  const [quality, setQuality] = useState(90);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileSelect = (selectedFile: File) => {
@@ -48,137 +49,279 @@ export default function HeicToJpgPage() {
   const handleDownload = () => {
     if (!result) return;
     const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `converted-image-${Date.now()}.jpg`;
+    a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
-      {/* Hero Header */}
-      <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
-        <div className="max-w-6xl mx-auto relative z-10">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-white/90 text-sm mb-6">
-            <Link href="/" className="hover:text-white transition">Home</Link>
-            <ChevronRight size={16} />
-            <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
-            <ChevronRight size={16} />
-            <span>HEIC to JPG</span>
-          </div>
-
-          {/* Title Section */}
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-white/20 rounded-lg">
-              <Image size={32} className="text-white" />
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-br from-cyan-50 to-blue-100 flex flex-col">
+        {/* Hero Section */}
+        <div className="relative bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-700 py-16 px-4 md:px-8 overflow-hidden">
+          <div className="max-w-6xl mx-auto relative z-10 w-full">
+            <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
+              <Link href="/" className="hover:text-white transition">Home</Link>
+              <ChevronRight size={16} />
+              <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
+              <ChevronRight size={16} />
+              <span>HEIC to JPG</span>
             </div>
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">HEIC to JPG Converter</h1>
-              <p className="text-lg text-white/90">Convert HEIC images to JPG format. Adjust quality settings to balance file size and image clarity.</p>
-            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              🖼️ HEIC to JPG Converter
+            </h1>
+            <p className="text-lg text-white/90 max-w-2xl">
+              Convert HEIC images from your iPhone to JPG format instantly. Free, fast, and no uploads to servers.
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 py-12 px-4 md:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Upload Section - Left (2 cols) */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload HEIC Image</h2>
-                <ImageUploader
-                  onFileSelect={handleFileSelect}
-                  preview={preview}
-                  onClearPreview={handleClearPreview}
-                  accept="image/heic,image/heif"
-                />
-                {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600">{error}</p>
+        {/* Upload Section */}
+        <section className="py-12 px-4 md:px-8 flex-1">
+          <div className="max-w-2xl mx-auto">
+            <ImageUploader onFileSelect={handleFileSelect} accept=".heic,.heif,image/heic,image/heif" preview={preview} onClearPreview={handleClearPreview} />
+
+            {preview && (
+              <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+                <div className="space-y-4">
+                  <div className="relative inline-block w-full">
+                    <img src={preview} alt="Preview" className="w-full rounded-lg max-h-96 object-contain" />
                   </div>
-                )}
-              </div>
-            </div>
 
-            {/* Controls - Right (sticky sidebar) */}
-            <div>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-4">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Conversion Settings</h3>
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-700 text-sm">{error}</p>
+                    </div>
+                  )}
 
-                {/* Quality Slider */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <label className="text-sm font-medium text-gray-700">Quality</label>
-                    <span className="text-sm font-semibold text-orange-600">{quality}%</span>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={handleConvert}
+                      disabled={processing}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader size={20} className="animate-spin" />
+                          Converting...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle size={20} />
+                          Convert to JPG
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleClearPreview}
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg transition"
+                    >
+                      Clear
+                    </button>
                   </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="100"
-                    value={quality}
-                    onChange={(e) => setQuality(parseInt(e.target.value))}
-                    disabled={processing}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">Higher quality = larger file size</p>
-                </div>
 
-                {/* Image Preview */}
-                <div className="mb-6">
-                  {result ? (
-                    <div className="space-y-4">
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p className="text-sm text-green-800 font-medium mb-3">✓ Conversion Complete!</p>
+                  {result && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-green-700 font-semibold">✓ Conversion complete!</span>
                         <button
                           onClick={handleDownload}
-                          className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
+                          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition flex items-center gap-2"
                         >
-                          <Download size={18} />
+                          <Download size={20} />
                           Download JPG
                         </button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
-                      <Image size={32} className="mx-auto text-orange-400 mb-3" />
-                      <p className="text-sm text-orange-800">Preview will appear here</p>
-                    </div>
                   )}
                 </div>
+              </div>
+            )}
+          </div>
+        </section>
 
-                {/* Convert Button */}
-                <button
-                  onClick={handleConvert}
-                  disabled={!file || processing}
-                  className="w-full px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
-                >
-                  {processing ? (
-                    <>
-                      <Loader size={18} className="animate-spin" />
-                      Converting...
-                    </>
-                  ) : (
-                    'Convert to JPG'
-                  )}
-                </button>
+        {/* How To Guide */}
+        <section className="py-12 px-4 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Convert HEIC to JPG</h2>
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Upload Your HEIC File</h3>
+                  <p className="text-gray-600 mt-2">Click the upload area or drag your HEIC image file from your device. HEIC is Apple's modern image format commonly used on iPhones.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Preview Your Image</h3>
+                  <p className="text-gray-600 mt-2">Once uploaded, you'll see a preview of your image. Make sure it's the correct file before proceeding to conversion.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Click Convert to JPG</h3>
+                  <p className="text-gray-600 mt-2">Press the "Convert to JPG" button. The conversion happens instantly in your browser with no server upload.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Download Your JPG</h3>
+                  <p className="text-gray-600 mt-2">Once converted, click "Download JPG" to save your image. JPG format is compatible with all devices and applications.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">5</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Share or Use Your JPG</h3>
+                  <p className="text-gray-600 mt-2">Your converted JPG image is ready to use. Share it anywhere, upload to websites, or edit it with any image editor.</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </main>
+        </section>
+
+        {/* Benefits Section */}
+        <section className="py-12 px-4 bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Convert HEIC to JPG?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                  <Image className="text-blue-600" size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Universal Compatibility</h3>
+                <p className="text-gray-600">JPG is supported on all devices, browsers, and applications. HEIC is relatively new and not supported everywhere.</p>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                  <CheckCircle className="text-blue-600" size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Easy Sharing</h3>
+                <p className="text-gray-600">Share your photos on social media, email, or upload to websites without compatibility issues. JPG works everywhere.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-12 px-4 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+            <div className="space-y-4">
+              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
+                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
+                  <span>What is HEIC format?</span>
+                  <span className="group-open:rotate-180 transition">▼</span>
+                </summary>
+                <p className="text-gray-600 mt-4">HEIC (High Efficiency Image Container) is Apple's modern image format used by iPhones and iPads. It provides better compression than JPG while maintaining quality, but it's not universally supported like JPG.</p>
+              </details>
+              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
+                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
+                  <span>Why does my iPhone use HEIC?</span>
+                  <span className="group-open:rotate-180 transition">▼</span>
+                </summary>
+                <p className="text-gray-600 mt-4">Apple chose HEIC for better compression and quality. It reduces file size by up to 50% compared to JPG. However, this causes compatibility issues on non-Apple devices and platforms.</p>
+              </details>
+              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
+                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
+                  <span>Will the image quality decrease?</span>
+                  <span className="group-open:rotate-180 transition">▼</span>
+                </summary>
+                <p className="text-gray-600 mt-4">Not significantly. JPG is also a high-quality format. The conversion maintains excellent visual quality. Some minimal difference might occur due to different compression methods, but it's imperceptible to the human eye.</p>
+              </details>
+              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
+                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
+                  <span>Can I convert multiple HEIC files at once?</span>
+                  <span className="group-open:rotate-180 transition">▼</span>
+                </summary>
+                <p className="text-gray-600 mt-4">Our converter processes one file at a time. You can quickly convert multiple files by uploading and converting them one after another. Each conversion takes just seconds.</p>
+              </details>
+              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
+                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
+                  <span>Is my image data secure?</span>
+                  <span className="group-open:rotate-180 transition">▼</span>
+                </summary>
+                <p className="text-gray-600 mt-4">Yes! All conversion happens locally in your browser. Your images are never uploaded to our servers or stored anywhere. Your privacy is completely protected.</p>
+              </details>
+              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
+                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
+                  <span>What's the file size limit?</span>
+                  <span className="group-open:rotate-180 transition">▼</span>
+                </summary>
+                <p className="text-gray-600 mt-4">You can convert most image files without limits. For very large files (over 50MB), we recommend compressing them first with our image compression tool, then converting to JPG.</p>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        {/* JSON-LD FAQ Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is HEIC format?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "HEIC (High Efficiency Image Container) is Apple's modern image format used by iPhones and iPads. It provides better compression than JPG while maintaining quality, but it's not universally supported like JPG."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Why does my iPhone use HEIC?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Apple chose HEIC for better compression and quality. It reduces file size by up to 50% compared to JPG. However, this causes compatibility issues on non-Apple devices and platforms."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Will the image quality decrease?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Not significantly. JPG is also a high-quality format. The conversion maintains excellent visual quality. Some minimal difference might occur due to different compression methods, but it's imperceptible to the human eye."
+                }
+              }
+            ]
+          })}
+        </script>
+
+        {/* Related Tools */}
+        <section className="py-12 px-4 bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Tools</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
+                <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency</p>
+              </Link>
+              <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>
+                <p className="text-gray-600 text-sm mt-2">Convert PNG to JPG format</p>
+              </Link>
+              <Link href="/all-tools/jpg-to-webp" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to WebP Converter</h3>
+                <p className="text-gray-600 text-sm mt-2">Convert JPG to modern WebP format</p>
+              </Link>
+              <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
+                <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <Footer />
+      </main>
+    </>
   );
 }
-
-
-
-
-
-
-

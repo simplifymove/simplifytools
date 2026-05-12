@@ -449,7 +449,7 @@ const PDFCanvasComponent = function PDFCanvas({
       });
 
       wrapper.appendChild(overlay);
-      textOverlayContainerRef.current.appendChild(wrapper);
+      textOverlayContainerRef.current?.appendChild(wrapper);
     });
   };
 
@@ -969,7 +969,7 @@ const PDFCanvasComponent = function PDFCanvas({
           opacity: 1,
           createdAt: Date.now(),
           updatedAt: Date.now(),
-          drawingType: drawingType,
+          drawingType: drawingType as any,
           strokeColor: strokeColor,
           strokeWidth: strokeWidth,
           points: drawingPathRef.current,
@@ -998,7 +998,7 @@ const PDFCanvasComponent = function PDFCanvas({
           ...(activeTool === 'whiteout' && {}),
           ...(activeTool === 'highlight' && { fillColor: highlightColor }),
           ...(activeTool === 'shape' && {
-            shapeType: shapeType,
+            shapeType: shapeType as any,
             strokeColor: strokeColor,
             strokeWidth: strokeWidth,
           }),

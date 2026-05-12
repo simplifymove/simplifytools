@@ -267,6 +267,121 @@ export default function AddBorderPage() {
           </div>
         </div>
       </main>
+
+      {/* Benefits Section */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Add Borders to Images?</h2>
+          <ul className="space-y-3 text-gray-700">
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Frame your photos - add elegant borders to highlight and separate images</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Professional presentations - polished borders enhance slide shows and portfolios</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Social media appeal - eye-catching borders increase engagement and visibility</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Custom colors - match your brand with unlimited color choices</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Instant results - add borders in seconds without design software</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What are the border width limits?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">You can add borders from 5px to 100px. Choose based on your image size and preference.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Can I use custom border colors?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes, use the color picker to choose any color you want. Supports full RGB spectrum.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What file formats are supported?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">All formats: JPG, PNG, WebP, GIF, BMP. Output is always PNG.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Can I add borders only on specific sides?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">This tool adds borders on all sides equally. For partial borders, use advanced image editors.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Does adding borders reduce image quality?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No, adding borders doesn't affect the original image quality - only adds space around it.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Is this border tool completely free?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Add borders to unlimited images with no signup.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "What are the border width limits?", "acceptedAnswer": { "@type": "Answer", "text": "You can add borders from 5px to 100px." } },
+          { "@type": "Question", "name": "Can I use custom border colors?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, use the color picker for any color in the RGB spectrum." } },
+          { "@type": "Question", "name": "What file formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is PNG." } },
+          { "@type": "Question", "name": "Can I add borders only on specific sides?", "acceptedAnswer": { "@type": "Answer", "text": "This tool adds borders on all sides equally." } },
+          { "@type": "Question", "name": "Does adding borders reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, adding borders doesn't affect original image quality." } },
+          { "@type": "Question", "name": "Is this border tool completely free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+        ]
+      })}</script>
+
+      {/* Related Tools */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Editors</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/all-tools/crop-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Crop Image</span><p className="text-xs text-gray-600">Trim unwanted areas</p></div>
+            </Link>
+            <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Resize Image</span><p className="text-xs text-gray-600">Change dimensions</p></div>
+            </Link>
+            <Link href="/all-tools/rotate-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Rotate Image</span><p className="text-xs text-gray-600">Rotate any angle</p></div>
+            </Link>
+            <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size</p></div>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <Footer />
 
       {/* Hidden Canvas */}

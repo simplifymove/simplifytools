@@ -264,6 +264,146 @@ export default function FlipImagePage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
+
+      {/* How To Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Flip Images</h2>
+          <div className="space-y-4">
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+              <div><p className="text-gray-700"><strong>Upload your image:</strong> Select a photo from your computer</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+              <div><p className="text-gray-700"><strong>Choose flip direction:</strong> Check Horizontal, Vertical, or both options</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+              <div><p className="text-gray-700"><strong>Click Flip Image:</strong> Process instantly, preview updates in real-time</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">4</div>
+              <div><p className="text-gray-700"><strong>Download your result:</strong> Save the flipped image as PNG</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Benefits Section */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Flip Images?</h2>
+          <ul className="space-y-3 text-gray-700">
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Mirror selfies - create the original camera view instead of mirrored front-camera photos</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Fix text direction - reverse text images for clarity or specific layouts</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Perfect symmetry - create mirror images for design and artistic work</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Logo adjustments - flip logos and graphics to match design requirements</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> No quality loss - flipping preserves full image resolution and clarity</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What's the difference between horizontal and vertical flip?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Horizontal flips the image left-right (mirror), vertical flips it up-down. Combine both for a 180° rotation.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Can I flip specific parts of an image?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No, this tool flips the entire image. For partial flips, use an advanced image editor.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What image formats are supported?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">All formats: JPG, PNG, WebP, GIF, BMP. Output is always PNG format.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Is there a file size limit?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No size limits. Flip any image no matter how large. Processing happens locally in your browser.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Does flipping reduce image quality?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No, flipping is lossless. Your image quality remains exactly the same.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Is the flip image tool free to use?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Flip unlimited images, no signup required.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "What's the difference between horizontal and vertical flip?", "acceptedAnswer": { "@type": "Answer", "text": "Horizontal flips left-right, vertical flips up-down. Combine both for 180° rotation." } },
+          { "@type": "Question", "name": "Can I flip specific parts of an image?", "acceptedAnswer": { "@type": "Answer", "text": "No, this tool flips the entire image." } },
+          { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is PNG." } },
+          { "@type": "Question", "name": "Is there a file size limit?", "acceptedAnswer": { "@type": "Answer", "text": "No size limits. Processing happens locally." } },
+          { "@type": "Question", "name": "Does flipping reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, flipping is lossless and preserves quality." } },
+          { "@type": "Question", "name": "Is the flip image tool free to use?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+        ]
+      })}</script>
+
+      {/* Related Tools */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Editors</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/all-tools/rotate-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Rotate Image</span><p className="text-xs text-gray-600">Rotate any angle</p></div>
+            </Link>
+            <Link href="/all-tools/crop-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Crop Image</span><p className="text-xs text-gray-600">Trim unwanted areas</p></div>
+            </Link>
+            <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Resize Image</span><p className="text-xs text-gray-600">Change dimensions</p></div>
+            </Link>
+            <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size</p></div>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <Footer />
     </div>
   );

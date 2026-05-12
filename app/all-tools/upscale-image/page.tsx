@@ -529,10 +529,161 @@ export default function UpscaleImagePage() {
           </div>
         </div>
       </main>
+
+      {/* How to Use Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Upscale an Image</h2>
+          <ol className="space-y-4 text-gray-700">
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">1.</span>
+              <span><strong>Upload Image:</strong> Select a JPG, PNG, WebP, or other image format. Supports photos, artwork, and illustrations.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">2.</span>
+              <span><strong>Choose Scale:</strong> Select 2×, 3×, or 4× upscaling based on your quality vs. size preference.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">3.</span>
+              <span><strong>Select Image Type:</strong> Choose auto-detect, photo, or anime mode for optimized enhancement.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">4.</span>
+              <span><strong>Optional Enhancement:</strong> Enable face enhancement for better facial detail sharpening.</span>
+            </li>
+            <li className="flex gap-4">
+              <span className="text-orange-500 font-bold min-w-8">5.</span>
+              <span><strong>Upscale & Download:</strong> Click "Upscale Now" and download in PNG, WebP, or JPG format.</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      {/* Benefits Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Benefits of Our Upscale Tool</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-ESRGAN AI Technology</h3>
+              <p className="text-gray-700">Advanced neural networks trained to enhance and enlarge images while preserving quality and detail.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Scale Options</h3>
+              <p className="text-gray-700">Choose 2×, 3×, or 4× upscaling. Higher scales provide more detail but larger file sizes.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Smart Image Detection</h3>
+              <p className="text-gray-700">Auto-detect mode optimizes for photos, or manually select photo or anime mode for custom enhancement.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Face Enhancement</h3>
+              <p className="text-gray-700">Optional face enhancement sharpens facial details for portrait photos and improved clarity.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Format Export</h3>
+              <p className="text-gray-700">Export as PNG (lossless), WebP (balanced), or JPG (compressed) based on your needs.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
+              <p className="text-gray-700">No sign-up required. All processing happens securely. Your images are completely private.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between 2×, 3×, and 4× upscaling?</summary>
+              <p className="text-gray-700 mt-2">2× doubles dimensions (fastest, web-friendly), 3× triples dimensions (balanced), and 4× quadruples dimensions (maximum detail). Higher scales take longer and create larger files.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Does upscaling reduce image quality?</summary>
+              <p className="text-gray-700 mt-2">No, Real-ESRGAN AI actually enhances quality by reconstructing detail and sharpness. Results look clearer and more detailed than simply enlarging.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
+              <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), WebP (modern), or JPG (compressed).</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">When should I use photo vs. anime mode?</summary>
+              <p className="text-gray-700 mt-2">Use photo mode for real photographs and illustrations. Use anime mode for anime, manga, or cartoon artwork. Auto-detect works well for mixed content.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
+              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally in your browser or on secure servers. Your images are never stored or shared with third parties.</p>
+            </details>
+            <details className="border-l-4 border-orange-500 pl-4 py-2">
+              <summary className="font-bold text-gray-800 cursor-pointer">Can I use upscaled images commercially?</summary>
+              <p className="text-gray-700 mt-2">Yes, upscaled images can be used for personal or commercial purposes without any restrictions or attribution required.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      {/* Related Tools Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Tools</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Link href="/all-tools/resize-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Resize Image</h3>
+              <p className="text-sm text-gray-600">Scale images to specific dimensions</p>
+            </Link>
+            <Link href="/all-tools/enhance-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Enhance Image</h3>
+              <p className="text-sm text-gray-600">Improve photo quality and clarity</p>
+            </Link>
+            <Link href="/all-tools/compress-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+              <h3 className="font-bold text-gray-800 mb-1">Compress Image</h3>
+              <p className="text-sm text-gray-600">Reduce file size without quality loss</p>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <Footer />
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'AI Image Upscaler - Free Online Image Enlargement Tool',
+        description: 'Upscale images 2×, 3×, or 4× without quality loss using Real-ESRGAN AI technology.',
+        url: 'https://simplifyconvert.com/all-tools/upscale-image',
+        applicationCategory: 'Multimedia',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+        },
+        author: {
+          '@type': 'Organization',
+          name: 'SimplifyConvert',
+          url: 'https://simplifyconvert.com',
+        },
+        datePublished: '2024-01-01',
+        image: 'https://simplifyconvert.com/og-image.jpg',
+        featureList: [
+          '2×, 3×, and 4× upscaling options',
+          'Real-ESRGAN AI technology',
+          'Smart image type detection',
+          'Optional face enhancement',
+          'Multiple output formats (PNG, WebP, JPG)',
+          'No sign-up required',
+          'Privacy-focused local processing',
+        ],
+      })}} />
     </>
   );
 }
+
+
+
 
 
 

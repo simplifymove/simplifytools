@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { PdfEdit } from '@/app/types/pdf-editor';
@@ -385,8 +385,8 @@ export default function PropertiesPanel({ edit, onUpdate }: Props) {
                   <p className="text-xs text-gray-400 mb-1">URL</p>
                   <input
                     type="text"
-                    value={edit.url || ''}
-                    onChange={(e) => onUpdate?.({ url: e.target.value })}
+                    value={edit.linkTarget || ''}
+                    onChange={(e) => onUpdate?.(({ linkTarget: e.target.value }))}
                     placeholder="https://example.com"
                     className="w-full px-2 py-1 text-sm bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
                   />

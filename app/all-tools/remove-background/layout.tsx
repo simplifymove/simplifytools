@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Remove Background - Free Background Remover Tool | SimplifyConvert',
-  description: 'Remove backgrounds from images instantly. Get transparent or custom backgrounds.',
-  keywords: ['remove background', 'background remover', 'image editor', 'free tool'],
+  title: 'Background Remover - AI Remove Image Backgrounds | SimplifyConvert',
+  description: 'Remove image backgrounds instantly using AI. Extract objects perfectly. Free online background remover.',
+  keywords: ['remove background', 'background remover', 'transparent background', 'AI tool', 'image editor', 'free tool', 'background removal'],
   openGraph: {
     type: 'website',
     locale: 'en_US',

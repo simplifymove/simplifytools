@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, Loader, ChevronRight, Image } from 'lucide-react';
+import { Download, Loader, ChevronRight, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
+import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
 
 export default function BmpToPngPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -57,7 +59,9 @@ export default function BmpToPngPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+    <>
+      <HomeHeader />
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
       {/* Hero Header */}
       <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-6xl mx-auto relative z-10">
@@ -153,7 +157,126 @@ export default function BmpToPngPage() {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is BMP format?</h3>
+              <p className="text-gray-700">BMP (Bitmap) is an uncompressed image format that stores image data without compression, resulting in large file sizes. It's commonly used in older Windows systems but is rarely used on the web due to its large file size.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why convert BMP to PNG?</h3>
+              <p className="text-gray-700">PNG format offers several advantages over BMP: it supports transparency, provides lossless compression (reducing file size), and is universally supported by web browsers and modern applications. PNG is ideal for web use, graphics, and images requiring transparency.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the converted image lose quality?</h3>
+              <p className="text-gray-700">No. Our converter uses lossless conversion, meaning the image quality remains identical to the original. PNG's compression is lossless, so you retain all the original image data while reducing file size.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple BMP files at once?</h3>
+              <p className="text-gray-700">Currently, our converter processes one image at a time. However, you can quickly convert multiple files by uploading and converting them individually. Each conversion is fast and takes just seconds.</p>
+            </div>
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What's the file size limit?</h3>
+              <p className="text-gray-700">Most image files can be converted without issues. For very large files (over 50MB), we recommend compressing them first using our image compression tool, then converting to PNG format.</p>
+            </div>
+            <div className="pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my image kept private and secure?</h3>
+              <p className="text-gray-700">Yes, all conversions happen in your browser locally. Your images are never uploaded to our servers or stored anywhere. Your files remain completely private and secure.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* JSON-LD FAQ Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is BMP format?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "BMP (Bitmap) is an uncompressed image format that stores image data without compression, resulting in large file sizes. It's commonly used in older Windows systems but is rarely used on the web due to its large file size."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Why convert BMP to PNG?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "PNG format offers several advantages over BMP: it supports transparency, provides lossless compression (reducing file size), and is universally supported by web browsers and modern applications. PNG is ideal for web use, graphics, and images requiring transparency."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Will the converted image lose quality?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. Our converter uses lossless conversion, meaning the image quality remains identical to the original. PNG's compression is lossless, so you retain all the original image data while reducing file size."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I convert multiple BMP files at once?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Currently, our converter processes one image at a time. However, you can quickly convert multiple files by uploading and converting them individually. Each conversion is fast and takes just seconds."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What's the file size limit?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Most image files can be converted without issues. For very large files (over 50MB), we recommend compressing them first using our image compression tool, then converting to PNG format."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is my image kept private and secure?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, all conversions happen in your browser locally. Your images are never uploaded to our servers or stored anywhere. Your files remain completely private and secure."
+              }
+            }
+          ]
+        })}
+      </script>
+
+      {/* Related Tools */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert PNG to JPG with quality control</p>
+            </Link>
+            <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency</p>
+            </Link>
+            <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+            </Link>
+            <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert modern WebP format to JPG</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </main>
+    </>
   );
 }
 

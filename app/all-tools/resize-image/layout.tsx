@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Resize Image - Free Image Resizer Tool | SimplifyConvert',
-  description: 'Resize images to custom dimensions. Scale, crop, and adjust your images easily.',
-  keywords: ['resize image', 'image resizer', 'image scaler', 'free tool'],
+  title: 'Image Resizer - Change Image Dimensions & Scale | SimplifyConvert',
+  description: 'Resize images to custom dimensions. Batch resize multiple images instantly. Perfect for web, social media, and printing.',
+  keywords: ['resize image', 'image resizer', 'resize photo', 'change image size', 'scale image', 'image scaler', 'batch resize'],
   openGraph: {
     type: 'website',
     locale: 'en_US',

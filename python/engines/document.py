@@ -63,15 +63,57 @@ def run_magick(input_path, output_path, quality):
 
 
 def convert_psd_to_image(input_file: str, output_file: str, output_format: str, options) -> bool:
+    """Convert PSD to image format using PIL with fallback to ImageMagick"""
     try:
         quality = options.get("quality", 85)
-
-        run_magick(input_file, output_file, quality)
-
-        if not os.path.exists(output_file):
-            raise RuntimeError("Output image not created")
-
-        return True
+        
+        # Try PIL/Pillow first (works for many PSD files)
+        try:
+            logger.info(f"Attempting PSD conversion with PIL...")
+            img = Image.open(input_file)
+            
+            # Handle different image modes
+            if img.mode in ['RGBA', 'LA', 'P']:
+                # Keep transparency if present
+                if output_format.lower() == 'png':
+                    img.save(output_file, 'PNG')
+                else:
+                    # JPG doesn't support transparency, convert to RGB
+                    if img.mode == 'RGBA':
+                        background = Image.new('RGB', img.size, (255, 255, 255))
+                        background.paste(img, mask=img.split()[3])
+                        background.save(output_file, output_format.upper(), quality=quality)
+                    elif img.mode == 'LA':
+                        background = Image.new('RGB', img.size, (255, 255, 255))
+                        background.paste(img, mask=img.split()[1])
+                        background.save(output_file, output_format.upper(), quality=quality)
+                    else:
+                        img.convert('RGB').save(output_file, output_format.upper(), quality=quality)
+            else:
+                # No transparency, save directly
+                if img.mode == 'P':
+                    img = img.convert('RGB')
+                img.save(output_file, output_format.upper(), quality=quality)
+            
+            logger.info(f"✓ PSD conversion successful with PIL")
+            return True
+            
+        except Exception as pil_error:
+            logger.warning(f"PIL conversion failed: {str(pil_error)}, trying ImageMagick...")
+            
+            # Fallback to ImageMagick
+            try:
+                run_magick(input_file, output_file, quality)
+                
+                if not os.path.exists(output_file):
+                    raise RuntimeError("ImageMagick: Output image not created")
+                
+                logger.info(f"✓ PSD conversion successful with ImageMagick")
+                return True
+                
+            except Exception as magick_error:
+                logger.error(f"ImageMagick conversion also failed: {str(magick_error)}")
+                raise RuntimeError(f"Both PIL and ImageMagick failed: PIL({str(pil_error)}) ImageMagick({str(magick_error)})")
 
     except Exception as e:
         logger.error(f"PSD conversion failed: {str(e)}")
@@ -79,28 +121,44 @@ def convert_psd_to_image(input_file: str, output_file: str, output_format: str, 
 
 
 def convert_psd_to_svg(input_file: str, output_file: str, options) -> bool:
+    """Convert PSD to SVG by first rasterizing to PNG, then embedding"""
     temp_png = None
 
     try:
         quality = options.get("quality", 85)
         temp_png = os.path.join(tempfile.gettempdir(), f"psd_temp_{id(input_file)}.png")
 
-        magick_exe = get_magick_exe()
-        use_shell = magick_exe == "magick"  # Use shell if falling back to PATH
-        
-        if use_shell:
-            # Use shell command for PATH lookup
-            cmd_str = f'magick "{input_file}" -quality {quality} "{temp_png}"'
-            logger.info(f"[PSD→SVG Color] Rasterizing: {cmd_str}")
-            result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
-        else:
-            # Use direct executable path
-            cmd = [magick_exe, input_file, "-quality", str(quality), temp_png]
-            logger.info(f"[PSD→SVG Color] Rasterizing: {' '.join(cmd)}")
-            result = subprocess.run(cmd, shell=False, capture_output=True, text=True, timeout=120)
+        # Try PIL first
+        try:
+            logger.info(f"[PSD→SVG] Converting with PIL...")
+            img = Image.open(input_file)
+            
+            # Convert to RGB if needed (for transparency handling)
+            if img.mode in ['RGBA', 'LA']:
+                # Keep alpha by saving as PNG
+                img.save(temp_png, 'PNG')
+            else:
+                img = img.convert('RGB')
+                img.save(temp_png, 'PNG', quality=quality)
+                
+        except Exception as pil_error:
+            logger.warning(f"[PSD→SVG] PIL failed, trying ImageMagick: {str(pil_error)}")
+            
+            # Fallback to ImageMagick
+            magick_exe = get_magick_exe()
+            use_shell = magick_exe == "magick"
+            
+            if use_shell:
+                cmd_str = f'magick "{input_file}" -quality {quality} "{temp_png}"'
+                logger.info(f"[PSD→SVG] Executing: {cmd_str}")
+                result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
+            else:
+                cmd = [magick_exe, input_file, "-quality", str(quality), temp_png]
+                logger.info(f"[PSD→SVG] Executing: {' '.join(cmd)}")
+                result = subprocess.run(cmd, shell=False, capture_output=True, text=True, timeout=120)
 
-        if result.returncode != 0:
-            raise RuntimeError(result.stderr)
+            if result.returncode != 0:
+                raise RuntimeError(f"ImageMagick failed: {result.stderr}")
 
         if not os.path.exists(temp_png):
             raise RuntimeError("Temporary PNG not created")
@@ -120,6 +178,7 @@ def convert_psd_to_svg(input_file: str, output_file: str, options) -> bool:
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(svg)
 
+        logger.info(f"[PSD→SVG] ✓ Conversion successful")
         return True
 
     except Exception as e:

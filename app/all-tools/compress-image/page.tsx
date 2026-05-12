@@ -212,7 +212,189 @@ export default function CompressImagePage() {
           </div>
         </div>
       </main>
-      <Footer />
+
+      {/* How To Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Compress Images</h2>
+          <div className="space-y-4">
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">1</div>
+              <div><p className="text-gray-700"><strong>Upload your image:</strong> Select any JPG, PNG, or WebP image</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">2</div>
+              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose compression level from 10% (smallest) to 100% (best quality)</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
+              <div><p className="text-gray-700"><strong>Click Compress Image:</strong> Processing happens instantly in your browser</p></div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
+              <div><p className="text-gray-700"><strong>Download your result:</strong> Save your compressed image and check the file size reduction</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Use Cases Section */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Compression</h2>
+          <ul className="space-y-3 text-gray-700">
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Faster website loading - compressed images load 50% faster</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Save storage space - reduce backup and cloud storage needs</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Better for email - smaller attachments that send instantly</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Social media optimization - upload faster on Instagram, Facebook, Twitter</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Mobile friendly - reduce data usage for users on limited connections</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Will compression reduce image quality?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes, but intelligently. Using quality settings 75-85%, you'll see minimal quality loss while achieving significant file size reduction. Our compression algorithm uses smart techniques to preserve important details.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What quality setting should I use?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">For web use and social media: 70-75%. For professional use or printing: 85-90%. For maximum compression with acceptable quality: 60-70%. Start with 75% and adjust based on your needs.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                What file formats are supported?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">We support JPG, PNG, WebP, GIF, and most common image formats. Maximum file size is 50MB. All formats are compressed in your browser.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Can I compress multiple images at once?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Currently, this tool processes one image at a time. For batch compression of multiple images, try our Batch Compress Images tool which handles hundreds of files simultaneously.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Are my images stored on your servers?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">No. Compression happens entirely in your browser. Your images are never uploaded to or stored on our servers. Complete privacy guaranteed.</p>
+            </details>
+
+            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
+              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+                Is image compression really free?
+                <span className="text-gray-500 group-open:hidden">+</span>
+                <span className="text-gray-500 hidden group-open:inline">−</span>
+              </summary>
+              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Compress as many images as you want, no signup required, no watermarks, no hidden costs.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Schema */}
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Will compression reduce image quality?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, but intelligently using smart compression techniques to preserve important details. Quality settings 75-85% provide minimal visible loss."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What quality setting should I use?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "For web/social: 70-75%. For professional/printing: 85-90%. For maximum compression: 60-70%."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What file formats are supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "We support JPG, PNG, WebP, GIF, and most common image formats up to 50MB."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I compress multiple images at once?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Currently one at a time. For batch compression, try our Batch Compress Images tool."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my images stored on your servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Compression happens in your browser. Images are never uploaded or stored on our servers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is image compression really free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, 100% free with no limits, no signup, no watermarks, no hidden costs."
+            }
+          }
+        ]
+      })}</script>
+
+      {/* Related Tools */}
+      <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Tools</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Resizer</span><p className="text-xs text-gray-600">Change image dimensions</p></div>
+            </Link>
+            <Link href="/all-tools/jpg-to-png" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Convert image formats</p></div>
+            </Link>
+            <Link href="/all-tools/crop-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Crop Image</span><p className="text-xs text-gray-600">Remove unwanted areas</p></div>
+            </Link>
+            <Link href="/all-tools/batch-compress-images" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+              <span className="text-orange-600 font-bold">→</span>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Batch Compress Images</span><p className="text-xs text-gray-600">Compress multiple files</p></div>
+            </Link>
+          </div>
+        </div>
+      </div>
+
     </>
   );
 }
