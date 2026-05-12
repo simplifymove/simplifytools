@@ -102,47 +102,37 @@ export default function AddTextToPdfPage() {
 
   // Initialize PDF.js from CDN
   useEffect(() => {
-    const initPdfJs = () => {
-      // Check if already loaded
-      if ((window as any).pdfjsLib) {
+    const initPdfJs = async () => {
+      // Load PDF.js library from CDN
+      if (!(window as any).pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.async = true;
+
+        script.onload = () => {
+          try {
+            const pdfjsLib = (window as any).pdfjsLib;
+            if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+              console.log('✅ PDF.js loaded from CDN');
+            }
+          } catch (err) {
+            console.error('Error initializing PDF.js:', err);
+          }
+          setIsClient(true);
+        };
+
+        script.onerror = () => {
+          console.error('Failed to load PDF.js from CDN');
+          setIsClient(true); // Still allow page to render
+        };
+
+        document.head.appendChild(script);
+      } else {
+        // Already loaded
         console.log('✅ PDF.js already loaded');
         setIsClient(true);
-        return;
       }
-
-      // Create and append script
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      script.type = 'text/javascript';
-
-      script.onload = () => {
-        console.log('✅ PDF.js script loaded');
-        const pdfjsLib = (window as any).pdfjsLib;
-        
-        if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-          try {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-            console.log('✅ PDF.js worker configured');
-          } catch (e) {
-            console.error('Error setting worker:', e);
-          }
-        }
-        setIsClient(true);
-      };
-
-      script.onerror = () => {
-        console.error('❌ Failed to load PDF.js from CDN');
-        alert('Failed to load PDF library. Please refresh the page.');
-        setIsClient(true);
-      };
-
-      script.onabort = () => {
-        console.error('❌ PDF.js script load aborted');
-        setIsClient(true);
-      };
-
-      // Add script to body instead of head for better compatibility
-      document.body.appendChild(script);
     };
 
     initPdfJs();
@@ -250,28 +240,11 @@ export default function AddTextToPdfPage() {
     const renderPage = async () => {
       try {
         const page = pdfPages[currentPage - 1];
-        
-        // Ensure page exists and is valid
-        if (!page) {
-          console.error('❌ Page not found:', currentPage, 'Total pages:', pdfPages.length);
-          // Reset to first page if current page is out of bounds
-          if (currentPage > pdfPages.length) {
-            setCurrentPage(1);
-          }
-          return;
-        }
-
         const scale = (zoomLevel / 100) * 1.5;
         const viewport = page.getViewport({ scale });
 
         const canvas = canvasRef.current!;
-        const context = canvas.getContext('2d');
-        
-        // Ensure context is valid
-        if (!context) {
-          console.error('❌ Failed to get canvas 2D context');
-          return;
-        }
+        const context = canvas.getContext('2d')!;
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
@@ -279,22 +252,20 @@ export default function AddTextToPdfPage() {
         await (page.render({ canvas, viewport }) as any).promise;
         
         // Cover deleted extracted text with white rectangles
-        if (context) {
-          extractedText.forEach((el) => {
-            if (el.page === currentPage && el.hidden) {
-              const textWidth = el.text.length * (el.fontSize * 0.6);
-              const padding = 10;
-              
-              context.fillStyle = 'white';
-              context.fillRect(
-                el.x - padding,
-                el.y - el.fontSize - padding,
-                textWidth + padding * 2,
-                el.fontSize + padding * 2
-              );
-            }
-          });
-        }
+        extractedText.forEach((el) => {
+          if (el.page === currentPage && el.hidden) {
+            const textWidth = el.text.length * (el.fontSize * 0.6);
+            const padding = 10;
+            
+            context.fillStyle = 'white';
+            context.fillRect(
+              el.x - padding,
+              el.y - el.fontSize - padding,
+              textWidth + padding * 2,
+              el.fontSize + padding * 2
+            );
+          }
+        });
         
         setCanvasScale(scale);
 
@@ -477,27 +448,21 @@ export default function AddTextToPdfPage() {
       }
       
       if (!pdfjs) {
-        console.error('❌ PDF.js did not load after 10 seconds');
-        alert('PDF library failed to load. Please refresh the page and try again.');
-        setLoading(false);
-        return;
+        console.error('PDF.js did not load after 10 seconds');
+        throw new Error('PDF library failed to load. Please refresh the page and try again.');
       }
       
-      console.log('📄 PDF.js ready, loading PDF file...');
+      console.log('📄 Using PDF.js for PDF upload');
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
       const pagePromises: any[] = [];
 
-      for (let i = 1; i <= Math.min(pdf.numPages, 200); i++) {
-        pagePromises.push(pdf.getPage(i));
-      }
-
       const pages = await Promise.all(pagePromises);
       setPdfPages(pages);
-      console.log('✅ PDF loaded:', pdf.numPages, 'pages');
+      // Auto-extraction happens in render effect for all pages
     } catch (error) {
-      console.error('❌ Error loading PDF:', error);
-      alert(`Error: ${error instanceof Error ? error.message : 'Failed to load PDF'}`);
+      console.error('Error loading PDF:', error);
+      alert('Error loading PDF file');
     } finally {
       setLoading(false);
     }
