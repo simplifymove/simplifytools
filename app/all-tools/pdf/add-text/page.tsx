@@ -102,40 +102,24 @@ export default function AddTextToPdfPage() {
 
   // Initialize PDF.js from CDN
   useEffect(() => {
-    const initPdfJs = async () => {
-      // Load PDF.js library from CDN
-      if (!(window as any).pdfjsLib) {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        script.async = true;
+    // Load PDF.js library from CDN
+    if (!(window as any).pdfjsLib) {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.async = true;
+      document.head.appendChild(script);
 
-        script.onload = () => {
-          try {
-            const pdfjsLib = (window as any).pdfjsLib;
-            if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-              console.log('✅ PDF.js loaded from CDN');
-            }
-          } catch (err) {
-            console.error('Error initializing PDF.js:', err);
-          }
-          setIsClient(true);
-        };
-
-        script.onerror = () => {
-          console.error('Failed to load PDF.js from CDN');
-          setIsClient(true); // Still allow page to render
-        };
-
-        document.head.appendChild(script);
-      } else {
-        // Already loaded
-        console.log('✅ PDF.js already loaded');
+      // Set worker URL
+      script.onload = () => {
+        const pdfjsLib = (window as any).pdfjsLib;
+        if (pdfjsLib) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
         setIsClient(true);
-      }
-    };
-
-    initPdfJs();
+      };
+    } else {
+      setIsClient(true);
+    }
   }, []);
 
   // Keyboard shortcuts for undo/redo, delete, and copy/paste
@@ -438,21 +422,21 @@ export default function AddTextToPdfPage() {
     try {
       // Wait for PDF.js to be available
       let pdfjs = (window as any).pdfjsLib;
-      let attempts = 0;
-      
-      // Wait up to 10 seconds for PDF.js to load
-      while (!pdfjs && attempts < 100) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        pdfjs = (window as any).pdfjsLib;
-        attempts++;
-      }
       
       if (!pdfjs) {
-        console.error('PDF.js did not load after 10 seconds');
-        throw new Error('PDF library failed to load. Please refresh the page and try again.');
+        // If PDF.js isn't loaded yet, try waiting
+        let attempts = 0;
+        while (!pdfjs && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          pdfjs = (window as any).pdfjsLib;
+          attempts++;
+        }
+        
+        if (!pdfjs) {
+          throw new Error('PDF.js library failed to load');
+        }
       }
       
-      console.log('📄 Using PDF.js for PDF upload');
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
       const pagePromises: any[] = [];
