@@ -189,34 +189,126 @@ def trim_media(
     output_format: Optional[str] = None
 ) -> bool:
     """
-    Trim media file by time range
+    Trim media file by time range using stream copy (fastest, no re-encoding)
     
     Args:
         input_path: Input media file
         output_path: Output media file
         start_time: Start time (MM:SS or HH:MM:SS)
-        end_time: End time (MM:MM:SS or HH:MM:SS)
+        end_time: End time (MM:SS or HH:MM:SS)
         output_format: Output format (if different from input)
     
     Returns:
         True if successful
     """
-    # Convert time format if needed
+    import json
+    
+    # Try to validate using media info, but don't fail if ffprobe unavailable
+    try:
+        media_info = get_media_info(input_path)
+        duration_seconds = float(media_info.get('duration', 0))
+        
+        # If duration is 0, ffprobe likely failed - skip validation
+        if duration_seconds == 0:
+            print(f'[trim_media] Warning: Could not get video duration, skipping pre-validation', file=sys.stderr)
+        else:
+            # Parse time strings to seconds for validation
+            def time_to_seconds(time_str: str) -> float:
+                parts = time_str.split(':')
+                if len(parts) == 2:
+                    return int(parts[0]) * 60 + int(parts[1])
+                elif len(parts) == 3:
+                    return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                return 0
+            
+            start_seconds = time_to_seconds(start_time)
+            end_seconds = time_to_seconds(end_time)
+            trim_duration = end_seconds - start_seconds
+            
+            # Validation checks
+            if trim_duration <= 0:
+                raise RuntimeError(f'Invalid trim range: end time must be after start time')
+            
+            if trim_duration > duration_seconds:
+                raise RuntimeError(f'Trim duration ({trim_duration}s) exceeds video duration ({duration_seconds}s)')
+            
+            if start_seconds >= duration_seconds:
+                raise RuntimeError(f'Start time ({start_seconds}s) is beyond video duration ({duration_seconds}s)')
+            
+            # Validate trim length is reasonable (max 1 hour to prevent extreme cases)
+            if trim_duration > 3600:
+                raise RuntimeError(f'Trim duration ({trim_duration}s) exceeds maximum of 3600s (1 hour)')
+        
+    except RuntimeError:
+        # Re-raise validation errors
+        raise
+    except Exception as e:
+        # If any other error, just log warning and continue
+        print(f'[trim_media] Warning: Could not pre-validate video: {str(e)}', file=sys.stderr)
+
+
+    
+    # Use stream copy for fastest trimming (no re-encoding)
+    # Calculate trim duration
+    def time_to_seconds(time_str: str) -> float:
+        parts = time_str.split(':')
+        if len(parts) == 2:
+            return int(parts[0]) * 60 + int(parts[1])
+        elif len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+        return 0
+    
+    start_seconds = time_to_seconds(start_time)
+    end_seconds = time_to_seconds(end_time)
+    trim_duration = end_seconds - start_seconds
+    
+    # Try stream copy first (fastest method)
+    # Put -ss BEFORE -i for faster seeking with stream copy
     args = [
-        '-i', input_path,
         '-ss', start_time,
-        '-to', end_time,
-        '-c', 'copy'  # Copy streams without re-encoding
+        '-i', input_path,
+        '-t', str(trim_duration),  # Use -t for duration instead of -to for better compatibility
+        '-c', 'copy',  # Copy streams without re-encoding
+        output_path
     ]
     
-    args.append(output_path)
-    
-    code, stdout, stderr = run_ffmpeg(args, capture_output=True)
-    
-    if code != 0:
-        raise RuntimeError(f'Failed to trim media: {stderr}')
-    
-    return True
+    try:
+        print(f'[trim_media] Executing: ffmpeg {" ".join(args)}', file=sys.stderr)
+        code, stdout, stderr = run_ffmpeg(args, capture_output=True)
+        
+        if code != 0:
+            error_msg = stderr.lower()
+            
+            # Check for frame duplication issues
+            if 'duplicated' in error_msg or 'mismatched' in error_msg:
+                # Fallback: if stream copy fails due to codec issues, re-encode
+                print(f'[trim_media] Stream copy failed, falling back to re-encode: {stderr[:200]}', file=sys.stderr)
+                
+                args = [
+                    '-ss', start_time,
+                    '-i', input_path,
+                    '-t', str(trim_duration),
+                    '-c:v', 'libx264',
+                    '-preset', 'ultrafast',  # Fastest encoding
+                    '-crf', '28',  # Lower quality for speed
+                    '-c:a', 'aac',
+                    output_path
+                ]
+                print(f'[trim_media] Fallback FFmpeg command: ffmpeg {" ".join(args)}', file=sys.stderr)
+                code, stdout, stderr = run_ffmpeg(args, capture_output=True)
+                
+                if code != 0:
+                    raise RuntimeError(f'Failed to trim media (re-encode): {stderr}')
+            else:
+                print(f'[trim_media] FFmpeg error: {stderr[:500]}', file=sys.stderr)
+                raise RuntimeError(f'Failed to trim media: {stderr}')
+        
+        print(f'[trim_media] Successfully trimmed video', file=sys.stderr)
+        return True
+        
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f'Trim operation timed out after 10 minutes. Video may be very large or corrupted.')
+
 
 
 def resize_video(

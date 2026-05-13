@@ -282,10 +282,15 @@ export async function POST(request: NextRequest) {
       console.log(`[API] Starting processing for tool: ${toolId}`);
       console.log(`[API] Engine: ${tool.engine}, Input: ${inputPath?.substring(0, 50) || 'N/A'}`);
       
+      // Set timeout based on operation type
+      // Trim/mute operations with stream copy should complete in 2-3 minutes max
+      // Resize/compress may take up to 10 minutes
+      const timeoutMs = (toolId === 'trim-video' || toolId === 'mute-video') ? 180000 : 300000; // 3 or 5 minutes
+      
       result = await Promise.race([
         runPythonEngine(tool.engine, toolId, inputPath, options),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Processing timeout')), 55000) // 55 second timeout
+          setTimeout(() => reject(new Error(`Processing timeout (${Math.round(timeoutMs / 1000)}s)`)), timeoutMs)
         ),
       ]);
       
@@ -298,6 +303,7 @@ export async function POST(request: NextRequest) {
         errorMessage: errorMsg,
         isTimeout: errorMsg.includes('timeout'),
         isMemory: errorMsg.includes('memory'),
+        isDuplication: errorMsg.includes('duplicated'),
         timestamp: new Date().toISOString(),
       });
 
@@ -307,6 +313,8 @@ export async function POST(request: NextRequest) {
         errorType = VideoToolErrorType.PROCESSING_TIMEOUT;
       } else if (errorMsg.includes('memory')) {
         errorType = VideoToolErrorType.MEMORY_ERROR;
+      } else if (errorMsg.includes('duplicated')) {
+        errorType = VideoToolErrorType.FFMPEG_FAILED;
       }
 
       // Parse Python errors if available
