@@ -38,6 +38,12 @@ async function runPythonEngine(
 
     const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
     
+    console.log(`[Python] Executing:`, {
+      pythonExe,
+      script: pythonScript,
+      args: [engine, toolId, '<input>', '<options>'],
+    });
+    
     // Build environment with Python-specific variables
     const spawnEnv = {
       ...process.env,
@@ -56,6 +62,7 @@ async function runPythonEngine(
         '/var/www/simplifyconvertapp/venv/lib',
       ];
       spawnEnv.PYTHONPATH = venvPaths.join(':');
+      console.log(`[Python] PYTHONPATH set`);
     }
     
     const python = spawn(pythonExe, [pythonScript, ...args], {
@@ -64,40 +71,86 @@ async function runPythonEngine(
 
     let stdout = '';
     let stderr = '';
+    let hasOutput = false;
 
     python.stdout.on('data', (data) => {
+      hasOutput = true;
       stdout += data.toString();
+      console.log(`[Python] stdout:`, data.toString().substring(0, 200));
     });
 
     python.stderr.on('data', (data) => {
+      hasOutput = true;
       stderr += data.toString();
+      console.error(`[Python] stderr:`, data.toString().substring(0, 200));
     });
 
     python.on('close', (code) => {
+      console.log(`[Python] Process closed with code:`, code);
+      console.log(`[Python] Has output:`, hasOutput);
+      console.log(`[Python] stdout length:`, stdout.length);
+      console.log(`[Python] stderr length:`, stderr.length);
+      
       if (code !== 0) {
-        reject(new Error(`Python process failed: ${stderr}`));
+        const errorDetail = stderr || stdout || 'No output captured';
+        console.error(`[Python] Failed with:`, errorDetail.substring(0, 500));
+        reject(new Error(`Python process failed: ${errorDetail}`));
         return;
       }
 
       try {
         const result = JSON.parse(stdout);
+        console.log(`[Python] Result:`, {
+          hasOutputPath: !!result.outputPath,
+          hasOutputType: !!result.outputType,
+          outputType: result.outputType,
+        });
         resolve(result);
       } catch (e) {
+        console.error(`[Python] Failed to parse output:`, stdout.substring(0, 500));
         reject(new Error(`Invalid Python output: ${stdout}`));
       }
+    });
+    
+    python.on('error', (err) => {
+      console.error(`[Python] Spawn error:`, err.message);
+      reject(err);
     });
   });
 }
 
+// Validate production environment at startup
+function validateProductionEnv() {
+  if (process.env.NODE_ENV === 'production') {
+    const requiredVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD'];
+    const missing = requiredVars.filter(v => !process.env[v]);
+    if (missing.length > 0) {
+      console.warn(`[PRODUCTION WARNING] Missing SMTP variables: ${missing.join(', ')}`);
+    }
+  }
+}
+
+// Call on first request
+let envValidated = false;
+
 export async function POST(request: NextRequest) {
+  if (!envValidated) {
+    validateProductionEnv();
+    envValidated = true;
+  }
+
   let uploadedFilePath: string | null = null;
   let toolId: string | null = null;
   let toolName: string | null = null;
 
   try {
+    console.log(`[API] Processing request from ${request.headers.get('user-agent')?.substring(0, 50) || 'unknown'}`);
+    
     // Parse form data
     const formData = await request.formData();
     toolId = formData.get('tool') as string;
+    
+    console.log(`[API] Tool ID: ${toolId}`);
 
     // Validate tool exists
     if (!toolId) {
@@ -226,14 +279,27 @@ export async function POST(request: NextRequest) {
     // Run processing with timeout
     let result;
     try {
+      console.log(`[API] Starting processing for tool: ${toolId}`);
+      console.log(`[API] Engine: ${tool.engine}, Input: ${inputPath?.substring(0, 50) || 'N/A'}`);
+      
       result = await Promise.race([
         runPythonEngine(tool.engine, toolId, inputPath, options),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Processing timeout')), 55000) // 55 second timeout
         ),
       ]);
+      
+      console.log(`[API] Processing completed successfully`);
     } catch (processingError) {
       const errorMsg = processingError instanceof Error ? processingError.message : 'Unknown processing error';
+      
+      console.error(`[API] Processing failed:`, {
+        toolId,
+        errorMessage: errorMsg,
+        isTimeout: errorMsg.includes('timeout'),
+        isMemory: errorMsg.includes('memory'),
+        timestamp: new Date().toISOString(),
+      });
 
       // Determine error type
       let errorType = VideoToolErrorType.FFMPEG_FAILED;
@@ -250,27 +316,42 @@ export async function POST(request: NextRequest) {
       }
 
       // Send error email
-      await sendErrorEmail({
-        toolId,
-        toolName: toolName || 'Unknown',
-        errorType,
-        errorMessage: errorMsg,
-        userMessage: 'Video processing failed. Please try with a different file or contact support.',
-        url: request.headers.get('referer') || 'unknown',
-        timestamp: new Date().toISOString(),
-        fileMeta: fileMetadata
-          ? {
-              filename: fileMetadata.filename,
-              size: `${(fileMetadata.size / 1024 / 1024).toFixed(2)}MB`,
-              mimeType: fileMetadata.mimeType,
-            }
-          : undefined,
-        systemInfo: {
-          userAgent: request.headers.get('user-agent') || 'unknown',
-          platform: 'server',
-        },
-        stackTrace: errorMsg,
-      });
+      console.log(`[API] Sending error email for: ${toolId} - ${errorType}`);
+      
+      try {
+        await sendErrorEmail({
+          toolId,
+          toolName: toolName || 'Unknown',
+          errorType,
+          errorMessage: errorMsg,
+          userMessage: 'Video processing failed. Please try with a different file or contact support.',
+          url: request.headers.get('referer') || 'unknown',
+          timestamp: new Date().toISOString(),
+          fileMeta: fileMetadata
+            ? {
+                filename: fileMetadata.filename,
+                size: `${(fileMetadata.size / 1024 / 1024).toFixed(2)}MB`,
+                mimeType: fileMetadata.mimeType,
+              }
+            : undefined,
+          systemInfo: {
+            userAgent: request.headers.get('user-agent') || 'unknown',
+            platform: 'server',
+          },
+          stackTrace: errorMsg,
+        });
+        
+        console.log(`[API] Error email sent successfully`);
+      } catch (emailError) {
+        console.error(`[API] Failed to send error email:`, {
+          toolId,
+          emailError: emailError instanceof Error ? emailError.message : String(emailError),
+          smtpHost: process.env.SMTP_HOST ? '***' : 'NOT SET',
+          smtpPort: process.env.SMTP_PORT ? '***' : 'NOT SET',
+          smtpUser: process.env.SMTP_USER ? '***' : 'NOT SET',
+          hasSmtpPassword: !!process.env.SMTP_PASSWORD,
+        });
+      }
 
       return createErrorResponse(
         'Video processing failed',
@@ -347,27 +428,46 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     // Unexpected errors
-    console.error('Unexpected API error:', error);
-
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    const stackTrace = error instanceof Error ? error.stack : undefined;
+    
+    console.error(`[API] Unexpected error in route handler:`, {
+      toolId: toolId || 'unknown',
+      errorMessage: errorMsg,
+      stack: stackTrace?.substring(0, 500),
+      timestamp: new Date().toISOString(),
+    });
 
     // Send error email for unexpected errors
-    await sendErrorEmail({
-      toolId: toolId || 'unknown',
-      toolName: toolName || 'Unknown Tool',
-      errorType: VideoToolErrorType.UNKNOWN_ERROR,
-      errorMessage: errorMsg,
-      userMessage: 'An unexpected error occurred. Our team has been notified.',
-      url: request.headers.get('referer') || 'unknown',
-      timestamp: new Date().toISOString(),
-      systemInfo: {
-        userAgent: request.headers.get('user-agent') || 'unknown',
-        platform: 'server',
-      },
-      stackTrace: error instanceof Error ? error.stack : undefined,
-    }).catch((emailError) => {
-      console.error('Failed to send error email:', emailError);
-    });
+    console.log(`[API] Sending error email for unexpected error`);
+    
+    try {
+      await sendErrorEmail({
+        toolId: toolId || 'unknown',
+        toolName: toolName || 'Unknown Tool',
+        errorType: VideoToolErrorType.UNKNOWN_ERROR,
+        errorMessage: errorMsg,
+        userMessage: 'An unexpected error occurred. Our team has been notified.',
+        url: request.headers.get('referer') || 'unknown',
+        timestamp: new Date().toISOString(),
+        systemInfo: {
+          userAgent: request.headers.get('user-agent') || 'unknown',
+          platform: 'server',
+        },
+        stackTrace: stackTrace,
+      });
+      
+      console.log(`[API] Error email sent successfully for unexpected error`);
+    } catch (emailError) {
+      console.error(`[API] Failed to send unexpected error email:`, {
+        toolId: toolId || 'unknown',
+        emailError: emailError instanceof Error ? emailError.message : String(emailError),
+        smtpHost: process.env.SMTP_HOST ? '***' : 'NOT SET',
+        smtpPort: process.env.SMTP_PORT ? '***' : 'NOT SET',
+        smtpUser: process.env.SMTP_USER ? '***' : 'NOT SET',
+        hasSmtpPassword: !!process.env.SMTP_PASSWORD,
+      });
+    }
 
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again.' },
