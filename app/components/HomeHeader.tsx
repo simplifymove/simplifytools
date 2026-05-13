@@ -72,14 +72,25 @@ export function HomeHeader() {
       glowColor: 'group-hover:shadow-blue-500/20'
     },
     {
-      id: 'data',
+      id: 'data-conversion',
       title: 'Data Conversion',
-      description: 'Convert and transform data formats easily',
+      description: 'Convert between CSV, JSON, Excel, and XML formats',
       icon: Database,
       color: 'from-teal-500 via-teal-600 to-teal-700',
       bgColor: 'bg-teal-50',
       count: '12',
       link: '/all-tools/data-converter',
+      glowColor: 'group-hover:shadow-teal-500/20'
+    },
+    {
+      id: 'data',
+      title: 'Data Tools',
+      description: 'Convert, encode, format, validate, and view data',
+      icon: Database,
+      color: 'from-cyan-500 via-teal-600 to-emerald-700',
+      bgColor: 'bg-cyan-50',
+      count: '25',
+      link: '/all-tools/data',
       glowColor: 'group-hover:shadow-teal-500/20'
     },
     {
@@ -258,6 +269,13 @@ export function HomeHeader() {
               href="/all-tools/data-converter"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
             >
+              Data Conversion
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
+            </Link>
+            <Link 
+              href="/all-tools/data"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
+            >
               Data
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
             </Link>
@@ -377,6 +395,9 @@ export function HomeHeader() {
                 AI Writing
               </Link>
               <Link href="/all-tools/data-converter" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Data Conversion
+              </Link>
+              <Link href="/all-tools/data" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Data
               </Link>
               <Link href="/all-tools/code-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">

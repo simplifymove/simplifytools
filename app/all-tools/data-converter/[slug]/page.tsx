@@ -4,13 +4,71 @@ import { useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { dataTools, getDataToolById } from '@/app/lib/data-tools';
-import { Download, AlertCircle, CheckCircle, Loader2, Upload, ChevronRight, Zap, Shield } from 'lucide-react';
+import { Download, AlertCircle, CheckCircle, Loader2, Upload, ChevronRight, Zap, Shield, FileJson, FileText, Database } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
 interface FormData {
   [key: string]: string | number | boolean;
+}
+
+// Action-specific CTA text for each data conversion tool
+function getActionText(toolId: string): string {
+  const actionMap: Record<string, string> = {
+    'csv-to-excel': 'Convert to Excel',
+    'excel-to-csv': 'Convert to CSV',
+    'xml-to-excel': 'Convert to Excel',
+    'xml-to-csv': 'Convert to CSV',
+    'excel-to-xml': 'Convert to XML',
+    'excel-to-pdf': 'Export to PDF',
+    'csv-to-json': 'Convert to JSON',
+    'json-to-xml': 'Convert to XML',
+    'xml-to-json': 'Convert to JSON',
+    'csv-to-xml': 'Convert to XML',
+    'split-csv': 'Split CSV File',
+    'split-excel': 'Split Excel File',
+  };
+
+  return actionMap[toolId] || 'Convert File';
+}
+
+// Related data conversion tools by category and type
+function getRelatedTools(toolId: string): Array<{ id: string; title: string; description: string }> {
+  const relatedMap: Record<string, Array<{ id: string; title: string; description: string }>> = {
+    'csv-to-excel': [
+      { id: 'excel-to-csv', title: 'Excel to CSV', description: 'Convert Excel back to CSV' },
+      { id: 'csv-to-json', title: 'CSV to JSON', description: 'Transform CSV to JSON' },
+      { id: 'csv-to-xml', title: 'CSV to XML', description: 'Convert CSV to XML format' },
+      { id: 'split-csv', title: 'Split CSV', description: 'Divide large CSV files' },
+    ],
+    'excel-to-csv': [
+      { id: 'csv-to-excel', title: 'CSV to Excel', description: 'Convert CSV to Excel' },
+      { id: 'excel-to-xml', title: 'Excel to XML', description: 'Export Excel as XML' },
+      { id: 'excel-to-pdf', title: 'Excel to PDF', description: 'Convert spreadsheet to PDF' },
+      { id: 'split-excel', title: 'Split Excel', description: 'Split large Excel files' },
+    ],
+    'csv-to-json': [
+      { id: 'json-to-xml', title: 'JSON to XML', description: 'Convert JSON to XML' },
+      { id: 'csv-to-xml', title: 'CSV to XML', description: 'CSV to XML converter' },
+      { id: 'xml-to-json', title: 'XML to JSON', description: 'Parse XML to JSON' },
+      { id: 'csv-to-excel', title: 'CSV to Excel', description: 'Convert CSV to Excel' },
+    ],
+    'xml-to-json': [
+      { id: 'json-to-xml', title: 'JSON to XML', description: 'Convert JSON to XML' },
+      { id: 'xml-to-csv', title: 'XML to CSV', description: 'Extract XML to CSV' },
+      { id: 'csv-to-json', title: 'CSV to JSON', description: 'CSV to JSON converter' },
+      { id: 'xml-to-excel', title: 'XML to Excel', description: 'Convert XML to Excel' },
+    ],
+    'default': [
+      { id: 'csv-to-json', title: 'CSV to JSON', description: 'Popular data format conversion' },
+      { id: 'xml-to-json', title: 'XML to JSON', description: 'Structured data conversion' },
+      { id: 'json-to-xml', title: 'JSON to XML', description: 'Reverse JSON conversion' },
+      { id: 'csv-to-excel', title: 'CSV to Excel', description: 'Spreadsheet conversion' },
+    ]
+  };
+
+  return relatedMap[toolId] || relatedMap['default'];
 }
 
 export default function DataToolPage() {
@@ -26,6 +84,88 @@ export default function DataToolPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+
+  // Generate FAQ schema for JSON-LD
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is the conversion accurate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our conversion engines maintain data integrity and formatting. However, we recommend reviewing the output before using it in production."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What file size limits do you have?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Files up to 100MB can be converted. For larger files, please split them first using our file splitting tools or process them in batches."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data stored after conversion?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All uploaded files and converted outputs are automatically deleted from our servers after processing. We do not store or log your data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which encoding formats are supported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We support UTF-8, Latin-1, ISO-8859-1, and Windows-1252 encodings. Your file encoding is automatically detected when possible."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert multiple files at once?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Currently you can convert one file at a time. For batch conversions, you can repeat the process or use our split/merge tools to organize data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if conversion fails?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If an error occurs, you'll see a detailed message. Common issues: unsupported file format, corrupted data, or encoding problems. Try checking your file structure."
+        }
+      }
+    ]
+  };
+
+  // Generate Breadcrumb schema for JSON-LD
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://simplifyconvert.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Data Conversion Tools",
+        "item": "https://simplifyconvert.com/all-tools/data-converter"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": tool?.title || "Tool",
+        "item": `https://simplifyconvert.com/all-tools/data-converter/${slug}`
+      }
+    ]
+  };
 
   if (!tool) {
     return (
@@ -186,6 +326,16 @@ export default function DataToolPage() {
   return (
     <>
       <HomeHeader />
+      
+      {/* JSON-LD Schema Markup */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <main className="min-h-screen bg-gray-50 flex flex-col">
         <div className="flex-1">
       {/* Animated Gradient Header */}
@@ -364,7 +514,7 @@ export default function DataToolPage() {
                     ) : (
                       <>
                         <Upload size={18} />
-                        Convert
+                        {tool ? getActionText(tool.id) : 'Convert'}
                       </>
                     )}
                   </button>
@@ -472,12 +622,12 @@ export default function DataToolPage() {
               {
                 icon: Shield,
                 title: 'Secure & Private',
-                description: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                description: 'Files are processed securely and automatically deleted after conversion. Your data is not permanently stored or shared.'
               },
               {
                 icon: CheckCircle,
                 title: 'Multiple Formats',
-                description: 'Support for wide range of file formats and conversions',
+                description: 'Support for CSV, Excel, JSON, XML and more. Convert between common data formats with configurable options.',
               },
             ].map((feature, index) => (
               <motion.div
@@ -495,6 +645,132 @@ export default function DataToolPage() {
               </motion.div>
             ))}
           </div>
+        </motion.div>
+
+        {/* SEO Content Sections */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.8 }} className="max-w-4xl mx-auto mt-24 space-y-16">
+          {/* How-To Guide Section */}
+          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">How to {getActionText(tool.id)}</h2>
+            <ol className="space-y-4 list-decimal list-inside">
+              <li className="text-gray-700">
+                <strong>Select your file:</strong> Click the upload area and choose the {tool.accepts.join(' or ')} file you want to convert.
+              </li>
+              <li className="text-gray-700">
+                <strong>Configure options (if needed):</strong> Adjust conversion settings like delimiter, encoding, or format preferences.
+              </li>
+              <li className="text-gray-700">
+                <strong>Click {getActionText(tool.id)}:</strong> Hit the button to start processing your file conversion.
+              </li>
+              <li className="text-gray-700">
+                <strong>Download your file:</strong> Once ready, download your converted .{tool.output} file directly to your computer.
+              </li>
+            </ol>
+          </section>
+
+          {/* Why Use This Tool Section */}
+          <section className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-xl border border-teal-200 p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use {tool.title}?</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {[
+                {
+                  title: 'Lightning Fast',
+                  description: 'Process your files instantly without slow uploads or complex software.'
+                },
+                {
+                  title: 'No Sign-Up Required',
+                  description: 'Use immediately without account creation, email verification, or payment information.'
+                },
+                {
+                  title: 'Secure Processing',
+                  description: 'Your files are processed securely and automatically deleted after conversion.'
+                },
+                {
+                  title: 'Batch Ready',
+                  description: 'Handle large files efficiently with support for files up to 100MB in size.'
+                }
+              ].map((benefit, idx) => (
+                <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
+                  <h3 className="font-semibold text-gray-900 mb-2">{benefit.title}</h3>
+                  <p className="text-gray-700 text-sm">{benefit.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* FAQ Section */}
+          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+            <div className="space-y-6">
+              {[
+                {
+                  q: 'Is the conversion accurate?',
+                  a: 'Yes, our conversion engines maintain data integrity and formatting. However, we recommend reviewing the output before using it in production.'
+                },
+                {
+                  q: 'What file size limits do you have?',
+                  a: 'Files up to 100MB can be converted. For larger files, please split them first using our file splitting tools or process them in batches.'
+                },
+                {
+                  q: 'Is my data stored after conversion?',
+                  a: 'No. All uploaded files and converted outputs are automatically deleted from our servers after processing. We do not store or log your data.'
+                },
+                {
+                  q: 'Which encoding formats are supported?',
+                  a: 'We support UTF-8, Latin-1, ISO-8859-1, and Windows-1252 encodings. Your file encoding is automatically detected when possible.'
+                },
+                {
+                  q: 'Can I convert multiple files at once?',
+                  a: 'Currently you can convert one file at a time. For batch conversions, you can repeat the process or use our split/merge tools to organize data.'
+                },
+                {
+                  q: 'What happens if conversion fails?',
+                  a: 'If an error occurs, you\'ll see a detailed message. Common issues: unsupported file format, corrupted data, or encoding problems. Try checking your file structure.'
+                }
+              ].map((faq, idx) => (
+                <div key={idx} className="border-b border-gray-200 pb-6 last:border-0">
+                  <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
+                  <p className="text-gray-700">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Related Tools Section */}
+          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Related Tools</h2>
+            <p className="text-gray-700 mb-6">Explore other data conversion tools that might be useful for your workflow:</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              {getRelatedTools(tool.id).map((relatedTool, idx) => (
+                <Link
+                  key={idx}
+                  href={`/all-tools/data-converter/${relatedTool.id}`}
+                  className="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:border-teal-300 hover:shadow-md transition"
+                >
+                  <h3 className="font-semibold text-gray-900 group-hover:text-teal-600 mb-1">{relatedTool.title}</h3>
+                  <p className="text-gray-600 text-sm">{relatedTool.description}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Data Safety & Best Practices Section */}
+          <section className="bg-blue-50 rounded-xl border border-blue-200 p-8">
+            <div className="flex gap-3">
+              <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-semibold text-blue-900 mb-3">Data Conversion Best Practices</h3>
+                <ul className="text-blue-900 text-sm space-y-2 list-disc list-inside">
+                  <li>Always keep backups of your original files before conversion</li>
+                  <li>Review converted data for completeness before using in production</li>
+                  <li>Test conversions with sample files before processing large datasets</li>
+                  <li>Verify data integrity after complex multi-step conversions</li>
+                  <li>Check for special characters or formatting that may not convert perfectly</li>
+                  <li>Document your conversion settings if you need to repeat the process</li>
+                </ul>
+              </div>
+            </div>
+          </section>
         </motion.div>
         </div>
       </div>

@@ -57,12 +57,20 @@ export function Header() {
       link: '/all-tools/ai-tools',
     },
     {
-      id: 'data',
+      id: 'data-conversion',
       title: 'Data Conversion',
       icon: Database,
       color: 'from-teal-500 to-teal-700',
       count: '12',
       link: '/all-tools/data-converter',
+    },
+    {
+      id: 'data',
+      title: 'Data Tools',
+      icon: Database,
+      color: 'from-cyan-500 to-emerald-700',
+      count: '25',
+      link: '/all-tools/data',
     },
     {
       id: 'code',
@@ -86,7 +94,8 @@ export function Header() {
     { label: 'Image', href: '/all-tools/image-tools' },
     { label: 'Video', href: '/all-tools/video-tools' },
     { label: 'AI Writing', href: '/all-tools/ai-tools' },
-    { label: 'Data', href: '/all-tools/data-converter' },
+    { label: 'Data Conversion', href: '/all-tools/data-converter' },
+    { label: 'Data', href: '/all-tools/data' },
   ];
 
   return (

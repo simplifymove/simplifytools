@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { dataTools } from '@/app/lib/data-tools';
-import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
+import { dataViewTools, getDataViewToolsByCategory } from '@/app/lib/data-view-tools';
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
@@ -11,17 +11,8 @@ import { Footer } from '@/app/components/Footer';
 export default function DataToolsPage() {
   const router = useRouter();
 
-  // Group tools by category
-  const toolsByCategory = Object.values(dataTools).reduce(
-    (acc, tool) => {
-      if (!acc[tool.category]) {
-        acc[tool.category] = [];
-      }
-      acc[tool.category].push(tool);
-      return acc;
-    },
-    {} as Record<string, (typeof dataTools)[keyof typeof dataTools][]>
-  );
+  // Get tools grouped by category
+  const toolsByCategory = getDataViewToolsByCategory();
 
   return (
     <>
@@ -52,9 +43,9 @@ export default function DataToolsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">📊 Data Conversion Tools</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">📊 Data Tools Suite</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert between different file formats, merge files, split documents, and transform your data effortlessly
+              Convert, encode, format, validate, and view data in 25+ formats. Transform JSON, CSV, XML, YAML, Base64, HTML, and more—instantly and securely.
             </p>
           </motion.div>
         </div>
@@ -70,8 +61,12 @@ export default function DataToolsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: catIdx * 0.1 }}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 capitalize">
-              {category === 'conversion' ? '🔄 File Conversions' : '✂️ File Splitting'}
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">
+              {category === 'Format Conversion' && '🔄 Format Converters'}
+              {category === 'Encoding' && '🔐 Encoding Tools'}
+              {category === 'Formatting' && '✨ Formatters'}
+              {category === 'Validation' && '✅ Validators'}
+              {category === 'Viewers' && '👁️ Data Viewers'}
             </h2>
 
             <motion.div 
@@ -88,7 +83,7 @@ export default function DataToolsPage() {
                   transition={{ duration: 0.4 }}
                 >
                   <motion.div
-                    className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 group border-2 border-gray-100 hover:border-gray-200 cursor-pointer overflow-hidden"
+                    className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 group border-2 border-gray-100 hover:border-teal-200 cursor-pointer overflow-hidden"
                     onClick={() => router.push(`/all-tools/data/${tool.id}`)}
                   >
                     {/* Hover gradient */}
@@ -99,7 +94,13 @@ export default function DataToolsPage() {
 
                     <div className="relative z-10">
                       {/* Icon */}
-                      <div className="mb-4 text-4xl">📄</div>
+                      <div className="mb-4 text-4xl">
+                        {tool.id.includes('encode') || tool.id.includes('decode') && '🔐'}
+                        {tool.id.includes('formatter') && '✨'}
+                        {tool.id.includes('validator') && '✅'}
+                        {(tool.id.includes('viewer') || tool.id.includes('view')) && '👁️'}
+                        {(tool.id.includes('csv') || tool.id.includes('json') || tool.id.includes('xml') || tool.id.includes('yaml') || tool.id.includes('tsv') || tool.id.includes('sql')) && !tool.id.includes('validator') && !tool.id.includes('formatter') && !tool.id.includes('viewer') && '🔄'}
+                      </div>
 
                       {/* Title */}
                       <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-teal-600 transition line-clamp-2">
@@ -107,31 +108,23 @@ export default function DataToolsPage() {
                       </h3>
 
                       {/* Description */}
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                         {tool.description}
                       </p>
 
-                      {/* Input/Output Formats */}
-                      <div className="mb-4 space-y-2 text-xs bg-gray-50 p-3 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-700">Input:</span>
-                          <span className="text-teal-600 font-mono font-medium">{tool.accepts.join(', ')}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-700">Output:</span>
-                          <span className="text-green-600 font-mono font-medium">.{tool.output}</span>
-                        </div>
-                      </div>
-
-                      {/* Engine Badge */}
+                      {/* Category Badge */}
                       <div className="mb-4 inline-block px-3 py-1 bg-gradient-to-r from-teal-100 to-green-100 text-teal-700 text-xs font-bold rounded-full">
                         {tool.engine}
                       </div>
 
+                      {/* Mode Indicators */}
+                      <div className="mb-4 text-xs text-gray-600 space-y-1">
+                        <div><span className="font-semibold">Input:</span> {tool.inputMode}</div>
+                        <div><span className="font-semibold">Output:</span> {tool.outputMode}</div>
+                      </div>
+
                       {/* CTA */}
-                      <div
-                        className="flex items-center gap-2 text-teal-600 font-medium text-sm"
-                      >
+                      <div className="flex items-center gap-2 text-teal-600 font-medium text-sm">
                         Use Tool
                         <ChevronRight className="w-4 h-4" />
                       </div>
@@ -156,23 +149,23 @@ export default function DataToolsPage() {
           whileHover={{ y: -4 }}
         >
           <h2 className="text-3xl font-bold mb-8">
-            Why Use Our Data Conversion Tools?
+            Why Choose SimplifyConvert Data Tools?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <motion.div whileHover={{ scale: 1.05 }}>
               <div className="text-4xl mb-4">⚡</div>
-              <h3 className="text-lg font-semibold mb-2">Fast Processing</h3>
-              <p className="text-white/90">Optimized conversion engines handle files up to 100MB with blazing speed</p>
+              <h3 className="text-lg font-semibold mb-2">Instant Processing</h3>
+              <p className="text-white/90">25+ tools for converting, encoding, formatting, and validating data in seconds—no installation needed</p>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }}>
               <div className="text-4xl mb-4">🔒</div>
               <h3 className="text-lg font-semibold mb-2">Secure & Private</h3>
-              <p className="text-white/90">Files are processed securely and automatically deleted after conversion</p>
+              <p className="text-white/90">Your data stays private. Files are processed securely and automatically deleted after use</p>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }}>
               <div className="text-4xl mb-4">📊</div>
-              <h3 className="text-lg font-semibold mb-2">Multiple Formats</h3>
-              <p className="text-white/90">Support for CSV, Excel, JSON, XML, PDF and many more formats</p>
+              <h3 className="text-lg font-semibold mb-2">All Formats</h3>
+              <p className="text-white/90">Work with JSON, CSV, XML, YAML, Base64, URL, HTML, and more—all in one suite</p>
             </motion.div>
           </div>
         </motion.div>

@@ -5,6 +5,9 @@ import { spawn, exec as execCallback } from 'child_process';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getToolById } from '@/app/lib/video-tools';
+import { VideoToolErrorType, EmailErrorReport } from '@/app/utils/types/errors';
+import { sendErrorEmail } from '@/app/utils/error-reporting/send-error-email';
+import { parsePythonError, sanitizeErrorMessage } from '@/app/utils/error-handling/error-handler';
 
 const exec = promisify(execCallback);
 
@@ -40,21 +43,19 @@ async function runPythonEngine(
       ...process.env,
       PYTHONUNBUFFERED: '1',
       PYTHONDONTWRITEBYTECODE: '1',
-      PYTHONHOME: '/usr',  // System Python home for VPS
+      // Don't set PYTHONHOME for venv - it's self-contained and breaks module lookup
+      // Only set it for system Python (which we don't use on VPS)
     } as any;
     
-    // Explicitly set PYTHONPATH for VPS deployment (Linux uses dist-packages)
+    // For venv, add venv lib directory to PYTHONPATH
     if (process.platform !== 'win32') {
-      const pythonPaths = [
-        '/usr/lib/python3/dist-packages',
-        '/usr/lib/python3.12/dist-packages',
-        '/usr/lib/python3.11/dist-packages',
-        '/usr/lib/python3.10/dist-packages',
-        '/usr/local/lib/python3.12/site-packages',
-        '/usr/local/lib/python3.11/site-packages',
-        '/usr/local/lib/python3.10/site-packages',
+      const venvPaths = [
+        '/var/www/simplifyconvertapp/venv/lib/python3.12/site-packages',
+        '/var/www/simplifyconvertapp/venv/lib/python3.11/site-packages',
+        '/var/www/simplifyconvertapp/venv/lib/python3.10/site-packages',
+        '/var/www/simplifyconvertapp/venv/lib',
       ];
-      spawnEnv.PYTHONPATH = pythonPaths.join(':');
+      spawnEnv.PYTHONPATH = venvPaths.join(':');
     }
     
     const python = spawn(pythonExe, [pythonScript, ...args], {
@@ -89,93 +90,359 @@ async function runPythonEngine(
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const formData = await request.formData();
-    const toolId = formData.get('tool') as string;
-    const tool = getToolById(toolId);
+  let uploadedFilePath: string | null = null;
+  let toolId: string | null = null;
+  let toolName: string | null = null;
 
-    if (!tool) {
-      return NextResponse.json(
-        { error: 'Tool not found' },
-        { status: 404 }
-      );
+  try {
+    // Parse form data
+    const formData = await request.formData();
+    toolId = formData.get('tool') as string;
+
+    // Validate tool exists
+    if (!toolId) {
+      return createErrorResponse('Tool ID is required', VideoToolErrorType.API_ERROR, null, null, 400);
     }
 
-    // Extract options
+    const tool = getToolById(toolId);
+    if (!tool) {
+      return createErrorResponse('Tool not found', VideoToolErrorType.API_ERROR, toolId, null, 404);
+    }
+
+    toolName = tool.title;
+
+    // Extract options from form data
     const options: Record<string, any> = {};
+    let fileMetadata: { filename: string; size: number; mimeType: string } | undefined;
+
     for (const [key, value] of formData.entries()) {
       if (key !== 'tool' && key !== 'file') {
         options[key] = value;
       }
     }
 
-    let inputPath: string;
+    let inputPath: string | undefined;
+    const file = formData.get('file') as File | null;
 
     // Handle file upload or URL
     if (tool.inputMethod === 'url' || tool.inputMethod === 'both') {
-      inputPath = options.url || (formData.get('url') as string);
-      if (!inputPath) {
-        return NextResponse.json(
-          { error: 'URL required for this tool' },
-          { status: 400 }
-        );
-      }
-    } else {
-      // File upload
-      const file = formData.get('file') as File;
-      if (!file) {
-        return NextResponse.json(
-          { error: 'File required for this tool' },
-          { status: 400 }
-        );
-      }
+      const url = options.url || (formData.get('url') as string);
 
-      const bytes = await file.arrayBuffer();
-      const filename = `${uuidv4()}${path.extname(file.name)}`;
-      inputPath = path.join(TEMP_DIR, filename);
-
-      await writeFile(inputPath, Buffer.from(bytes));
+      if (url) {
+        // Validate URL format
+        try {
+          new URL(url);
+          inputPath = url;
+        } catch {
+          return createErrorResponse(
+            'Invalid URL format',
+            VideoToolErrorType.INVALID_URL,
+            toolId,
+            toolName,
+            400
+          );
+        }
+      }
     }
 
-    // Run the Python engine
-    const result = await runPythonEngine(
-      tool.engine,
-      toolId,
-      inputPath,
-      options
-    );
+    // File upload validation - required if no URL provided or if tool requires file input
+    if (!inputPath) {
+      if (!file) {
+        return createErrorResponse(
+          'File is required',
+          VideoToolErrorType.API_ERROR,
+          toolId,
+          toolName,
+          400
+        );
+      }
 
-    // Read the output file and return it
+      // Validate file is not empty
+      if (file.size === 0) {
+        return createErrorResponse(
+          'Uploaded file is empty',
+          VideoToolErrorType.EMPTY_FILE,
+          toolId,
+          toolName,
+          400,
+          { filename: file.name, size: 0, mimeType: file.type }
+        );
+      }
+
+      // Validate file size against tool limits
+      const maxSizeMB = 500; // Default max size
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > maxSizeMB) {
+        return createErrorResponse(
+          `File too large: ${fileSizeMB.toFixed(2)}MB exceeds ${maxSizeMB}MB limit`,
+          VideoToolErrorType.FILE_TOO_LARGE,
+          toolId,
+          toolName,
+          400,
+          { filename: file.name, size: file.size, mimeType: file.type }
+        );
+      }
+
+      // Validate file extension
+      const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+      if (!tool.accepts.includes(ext)) {
+        return createErrorResponse(
+          `File type ${ext} not supported. Accepted: ${tool.accepts.join(', ')}`,
+          VideoToolErrorType.UNSUPPORTED_FORMAT,
+          toolId,
+          toolName,
+          400,
+          { filename: file.name, size: file.size, mimeType: file.type }
+        );
+      }
+
+      fileMetadata = {
+        filename: file.name,
+        size: file.size,
+        mimeType: file.type,
+      };
+
+      // Save uploaded file
+      const bytes = await file.arrayBuffer();
+      const filename = `${uuidv4()}${path.extname(file.name)}`;
+      uploadedFilePath = path.join(TEMP_DIR, filename);
+
+      try {
+        await writeFile(uploadedFilePath, Buffer.from(bytes));
+        inputPath = uploadedFilePath;
+      } catch (error) {
+        console.error('Failed to save uploaded file:', error);
+        return createErrorResponse(
+          'Failed to save uploaded file',
+          VideoToolErrorType.API_ERROR,
+          toolId,
+          toolName,
+          500,
+          fileMetadata
+        );
+      }
+    }
+
+    // Run processing with timeout
+    let result;
+    try {
+      result = await Promise.race([
+        runPythonEngine(tool.engine, toolId, inputPath, options),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Processing timeout')), 55000) // 55 second timeout
+        ),
+      ]);
+    } catch (processingError) {
+      const errorMsg = processingError instanceof Error ? processingError.message : 'Unknown processing error';
+
+      // Determine error type
+      let errorType = VideoToolErrorType.FFMPEG_FAILED;
+      if (errorMsg.includes('timeout')) {
+        errorType = VideoToolErrorType.PROCESSING_TIMEOUT;
+      } else if (errorMsg.includes('memory')) {
+        errorType = VideoToolErrorType.MEMORY_ERROR;
+      }
+
+      // Parse Python errors if available
+      if (errorMsg.includes('Python process failed')) {
+        const parsed = parsePythonError(errorMsg);
+        errorType = parsed.type;
+      }
+
+      // Send error email
+      await sendErrorEmail({
+        toolId,
+        toolName: toolName || 'Unknown',
+        errorType,
+        errorMessage: errorMsg,
+        userMessage: 'Video processing failed. Please try with a different file or contact support.',
+        url: request.headers.get('referer') || 'unknown',
+        timestamp: new Date().toISOString(),
+        fileMeta: fileMetadata
+          ? {
+              filename: fileMetadata.filename,
+              size: `${(fileMetadata.size / 1024 / 1024).toFixed(2)}MB`,
+              mimeType: fileMetadata.mimeType,
+            }
+          : undefined,
+        systemInfo: {
+          userAgent: request.headers.get('user-agent') || 'unknown',
+          platform: 'server',
+        },
+        stackTrace: errorMsg,
+      });
+
+      return createErrorResponse(
+        'Video processing failed',
+        errorType,
+        toolId,
+        toolName,
+        500,
+        fileMetadata
+      );
+    }
+
+    // Validate output
     const { outputPath, outputType } = result;
+    if (!outputPath || !outputType) {
+      return createErrorResponse(
+        'Invalid processing output',
+        VideoToolErrorType.API_ERROR,
+        toolId,
+        toolName,
+        500,
+        fileMetadata
+      );
+    }
 
+    // Handle text output
     if (outputType === 'text' || outputType.includes('text')) {
-      // Return text content
-      const content = await import('fs/promises').then(m => m.readFile(outputPath, 'utf-8'));
-      return NextResponse.json({ content, type: 'text' });
-    } else {
-      // Return downloadable file
+      try {
+        const content = await import('fs/promises').then((m) => m.readFile(outputPath, 'utf-8'));
+        return NextResponse.json({ content, type: 'text' }, { status: 200 });
+      } catch (error) {
+        console.error('Failed to read text output:', error);
+        return createErrorResponse(
+          'Failed to read processing result',
+          VideoToolErrorType.API_ERROR,
+          toolId,
+          toolName,
+          500,
+          fileMetadata
+        );
+      }
+    }
+
+    // Handle file output
+    try {
       const fs = await import('fs');
       const fileStream = fs.createReadStream(outputPath);
       const contentType = getContentType(outputPath);
 
+      // Create response with proper headers
       const response = new NextResponse(fileStream as any, {
+        status: 200,
         headers: {
           'Content-Type': contentType,
           'Content-Disposition': `attachment; filename="${path.basename(outputPath)}"`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
         },
       });
 
-      // Clean up after sending
-      response.headers.set('X-Cleanup-Path', outputPath);
+      // Schedule cleanup after response is sent
+      // In production, use a job queue or cleanup service
+      scheduleCleanup(uploadedFilePath, outputPath);
 
       return response;
+    } catch (error) {
+      console.error('Failed to send file:', error);
+      return createErrorResponse(
+        'Failed to prepare download',
+        VideoToolErrorType.API_ERROR,
+        toolId,
+        toolName,
+        500,
+        fileMetadata
+      );
     }
   } catch (error) {
-    console.error('Media processing error:', error);
+    // Unexpected errors
+    console.error('Unexpected API error:', error);
+
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+
+    // Send error email for unexpected errors
+    await sendErrorEmail({
+      toolId: toolId || 'unknown',
+      toolName: toolName || 'Unknown Tool',
+      errorType: VideoToolErrorType.UNKNOWN_ERROR,
+      errorMessage: errorMsg,
+      userMessage: 'An unexpected error occurred. Our team has been notified.',
+      url: request.headers.get('referer') || 'unknown',
+      timestamp: new Date().toISOString(),
+      systemInfo: {
+        userAgent: request.headers.get('user-agent') || 'unknown',
+        platform: 'server',
+      },
+      stackTrace: error instanceof Error ? error.stack : undefined,
+    }).catch((emailError) => {
+      console.error('Failed to send error email:', emailError);
+    });
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Processing failed' },
+      { error: 'An unexpected error occurred. Please try again.' },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * Create standardized error response
+ */
+function createErrorResponse(
+  message: string,
+  errorType: VideoToolErrorType,
+  toolId: string | null,
+  toolName: string | null,
+  statusCode: number,
+  fileMeta?: { filename: string; size: number; mimeType: string }
+): NextResponse {
+  const sanitized = sanitizeErrorMessage(message);
+
+  // Log error details to server console for debugging
+  console.error('[API Error Response]', {
+    toolId,
+    toolName,
+    errorType,
+    message: sanitized,
+    statusCode,
+    timestamp: new Date().toISOString(),
+  });
+
+  return NextResponse.json(
+    {
+      error: sanitized,
+      type: errorType,
+      toolId: toolId || 'unknown',
+      toolName: toolName || 'Unknown',
+      message: sanitized,
+      details: {
+        timestamp: new Date().toISOString(),
+        statusCode,
+      },
+    },
+    { status: statusCode }
+  );
+}
+
+/**
+ * Schedule cleanup of temporary files
+ * In production, use a proper job queue or cleanup service
+ */
+async function scheduleCleanup(uploadedPath?: string | null, outputPath?: string) {
+  // Schedule cleanup after 1 hour
+  setTimeout(() => {
+    cleanup(uploadedPath, outputPath).catch((error) => {
+      console.error('Cleanup error:', error);
+    });
+  }, 3600000); // 1 hour
+}
+
+/**
+ * Clean up temporary files
+ */
+async function cleanup(uploadedPath?: string | null, outputPath?: string) {
+  const paths = [uploadedPath, outputPath].filter(Boolean) as string[];
+
+  for (const filePath of paths) {
+    try {
+      await unlink(filePath);
+      console.log(`[Cleanup] Removed temporary file: ${filePath}`);
+    } catch (error) {
+      if ((error as any).code !== 'ENOENT') {
+        console.error(`[Cleanup] Failed to remove ${filePath}:`, error);
+      }
+    }
   }
 }
 
@@ -200,4 +467,5 @@ function getContentType(filePath: string): string {
   };
   return contentTypes[ext] || 'application/octet-stream';
 }
+
 

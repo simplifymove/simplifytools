@@ -3,13 +3,108 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Copy, RefreshCw, Download, ArrowLeft, Loader, ChevronRight, Zap, Shield, CheckCircle } from 'lucide-react';
+import { Copy, RefreshCw, Download, ArrowLeft, Loader, ChevronRight, Zap, Shield, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getToolById } from '@/app/lib/ai-tools';
 import type { AIWriteTool } from '@/app/lib/ai-tools';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import AIDetectorResults from '@/app/components/AIDetectorResults';
+
+// Action-specific CTA text for each tool
+function getActionText(toolId: string): string {
+  const actionMap: Record<string, string> = {
+    'paragraph-writer': 'Write Paragraph',
+    'content-improver': 'Improve Content',
+    'content-summarizer': 'Summarize Content',
+    'grammar-fixer': 'Fix Grammar',
+    'translate': 'Translate',
+    'blog-post-generator': 'Generate Blog Post',
+    'faq-generator': 'Generate FAQs',
+    'article-writer': 'Write Article',
+    'article-rewriter': 'Rewrite Article',
+    'blog-rewriter': 'Rewrite Blog',
+    'email-writer': 'Write Email',
+    'essay-writer': 'Write Essay',
+    'story-generator': 'Generate Story',
+    'poem-generator': 'Create Poem',
+    'product-description-writer': 'Write Description',
+    'cover-letter-writer': 'Write Cover Letter',
+    'sentence-rewriter': 'Rewrite Sentence',
+    'social-media-writer': 'Create Post',
+    'facebook-post-generator': 'Generate Post',
+    'instagram-caption-generator': 'Create Caption',
+    'linkedin-post-generator': 'Generate Post',
+    'twitter-generator': 'Create Tweet',
+    'youtube-title-generator': 'Generate Title',
+    'youtube-description-generator': 'Generate Description',
+    'tiktok-caption-generator': 'Create Caption',
+    'cold-email-writer': 'Write Email',
+    'question-generator': 'Generate Questions',
+    'outline-generator': 'Generate Outline',
+    'title-rewriter': 'Rewrite Title',
+    'tone-of-voice': 'Change Tone',
+    'text-expander': 'Expand Text',
+  };
+
+  return actionMap[toolId] || 'Generate Content';
+}
+
+// Related AI writing tools by category and relevance
+function getRelatedTools(toolId: string): Array<{ id: string; title: string; description: string }> {
+  const relatedMap: Record<string, Array<{ id: string; title: string; description: string }>> = {
+    'paragraph-writer': [
+      { id: 'content-improver', title: 'Content Improver', description: 'Enhance your writing quality' },
+      { id: 'blog-post-generator', title: 'Blog Post Generator', description: 'Create full blog posts' },
+      { id: 'grammar-fixer', title: 'Grammar Fixer', description: 'Fix grammar and punctuation' },
+      { id: 'sentence-rewriter', title: 'Sentence Rewriter', description: 'Rewrite sentences for clarity' },
+    ],
+    'content-improver': [
+      { id: 'grammar-fixer', title: 'Grammar Fixer', description: 'Fix grammar issues' },
+      { id: 'tone-of-voice', title: 'Tone of Voice', description: 'Adjust writing tone' },
+      { id: 'content-summarizer', title: 'Content Summarizer', description: 'Condense your content' },
+      { id: 'sentence-rewriter', title: 'Sentence Rewriter', description: 'Improve sentences' },
+    ],
+    'content-summarizer': [
+      { id: 'paragraph-writer', title: 'Paragraph Writer', description: 'Write new paragraphs' },
+      { id: 'content-improver', title: 'Content Improver', description: 'Enhance content quality' },
+      { id: 'blog-post-generator', title: 'Blog Post Generator', description: 'Create blog posts' },
+      { id: 'outline-generator', title: 'Outline Generator', description: 'Create content outlines' },
+    ],
+    'grammar-fixer': [
+      { id: 'content-improver', title: 'Content Improver', description: 'Improve overall content' },
+      { id: 'tone-of-voice', title: 'Tone of Voice', description: 'Adjust tone' },
+      { id: 'sentence-rewriter', title: 'Sentence Rewriter', description: 'Rewrite sentences' },
+      { id: 'paragraph-writer', title: 'Paragraph Writer', description: 'Write paragraphs' },
+    ],
+    'blog-post-generator': [
+      { id: 'blog-rewriter', title: 'Blog Post Rewriter', description: 'Rewrite blog posts' },
+      { id: 'outline-generator', title: 'Outline Generator', description: 'Create blog outline' },
+      { id: 'content-improver', title: 'Content Improver', description: 'Polish content' },
+      { id: 'seo-optimizer', title: 'SEO Optimizer', description: 'Optimize for search' },
+    ],
+    'email-writer': [
+      { id: 'cold-email-writer', title: 'Cold Email Writer', description: 'Write cold emails' },
+      { id: 'content-improver', title: 'Content Improver', description: 'Improve email copy' },
+      { id: 'tone-of-voice', title: 'Tone of Voice', description: 'Adjust email tone' },
+      { id: 'grammar-fixer', title: 'Grammar Fixer', description: 'Fix email grammar' },
+    ],
+    'social-media-writer': [
+      { id: 'facebook-post-generator', title: 'Facebook Post Generator', description: 'Create Facebook posts' },
+      { id: 'instagram-caption-generator', title: 'Instagram Caption Generator', description: 'Write captions' },
+      { id: 'linkedin-post-generator', title: 'LinkedIn Post Generator', description: 'Create LinkedIn posts' },
+      { id: 'twitter-generator', title: 'Twitter Generator', description: 'Write tweets' },
+    ],
+    'default': [
+      { id: 'content-improver', title: 'Content Improver', description: 'Enhance any content' },
+      { id: 'paragraph-writer', title: 'Paragraph Writer', description: 'Write paragraphs' },
+      { id: 'grammar-fixer', title: 'Grammar Fixer', description: 'Fix grammar' },
+      { id: 'tone-of-voice', title: 'Tone of Voice', description: 'Adjust tone' },
+    ]
+  };
+
+  return relatedMap[toolId] || relatedMap['default'];
+}
 
 export default function AIWriteToolPage() {
   const params = useParams();
@@ -261,7 +356,7 @@ export default function AIWriteToolPage() {
                     ) : (
                       <>
                         <Zap size={18} />
-                        Generate
+                        {tool ? getActionText(tool.id) : 'Generate'}
                       </>
                     )}
                   </button>
@@ -386,17 +481,17 @@ export default function AIWriteToolPage() {
               {
                 icon: Zap,
                 title: 'Instant Generation',
-                description: 'Get AI-powered results instantly with advanced algorithms',
+                description: 'Get AI-powered suggestions instantly with advanced algorithms',
               },
               {
                 icon: Shield,
-                title: 'Privacy First',
-                description: 'Content is processed securely and automatically deleted after a short period. We do not permanently store your inputs or outputs',
+                title: 'Privacy & Security',
+                description: 'Your content is processed securely. Always review and edit AI-generated content before use. Keep your originals safe.',
               },
               {
                 icon: CheckCircle,
-                title: 'High Quality',
-                description: 'Professional-grade content powered by AI',
+                title: 'Professional Quality',
+                description: 'AI-assisted content designed to help with your writing workflow',
               },
             ].map((feature, index) => (
               <motion.div
@@ -414,6 +509,132 @@ export default function AIWriteToolPage() {
               </motion.div>
             ))}
           </div>
+        </motion.div>
+
+        {/* SEO Content Sections */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.8 }} className="max-w-4xl mx-auto mt-24 space-y-16">
+          {/* How-To Guide Section */}
+          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">How to {getActionText(tool.id)}</h2>
+            <ol className="space-y-4 list-decimal list-inside">
+              <li className="text-gray-700">
+                <strong>Fill in your details:</strong> Enter the required information in the fields on the left. Be specific for better results.
+              </li>
+              <li className="text-gray-700">
+                <strong>Click {getActionText(tool.id)}:</strong> Hit the button to generate your content with AI assistance.
+              </li>
+              <li className="text-gray-700">
+                <strong>Review the output:</strong> Carefully read the generated content. AI output requires human review and editing.
+              </li>
+              <li className="text-gray-700">
+                <strong>Edit and refine:</strong> Make adjustments to match your exact needs and voice before using the final content.
+              </li>
+            </ol>
+          </section>
+
+          {/* Why Use Section */}
+          <section className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200 p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use {tool.title}?</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {[
+                {
+                  title: 'Save Time',
+                  description: 'Reduce time spent on initial drafts. AI assistance helps you work faster.'
+                },
+                {
+                  title: 'Overcome Writer\'s Block',
+                  description: 'Get inspired with AI suggestions when you\'re stuck on what to write next.'
+                },
+                {
+                  title: 'Quality First Draft',
+                  description: 'Use as a starting point that you can edit and customize for your needs.'
+                },
+                {
+                  title: 'Free to Use',
+                  description: 'No credit card required. Test our AI writing tools completely free.'
+                }
+              ].map((benefit, idx) => (
+                <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
+                  <h3 className="font-semibold text-gray-900 mb-2">{benefit.title}</h3>
+                  <p className="text-gray-700 text-sm">{benefit.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* FAQ Section */}
+          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+            <div className="space-y-6">
+              {[
+                {
+                  q: 'Is the content 100% original?',
+                  a: 'AI tools generate variations of existing content patterns. Always review and customize the output. Original thought and editing are essential to create unique content.'
+                },
+                {
+                  q: 'Can I use the output directly without editing?',
+                  a: 'We recommend reviewing and editing all AI-generated content. Add your own perspective, verify facts, and customize to your voice and brand.'
+                },
+                {
+                  q: 'Does AI detection flag this content?',
+                  a: 'Content created with our tools may be detected by AI detection services. Mix human and AI writing, add original insights, and edit heavily to reduce detectability.'
+                },
+                {
+                  q: 'Is my content private?',
+                  a: 'Content processed on our platform is handled securely. Always follow your organization\'s policies regarding sensitive data and AI tool usage.'
+                },
+                {
+                  q: 'Can I use this for commercial purposes?',
+                  a: 'Yes, but review our terms of service. Content must not violate copyright or contain harmful material.'
+                },
+                {
+                  q: 'How do I get the best results?',
+                  a: 'Provide detailed context, specific requirements, and clear examples. Better inputs lead to more useful AI suggestions that require less editing.'
+                }
+              ].map((faq, idx) => (
+                <div key={idx} className="border-b border-gray-200 pb-6 last:border-0">
+                  <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
+                  <p className="text-gray-700">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Related Tools Section */}
+          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Related Tools</h2>
+            <p className="text-gray-700 mb-6">Explore other AI writing tools to complement your workflow:</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              {getRelatedTools(tool.id).map((relatedTool, idx) => (
+                <Link
+                  key={idx}
+                  href={`/all-tools/ai-tools/${relatedTool.id}`}
+                  className="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition"
+                >
+                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 mb-1">{relatedTool.title}</h3>
+                  <p className="text-gray-600 text-sm">{relatedTool.description}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Important Notice - AI Trust & Usage Guidelines */}
+          <section className="bg-amber-50 rounded-xl border border-amber-200 p-8">
+            <div className="flex gap-3">
+              <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-semibold text-amber-900 mb-2">Important: Using AI Writing Tools Responsibly</h3>
+                <ul className="text-amber-900 text-sm space-y-2 list-disc list-inside">
+                  <li>AI content requires human review and editing before publication or submission</li>
+                  <li>Do not claim AI-generated content as entirely your own without proper disclosure when required</li>
+                  <li>Verify facts and claims - AI can make mistakes or hallucinate information</li>
+                  <li>Follow your institution's or organization's AI usage policies</li>
+                  <li>For academic work, check guidelines on AI tool usage before using output</li>
+                  <li>Keep your original work and AI-generated versions distinct</li>
+                </ul>
+              </div>
+            </div>
+          </section>
         </motion.div>
         </div>
       </div>

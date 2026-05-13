@@ -113,7 +113,7 @@ export const videoTools: Record<string, VideoTool> = {
     engine: 'edit',
     category: 'editing',
     accepts: ['.mp4', '.mov', '.avi', '.mkv', '.webm'],
-    outputType: 'same',
+    outputType: '.mp4',
     inputMethod: 'file',
     options: [],
   },
@@ -160,7 +160,7 @@ export const videoTools: Record<string, VideoTool> = {
     engine: 'edit',
     category: 'editing',
     accepts: ['.mp4', '.mov', '.avi', '.mkv', '.webm'],
-    outputType: 'same',
+    outputType: '.mp4',
     inputMethod: 'file',
     options: [
       {
@@ -187,7 +187,7 @@ export const videoTools: Record<string, VideoTool> = {
     engine: 'edit',
     category: 'editing',
     accepts: ['.mp4', '.mov', '.avi', '.mkv', '.webm'],
-    outputType: 'same',
+    outputType: '.mp4',
     inputMethod: 'file',
     options: [
       {

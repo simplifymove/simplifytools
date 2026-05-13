@@ -12,6 +12,21 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple, List
 
 
+def _get_ffmpeg_executable() -> str:
+    """
+    Get the full path to FFmpeg executable
+    Handles Windows CapCut installation specially
+    """
+    # Windows: try CapCut location first
+    if sys.platform == 'win32':
+        capcut_path = r'I:\CapCut\5.3.0.1964\ffmpeg.exe'
+        if os.path.exists(capcut_path):
+            return capcut_path
+    
+    # Fall back to PATH
+    return 'ffmpeg'
+
+
 def run_ffmpeg(args: List[str], capture_output: bool = False) -> Tuple[int, str, str]:
     """
     Run FFmpeg with given arguments
@@ -23,7 +38,8 @@ def run_ffmpeg(args: List[str], capture_output: bool = False) -> Tuple[int, str,
     Returns:
         Tuple of (exit_code, stdout, stderr)
     """
-    cmd = ['ffmpeg', '-y'] + args  # -y to auto-overwrite output
+    ffmpeg_exe = _get_ffmpeg_executable()
+    cmd = [ffmpeg_exe, '-y'] + args  # -y to auto-overwrite output
     
     try:
         result = subprocess.run(
@@ -39,6 +55,21 @@ def run_ffmpeg(args: List[str], capture_output: bool = False) -> Tuple[int, str,
         raise RuntimeError('FFmpeg not found. Please install FFmpeg.')
 
 
+def _get_ffprobe_executable() -> str:
+    """
+    Get the full path to FFprobe executable
+    Handles Windows CapCut installation specially
+    """
+    # Windows: try CapCut location first
+    if sys.platform == 'win32':
+        capcut_path = r'I:\CapCut\5.3.0.1964\ffprobe.exe'
+        if os.path.exists(capcut_path):
+            return capcut_path
+    
+    # Fall back to PATH
+    return 'ffprobe'
+
+
 def get_media_info(file_path: str) -> Dict:
     """
     Get information about media file using ffprobe
@@ -49,8 +80,9 @@ def get_media_info(file_path: str) -> Dict:
     Returns:
         Dictionary with media information
     """
+    ffprobe_exe = _get_ffprobe_executable()
     cmd = [
-        'ffprobe',
+        ffprobe_exe,
         '-v', 'error',
         '-select_streams', 'v:0',
         '-show_entries', 'stream=width,height,r_frame_rate,duration',
@@ -195,7 +227,7 @@ def resize_video(
     keep_aspect: bool = True
 ) -> bool:
     """
-    Resize video to specified dimensions
+    Resize video to specified dimensions with high quality output
     
     Args:
         input_path: Input video file
@@ -218,7 +250,8 @@ def resize_video(
     args = [
         '-i', input_path,
         '-vf', scale_filter,
-        '-c:a', 'copy',  # Copy audio without change
+        '-b:v', '5000k',  # High quality bitrate (5 Mbps)
+        '-c:a', 'copy',  # Copy audio unchanged for quality preservation
         output_path
     ]
     
