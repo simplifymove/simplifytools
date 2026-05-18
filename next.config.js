@@ -13,12 +13,47 @@ const nextConfig = {
   },
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+  // Exclude packages with native bindings from server bundle
+  // These packages contain .node files (native compiled binaries) that cannot be bundled
+  serverExternalPackages: [
+    '@remotion/bundler',      // Remotion video rendering (has .node files)
+    '@remotion/renderer',     // Remotion rendering engine
+    '@remotion/cli',          // Remotion CLI tools
+    '@rspack/core',           // Rust-based webpack replacement
+    '@rspack/binding',        // RSPACK native bindings (.node files)
+    'esbuild',                // JavaScript bundler (has .node files)
+    'canvas',                 // Node.js canvas library (native bindings)
+    'pdfjs-dist',             // PDF.js distribution (has native components)
+    'remotion',               // Main Remotion package
+  ],
   // Webpack configuration for server-side modules
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // Mark Remotion packages as external (not bundled)
-      // These packages have native binaries and should not be bundled by Webpack
-      config.externals.push('@remotion/bundler', '@remotion/renderer', 'remotion', 'esbuild');
+      // Mark packages with native binaries as external (not bundled)
+      // Prevents webpack from trying to bundle .node files and compiled binaries
+      const externalsArray = [
+        '@remotion/bundler',
+        '@remotion/renderer',
+        '@remotion/cli',
+        'remotion',
+        'esbuild',
+        'canvas',
+        'pdfjs-dist',
+        '@rspack/core',
+        '@rspack/binding',
+      ];
+      
+      externalsArray.forEach(pkg => {
+        if (!config.externals.includes(pkg)) {
+          config.externals.push(pkg);
+        }
+      });
+
+      // Handle .node file imports (native binary files)
+      config.module.rules.push({
+        test: /\.node$/,
+        use: 'node-loader', // Use node-loader for .node files
+      });
     }
     return config;
   },

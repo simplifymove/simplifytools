@@ -3,18 +3,19 @@
  * Adds cinematic asset enrichment to the script generation pipeline
  * 
  * This wraps the existing script generation with asset fetching
+ * 
+ * NOTE: Asset enrichment is temporarily disabled (Remotion removed for build compatibility)
  */
 
 import { VideoScript } from '@/app/utils/types/video-generation';
-import { enrichScenesForRendering } from '@/app/utils/remotion/AssetFetcher';
 
 /**
  * Enriches a generated script with assets before rendering
- * This is called after Groq generates the script but before Remotion renders it
+ * Currently disabled as Remotion and asset pipeline are not available
  */
 export async function enrichGeneratedScript(script: VideoScript): Promise<VideoScript> {
   console.log('\n' + '█'.repeat(80));
-  console.log('🎬 SCRIPT ENRICHMENT - Starting asset attachment');
+  console.log('🎬 SCRIPT ENRICHMENT - Disabled (Remotion removed for build compatibility)');
   console.log('█'.repeat(80));
 
   try {
@@ -25,22 +26,14 @@ export async function enrichGeneratedScript(script: VideoScript): Promise<VideoS
     console.log(`🎨 Style: ${script.style}`);
     console.log(`📍 Scenes: ${script.scenes.length}`);
 
-    // Enrich scenes with assets
-    const enrichedScenes = await enrichScenesForRendering(script.scenes);
-
-    // Return enriched script
-    const enrichedScript: VideoScript = {
-      ...script,
-      scenes: enrichedScenes,
-    };
-
-    console.log('\n✅ Script enrichment complete');
+    // Return original script - enrichment is disabled
+    console.log('\n⚠️  Asset enrichment is disabled - returning original script');
     console.log('█'.repeat(80) + '\n');
 
-    return enrichedScript;
+    return script;
   } catch (error) {
-    console.error('❌ Script enrichment failed:', error);
-    // Return original script if enrichment fails - system still works
+    console.error('❌ Script enrichment error:', error);
+    // Return original script if anything fails - system still works
     return script;
   }
 }

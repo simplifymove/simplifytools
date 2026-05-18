@@ -1,0 +1,129 @@
+{
+  "name": "simplifyconvert-ai-code-assistant",
+  "displayName": "SimplifyConvert AI Code Assistant",
+  "description": "AI-powered code assistant with Explain, Fix, Optimize, and more",
+  "version": "0.0.5",
+  "publisher": "SimplifyConvert",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "simplifyconvertAI.openChat",
+        "title": "SimplifyConvert AI: Open Chat"
+      },
+      {
+        "command": "simplifyconvertAI.explainSelection",
+        "title": "SimplifyConvert AI: Explain Selection"
+      },
+      {
+        "command": "simplifyconvertAI.fixSelection",
+        "title": "SimplifyConvert AI: Fix Selection"
+      },
+      {
+        "command": "simplifyconvertAI.optimizeSelection",
+        "title": "SimplifyConvert AI: Optimize Selection"
+      },
+      {
+        "command": "simplifyconvertAI.generateComments",
+        "title": "SimplifyConvert AI: Generate Comments"
+      },
+      {
+        "command": "simplifyconvertAI.debugError",
+        "title": "SimplifyConvert AI: Debug Error"
+      },
+      {
+        "command": "simplifyconvertAI.setApiKey",
+        "title": "SimplifyConvert AI: Set API Key"
+      },
+      {
+        "command": "simplifyconvertAI.clearApiKey",
+        "title": "SimplifyConvert AI: Clear API Key"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "simplifyconvertAI.explainSelection",
+          "group": "1_modification",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "simplifyconvertAI.fixSelection",
+          "group": "1_modification",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "simplifyconvertAI.optimizeSelection",
+          "group": "1_modification",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "simplifyconvertAI.generateComments",
+          "group": "1_modification",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "simplifyconvertAI.debugError",
+          "group": "1_modification"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "simplifyconvertAI",
+          "title": "SimplifyConvert AI",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "simplifyconvertAI": [
+        {
+          "id": "simplifyconvertAI.chatView",
+          "name": "Chat",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SimplifyConvert AI Code Assistant",
+      "properties": {
+        "simplifyconvertAI.apiBaseUrl": {
+          "type": "string",
+          "default": "https://simplifyconvert.com",
+          "description": "Base URL for SimplifyConvert API"
+        },
+        "simplifyconvertAI.defaultModelLabel": {
+          "type": "string",
+          "default": "Qwen 2.5 Coder",
+          "description": "Default model name to display"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package --no-dependencies",
+    "test": "node ./dist/extension.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}

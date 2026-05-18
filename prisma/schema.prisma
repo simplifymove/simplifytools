@@ -55,6 +55,15 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  
+  // AI Code Assistant relationships
+  subscription    AiSubscription?
+  apiKeys         ApiKey[]
+  payments        Payment[]
+  usageLogs       UsageLog[]
+  deviceResetLogs DeviceResetLog[]
+  emailReminders  EmailReminderLog[]
+  projectMemories ProjectMemory[]
 }
 
 model VerificationToken {
@@ -63,4 +72,154 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// AI Code Assistant Models
+
+model AiSubscription {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  planName         String   @default("monthly")
+  status           String   @default("expired") // active | expired | cancelled
+  monthlyCredits   Int
+  creditsUsed      Int      @default(0)
+  creditsRemaining Int
+  startsAt         DateTime?
+  expiresAt        DateTime?
+  lastPaymentId    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model ApiKey {
+  id           String   @id @default(cuid())
+  userId       String
+  keyHash      String   @unique // bcrypt hash
+  keyPrefix    String   // e.g., "sca_" + first 8 chars
+  keyLast4     String   // last 4 chars for display
+  machineId    String?  // device lock
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deactivatedAt DateTime?
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageLogs  UsageLog[]
+  deviceLogs DeviceResetLog[]
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+model Payment {
+  id                 String   @id @default(cuid())
+  userId             String
+  razorpayOrderId    String   @unique
+  razorpayPaymentId  String?  @unique
+  amount             Int      // in paise (smallest unit)
+  currency           String   @default("INR")
+  status             String   @default("created") // created | authorized | captured | failed | failed
+  rawWebhookPayload  String?  // JSON string
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([razorpayOrderId])
+  @@index([status])
+}
+
+model UsageLog {
+  id              String   @id @default(cuid())
+  userId          String
+  apiKeyId        String
+  model           String   // e.g., "Qwen 2.5 Coder"
+  taskType        String   // explain | fix | generate | debug | chat
+  inputCharacters Int
+  creditsCharged  Int
+  status          String   // success | failed | rejected
+  errorCode       String?  // SECRET_DETECTED | PROMPT_TOO_LARGE | SERVER_BUSY | RATE_LIMITED
+  errorMessage    String?
+  latencyMs       Int?     // Response time in milliseconds
+  createdAt       DateTime @default(now())
+
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKey  ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([errorCode])
+}
+
+model DeviceResetLog {
+  id         String   @id @default(cuid())
+  userId     String
+  apiKeyId   String
+  resetAt    DateTime @default(now())
+
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([resetAt])
+}
+
+model EmailReminderLog {
+  id             String   @id @default(cuid())
+  userId         String
+  subscriptionId String?
+  reminderType   String   // three_days_before | one_day_before | expiry_day
+  sentAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sentAt])
+  @@unique([userId, reminderType, sentAt])
+}
+
+model ProjectMemory {
+  id                    String   @id @default(cuid())
+  userId                String
+  projectFingerprint    String
+  projectName           String
+  architectureSummary   String?
+  codingStandardsJson   String?  // JSON string
+  preferencesJson       String?  // JSON string
+  knownIssuesJson       String?  // JSON string
+  importantDecisionsJson String? // JSON string
+  updatedAt             DateTime @updatedAt
+  createdAt             DateTime @default(now())
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memoryEvents  MemoryEvent[]
+
+  @@unique([userId, projectFingerprint])
+  @@index([userId])
+}
+
+model MemoryEvent {
+  id              String   @id @default(cuid())
+  userId          String
+  projectMemoryId String
+  type            String   // decision | correction | preference | issue | summary
+  content         String
+  importance      String   // low | medium | high
+  createdAt       DateTime @default(now())
+
+  projectMemory ProjectMemory @relation(fields: [projectMemoryId], references: [id], onDelete: Cascade)
+
+  @@index([projectMemoryId])
+  @@index([userId])
+  @@index([type])
 }
