@@ -76,3 +76,24 @@ potrace.zip
 prisma/*.db
 prisma/*.db-journal
 migration.lock
+
+# Sensitive documentation and logs
+*CHECKLIST*
+*SECRET*
+*verification*
+*VERIFICATION*
+build_errors*.txt
+build_output.txt
+*.log
+test-results.txt
+debug*.txt
+
+# API Keys and credentials in any file format
+*API_KEY*
+*api_key*
+*token*
+*TOKEN*
+*.key
+*.pem
+*.p12
+secrets*
