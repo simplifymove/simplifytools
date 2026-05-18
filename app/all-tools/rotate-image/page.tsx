@@ -7,6 +7,18 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { rotateImage } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { ErrorAlert } from '@/app/components/error-components';
+
+const TOOL_ID = 'rotate-image';
+const TOOL_NAME = 'Rotate Image';
 
 export default function RotateImagePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -14,8 +26,10 @@ export default function RotateImagePage() {
   const [rotation, setRotation] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
     setFile(selectedFile);
     setRotation(0);
     const reader = new FileReader();
@@ -30,6 +44,7 @@ export default function RotateImagePage() {
     setPreview(null);
     setResult(null);
     setRotation(0);
+    clearError();
   };
 
   const quickRotate = (degrees: number) => {
@@ -37,14 +52,93 @@ export default function RotateImagePage() {
   };
 
   const handleRotate = async () => {
-    if (!file) return;
-    
+    if (!file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
+
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(file);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(file.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(file);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(file, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { maxSize: sizeCheck.error },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
     setProcessing(true);
     try {
       const result = await rotateImage(file, rotation);
       setResult(result.blob);
-    } catch (error) {
-      alert('Error rotating image: ' + (error as Error).message);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: errorMsg },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
     } finally {
       setProcessing(false);
     }
@@ -94,6 +188,16 @@ export default function RotateImagePage() {
         {/* Main Content */}
         <div className="flex-1 py-12 px-4 md:px-8">
           <div className="max-w-6xl mx-auto">
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-6">
+                <ErrorAlert
+                  error={error}
+                  onDismiss={clearError}
+                />
+              </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">

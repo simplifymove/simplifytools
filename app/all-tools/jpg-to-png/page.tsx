@@ -7,20 +7,87 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'jpg-to-png';
+const TOOL_NAME = 'JPG to PNG Converter';
 
 export default function JpgToPngPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(selectedFile);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(selectedFile.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(selectedFile);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(selectedFile, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile },
+        { filename: selectedFile.name, size: selectedFile.size, mimeType: selectedFile.type }
+      );
+      return;
+    }
+
     setFile(selectedFile);
-    setError(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
+    };
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
     };
     reader.readAsDataURL(selectedFile);
   };
@@ -29,19 +96,31 @@ export default function JpgToPngPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
-    setError(null);
+    clearError();
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
+
     setProcessing(true);
-    setError(null);
+    clearError();
     try {
       const result = await convertImageFormat(file, 'image/png');
       setResult(result.blob);
-    } catch (error) {
-      setError((error as Error).message || 'Error converting image');
+    } catch (err) {
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file }
+      );
     } finally {
       setProcessing(false);
     }
@@ -91,6 +170,8 @@ export default function JpgToPngPage() {
       {/* Main Content */}
       <div className="flex-1 py-12 px-4 md:px-8">
         <div className="max-w-6xl mx-auto">
+          {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Upload Section - Left (2 cols) */}
             <div className="lg:col-span-2">
@@ -100,12 +181,9 @@ export default function JpgToPngPage() {
                   onFileSelect={handleFileSelect}
                   preview={preview}
                   onClearPreview={handleClearPreview}
+                  toolId={TOOL_ID}
+                  onValidationError={() => {}}
                 />
-                {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600">{error}</p>
-                  </div>
-                )}
               </div>
             </div>
 

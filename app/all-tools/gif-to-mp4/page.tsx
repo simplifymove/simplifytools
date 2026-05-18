@@ -6,20 +6,26 @@ import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'gif-to-mp4';
+const TOOL_NAME = 'GIF to MP4';
 
 export default function GifToMp4Page() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [fps, setFps] = useState(30);
   const [quality, setQuality] = useState(85);
+  const { error, clearError, createError } = useImageToolErrors();
 
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
-    setError(null);
+    clearError();
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -31,14 +37,14 @@ export default function GifToMp4Page() {
     setFile(null);
     setPreview(null);
     setResult(null);
-    setError(null);
+    clearError();
   };
 
   const handleConvert = async () => {
     if (!file) return;
 
     setProcessing(true);
-    setError(null);
+    clearError();
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -51,13 +57,26 @@ export default function GifToMp4Page() {
       });
       
       if (!response.ok) {
-        throw new Error('Conversion failed');
+        createError(
+          ImageToolErrorType.SHARP_FAILED,
+          TOOL_ID,
+          TOOL_NAME,
+          { error: 'Conversion failed' },
+          { filename: file.name, size: file.size, mimeType: file.type }
+        );
+        return;
       }
       
       const blob = await response.blob();
       setResult(blob);
     } catch (err) {
-      setError((err as Error).message || 'Error converting file');
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: err instanceof Error ? err.message : 'Error converting file' },
+        { filename: file?.name, size: file?.size, mimeType: file?.type }
+      );
     } finally {
       setProcessing(false);
     }
@@ -79,6 +98,9 @@ export default function GifToMp4Page() {
     <>
       <HomeHeader />
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Error Display */}
+        {error && <ErrorAlert error={error} onDismiss={clearError} />}
+        
         {/* Hero Header */}
         <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -118,11 +140,7 @@ export default function GifToMp4Page() {
                     onClearPreview={handleClearPreview}
                     accept=".gif"
                   />
-                  {error && (
-                    <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-600">{error}</p>
-                    </div>
-                  )}
+                  {error && <ErrorAlert error={error} onDismiss={clearError} />}
                 </div>
               </div>
 

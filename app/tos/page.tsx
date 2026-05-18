@@ -13,7 +13,7 @@ const categories = [
   { id: 'video', title: 'Video Tools', icon: Video, color: 'from-pink-500 via-pink-600 to-pink-700', count: '58+', link: '/all-tools/video-tools' },
   { id: 'ai', title: 'AI Writing', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '60+', link: '/all-tools/ai-tools' },
   { id: 'data', title: 'Data Conversion', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/all-tools/data-converter' },
-  { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '44+', link: '/tools' }
+  { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '44+', link: '/all-tools' }
 ];
 
 export default function TermsPage() {
@@ -234,11 +234,11 @@ export default function TermsPage() {
           >
             <div className="space-y-3">
               {['All Tools', 'Image', 'Video', 'AI Writing', 'Data'].map((item) => (
-                <Link key={item} href="/tools" className="block px-4 py-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
+                <Link key={item} href="/all-tools" className="block px-4 py-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
                   {item}
                 </Link>
               ))}
-              <Link href="/tools" className="block px-4 py-2 bg-orange-500 text-white rounded-lg font-medium">
+              <Link href="/all-tools" className="block px-4 py-2 bg-orange-500 text-white rounded-lg font-medium">
                 Browse Tools
               </Link>
             </div>

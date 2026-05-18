@@ -6,6 +6,12 @@ import { Download, ChevronRight, Loader, Upload } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { compressImage } from '../../lib/imageTools';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'batch-compress-images';
+const TOOL_NAME = 'Batch Compress Images';
 
 export default function BatchCompressImagesPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -13,6 +19,7 @@ export default function BatchCompressImagesPage() {
   const [processing, setProcessing] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [results, setResults] = useState<Array<{ name: string; original: number; compressed: number }>>([]);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -45,7 +52,13 @@ export default function BatchCompressImagesPage() {
       setResults(compressionResults);
       setCompleted(true);
     } catch (error) {
-      alert('Error compressing images: ' + (error as Error).message);
+      createError(
+        ImageToolErrorType.COMPRESSION_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: (error as Error).message },
+        undefined
+      );
     } finally {
       setProcessing(false);
     }
@@ -70,7 +83,13 @@ export default function BatchCompressImagesPage() {
         // Revoke the object URL to free memory
         URL.revokeObjectURL(url);
       } catch (error) {
-        console.error(`Error compressing ${file.name}:`, error);
+        createError(
+          ImageToolErrorType.COMPRESSION_FAILED,
+          TOOL_ID,
+          TOOL_NAME,
+          { error: (error as Error).message, filename: file.name },
+          { filename: file.name, size: file.size, mimeType: file.type }
+        );
       }
       
       await new Promise(resolve => setTimeout(resolve, 150));
@@ -85,6 +104,9 @@ export default function BatchCompressImagesPage() {
     <>
       <HomeHeader />
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Error Display */}
+        {error && <ErrorAlert error={error} onDismiss={clearError} />}
+        
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-green-600 via-green-700 to-green-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">

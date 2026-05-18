@@ -6,6 +6,18 @@ import { Download, ChevronRight, Loader, Image as ImageIcon } from 'lucide-react
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'image-to-text';
+const TOOL_NAME = 'Image to Text';
 
 export default function ImageToTextPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -15,12 +27,69 @@ export default function ImageToTextPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(selectedFile);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(selectedFile.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(selectedFile);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(selectedFile, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile },
+        { filename: selectedFile.name, size: selectedFile.size, mimeType: selectedFile.type }
+      );
+      return;
+    }
+
     setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
+    };
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
     };
     reader.readAsDataURL(selectedFile);
   };
@@ -29,12 +98,21 @@ export default function ImageToTextPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
+    clearError();
   };
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
     
     setProcessing(true);
+    clearError();
     try {
       const formData = new FormData();
       formData.append('tool', 'image-to-text');
@@ -58,7 +136,12 @@ export default function ImageToTextPage() {
       setResult(url);
       setResultFileName(`extracted-text.${outputFormat}`);
     } catch (error) {
-      alert('Error extracting text: ' + (error as Error).message);
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file }
+      );
     } finally {
       setProcessing(false);
     }
@@ -106,6 +189,8 @@ export default function ImageToTextPage() {
         {/* Main Content */}
         <div className="flex-1 py-12 px-4 md:px-8">
           <div className="max-w-6xl mx-auto">
+            {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">
@@ -115,7 +200,8 @@ export default function ImageToTextPage() {
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
-                    accept=".jpg,.jpeg,.png,.webp,.tiff,.tif"
+                    toolId={TOOL_ID}
+                    onValidationError={() => {}}
                   />
                   {file && (
                     <p className="mt-4 text-sm text-gray-600">

@@ -1,16 +1,24 @@
 /**
  * Error Email Reporting Service
  * Sends error notifications to info@simplifyconvert.com using existing SMTP
+ * Supports both video and image tools
  * Includes debouncing to prevent spam
  */
 
 import nodemailer from 'nodemailer';
-import { EmailErrorReport, VideoToolErrorType, ERROR_REPORTING_CONFIG } from '@/app/utils/types/errors';
+import {
+  EmailErrorReport,
+  VideoToolErrorType,
+  ImageToolErrorType,
+  ERROR_REPORTING_CONFIG,
+  IMAGE_ERROR_REPORTING_EXCLUSIONS,
+  ToolErrorType,
+} from '@/app/utils/types/errors';
 
 // In-memory store for debouncing (in production, use Redis or database)
 const errorLog = new Map<string, { count: number; lastTime: number }>();
 
-const DEBOUNCE_KEY_PREFIX = 'video-tool-error-';
+const DEBOUNCE_KEY_PREFIX = 'tool-error-';
 
 /**
  * Get nodemailer transporter instance
@@ -31,16 +39,26 @@ function getTransporter() {
 /**
  * Generate a debounce key for error deduplication
  */
-function getDebounceKey(toolId: string, errorType: VideoToolErrorType): string {
+function getDebounceKey(toolId: string, errorType: ToolErrorType): string {
   return `${DEBOUNCE_KEY_PREFIX}${toolId}-${errorType}`;
 }
 
 /**
- * Check if error should be debounced (too recent and similar)
+ * Check if error should be debounced
  */
-function shouldDeboounceError(toolId: string, errorType: VideoToolErrorType): boolean {
-  // Don't send email for user validation errors
-  if (ERROR_REPORTING_CONFIG.excludeFromReporting.includes(errorType)) {
+function shouldDebounceError(toolId: string, errorType: ToolErrorType): boolean {
+  // Check if this is a video tool validation error
+  const isVideoValidationError = Object.values(VideoToolErrorType).includes(
+    errorType as VideoToolErrorType
+  ) && ERROR_REPORTING_CONFIG.excludeFromReporting.includes(errorType as VideoToolErrorType);
+
+  // Check if this is an image tool validation error
+  const isImageValidationError = Object.values(ImageToolErrorType).includes(
+    errorType as ImageToolErrorType
+  ) && IMAGE_ERROR_REPORTING_EXCLUSIONS.includes(errorType as ImageToolErrorType);
+
+  // Don't send email for validation errors
+  if (isVideoValidationError || isImageValidationError) {
     return true;
   }
 
@@ -115,7 +133,7 @@ function formatSystemInfo(systemInfo?: EmailErrorReport['systemInfo']): string {
 export async function sendErrorEmail(errorReport: EmailErrorReport): Promise<boolean> {
   try {
     // Check if error should be debounced
-    if (shouldDeboounceError(errorReport.toolId, errorReport.errorType)) {
+    if (shouldDebounceError(errorReport.toolId, errorReport.errorType)) {
       console.log(`[Error Reporting] Debounced error: ${errorReport.toolId} - ${errorReport.errorType}`);
       return false;
     }

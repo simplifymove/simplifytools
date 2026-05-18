@@ -6,6 +6,18 @@ import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Download, ChevronRight, RefreshCw } from 'lucide-react';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'flip-image';
+const TOOL_NAME = 'Flip Image';
 
 export default function FlipImagePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -14,17 +26,72 @@ export default function FlipImagePage() {
   const [flipVertical, setFlipVertical] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
-  const [error, setError] = useState<string>('');
+  const { error, clearError, createError } = useImageToolErrors();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(selectedFile);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(selectedFile.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(selectedFile);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(selectedFile, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile },
+        { filename: selectedFile.name, size: selectedFile.size, mimeType: selectedFile.type }
+      );
+      return;
+    }
+
     setFile(selectedFile);
-    setError('');
     setResult(null);
 
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreview(reader.result as string);
+    };
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
     };
     reader.readAsDataURL(selectedFile);
   };
@@ -35,25 +102,48 @@ export default function FlipImagePage() {
     setResult(null);
     setFlipHorizontal(false);
     setFlipVertical(false);
+    clearError();
   };
 
   const flipImage = async () => {
     if (!file || !preview) {
-      setError('Please upload an image first');
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
       return;
     }
 
     setProcessing(true);
-    setError('');
+    clearError();
 
     try {
       const img = new Image();
       img.onload = () => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas) {
+          createError(
+            ImageToolErrorType.SHARP_FAILED,
+            TOOL_ID,
+            TOOL_NAME,
+            { file }
+          );
+          setProcessing(false);
+          return;
+        }
 
         const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        if (!ctx) {
+          createError(
+            ImageToolErrorType.SHARP_FAILED,
+            TOOL_ID,
+            TOOL_NAME,
+            { file }
+          );
+          setProcessing(false);
+          return;
+        }
 
         canvas.width = img.width;
         canvas.height = img.height;
@@ -89,6 +179,13 @@ export default function FlipImagePage() {
           (blob) => {
             if (blob) {
               setResult(blob);
+            } else {
+              createError(
+                ImageToolErrorType.SHARP_FAILED,
+                TOOL_ID,
+                TOOL_NAME,
+                { file }
+              );
             }
             setProcessing(false);
           },
@@ -97,12 +194,22 @@ export default function FlipImagePage() {
         );
       };
       img.onerror = () => {
-        setError('Failed to load image');
+        createError(
+          ImageToolErrorType.FILE_CORRUPTED,
+          TOOL_ID,
+          TOOL_NAME,
+          { file }
+        );
         setProcessing(false);
       };
       img.src = preview;
     } catch (err) {
-      setError('Error flipping image: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file }
+      );
       setProcessing(false);
     }
   };
@@ -150,12 +257,14 @@ export default function FlipImagePage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Section - Upload */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Upload Image</h2>
-              <ImageUploader onFileSelect={handleFileSelect} preview={preview} onClearPreview={handleClearPreview} accept="image/*" />
+              <ImageUploader onFileSelect={handleFileSelect} preview={preview} onClearPreview={handleClearPreview} toolId={TOOL_ID} onValidationError={() => {}} />
               {file && (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800">
@@ -219,12 +328,6 @@ export default function FlipImagePage() {
                   <span className="ml-3 font-medium text-gray-700">Flip Vertically</span>
                 </label>
               </div>
-
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              )}
 
               {/* Flip Button */}
               <button

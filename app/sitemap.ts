@@ -118,6 +118,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
   });
   console.log('✓ Added homepage: 1 URL');
 
+  // 1.5 ADD MAIN PAGES - important category and static pages
+  console.log('\n📄 MAIN PAGES');
+  console.log('─────────────────────────────');
+  
+  const mainPages = [
+    { url: '/all-tools', priority: 0.95, frequency: 'daily' as const, label: 'All Tools Directory' },
+    { url: '/blog', priority: 0.8, frequency: 'weekly' as const, label: 'Blog' },
+    { url: '/terms', priority: 0.3, frequency: 'yearly' as const, label: 'Terms of Service' },
+  ];
+  
+  mainPages.forEach(({ url, priority, frequency, label }) => {
+    sitemapEntries.push({
+      url: `${BASE_URL}${url}`,
+      lastModified: new Date(),
+      changeFrequency: frequency,
+      priority,
+    });
+    console.log(`✓ Added ${label}: ${url}`);
+  });
+
   // 2. MAIN TOOLS from tools.ts
   console.log('\n📋 MAIN TOOLS (from tools.ts)');
   console.log('─────────────────────────────');
@@ -320,6 +340,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   console.log('\n📊 FINAL SITEMAP BREAKDOWN');
   console.log('─────────────────────────────');
   console.log('Homepage entries: 1');
+  console.log('Main pages (All Tools, Blog, Terms): 3');
   console.log('Main tool pages: ' + validMainTools.length);
   
   // Count unique nested tools (excluding duplicates with main tools)
@@ -334,7 +355,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   console.log('Unique nested tool pages: ' + uniqueNestedToolsCount);
   console.log('Category pages: ' + addedCategories.size);
   
-  const expectedCount = 1 + validMainTools.length + uniqueNestedToolsCount + addedCategories.size;
+  const expectedCount = 1 + 3 + validMainTools.length + uniqueNestedToolsCount + addedCategories.size;
   console.log('\n📈 EXPECTED TOTAL:', expectedCount);
   console.log('✅ ACTUAL FINAL TOTAL:', deduplicatedSitemap.length, 'URLs');
   

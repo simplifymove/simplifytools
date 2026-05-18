@@ -1,0 +1,60 @@
+<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0F6FF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="groundGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2D5016;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a3a0f;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky -->
+  <rect width="1920" height="540" fill="url(#skyGradient)"/>
+  
+  <!-- Ground -->
+  <rect y="540" width="1920" height="540" fill="url(#groundGradient)"/>
+  
+  <!-- Distant trees -->
+  <ellipse cx="300" cy="480" rx="150" ry="120" fill="#3d6b2f" opacity="0.6"/>
+  <ellipse cx="500" cy="450" rx="180" ry="140" fill="#4a7c3c" opacity="0.6"/>
+  <ellipse cx="1400" cy="470" rx="160" ry="130" fill="#3d6b2f" opacity="0.6"/>
+  <ellipse cx="1650" cy="450" rx="190" ry="150" fill="#4a7c3c" opacity="0.6"/>
+  
+  <!-- Mid-ground trees -->
+  <g id="tree1">
+    <polygon points="800,650 700,450 900,450" fill="#2d5016"/>
+    <rect x="760" y="650" width="80" height="150" fill="#3a4a2a"/>
+  </g>
+  
+  <g id="tree2">
+    <polygon points="1100,700 980,450 1220,450" fill="#2d5016"/>
+    <rect x="1050" y="700" width="100" height="200" fill="#3a4a2a"/>
+  </g>
+  
+  <!-- Foreground trees -->
+  <g id="tree3">
+    <polygon points="400,850 200,350 600,350" fill="#1a3a0f"/>
+    <rect x="340" y="850" width="120" height="230" fill="#2d5016"/>
+  </g>
+  
+  <g id="tree4">
+    <polygon points="1600,850 1400,350 1800,350" fill="#1a3a0f"/>
+    <rect x="1540" y="850" width="120" height="230" fill="#2d5016"/>
+  </g>
+  
+  <!-- Forest floor texture -->
+  <circle cx="200" cy="900" r="30" fill="#1a2a0a" opacity="0.3"/>
+  <circle cx="400" cy="950" r="25" fill="#1a2a0a" opacity="0.3"/>
+  <circle cx="1700" cy="920" r="35" fill="#1a2a0a" opacity="0.3"/>
+  <circle cx="1500" cy="970" r="28" fill="#1a2a0a" opacity="0.3"/>
+  
+  <!-- Test label -->
+  <text x="960" y="100" font-size="48" fill="white" text-anchor="middle" font-weight="bold">
+    TEST ASSET: FOREST
+  </text>
+  <text x="960" y="150" font-size="24" fill="white" text-anchor="middle">
+    For Asset Pipeline Debugging
+  </text>
+</svg>

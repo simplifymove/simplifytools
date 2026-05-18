@@ -5,6 +5,12 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Droplet } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'blur-image';
+const TOOL_NAME = 'Blur Image';
 
 export default function BlurImagePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -13,6 +19,7 @@ export default function BlurImagePage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -61,7 +68,13 @@ export default function BlurImagePage() {
       const blurred = await applyBlur();
       setResult(blurred);
     } catch (error) {
-      alert('Error blurring image: ' + (error as Error).message);
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: (error as Error).message },
+        { filename: file.name, size: file.size, mimeType: file.type }
+      );
     } finally {
       setProcessing(false);
     }
@@ -83,6 +96,9 @@ export default function BlurImagePage() {
     <>
       <HomeHeader />
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Error Display */}
+        {error && <ErrorAlert error={error} onDismiss={clearError} />}
+        
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-cyan-600 via-cyan-700 to-cyan-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">

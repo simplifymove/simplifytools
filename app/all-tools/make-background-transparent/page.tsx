@@ -6,13 +6,24 @@ import { HomeHeader } from '@/app/components/HomeHeader';
 import { ImageUploader } from '@/app/components/ImageUploader';
 import { Download, ChevronRight, Eye, Zap, Settings2, Loader2, Copy, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'make-background-transparent';
+const TOOL_NAME = 'Make Background Transparent';
 
 export default function MakeBackgroundTransparentPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [threshold, setThreshold] = useState(12);
   const [feather, setFeather] = useState(2);
   const [edgePreservation, setEdgePreservation] = useState(true);
@@ -22,13 +33,61 @@ export default function MakeBackgroundTransparentPage() {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [advancedMode, setAdvancedMode] = useState(false);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(selectedFile);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(selectedFile.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(selectedFile);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(selectedFile, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile },
+        { filename: selectedFile.name, size: selectedFile.size, mimeType: selectedFile.type }
+      );
+      return;
+    }
+
     setFile(selectedFile);
-    setError(null);
     setResult(null);
 
     const reader = new FileReader();
@@ -39,9 +98,22 @@ export default function MakeBackgroundTransparentPage() {
         updatePreview(img);
       };
       img.onerror = () => {
-        setError('Failed to load image');
+        createError(
+          ImageToolErrorType.FILE_CORRUPTED,
+          TOOL_ID,
+          TOOL_NAME,
+          { file: selectedFile }
+        );
       };
       img.src = e.target?.result as string;
+    };
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
     };
     reader.readAsDataURL(selectedFile);
   };
@@ -295,19 +367,32 @@ export default function MakeBackgroundTransparentPage() {
   };
 
   const removeBackground = async () => {
-    if (!preview) {
-      setError('Please upload an image first');
+    if (!preview || !file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
       return;
     }
 
     setProcessing(true);
-    setError(null);
+    clearError();
     setDownloadSuccess(false);
 
     try {
       const img = new Image();
       img.onload = () => {
-        if (!canvasRef.current) return;
+        if (!canvasRef.current) {
+          createError(
+            ImageToolErrorType.SHARP_FAILED,
+            TOOL_ID,
+            TOOL_NAME,
+            { file }
+          );
+          setProcessing(false);
+          return;
+        }
         const canvas = canvasRef.current;
         const targetColor = useAutoDetect ? getCornerColor(img) : hexToRgb(colorToRemove);
 
@@ -318,21 +403,43 @@ export default function MakeBackgroundTransparentPage() {
           canvas.toBlob((blob) => {
             if (blob) {
               setResult(blob);
+            } else {
+              createError(
+                ImageToolErrorType.SHARP_FAILED,
+                TOOL_ID,
+                TOOL_NAME,
+                { file }
+              );
             }
             setProcessing(false);
           }, 'image/png');
         } else {
-          setError('Failed to process image');
+          createError(
+            ImageToolErrorType.SHARP_FAILED,
+            TOOL_ID,
+            TOOL_NAME,
+            { file }
+          );
           setProcessing(false);
         }
       };
       img.onerror = () => {
-        setError('Failed to load image');
+        createError(
+          ImageToolErrorType.FILE_CORRUPTED,
+          TOOL_ID,
+          TOOL_NAME,
+          { file }
+        );
         setProcessing(false);
       };
       img.src = preview;
     } catch (err) {
-      setError('Error processing image');
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file }
+      );
       setProcessing(false);
     }
   };
@@ -357,7 +464,7 @@ export default function MakeBackgroundTransparentPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
-    setError(null);
+    clearError();
   };
 
   return (
@@ -403,6 +510,8 @@ export default function MakeBackgroundTransparentPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Upload & Preview */}
           <div className="lg:col-span-2 space-y-6">
@@ -420,6 +529,8 @@ export default function MakeBackgroundTransparentPage() {
                 onFileSelect={handleFileSelect}
                 preview={preview}
                 onClearPreview={handleClearPreview}
+                toolId={TOOL_ID}
+                onValidationError={() => {}}
               />
               <p className="text-xs text-gray-600 mt-3">
                 ✓ Supports PNG, JPG, WebP • Works best with solid or semi-solid backgrounds
@@ -502,20 +613,6 @@ export default function MakeBackgroundTransparentPage() {
                       <Download size={20} />
                       Download Transparent Image
                     </motion.button>
-                  </motion.div>
-                )}
-
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="bg-red-50 border-2 border-red-300 rounded-lg p-4 flex items-start gap-3"
-                  >
-                    <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
-                    <div>
-                      <h4 className="font-semibold text-red-900">Error</h4>
-                      <p className="text-sm text-red-800">{error}</p>
-                    </div>
                   </motion.div>
                 )}
 

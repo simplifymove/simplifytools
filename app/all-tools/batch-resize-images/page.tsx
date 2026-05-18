@@ -5,6 +5,12 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Upload } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'batch-resize-images';
+const TOOL_NAME = 'Batch Resize Images';
 
 export default function BatchResizeImagesPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -13,6 +19,7 @@ export default function BatchResizeImagesPage() {
   const [maintainAspect, setMaintainAspect] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -37,7 +44,12 @@ export default function BatchResizeImagesPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       setCompleted(true);
     } catch (error) {
-      alert('Error processing images: ' + (error as Error).message);
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: (error as Error).message }
+      );
     } finally {
       setProcessing(false);
     }
@@ -107,7 +119,12 @@ export default function BatchResizeImagesPage() {
         await new Promise(resolve => setTimeout(resolve, 150));
       }
     } catch (error) {
-      alert('Error downloading images: ' + (error as Error).message);
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: (error as Error).message }
+      );
     } finally {
       setProcessing(false);
     }
@@ -117,6 +134,9 @@ export default function BatchResizeImagesPage() {
     <>
       <HomeHeader />
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Error Display */}
+        {error && <ErrorAlert error={error} onDismiss={clearError} />}
+        
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">

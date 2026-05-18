@@ -8,6 +8,18 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'png-to-jpg';
+const TOOL_NAME = 'PNG to JPG Converter';
 
 export default function PngToJpgPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -15,14 +27,69 @@ export default function PngToJpgPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [quality, setQuality] = useState(90);
-  const [error, setError] = useState<string | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(selectedFile);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(selectedFile.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(selectedFile);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(selectedFile, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile },
+        { filename: selectedFile.name, size: selectedFile.size, mimeType: selectedFile.type }
+      );
+      return;
+    }
+
     setFile(selectedFile);
-    setError(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
+    };
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
     };
     reader.readAsDataURL(selectedFile);
   };
@@ -31,19 +98,31 @@ export default function PngToJpgPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
-    setError(null);
+    clearError();
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
+
     setProcessing(true);
-    setError(null);
+    clearError();
     try {
       const result = await convertImageFormat(file, 'image/jpeg');
       setResult(result.blob);
-    } catch (error) {
-      setError((error as Error).message || 'Error converting image');
+    } catch (err) {
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file }
+      );
     } finally {
       setProcessing(false);
     }
@@ -108,6 +187,8 @@ export default function PngToJpgPage() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-12">
+        {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
         <motion.div 
           className="grid md:grid-cols-2 gap-8"
           initial={{ opacity: 0 }}
@@ -137,7 +218,8 @@ export default function PngToJpgPage() {
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
-                    accept="image/png"
+                    toolId={TOOL_ID}
+                    onValidationError={() => {}}
                   />
                 </motion.div>
 
@@ -163,17 +245,6 @@ export default function PngToJpgPage() {
                     Higher = better quality, larger file • Lower = smaller file, less quality
                   </p>
                 </motion.div>
-
-                {/* Error Message */}
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="p-4 bg-red-50 border-2 border-red-200 rounded-xl"
-                  >
-                    <p className="text-sm text-red-700">❌ {error}</p>
-                  </motion.div>
-                )}
 
                 {/* Convert Button */}
                 <motion.button

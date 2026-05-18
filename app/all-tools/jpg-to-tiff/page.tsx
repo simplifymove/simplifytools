@@ -6,17 +6,23 @@ import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { ImageUploader } from '../../components/ImageUploader';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'jpg-to-tiff';
+const TOOL_NAME = 'JPG to TIFF';
 
 export default function JpgToTiffPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
-    setError(null);
+    clearError();
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -28,14 +34,14 @@ export default function JpgToTiffPage() {
     setFile(null);
     setPreview(null);
     setDownloadUrl(null);
-    setError(null);
+    clearError();
   };
 
   const handleConvert = async () => {
     if (!file) return;
     
     setProcessing(true);
-    setError(null);
+    clearError();
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -54,14 +60,27 @@ export default function JpgToTiffPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Conversion failed');
+        createError(
+          ImageToolErrorType.SHARP_FAILED,
+          TOOL_ID,
+          TOOL_NAME,
+          { error: errorData.error || 'Conversion failed' },
+          { filename: file.name, size: file.size, mimeType: file.type }
+        );
+        return;
       }
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
     } catch (error) {
-      setError((error as Error).message || 'Error converting image');
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: error instanceof Error ? error.message : 'Error converting image' },
+        { filename: file?.name, size: file?.size, mimeType: file?.type }
+      );
     } finally {
       setProcessing(false);
     }
@@ -81,6 +100,9 @@ export default function JpgToTiffPage() {
     <>
       <HomeHeader />
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+      {/* Error Display */}
+      {error && <ErrorAlert error={error} onDismiss={clearError} />}
+      
       {/* Hero Header */}
       <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-6xl mx-auto relative z-10">
@@ -119,11 +141,7 @@ export default function JpgToTiffPage() {
                   preview={preview}
                   onClearPreview={handleClearPreview}
                 />
-                {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600">{error}</p>
-                  </div>
-                )}
+                {error && <ErrorAlert error={error} onDismiss={clearError} />}
               </div>
             </div>
 

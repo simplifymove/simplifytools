@@ -1,0 +1,57 @@
+<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="savanaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0E0A0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky and ground -->
+  <rect width="1920" height="1080" fill="url(#savanaGradient)"/>
+  
+  <!-- Distant acacia trees -->
+  <ellipse cx="200" cy="300" rx="80" ry="100" fill="#8B7355" opacity="0.4"/>
+  <ellipse cx="150" cy="250" rx="40" ry="60" fill="#6B8E23" opacity="0.4"/>
+  <ellipse cx="1700" cy="320" rx="90" ry="110" fill="#8B7355" opacity="0.4"/>
+  <ellipse cx="1750" cy="260" rx="50" ry="70" fill="#6B8E23" opacity="0.4"/>
+  
+  <!-- Elephant body -->
+  <ellipse cx="900" cy="700" rx="300" ry="200" fill="#8B7D6B"/>
+  
+  <!-- Elephant head -->
+  <ellipse cx="700" cy="550" rx="140" ry="160" fill="#8B7D6B"/>
+  
+  <!-- Elephant ear -->
+  <ellipse cx="650" cy="600" rx="180" ry="240" fill="#A0907F"/>
+  
+  <!-- Elephant trunk -->
+  <path d="M 680 680 Q 650 750 670 850" stroke="#8B7D6B" stroke-width="60" fill="none" stroke-linecap="round"/>
+  
+  <!-- Elephant tusk -->
+  <path d="M 720 720 L 700 850" stroke="#FFFFF0" stroke-width="25" fill="none" stroke-linecap="round"/>
+  
+  <!-- Elephant legs -->
+  <rect x="800" y="850" width="60" height="200" fill="#8B7D6B" rx="10"/>
+  <rect x="900" y="850" width="60" height="200" fill="#8B7D6B" rx="10"/>
+  <rect x="1000" y="850" width="60" height="200" fill="#8B7D6B" rx="10"/>
+  <rect x="1050" y="850" width="70" height="220" fill="#8B7D6B" rx="10"/>
+  
+  <!-- Elephant tail -->
+  <line x1="1180" y1="650" x2="1250" y2="750" stroke="#8B7D6B" stroke-width="20" stroke-linecap="round"/>
+  
+  <!-- Eye -->
+  <circle cx="710" cy="520" r="15" fill="#2C2C2C"/>
+  <circle cx="715" cy="515" r="5" fill="white"/>
+  
+  <!-- Ground grass -->
+  <ellipse cx="400" cy="920" rx="100" ry="40" fill="#6B8E23" opacity="0.5"/>
+  <ellipse cx="1400" cy="950" rx="120" ry="45" fill="#6B8E23" opacity="0.5"/>
+  
+  <!-- Test label -->
+  <text x="960" y="100" font-size="48" fill="white" text-anchor="middle" font-weight="bold" stroke="#000" stroke-width="2">
+    TEST ASSET: ELEPHANT
+  </text>
+  <text x="960" y="150" font-size="24" fill="white" text-anchor="middle" stroke="#000" stroke-width="1">
+    For Asset Pipeline Debugging
+  </text>
+</svg>

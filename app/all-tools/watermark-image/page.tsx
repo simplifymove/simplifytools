@@ -1,10 +1,23 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Type } from 'lucide-react';
+import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'watermark-image';
+const TOOL_NAME = 'Watermark Image';
 
 export default function WatermarkImagePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -15,20 +28,102 @@ export default function WatermarkImagePage() {
   const [position, setPosition] = useState('bottom-right');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
-      setResult(null);
+  // Validate watermark parameters
+  const validateWatermarkParams = useCallback((): boolean => {
+    const errors: string[] = [];
+
+    if (!watermarkText.trim()) {
+      errors.push('Watermark text cannot be empty');
+    } else if (watermarkText.length > 100) {
+      errors.push('Watermark text must be 100 characters or less');
     }
-  };
+
+    if (fontSize < 10 || fontSize > 200) {
+      errors.push('Font size must be between 10px and 200px');
+    }
+
+    if (opacity < 0.1 || opacity > 1) {
+      errors.push('Opacity must be between 10% and 100%');
+    }
+
+    if (!['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'].includes(position)) {
+      errors.push('Invalid position selected');
+    }
+
+    setValidationErrors(errors);
+    return errors.length === 0;
+  }, [watermarkText, fontSize, opacity, position]);
+
+  const handleFileSelect = useCallback((selectedFile: File) => {
+    clearError();
+    setValidationErrors([]);
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(selectedFile);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(selectedFile.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(selectedFile);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(selectedFile, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile },
+        { filename: selectedFile.name, size: selectedFile.size, mimeType: selectedFile.type }
+      );
+      return;
+    }
+
+    setFile(selectedFile);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setPreview(event.target?.result as string);
+    };
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+    };
+    reader.readAsDataURL(selectedFile);
+    setResult(null);
+  }, [clearError, createError]);
 
   const applyWatermark = (): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -37,75 +132,119 @@ export default function WatermarkImagePage() {
         return;
       }
 
-      const img = new Image();
-      img.onload = () => {
-        const canvas = canvasRef.current!;
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          reject(new Error('Cannot get canvas context'));
-          return;
-        }
+      if (!validateWatermarkParams()) {
+        reject(new Error('Watermark validation failed'));
+        return;
+      }
 
-        ctx.drawImage(img, 0, 0);
-
-        // Set watermark text properties
-        ctx.font = `${fontSize}px Arial`;
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.5})`;
-        ctx.lineWidth = 2;
-
-        // Get text metrics for positioning
-        const metrics = ctx.measureText(watermarkText);
-        const textWidth = metrics.width;
-        const textHeight = fontSize;
-
-        // Calculate position
-        let x = 10;
-        let y = canvas.height - 20;
-
-        if (position === 'top-left') {
-          x = 10;
-          y = textHeight + 10;
-        } else if (position === 'top-right') {
-          x = canvas.width - textWidth - 10;
-          y = textHeight + 10;
-        } else if (position === 'bottom-left') {
-          x = 10;
-          y = canvas.height - 10;
-        } else if (position === 'bottom-right') {
-          x = canvas.width - textWidth - 10;
-          y = canvas.height - 10;
-        } else if (position === 'center') {
-          x = (canvas.width - textWidth) / 2;
-          y = canvas.height / 2;
-        }
-
-        // Draw watermark
-        ctx.strokeText(watermarkText, x, y);
-        ctx.fillText(watermarkText, x, y);
-
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error('Failed to create blob'));
+      try {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = canvasRef.current!;
+          
+          // Validate canvas dimensions
+          if (img.width > 16384 || img.height > 16384) {
+            reject(new Error('Image dimensions exceed maximum allowed size (16384x16384px)'));
             return;
           }
-          resolve(blob);
-        }, 'image/jpeg', 0.9);
-      };
-      img.src = preview;
+
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Cannot get canvas context'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0);
+
+          // Set watermark text properties
+          ctx.font = `${fontSize}px Arial`;
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.5})`;
+          ctx.lineWidth = 2;
+
+          // Get text metrics for positioning
+          const metrics = ctx.measureText(watermarkText);
+          const textWidth = metrics.width;
+          const textHeight = fontSize;
+
+          // Calculate position
+          let x = 10;
+          let y = canvas.height - 20;
+
+          if (position === 'top-left') {
+            x = 10;
+            y = textHeight + 10;
+          } else if (position === 'top-right') {
+            x = canvas.width - textWidth - 10;
+            y = textHeight + 10;
+          } else if (position === 'bottom-left') {
+            x = 10;
+            y = canvas.height - 10;
+          } else if (position === 'bottom-right') {
+            x = canvas.width - textWidth - 10;
+            y = canvas.height - 10;
+          } else if (position === 'center') {
+            x = (canvas.width - textWidth) / 2;
+            y = canvas.height / 2;
+          }
+
+          // Draw watermark
+          ctx.strokeText(watermarkText, x, y);
+          ctx.fillText(watermarkText, x, y);
+
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to create blob'));
+              return;
+            }
+            resolve(blob);
+          }, 'image/jpeg', 0.9);
+        };
+
+        img.onerror = () => {
+          reject(new Error('Failed to load image'));
+        };
+
+        img.src = preview;
+      } catch (err) {
+        reject(err instanceof Error ? err : new Error('Unknown error during watermark processing'));
+      }
     });
   };
 
   const handleWatermark = async () => {
-    if (!file || !watermarkText) return;
+    if (!file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
+
+    if (!watermarkText.trim()) {
+      setValidationErrors(['Watermark text cannot be empty']);
+      return;
+    }
+
+    clearError();
+    setValidationErrors([]);
     setProcessing(true);
+
     try {
       const watermarked = await applyWatermark();
       setResult(watermarked);
-    } catch (error) {
-      alert('Error adding watermark: ' + (error as Error).message);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+        { filename: file.name, size: file.size, mimeType: file.type }
+      );
     } finally {
       setProcessing(false);
     }
@@ -121,6 +260,14 @@ export default function WatermarkImagePage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const handleClearPreview = () => {
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setValidationErrors([]);
+    clearError();
   };
 
   return (
@@ -156,27 +303,30 @@ export default function WatermarkImagePage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Upload Section */}
               <div className="lg:col-span-2">
+                {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
+                {validationErrors.length > 0 && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    {validationErrors.map((err, idx) => (
+                      <p key={idx} className="text-red-700 text-sm">{err}</p>
+                    ))}
+                  </div>
+                )}
+
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
                   
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 transition cursor-pointer mb-6">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                      id="file-input"
-                    />
-                    <label htmlFor="file-input" className="cursor-pointer">
-                      <Type size={40} className="mx-auto text-gray-400 mb-3" />
-                      <p className="text-lg font-semibold text-gray-700 mb-1">Click to upload or drag and drop</p>
-                      <p className="text-sm text-gray-500">PNG, JPG, WebP and other formats</p>
-                    </label>
-                  </div>
+                  <ImageUploader
+                    onFileSelect={handleFileSelect}
+                    preview={preview}
+                    onClearPreview={handleClearPreview}
+                    toolId={TOOL_ID}
+                    onValidationError={() => {}}
+                  />
 
                   {preview && (
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-4">Preview</h3>
+                      <h3 className="font-semibold text-gray-900 mb-4 mt-6">Preview</h3>
                       <img src={preview} alt="Preview" className="w-full rounded-lg mb-4" style={{ maxHeight: '400px' }} />
                     </div>
                   )}
@@ -267,6 +417,15 @@ export default function WatermarkImagePage() {
                       'Add Watermark'
                     )}
                   </button>
+
+                  {(preview || result) && (
+                    <button
+                      onClick={handleClearPreview}
+                      className="w-full py-2 px-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition text-sm"
+                    >
+                      Clear
+                    </button>
+                  )}
 
                   {result && (
                     <button
@@ -481,3 +640,4 @@ export default function WatermarkImagePage() {
     </>
   );
 }
+

@@ -4,13 +4,25 @@
  * Note: Email reporting happens server-side in the API route
  */
 
-import { ToolError, VideoToolErrorType, ERROR_MESSAGES, EmailErrorReport } from '@/app/utils/types/errors';
+import { ToolError, VideoToolErrorType, ImageToolErrorType, ToolErrorType, ERROR_MESSAGES, IMAGE_ERROR_MESSAGES, EmailErrorReport } from '@/app/utils/types/errors';
+
+/**
+ * Get error message for either video or image tool error type
+ */
+function getErrorMessage(type: ToolErrorType): string {
+  if (type in ERROR_MESSAGES) {
+    return ERROR_MESSAGES[type as VideoToolErrorType];
+  } else if (type in IMAGE_ERROR_MESSAGES) {
+    return IMAGE_ERROR_MESSAGES[type as ImageToolErrorType];
+  }
+  return 'An unexpected error occurred. Please try again.';
+}
 
 /**
  * Create a standardized tool error
  */
 export function createToolError(
-  type: VideoToolErrorType,
+  type: ToolErrorType,
   toolId: string,
   toolName: string,
   details?: Record<string, any>,
@@ -19,8 +31,8 @@ export function createToolError(
 ): ToolError {
   return {
     type,
-    message: ERROR_MESSAGES[type],
-    userFriendlyMessage: customUserMessage || ERROR_MESSAGES[type],
+    message: getErrorMessage(type),
+    userFriendlyMessage: customUserMessage || getErrorMessage(type),
     details,
     timestamp: new Date(),
     toolId,
@@ -32,7 +44,8 @@ export function createToolError(
 /**
  * Validation error types that should not trigger emails or full error logging
  */
-const VALIDATION_ERROR_TYPES: VideoToolErrorType[] = [
+const VALIDATION_ERROR_TYPES: ToolErrorType[] = [
+  // Video validation errors
   VideoToolErrorType.EMPTY_FILE,
   VideoToolErrorType.UNSUPPORTED_FORMAT,
   VideoToolErrorType.FILE_CORRUPTED,
@@ -52,6 +65,40 @@ const VALIDATION_ERROR_TYPES: VideoToolErrorType[] = [
   VideoToolErrorType.MALFORMED_SUBTITLES,
   VideoToolErrorType.INVALID_OPACITY,
   VideoToolErrorType.INVALID_WATERMARK_FORMAT,
+  // Image validation errors
+  ImageToolErrorType.EMPTY_FILE,
+  ImageToolErrorType.UNSUPPORTED_FORMAT,
+  ImageToolErrorType.FILE_CORRUPTED,
+  ImageToolErrorType.FILE_TOO_LARGE,
+  ImageToolErrorType.INVALID_MIME_TYPE,
+  ImageToolErrorType.INVALID_DIMENSIONS,
+  ImageToolErrorType.ZERO_DIMENSIONS,
+  ImageToolErrorType.ZERO_WIDTH,
+  ImageToolErrorType.ZERO_HEIGHT,
+  ImageToolErrorType.DIMENSIONS_TOO_LARGE,
+  ImageToolErrorType.INVALID_ASPECT_RATIO,
+  ImageToolErrorType.UNSUPPORTED_TRANSPARENCY,
+  ImageToolErrorType.INVALID_ANIMATED_FORMAT,
+  ImageToolErrorType.INVALID_RESIZE_DIMENSIONS,
+  ImageToolErrorType.RESIZE_OUTPUT_TOO_LARGE,
+  ImageToolErrorType.INVALID_QUALITY,
+  ImageToolErrorType.INVALID_CROP_BOUNDS,
+  ImageToolErrorType.CROP_OUT_OF_RANGE,
+  ImageToolErrorType.INVALID_OPACITY,
+  ImageToolErrorType.INVALID_WATERMARK_TEXT,
+  ImageToolErrorType.INVALID_WATERMARK_SCALE,
+  ImageToolErrorType.INVALID_WATERMARK_POSITION,
+  ImageToolErrorType.TEXT_TOO_LONG,
+  ImageToolErrorType.INVALID_FONT_SIZE,
+  ImageToolErrorType.INVALID_GIF_FRAMES,
+  ImageToolErrorType.INVALID_GIF_DURATION,
+  ImageToolErrorType.GIF_TOO_LARGE,
+  ImageToolErrorType.GIF_FRAME_LIMIT_EXCEEDED,
+  ImageToolErrorType.EMPTY_QR_TEXT,
+  ImageToolErrorType.INVALID_QR_URL,
+  ImageToolErrorType.QR_TEXT_TOO_LONG,
+  ImageToolErrorType.INVALID_PROMPT,
+  ImageToolErrorType.PROMPT_TOO_LONG,
 ];
 
 /**
@@ -68,7 +115,7 @@ export async function handleToolError(
     stackTrace?: string;
   }
 ): Promise<void> {
-  const isValidationError = VALIDATION_ERROR_TYPES.includes(error.type);
+  const isValidationError = (VALIDATION_ERROR_TYPES as any[]).includes(error.type);
 
   // Always log to console in development with detailed information
   if (process.env.NODE_ENV === 'development') {
@@ -280,3 +327,4 @@ export function getErrorSeverity(type: VideoToolErrorType): 'low' | 'medium' | '
 
   return 'medium';
 }
+

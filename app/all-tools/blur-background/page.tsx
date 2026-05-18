@@ -5,6 +5,12 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Upload, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'blur-background';
+const TOOL_NAME = 'Blur Background';
 
 export default function BlurBackgroundPage() {
   const [image, setImage] = useState<string | null>(null);
@@ -14,14 +20,13 @@ export default function BlurBackgroundPage() {
   const [portraitMode, setPortraitMode] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setError(null);
-    setResult(null);
+    clearError();
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -36,18 +41,23 @@ export default function BlurBackgroundPage() {
     setImage(null);
     setPreview(null);
     setResult(null);
-    setError(null);
+    clearError();
   };
 
   const handleProcess = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!image) {
-      setError('Please upload an image first');
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: 'No image provided' }
+      );
       return;
     }
 
     setProcessing(true);
-    setError(null);
+    clearError();
 
     try {
       const response = await fetch(image);
@@ -67,15 +77,24 @@ export default function BlurBackgroundPage() {
       const data = await processResponse.json();
 
       if (!processResponse.ok) {
-        throw new Error(data.error || 'Processing failed');
+        createError(
+          ImageToolErrorType.SHARP_FAILED,
+          TOOL_ID,
+          TOOL_NAME,
+          { error: data.error || 'Processing failed' }
+        );
+        return;
       }
 
       const resultDataUrl = `data:image/jpeg;base64,${data.image}`;
       setResult(resultDataUrl);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      setError(message);
-      console.error('Processing error:', err);
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: err instanceof Error ? err.message : 'Unknown error' }
+      );
     } finally {
       setProcessing(false);
     }
@@ -96,6 +115,9 @@ export default function BlurBackgroundPage() {
     <>
       <HomeHeader />
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+        {/* Error Display */}
+        {error && <ErrorAlert error={error} onDismiss={clearError} />}
+        
         {/* Hero Header */}
         <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -181,13 +203,6 @@ export default function BlurBackgroundPage() {
                     </div>
                   )}
 
-                  {/* Error */}
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-red-900 font-semibold">Error</p>
-                      <p className="text-red-700 text-sm">{error}</p>
-                    </div>
-                  )}
                 </div>
               </div>
 

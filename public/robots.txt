@@ -2,10 +2,15 @@ User-agent: *
 Allow: /
 Allow: /all-tools/
 Allow: /all-tools/*
+Allow: /blog
+Allow: /blog/*
+Allow: /terms
 Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: *.json$
+Disallow: /?*  # Disallow query strings on root
+Disallow: *?*=* # Disallow URLs with query parameters
 
 # Slow down aggressive crawlers
 User-agent: AhrefsBot

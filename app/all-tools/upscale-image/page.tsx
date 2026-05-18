@@ -6,6 +6,18 @@ import { Download, ChevronRight, Loader, Zap, Info, Cpu, AlertCircle } from 'luc
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'upscale-image';
+const TOOL_NAME = 'Upscale Image';
 
 interface UpscaleMetadata {
   original_size?: string;
@@ -37,14 +49,70 @@ export default function UpscaleImagePage() {
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
   
   const [processingTime, setProcessingTime] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<UpscaleMetadata | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(selectedFile);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(selectedFile.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(selectedFile);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(selectedFile, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile },
+        { filename: selectedFile.name, size: selectedFile.size, mimeType: selectedFile.type }
+      );
+      return;
+    }
+
     setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
+    };
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
     };
     reader.readAsDataURL(selectedFile);
     setMetadata(null);
@@ -57,19 +125,23 @@ export default function UpscaleImagePage() {
     setResultBlob(null); // ← Clear blob reference
     setResultDataUrl(null);
     setMetadata(null);
-    setError(null);
+    clearError();
     setImageLoading(false);
     setUseDataUrl(false);
   };
 
   const upscaleImage = async () => {
     if (!file) {
-      setError('Please select an image first');
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
       return;
     }
 
     setProcessing(true);
-    setError(null);
+    clearError();
     setMetadata(null);
 
     try {
@@ -179,9 +251,12 @@ export default function UpscaleImagePage() {
       
       reader.readAsDataURL(blob);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      console.error('❌ Upscale error:', err);
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file }
+      );
     } finally {
       setProcessing(false);
     }
@@ -231,6 +306,8 @@ export default function UpscaleImagePage() {
         {/* Main Content */}
         <div className="flex-1 py-12 px-4 md:px-8">
           <div className="max-w-6xl mx-auto">
+            {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Main Content - Left (2 cols) */}
               <div className="lg:col-span-2">
@@ -242,6 +319,8 @@ export default function UpscaleImagePage() {
                       onFileSelect={handleFileSelect}
                       preview={preview}
                       onClearPreview={handleClearPreview}
+                      toolId={TOOL_ID}
+                      onValidationError={() => {}}
                     />
                   </div>
                 )}
@@ -290,7 +369,7 @@ export default function UpscaleImagePage() {
                             blobSize: resultBlob?.size,
                             blobType: resultBlob?.type,
                           });
-                          setError('Unable to display preview. The file is ready to download.');
+                          createError(ImageToolErrorType.AI_PROCESSING_FAILED, TOOL_ID, TOOL_NAME, undefined, undefined, 'Unable to display preview. The file is ready to download.');
                           setImageLoading(false);
                         }}
                       />
@@ -452,14 +531,6 @@ export default function UpscaleImagePage() {
                           <div className="text-xs text-gray-600">Sharpen facial details</div>
                         </label>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Error Message */}
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-red-900 font-semibold text-sm">Error</p>
-                      <p className="text-red-700 text-xs mt-1">{error}</p>
                     </div>
                   )}
 

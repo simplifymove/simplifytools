@@ -3,7 +3,21 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Upload, Eraser } from 'lucide-react';
+import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
+import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'remove-background';
+const TOOL_NAME = 'Remove Background';
 
 export default function RemoveBackgroundPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -13,22 +27,71 @@ export default function RemoveBackgroundPage() {
   const [hqMode, setHqMode] = useState(false);
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
   const [processingTime, setProcessingTime] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
-    console.log('File selected:', selectedFile.name, selectedFile.type, selectedFile.size);
+    clearError();
+    
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(selectedFile);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(selectedFile.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(selectedFile);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(selectedFile, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile },
+        { filename: selectedFile.name, size: selectedFile.size, mimeType: selectedFile.type }
+      );
+      return;
+    }
+
     setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const result = e.target?.result as string;
-      console.log('FileReader onload - preview data:', result?.substring(0, 50));
-      setPreview(result);
+      setPreview(e.target?.result as string);
     };
-    reader.onerror = (e) => {
-      console.error('FileReader error:', e);
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
     };
     reader.readAsDataURL(selectedFile);
-    setError(null);
     setResult(null);
   };
 
@@ -36,43 +99,31 @@ export default function RemoveBackgroundPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
-    setError(null);
     setProcessingTime(null);
+    clearError();
   };
 
   const removeBackground = async () => {
     if (!file) {
-      setError('Please select an image first');
-      console.warn('[removeBackground] No file selected');
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
       return;
     }
 
     setProcessing(true);
-    setError(null);
+    clearError();
 
     try {
-      console.log('[removeBackground] File info:', { 
-        name: file.name, 
-        size: file.size, 
-        type: file.type,
-        lastModified: file.lastModified
-      });
-
       const formData = new FormData();
       formData.append('file', file);
       formData.append('hq', hqMode ? 'true' : 'false');
       formData.append('format', outputFormat);
 
-      // Debug: log what we're sending
-      console.log('[removeBackground] FormData entries:', {
-        file: file.name,
-        hq: hqMode ? 'true' : 'false',
-        format: outputFormat
-      });
-
       const startTime = Date.now();
-      console.log('[removeBackground] Sending request to /api/bg-remove');
-      
+
       const response = await fetch('/api/bg-remove', {
         method: 'POST',
         body: formData,
@@ -100,9 +151,7 @@ export default function RemoveBackgroundPage() {
       // Convert blob to data URL to avoid CSP issues with blob: URLs
       const reader = new FileReader();
       reader.onload = () => {
-        const dataUrl = reader.result as string;
-        console.log('Result image loaded, data URL length:', dataUrl.length);
-        setResult(dataUrl);
+        setResult(reader.result as string);
       };
       reader.onerror = () => {
         throw new Error('Failed to read result image');
@@ -110,8 +159,13 @@ export default function RemoveBackgroundPage() {
       reader.readAsDataURL(blob);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      console.error('Error:', err);
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+        { filename: file.name, size: file.size, mimeType: file.type }
+      );
     } finally {
       setProcessing(false);
     }
@@ -125,7 +179,6 @@ export default function RemoveBackgroundPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    console.log('Download started for:', link.download);
   };
 
   return (
@@ -163,25 +216,19 @@ export default function RemoveBackgroundPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">
+                {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
                 {/* Step 1: Upload */}
                 {!preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
                     
-                    <div
-                      className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition hover:border-orange-500 hover:bg-orange-50"
-                      onClick={() => document.getElementById('imageInput')?.click()}
-                    >
-                      <Upload className="w-12 h-12 mx-auto text-orange-500 mb-3" />
-                      <p className="text-sm font-medium text-gray-700">Click to upload image</p>
-                      <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP up to 20MB</p>
-                    </div>
-                    <input
-                      id="imageInput"
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                    <ImageUploader
+                      onFileSelect={handleFileSelect}
+                      preview={preview}
+                      onClearPreview={handleClearPreview}
+                      toolId={TOOL_ID}
+                      onValidationError={() => {}}
                     />
                   </div>
                 )}
@@ -197,8 +244,6 @@ export default function RemoveBackgroundPage() {
                           alt="original"
                           className="rounded-lg shadow-lg"
                           style={{ maxHeight: '500px', maxWidth: '100%', objectFit: 'contain' }}
-                          onLoad={() => console.log('Preview image loaded successfully')}
-                          onError={(e) => console.error('Preview image failed to load:', e)}
                         />
                       ) : (
                         <p className="text-gray-500">Loading preview...</p>
@@ -217,8 +262,6 @@ export default function RemoveBackgroundPage() {
                         alt="result"
                         className="rounded-lg shadow-lg"
                         style={{ maxHeight: '500px', maxWidth: '100%', objectFit: 'contain', backgroundColor: '#f3f4f6' }}
-                        onLoad={() => console.log('Result image loaded successfully')}
-                        onError={(e) => console.error('Result image failed to load:', e)}
                       />
                     </div>
                     {processingTime !== null && (
@@ -295,13 +338,7 @@ export default function RemoveBackgroundPage() {
                     </div>
                   )}
 
-                  {/* Error Message */}
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-red-900 font-semibold text-sm">Error</p>
-                      <p className="text-red-700 text-xs mt-1">{error}</p>
-                    </div>
-                  )}
+                  {/* Error Message - Already shown above */}
 
                   {/* Process Button */}
                   {preview && (

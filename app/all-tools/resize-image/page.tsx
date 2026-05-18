@@ -6,6 +6,19 @@ import { Download, ChevronRight, Loader, Maximize2 } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { resizeImage } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+  validateResizeDimensions,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { ErrorAlert } from '@/app/components/error-components';
+
+const TOOL_ID = 'resize-image';
+const TOOL_NAME = 'Resize Image';
 
 export default function ResizeImagePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -16,8 +29,10 @@ export default function ResizeImagePage() {
   const [maintainAspect, setMaintainAspect] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
     setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -37,6 +52,7 @@ export default function ResizeImagePage() {
     setFile(null);
     setPreview(null);
     setResult(null);
+    clearError();
   };
 
   const handleWidthChange = (newWidth: number) => {
@@ -56,14 +72,106 @@ export default function ResizeImagePage() {
   };
 
   const handleResize = async () => {
-    if (!file) return;
-    
+    if (!file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
+
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(file);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(file.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(file);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(file, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { maxSize: sizeCheck.error },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
+    const dimensionCheck = validateResizeDimensions(width, height);
+    if (!dimensionCheck.valid) {
+      createError(
+        dimensionCheck.errorType || ImageToolErrorType.INVALID_RESIZE_DIMENSIONS,
+        TOOL_ID,
+        TOOL_NAME,
+        { width, height }
+      );
+      return;
+    }
+
     setProcessing(true);
     try {
       const result = await resizeImage(file, width, height, false);
       setResult(result.blob);
-    } catch (error) {
-      alert('Error resizing image: ' + (error as Error).message);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: errorMsg },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+          width: originalDimensions.width,
+          height: originalDimensions.height,
+        }
+      );
     } finally {
       setProcessing(false);
     }
@@ -421,7 +529,7 @@ export default function ResizeImagePage() {
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Batch Resize Images</span><p className="text-xs text-gray-600">Resize multiple files</p></div>
             </Link>
-            <Link href="/all-tools/instagram-post-resizer" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <Link href="/all-tools/image-resizer" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Instagram Post Resizer</span><p className="text-xs text-gray-600">Quick social resizing</p></div>
             </Link>

@@ -7,6 +7,19 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { compressImage } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import {
+  validateImageNotEmpty,
+  validateImageExtension,
+  validateImageMimeType,
+  validateImageFileSize,
+  validateCompressionQuality,
+} from '@/app/utils/validation/image-validation';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { ErrorAlert } from '@/app/components/error-components';
+
+const TOOL_ID = 'compress-image';
+const TOOL_NAME = 'Compress Image';
 
 export default function CompressImagePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -16,8 +29,10 @@ export default function CompressImagePage() {
   const [result, setResult] = useState<Blob | null>(null);
   const [originalSize, setOriginalSize] = useState(0);
   const [compressedSize, setCompressedSize] = useState(0);
+  const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    clearError();
     setFile(selectedFile);
     setOriginalSize(selectedFile.size);
     const reader = new FileReader();
@@ -33,18 +48,110 @@ export default function CompressImagePage() {
     setResult(null);
     setOriginalSize(0);
     setCompressedSize(0);
+    clearError();
   };
 
   const handleCompress = async () => {
-    if (!file) return;
-    
+    if (!file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: null }
+      );
+      return;
+    }
+
+    clearError();
+
+    // Validate file
+    const emptyCheck = validateImageNotEmpty(file);
+    if (!emptyCheck.valid) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
+    const extensionCheck = validateImageExtension(file.name);
+    if (!extensionCheck.valid) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
+    const mimeCheck = validateImageMimeType(file);
+    if (!mimeCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_MIME_TYPE,
+        TOOL_ID,
+        TOOL_NAME
+      );
+      return;
+    }
+
+    const sizeCheck = validateImageFileSize(file, TOOL_ID);
+    if (!sizeCheck.valid) {
+      createError(
+        ImageToolErrorType.FILE_TOO_LARGE,
+        TOOL_ID,
+        TOOL_NAME,
+        { maxSize: sizeCheck.error },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
+      return;
+    }
+
+    const qualityCheck = validateCompressionQuality(quality);
+    if (!qualityCheck.valid) {
+      createError(
+        ImageToolErrorType.INVALID_QUALITY,
+        TOOL_ID,
+        TOOL_NAME,
+        { quality }
+      );
+      return;
+    }
+
     setProcessing(true);
     try {
       const result = await compressImage(file, quality);
       setCompressedSize(result.blob.size);
       setResult(result.blob);
-    } catch (error) {
-      alert('Error compressing image: ' + (error as Error).message);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      createError(
+        ImageToolErrorType.COMPRESSION_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: errorMsg },
+        {
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+        }
+      );
     } finally {
       setProcessing(false);
     }
@@ -96,6 +203,16 @@ export default function CompressImagePage() {
         {/* Main Content */}
         <div className="flex-1 py-12 px-4 md:px-8">
           <div className="max-w-6xl mx-auto">
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-6">
+                <ErrorAlert
+                  error={error}
+                  onDismiss={clearError}
+                />
+              </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">

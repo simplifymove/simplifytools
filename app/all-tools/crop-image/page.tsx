@@ -6,6 +6,12 @@ import { Download, ChevronRight, RotateCcw, ZoomIn, ZoomOut, Scissors, Hand } fr
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Footer } from '../../components/Footer';
+import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
+import { ErrorAlert } from '@/app/components/error-components';
+import { ImageToolErrorType } from '@/app/utils/types/errors';
+
+const TOOL_ID = 'crop-image';
+const TOOL_NAME = 'Crop Image';
 
 interface CropBox {
   x: number;
@@ -19,7 +25,7 @@ export default function CropImagePage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { error, clearError, createError } = useImageToolErrors();
 
   // Canvas and image refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,7 +47,7 @@ export default function CropImagePage() {
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
-    setError(null);
+    clearError();
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -50,6 +56,14 @@ export default function CropImagePage() {
       setZoom(1);
       setRotation(0);
     };
+    reader.onerror = () => {
+      createError(
+        ImageToolErrorType.FILE_CORRUPTED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+    };
     reader.readAsDataURL(selectedFile);
   };
 
@@ -57,7 +71,7 @@ export default function CropImagePage() {
     setFile(null);
     setPreview(null);
     setResult(null);
-    setError(null);
+    clearError();
     setCropBox({ x: 0, y: 0, width: 100, height: 100 });
   };
 
@@ -189,7 +203,7 @@ export default function CropImagePage() {
     const dx = mouseX - dragStart.x;
     const dy = mouseY - dragStart.y;
 
-    let newBox = { ...cropBox };
+    const newBox = { ...cropBox };
 
     if (draggedEdge === 'move') {
       newBox.x = Math.max(0, Math.min(100 - newBox.width, newBox.x + dx));
@@ -231,21 +245,29 @@ export default function CropImagePage() {
 
   // Fast crop processing
   const cropImage = async () => {
-    if (!preview || !imageRef.current) {
-      setError('Please select an image first');
+    if (!preview || !imageRef.current || !file) {
+      createError(
+        ImageToolErrorType.EMPTY_FILE,
+        TOOL_ID,
+        TOOL_NAME
+      );
       return;
     }
 
     setProcessing(true);
-    setError(null);
+    clearError();
 
     try {
       const img = imageRef.current;
       const canvas = hiddenCanvasRef.current;
-      if (!canvas) return;
+      if (!canvas) {
+        throw new Error('Canvas not available');
+      }
 
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) {
+        throw new Error('Cannot get canvas context');
+      }
 
       // Calculate actual crop dimensions from percentage
       const x = (cropBox.x / 100) * img.width;
@@ -269,7 +291,12 @@ export default function CropImagePage() {
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            setError('Failed to process image');
+            createError(
+              ImageToolErrorType.SHARP_FAILED,
+              TOOL_ID,
+              TOOL_NAME,
+              { file }
+            );
             setProcessing(false);
             return;
           }
@@ -281,7 +308,12 @@ export default function CropImagePage() {
         outputFormat === 'jpg' ? 0.92 : 1
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to crop image');
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file }
+      );
       setProcessing(false);
     }
   };
@@ -325,13 +357,15 @@ export default function CropImagePage() {
         {/* Main Content */}
         <div className="flex-1 py-12 px-4 md:px-8">
           <div className="max-w-6xl mx-auto">
+            {error && <ErrorAlert error={error} onDismiss={clearError} />}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Upload Section */}
               {!preview ? (
                 <div className="lg:col-span-2">
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Upload Image to Crop</h2>
-                    <ImageUploader onFileSelect={handleFileSelect} preview={preview} onClearPreview={handleClearPreview} />
+                    <ImageUploader onFileSelect={handleFileSelect} preview={preview} onClearPreview={() => { setFile(null); setPreview(null); setResult(null); }} toolId={TOOL_ID} onValidationError={() => {}} />
                   </div>
                 </div>
               ) : (
@@ -437,7 +471,7 @@ export default function CropImagePage() {
                     {error && (
                       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                         <p className="text-red-900 font-semibold text-sm">Error</p>
-                        <p className="text-red-700 text-xs mt-1">{error}</p>
+                        <p className="text-red-700 text-xs mt-1">{error.message}</p>
                       </div>
                     )}
 
@@ -638,3 +672,4 @@ export default function CropImagePage() {
     </>
   );
 }
+
