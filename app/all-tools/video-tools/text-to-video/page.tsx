@@ -1,163 +1,151 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Loader, Zap, Copy, Download, Play, AlertCircle, Clock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Film, Sparkles, ChevronRight, Loader, AlertCircle, CheckCircle, Download } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
-
-interface GeneratedVideo {
-  jobId: string;
-  generationId?: string;
-  prompt: string;
-  duration: number;
-  status: 'processing' | 'completed' | 'failed';
-  videoUrl?: string;
-  videoBase64?: string;
-  estimatedTime?: string;
-  error?: string;
-  progress: number; // 0-100
-}
+import { VideoScript } from '@/app/utils/types/video-generation';
 
 export default function TextToVideoPage() {
+  // Form state
   const [prompt, setPrompt] = useState('');
-  const [duration, setDuration] = useState(6);
-  const [style, setStyle] = useState('cinematic');
-  const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [style, setStyle] = useState<'modern' | 'minimal' | 'corporate' | 'social-reel' | 'explainer' | 'product-promo'>('modern');
+  const [duration, setDuration] = useState<15 | 30 | 45>(30);
+  const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16' | '1:1'>('16:9');
+  const [tone, setTone] = useState<'professional' | 'friendly' | 'energetic' | 'educational'>('professional');
+  const [ctaText, setCtaText] = useState('Learn More');
+
+  // Processing state
+  const [step, setStep] = useState<'form' | 'generating' | 'preview' | 'rendering' | 'complete'>('form');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [generatedVideo, setGeneratedVideo] = useState<GeneratedVideo | null>(null);
-  const [copied, setCopied] = useState(false);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [generatedScript, setGeneratedScript] = useState<VideoScript | null>(null);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [progress, setProgress] = useState(0);
 
-  // Poll for video generation status
-  useEffect(() => {
-    if (!generatedVideo || !generatedVideo.generationId || generatedVideo.status === 'completed' || generatedVideo.status === 'failed') {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-      return;
-    }
-
-    // Poll every 2 seconds
-    pollingIntervalRef.current = setInterval(async () => {
-      try {
-        const response = await fetch(
-          `/api/text-to-video/status?generationId=${generatedVideo.generationId}&jobId=${generatedVideo.jobId}`
-        );
-
-        if (!response.ok) {
-          console.error('Status check failed:', response.status);
-          return;
-        }
-
-        const data = await response.json();
-        console.log('[Frontend] Status update:', data.status, 'Progress:', data.progress);
-
-        // Update progress and status
-        setGeneratedVideo(prev => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            status: data.status,
-            progress: data.progress,
-            videoUrl: data.videoUrl || data.videoBase64 ? 
-              (data.videoBase64 ? 
-                URL.createObjectURL(new Blob([new Uint8Array(atob(data.videoBase64).split('').map(c => c.charCodeAt(0)))], { type: 'video/mp4' })) :
-                data.videoUrl) :
-              undefined,
-            error: data.error,
-          };
-        });
-
-        // Stop polling when complete or failed
-        if (data.status === 'completed' || data.status === 'failed') {
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-          }
-        }
-      } catch (err) {
-        console.error('Status polling error:', err);
-      }
-    }, 2000);
-
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-    };
-  }, [generatedVideo]);
-
-  const handleGenerate = async (e: React.FormEvent) => {
+  const handleGenerateScript = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-    setGeneratedVideo(null);
+    setLoading(true);
+    setStep('generating');
 
     try {
-      const response = await fetch('/api/text-to-video', {
+      if (!prompt.trim()) {
+        throw new Error('Please enter a prompt');
+      }
+
+      if (prompt.length > 1000) {
+        throw new Error('Prompt must be 1000 characters or less');
+      }
+
+      const response = await fetch('/api/video/generate-script', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt,
-          duration,
           style,
+          duration,
           aspectRatio,
+          tone,
+          ctaText,
         }),
       });
 
       const data = await response.json();
-      console.log('[Frontend] Generation response:', data);
 
-      if (!data.ok) {
-        setError(data.error || 'Failed to generate video');
-      } else {
-        // Set up video state with Pika generation ID for polling
-        setGeneratedVideo({
-          jobId: data.jobId,
-          generationId: data.generationId,
-          prompt,
-          duration,
-          status: data.status || 'processing',
-          progress: 10, // Start at 10%
-          estimatedTime: data.estimatedTime,
-          error: data.error,
-        });
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate script');
       }
+
+      if (!data.script) {
+        throw new Error('No script returned from API');
+      }
+
+      setGeneratedScript(data.script);
+      setStep('preview');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      setStep('form');
     } finally {
       setLoading(false);
     }
   };
 
-  const copyToClipboard = () => {
-    if (generatedVideo?.videoUrl) {
-      navigator.clipboard.writeText(generatedVideo.videoUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  const handleRenderVideo = async () => {
+    if (!generatedScript) return;
+    setError('');
+    setLoading(true);
+    setStep('rendering');
+    setProgress(0);
+
+    try {
+      const response = await fetch('/api/video/render', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script: generatedScript }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to render video');
+      }
+
+      if (data.videoUrl) {
+        setVideoUrl(data.videoUrl);
+        setProgress(100);
+        setStep('complete');
+      } else {
+        throw new Error('No video URL returned');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to render video');
+      setStep('preview');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const downloadVideo = async () => {
-    if (generatedVideo?.videoUrl) {
-      const link = document.createElement('a');
-      link.href = generatedVideo.videoUrl;
-      link.download = `text-to-video-${Date.now()}.mp4`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  const handleDownloadVideo = async () => {
+    if (!videoUrl) return;
+
+    try {
+      // If URL is base64, convert to blob
+      if (videoUrl.startsWith('data:')) {
+        const link = document.createElement('a');
+        link.href = videoUrl;
+        link.download = `video-${Date.now()}.mp4`;
+        link.click();
+      } else {
+        // Fetch from URL
+        const response = await fetch(videoUrl);
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `video-${Date.now()}.mp4`;
+        link.click();
+      }
+    } catch (err) {
+      setError('Failed to download video');
     }
+  };
+
+  const handleRestart = () => {
+    setPrompt('');
+    setStep('form');
+    setError('');
+    setGeneratedScript(null);
+    setVideoUrl('');
+    setProgress(0);
   };
 
   return (
     <>
       <HomeHeader />
-      <main className="min-h-screen bg-slate-50 flex flex-col">
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col">
         {/* Header */}
-        <div className="relative bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 overflow-hidden py-16 px-4 md:px-8">
+        <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 overflow-hidden py-16 px-4 md:px-8">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-0 right-0 w-80 h-80 bg-white rounded-full mix-blend-multiply filter blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-white rounded-full mix-blend-multiply filter blur-3xl"></div>
@@ -169,335 +157,354 @@ export default function TextToVideoPage() {
               <ChevronRight size={16} />
               <Link href="/all-tools/video-tools" className="hover:text-white transition">Video Tools</Link>
               <ChevronRight size={16} />
-              <span className="text-white">Text to Video</span>
+              <span className="text-white">AI Text-to-Video</span>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎬 Text to Video</h1>
-              <p className="text-lg text-white/90 max-w-2xl">
-                Generate stunning AI videos from text prompts. Create cinematic videos, animations, and visual content in minutes.
-              </p>
-            </motion.div>
+            <div className="flex items-center gap-3 mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold text-white flex items-center gap-3">
+                <Film size={40} />
+                AI Text-to-Video
+              </h1>
+              <span className="inline-block bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold">Beta</span>
+            </div>
+            <p className="text-lg text-white/90 max-w-2xl">
+              Transform your ideas into professional videos with AI-powered script generation and cinematic rendering.
+            </p>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 py-12 px-4 md:px-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Info box */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 flex gap-3"
-            >
-              <Clock className="text-blue-600 shrink-0" size={20} />
-              <div>
-                <p className="font-semibold text-blue-900">Processing Time</p>
-                <p className="text-sm text-blue-700">Videos typically take 3-5 minutes to generate. You'll see live updates below.</p>
-              </div>
-            </motion.div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Input Form */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="md:col-span-1"
-              >
-                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-4">
-                  <h2 className="text-lg font-bold text-gray-900 mb-6">Generate Video</h2>
-
-                  <form onSubmit={handleGenerate} className="space-y-4">
-                    {/* Text Prompt */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Video Prompt *
-                      </label>
-                      <textarea
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        placeholder="Describe the video you want to create... e.g., 'A serene forest landscape with sunlight filtering through tall trees, mist rising from the ground, birds flying in the distance'"
-                        maxLength={500}
-                        rows={5}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-sm"
-                        required
-                      />
-                      <p className="text-xs text-gray-500 mt-1">{prompt.length}/500 characters</p>
-                    </div>
-
-                    {/* Duration */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Duration (seconds) *
-                      </label>
-                      <select
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      >
-                        <option value={6}>6 seconds</option>
-                        <option value={8}>8 seconds</option>
-                        <option value={10}>10 seconds</option>
-                      </select>
-                    </div>
-
-                    {/* Style */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Video Style
-                      </label>
-                      <select
-                        value={style}
-                        onChange={(e) => setStyle(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      >
-                        <option value="cinematic">Cinematic</option>
-                        <option value="anime">Anime</option>
-                        <option value="realistic">Realistic</option>
-                        <option value="abstract">Abstract</option>
-                      </select>
-                    </div>
-
-                    {/* Aspect Ratio */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Aspect Ratio
-                      </label>
-                      <select
-                        value={aspectRatio}
-                        onChange={(e) => setAspectRatio(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      >
-                        <option value="16:9">16:9 (Widescreen)</option>
-                        <option value="9:16">9:16 (Vertical)</option>
-                        <option value="1:1">1:1 (Square)</option>
-                      </select>
-                    </div>
-
-                    {/* Error Message */}
-                    {error && (
-                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex gap-2">
-                        <AlertCircle size={18} className="text-red-600 shrink-0" />
-                        <p className="text-sm text-red-700">{error}</p>
-                      </div>
-                    )}
-
-                    {/* Generate Button */}
-                    <button
-                      type="submit"
-                      disabled={loading || !prompt.trim()}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader size={18} className="animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Zap size={18} />
-                          Generate Video
-                        </>
-                      )}
-                    </button>
-                  </form>
+        <div className="flex-1 py-16 px-4 md:px-8">
+          <div className="max-w-4xl mx-auto">
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+                <div>
+                  <h3 className="font-semibold text-red-900">Error</h3>
+                  <p className="text-red-700 text-sm">{error}</p>
                 </div>
-              </motion.div>
+              </div>
+            )}
 
-              {/* Results Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="md:col-span-2"
-              >
-                {generatedVideo ? (
-                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-                    {/* Status Badge */}
-                    <div className="mb-6">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                        <div className={`w-2 h-2 rounded-full ${
-                          generatedVideo.status === 'processing' ? 'bg-yellow-500 animate-pulse' :
-                          generatedVideo.status === 'completed' ? 'bg-green-500' :
-                          'bg-red-500'
-                        }`}></div>
-                        {generatedVideo.status === 'processing' && `Processing... (${generatedVideo.estimatedTime})`}
-                        {generatedVideo.status === 'completed' && 'Completed'}
-                        {generatedVideo.status === 'failed' && 'Failed'}
-                      </div>
-                    </div>
+            {step === 'form' && (
+              <form onSubmit={handleGenerateScript} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Your Video</h2>
 
-                    {/* Prompt Display */}
-                    <div className="mb-6">
-                      <h3 className="font-semibold text-gray-900 mb-2">Prompt</h3>
-                      <p className="text-gray-700 bg-gray-50 p-4 rounded-lg text-sm">{generatedVideo.prompt}</p>
-                    </div>
+                {/* Prompt Input */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    What's your video about? *
+                  </label>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Describe what you want your video to showcase. E.g., 'Product launch for our new smartwatch with features highlighted'"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                    rows={4}
+                    disabled={loading}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">{prompt.length}/1000 characters</p>
+                </div>
 
-                    {/* Duration Info */}
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-xs text-gray-600 font-medium">Duration</p>
-                        <p className="text-lg font-bold text-gray-900">{generatedVideo.duration}s</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-xs text-gray-600 font-medium">Style</p>
-                        <p className="text-lg font-bold text-gray-900 capitalize">{style}</p>
-                      </div>
-                    </div>
-
-                    {/* Video Preview */}
-                    {generatedVideo.videoUrl ? (
-                      <div className="mb-6">
-                        <video
-                          src={generatedVideo.videoUrl}
-                          controls
-                          className="w-full rounded-lg bg-black"
-                        />
-                      </div>
-                    ) : (
-                      <div className="mb-6 bg-white rounded-lg border border-gray-200 p-6">
-                        <div className="mb-6">
-                          <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-lg font-semibold text-gray-900">Generating Your Video</h3>
-                            <span className="text-2xl font-bold text-indigo-600">{Math.round(generatedVideo.progress || 0)}%</span>
-                          </div>
-                          <p className="text-gray-600 text-sm mb-4">This typically takes 3-5 minutes...</p>
-                          
-                          {/* Progress Bar */}
-                          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                            <motion.div
-                              className="bg-indigo-600 h-full rounded-full"
-                              animate={{ width: `${Math.round(generatedVideo.progress || 0)}%` }}
-                              transition={{ duration: 0.5, ease: 'easeOut' }}
-                            />
-                          </div>
-                          
-                          {/* Progress Details */}
-                          <div className="flex items-center justify-between mt-4 text-sm">
-                            <p className="text-gray-600">
-                              Estimated time remaining: ~{Math.max(1, Math.round((100 - (generatedVideo.progress || 0)) / 30))} minutes
-                            </p>
-                            <p className="text-gray-500">
-                              {Math.round(generatedVideo.progress || 0)}% complete
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Stage Indicators */}
-                        <div className="space-y-3">
-                          <div className={`flex items-center gap-2 p-3 rounded-lg ${
-                            (generatedVideo.progress || 0) >= 25 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'
-                          }`}>
-                            <div className={`w-2.5 h-2.5 rounded-full ${
-                              (generatedVideo.progress || 0) >= 25 ? 'bg-green-500' : 'bg-gray-300'
-                            }`} />
-                            <span className="text-sm font-medium">Uploading & Processing</span>
-                          </div>
-                          
-                          <div className={`flex items-center gap-2 p-3 rounded-lg ${
-                            (generatedVideo.progress || 0) >= 50 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'
-                          }`}>
-                            <div className={`w-2.5 h-2.5 rounded-full ${
-                              (generatedVideo.progress || 0) >= 50 ? 'bg-green-500' : 'bg-gray-300'
-                            }`} />
-                            <span className="text-sm font-medium">AI Generation</span>
-                          </div>
-                          
-                          <div className={`flex items-center gap-2 p-3 rounded-lg ${
-                            (generatedVideo.progress || 0) >= 75 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'
-                          }`}>
-                            <div className={`w-2.5 h-2.5 rounded-full ${
-                              (generatedVideo.progress || 0) >= 75 ? 'bg-green-500' : 'bg-gray-300'
-                            }`} />
-                            <span className="text-sm font-medium">Rendering & Optimization</span>
-                          </div>
-                        </div>
-
-                        <p className="text-sm text-gray-500 mt-6">Please keep this tab open. We'll notify you when your video is ready!</p>
-                      </div>
-                    )}
-
-                    {/* Action Buttons */}
-                    {generatedVideo.videoUrl && (
-                      <div className="flex gap-3">
-                        <button
-                          onClick={copyToClipboard}
-                          className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium flex items-center justify-center gap-2"
-                        >
-                          <Copy size={16} />
-                          {copied ? 'Copied!' : 'Copy Link'}
-                        </button>
-                        <button
-                          onClick={downloadVideo}
-                          className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium flex items-center justify-center gap-2"
-                        >
-                          <Download size={16} />
-                          Download
-                        </button>
-                      </div>
-                    )}
+                {/* Two Column Layout */}
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  {/* Style */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Video Style</label>
+                    <select
+                      value={style}
+                      onChange={(e) => setStyle(e.target.value as any)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      disabled={loading}
+                    >
+                      <option value="modern">Modern</option>
+                      <option value="minimal">Minimal</option>
+                      <option value="corporate">Corporate</option>
+                      <option value="social-reel">Social Reel</option>
+                      <option value="explainer">Explainer</option>
+                      <option value="product-promo">Product Promo</option>
+                    </select>
                   </div>
-                ) : (
-                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-12 text-center">
-                    <Play className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Create</h3>
-                    <p className="text-gray-600">
-                      Enter a text prompt above to generate your first AI video. Be as creative and detailed as possible!
-                    </p>
+
+                  {/* Duration */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Duration</label>
+                    <select
+                      value={duration}
+                      onChange={(e) => setDuration(parseInt(e.target.value) as any)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      disabled={loading}
+                    >
+                      <option value={15}>15 seconds</option>
+                      <option value={30}>30 seconds</option>
+                      <option value={45}>45 seconds</option>
+                    </select>
+                  </div>
+
+                  {/* Aspect Ratio */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Aspect Ratio</label>
+                    <select
+                      value={aspectRatio}
+                      onChange={(e) => setAspectRatio(e.target.value as any)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      disabled={loading}
+                    >
+                      <option value="16:9">Widescreen (16:9)</option>
+                      <option value="9:16">Mobile (9:16)</option>
+                      <option value="1:1">Square (1:1)</option>
+                    </select>
+                  </div>
+
+                  {/* Tone */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tone</label>
+                    <select
+                      value={tone}
+                      onChange={(e) => setTone(e.target.value as any)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      disabled={loading}
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="energetic">Energetic</option>
+                      <option value="educational">Educational</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* CTA Text */}
+                <div className="mb-8">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Call-to-Action Text</label>
+                  <input
+                    type="text"
+                    value={ctaText}
+                    onChange={(e) => setCtaText(e.target.value)}
+                    placeholder="E.g., Learn More, Shop Now, Get Started"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    disabled={loading}
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading || !prompt.trim()}
+                  className="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
+                >
+                  {loading ? <Loader className="animate-spin" size={20} /> : <Sparkles size={20} />}
+                  {loading ? 'Generating Script...' : 'Generate Script'}
+                </button>
+              </form>
+            )}
+
+            {step === 'generating' && (
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                <div className="flex justify-center mb-6">
+                  <div className="relative w-20 h-20">
+                    <div className="absolute inset-0 bg-indigo-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
+                    <div className="relative bg-indigo-50 p-5 rounded-full flex items-center justify-center">
+                      <Loader className="animate-spin text-indigo-600" size={32} />
+                    </div>
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">Creating Your Script</h2>
+                <p className="text-gray-600">Our AI is crafting a professional video script based on your prompt...</p>
+              </div>
+            )}
+
+            {step === 'preview' && generatedScript && (
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Script Preview</h2>
+                  <CheckCircle className="text-green-600" size={24} />
+                </div>
+
+                {/* Script Details */}
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 font-semibold mb-1">Style</p>
+                    <p className="text-gray-900 capitalize">{generatedScript.style}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 font-semibold mb-1">Duration</p>
+                    <p className="text-gray-900">{generatedScript.duration} seconds</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 font-semibold mb-1">Aspect Ratio</p>
+                    <p className="text-gray-900">{generatedScript.aspectRatio}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 font-semibold mb-1">Tone</p>
+                    <p className="text-gray-900 capitalize">{generatedScript.tone}</p>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-600 mb-2">Video Title</h3>
+                  <p className="text-lg font-semibold text-gray-900">{generatedScript.title}</p>
+                </div>
+
+                {/* Voiceover */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-600 mb-2">Voiceover Script</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-gray-700 leading-relaxed">{generatedScript.voiceover}</p>
+                  </div>
+                </div>
+
+                {/* Scenes */}
+                <div className="mb-8">
+                  <h3 className="text-sm font-semibold text-gray-600 mb-3">Video Scenes</h3>
+                  <div className="space-y-3">
+                    {generatedScript.scenes.map((scene, idx) => (
+                      <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-semibold text-gray-900">{scene.headline}</p>
+                            <p className="text-sm text-gray-600">{scene.subtext}</p>
+                          </div>
+                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">{scene.duration}s</span>
+                        </div>
+                        <p className="text-sm text-gray-700 mb-2"><strong>Visual:</strong> {scene.visual}</p>
+                        <p className="text-sm text-gray-700"><strong>Caption:</strong> {scene.caption}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4">
+                  <button
+                    onClick={handleRenderVideo}
+                    disabled={loading}
+                    className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
+                  >
+                    {loading ? <Loader className="animate-spin" size={20} /> : <Film size={20} />}
+                    {loading ? 'Rendering...' : 'Render Video'}
+                  </button>
+                  <button
+                    onClick={handleRestart}
+                    disabled={loading}
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all"
+                  >
+                    Create New
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 'rendering' && (
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                <div className="flex justify-center mb-6">
+                  <div className="relative w-20 h-20">
+                    <div className="absolute inset-0 bg-indigo-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
+                    <div className="relative bg-indigo-50 p-5 rounded-full flex items-center justify-center">
+                      <Film className="animate-spin text-indigo-600" size={32} />
+                    </div>
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">Rendering Video</h2>
+                <p className="text-gray-600 mb-6">Your video is being rendered... This may take a few minutes.</p>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                  <div
+                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-500">{progress}% Complete</p>
+              </div>
+            )}
+
+            {step === 'complete' && videoUrl && (
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Video Ready!</h2>
+                  <CheckCircle className="text-green-600" size={24} />
+                </div>
+
+                {/* Video Preview */}
+                {videoUrl && (
+                  <div className="mb-8 bg-black rounded-lg overflow-hidden">
+                    {videoUrl.startsWith('data:') ? (
+                      <video
+                        src={videoUrl}
+                        controls
+                        className="w-full max-h-96 object-contain"
+                      />
+                    ) : (
+                      <video
+                        src={videoUrl}
+                        controls
+                        className="w-full max-h-96 object-contain"
+                      />
+                    )}
                   </div>
                 )}
-              </motion.div>
-            </div>
 
-            {/* Tips Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="mt-12"
-            >
-              <div className="bg-linear-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">💡 Pro Tips for Better Videos</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">✨ Be Specific</h4>
-                    <p className="text-sm text-gray-700">
-                      Include details like lighting, camera movements, colors, and mood. Example: "Cinematic shot of a waterfall with golden sunlight, slow zoom out"
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">🎭 Set the Scene</h4>
-                    <p className="text-sm text-gray-700">
-                      Mention locations, objects, and characters. Example: "Urban street at night with neon signs reflecting in puddles"
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">🎬 Use Camera Terms</h4>
-                    <p className="text-sm text-gray-700">
-                      Reference camera movements and techniques: pan, zoom, tracking shot, slow motion, etc.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">🎨 Mention Style</h4>
-                    <p className="text-sm text-gray-700">
-                      Describe the visual style: photorealistic, animated, 3D, oil painting, vintage, etc.
-                    </p>
-                  </div>
-                </div>
+                {/* Download Button */}
+                <button
+                  onClick={handleDownloadVideo}
+                  className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all mb-4"
+                >
+                  <Download size={20} />
+                  Download Video
+                </button>
+
+                {/* Create Another */}
+                <button
+                  onClick={handleRestart}
+                  className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all"
+                >
+                  Create Another Video
+                </button>
               </div>
-            </motion.div>
+            )}
           </div>
         </div>
 
-        <Footer />
+        {/* FAQ Section */}
+        <div className="bg-white border-t border-gray-200 py-16 px-4 md:px-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+            <div className="space-y-4">
+              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
+                <summary className="font-semibold text-gray-900">How long does it take to generate a video?</summary>
+                <p className="text-gray-600 mt-3">Script generation usually takes 2-4 seconds. Video rendering depends on duration and style, typically 1-5 minutes.</p>
+              </details>
+              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
+                <summary className="font-semibold text-gray-900">What video formats are supported?</summary>
+                <p className="text-gray-600 mt-3">Our tool generates MP4 files optimized for web, social media, and presentations. You can download and use them anywhere.</p>
+              </details>
+              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
+                <summary className="font-semibold text-gray-900">Can I edit the generated script?</summary>
+                <p className="text-gray-600 mt-3">Currently, you can preview and accept the script. In future updates, we'll add editing capabilities.</p>
+              </details>
+              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
+                <summary className="font-semibold text-gray-900">Is this feature free?</summary>
+                <p className="text-gray-600 mt-3">Yes! Text-to-Video is completely free to use during our beta period. No watermarks, no credit card required.</p>
+              </details>
+              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
+                <summary className="font-semibold text-gray-900">What's the quality of generated videos?</summary>
+                <p className="text-gray-600 mt-3">Videos are rendered at HD quality (1080p or higher depending on aspect ratio). Perfect for web, social, and marketing.</p>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        {/* Beta Info Section */}
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-t border-orange-200 py-12 px-4 md:px-8">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-lg font-semibold text-orange-900 mb-2">🧪 Beta Feature</h3>
+            <p className="text-orange-800">
+              This is an early-access beta of our AI Text-to-Video tool. While fully functional, you may experience occasional delays or refinements. Your feedback helps us improve!
+            </p>
+          </div>
+        </div>
       </main>
+      <Footer />
     </>
   );
 }
-
