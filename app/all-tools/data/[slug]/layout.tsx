@@ -104,6 +104,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title: seoData.title,
     description: seoData.description,
     keywords: seoData.keywords,
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       type: 'website',
       locale: 'en_US',

@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title: `${tool.title} - Free Grayscale Image Tool | SimplifyConvert`,
     description: tool.description,
     keywords: [tool.title, 'grayscale', 'image editor', 'free tool'],
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       type: 'website',
       locale: 'en_US',

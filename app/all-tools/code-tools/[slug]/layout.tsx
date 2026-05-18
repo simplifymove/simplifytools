@@ -22,8 +22,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return {
     title: `${tool.title} - Free Code Tool | SimplifyConvert`,
     description: tool.description,
-    keywords: [tool.title, 'code tool', 'developer tool', 'free tool'],
-    openGraph: {
+    keywords: [tool.title, 'code tool', 'developer tool', 'free tool'],    robots: {
+      index: true,
+      follow: true,
+    },    openGraph: {
       type: 'website',
       locale: 'en_US',
       url: canonicalUrl,

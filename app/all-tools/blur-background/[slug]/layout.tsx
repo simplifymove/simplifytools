@@ -22,8 +22,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return {
     title: `${tool.title} - Free Blur Background Tool | SimplifyConvert`,
     description: tool.description,
-    keywords: [tool.title, 'blur background', 'image editor', 'free tool'],
-    openGraph: {
+    keywords: [tool.title, 'blur background', 'image editor', 'free tool'],    robots: {
+      index: true,
+      follow: true,
+    },    openGraph: {
       type: 'website',
       locale: 'en_US',
       url: canonicalUrl,

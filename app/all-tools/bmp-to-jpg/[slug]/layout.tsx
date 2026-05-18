@@ -24,6 +24,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title: `${toolTitle} - Free BMP to JPG Converter Tool | SimplifyConvert`,
     description: tool.description || `Convert ${tool.from?.toUpperCase()} to ${tool.to?.toUpperCase()} easily and quickly with SimplifyConvert.`,
     keywords: [toolTitle, 'bmp to jpg', 'converter', 'free tool'],
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       type: 'website',
       locale: 'en_US',

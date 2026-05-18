@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title: `${tool.title} - Free Image Compressor Tool | SimplifyConvert`,
     description: tool.description,
     keywords: [tool.title, 'compress image', 'image compressor', 'free tool'],
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       type: 'website',
       locale: 'en_US',

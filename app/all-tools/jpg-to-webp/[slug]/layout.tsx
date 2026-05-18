@@ -23,8 +23,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return {
     title: `${toolTitle} - Free JPG to WebP Converter Tool | SimplifyConvert`,
     description: tool.description || `Convert ${tool.from?.toUpperCase()} to ${tool.to?.toUpperCase()} easily.`,
-    keywords: [toolTitle, 'jpg to webp', 'converter', 'free tool'],
-    openGraph: {
+    keywords: [toolTitle, 'jpg to webp', 'converter', 'free tool'],    robots: {
+      index: true,
+      follow: true,
+    },    openGraph: {
       type: 'website',
       locale: 'en_US',
       url: canonicalUrl,

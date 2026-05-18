@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title: `${tool.title} - Free Code Minifier Tool | SimplifyConvert`,
     description: tool.description,
     keywords: [tool.title, 'code minifier', 'minifier', 'free tool'],
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       type: 'website',
       locale: 'en_US',

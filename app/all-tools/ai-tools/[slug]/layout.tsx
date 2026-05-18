@@ -5,6 +5,44 @@ interface Params {
   slug: string;
 }
 
+/**
+ * URL aliases for AI tools
+ * Maps alternative slugs/URLs to correct tool IDs
+ * Handles cases where URLs don't match internal tool IDs
+ */
+const toolAliases: Record<string, string> = {
+  'summarizer': 'content-summarizer',
+  'email-writer': 'cold-email-writer',
+  'blog-generator': 'blog-post-generator',
+  'social-media-writer': 'instagram-caption-generator', // Maps to primary social tool
+  'social-media': 'instagram-caption-generator',
+  'social': 'instagram-caption-generator',
+};
+
+/**
+ * Resolve tool slug to actual tool ID
+ * Checks aliases if direct lookup fails
+ */
+function resolveToolId(slug: string): string {
+  // First check if it's a direct match
+  const directTool = getToolById(slug);
+  if (directTool) {
+    return slug;
+  }
+  
+  // Check aliases
+  const aliasedId = toolAliases[slug];
+  if (aliasedId) {
+    const aliasTool = getToolById(aliasedId);
+    if (aliasTool) {
+      return aliasedId;
+    }
+  }
+  
+  // Not found
+  return '';
+}
+
 // Comprehensive SEO metadata database for AI writing tools
 const toolSEODatabase: Record<string, {
   title: string;
@@ -170,8 +208,21 @@ const toolSEODatabase: Record<string, {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
-  const tool = getToolById(slug);
-
+  
+  // Resolve slug to actual tool ID (handles aliases)
+  const toolId = resolveToolId(slug);
+  
+  if (!toolId) {
+    // Tool not found - return noindex for 404
+    return {
+      title: 'Tool Not Found - SimplifyConvert',
+      robots: { index: false },
+    };
+  }
+  
+  // Get the actual tool using resolved ID
+  const tool = getToolById(toolId);
+  
   if (!tool) {
     return {
       title: 'Tool Not Found - SimplifyConvert',
@@ -180,19 +231,23 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   }
 
   // Get tool-specific SEO data or use defaults
-  const seoData = toolSEODatabase[slug] || {
+  const seoData = toolSEODatabase[toolId] || {
     title: `${tool.title} - Free AI Writing Tool | SimplifyConvert`,
     description: tool.description,
     keywords: [tool.title, 'AI writer', 'content generator', 'free tool']
   };
 
   const baseUrl = 'https://simplifyconvert.com';
-  const canonicalUrl = `${baseUrl}/all-tools/ai-tools/${slug}`;
+  const canonicalUrl = `${baseUrl}/all-tools/ai-tools/${toolId}`;
 
   return {
     title: seoData.title,
     description: seoData.description,
     keywords: seoData.keywords,
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       type: 'website',
       locale: 'en_US',

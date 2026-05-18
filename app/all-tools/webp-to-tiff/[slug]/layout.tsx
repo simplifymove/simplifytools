@@ -23,8 +23,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return {
     title: `${toolTitle} - Free WebP to TIFF Converter Tool | SimplifyConvert`,
     description: tool.description || `Convert ${tool.from?.toUpperCase()} to ${tool.to?.toUpperCase()} easily.`,
-    keywords: [toolTitle, 'webp to tiff', 'converter', 'free tool'],
-    openGraph: {
+    keywords: [toolTitle, 'webp to tiff', 'converter', 'free tool'],    robots: {
+      index: true,
+      follow: true,
+    },    openGraph: {
       type: 'website',
       locale: 'en_US',
       url: canonicalUrl,

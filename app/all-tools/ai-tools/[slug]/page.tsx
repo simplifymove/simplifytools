@@ -11,6 +11,38 @@ import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import AIDetectorResults from '@/app/components/AIDetectorResults';
 
+/**
+ * URL aliases for AI tools (must match layout.tsx aliases)
+ */
+const toolAliases: Record<string, string> = {
+  'summarizer': 'content-summarizer',
+  'email-writer': 'cold-email-writer',
+  'blog-generator': 'blog-post-generator',
+  'social-media-writer': 'instagram-caption-generator',
+  'social-media': 'instagram-caption-generator',
+  'social': 'instagram-caption-generator',
+};
+
+/**
+ * Resolve tool slug to actual tool ID
+ */
+function resolveToolId(slug: string): string {
+  const directTool = getToolById(slug);
+  if (directTool) {
+    return slug;
+  }
+  
+  const aliasedId = toolAliases[slug];
+  if (aliasedId) {
+    const aliasTool = getToolById(aliasedId);
+    if (aliasTool) {
+      return aliasedId;
+    }
+  }
+  
+  return '';
+}
+
 // Action-specific CTA text for each tool
 function getActionText(toolId: string): string {
   const actionMap: Record<string, string> = {
@@ -117,21 +149,24 @@ export default function AIWriteToolPage() {
   const [error, setError] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
-  // Load tool configuration
+  // Load tool configuration with alias resolution
   useEffect(() => {
-    const loadedTool = getToolById(slug);
-    if (loadedTool) {
-      setTool(loadedTool);
-      // Initialize inputs with default values
-      const defaultInputs: Record<string, any> = {};
-      loadedTool.fields.forEach(field => {
-        if (field.type === 'select' && field.options) {
-          defaultInputs[field.name] = field.options[0]?.value || '';
-        } else {
-          defaultInputs[field.name] = '';
-        }
-      });
-      setInputs(defaultInputs);
+    const resolvedToolId = resolveToolId(slug);
+    if (resolvedToolId) {
+      const loadedTool = getToolById(resolvedToolId);
+      if (loadedTool) {
+        setTool(loadedTool);
+        // Initialize inputs with default values
+        const defaultInputs: Record<string, any> = {};
+        loadedTool.fields.forEach(field => {
+          if (field.type === 'select' && field.options) {
+            defaultInputs[field.name] = field.options[0]?.value || '';
+          } else {
+            defaultInputs[field.name] = '';
+          }
+        });
+        setInputs(defaultInputs);
+      }
     }
   }, [slug]);
 
