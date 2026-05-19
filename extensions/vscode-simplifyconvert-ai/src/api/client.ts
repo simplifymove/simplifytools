@@ -9,6 +9,7 @@ export interface GenerateRequest {
   language?: string;
   taskType: 'chat' | 'explain' | 'fix' | 'optimize' | 'comments' | 'debug';
   stream?: boolean;
+  maxOutputTokens?: number;
 }
 
 export interface GenerateResponse {
@@ -50,6 +51,7 @@ export class ApiClient {
           machineId: this.machineId,
           taskType: request.taskType,
           stream: request.stream || false,
+          maxOutputTokens: request.maxOutputTokens || 500,
         }),
       });
 

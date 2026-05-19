@@ -156,12 +156,25 @@ export class YtDlpProvider extends BaseProvider {
   }
 
   private getPythonPath(): string {
-    return (
-      process.env.PYTHON_PATH ||
-      (process.platform === 'win32'
-        ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
-        : '/var/www/simplifyconvertapp/venv/bin/python')
-    );
+    // Try environment variable first
+    if (process.env.PYTHON_PATH) {
+      return process.env.PYTHON_PATH;
+    }
+
+    // Platform-specific paths
+    if (process.platform === 'win32') {
+      return path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
+    }
+
+    // Linux: Try production path first, then fallback
+    const linuxProdPath = '/var/www/simplifyconvertapp/venv/bin/python';
+    if (fs.existsSync(linuxProdPath)) {
+      return linuxProdPath;
+    }
+
+    // Fallback to system python3
+    console.log('[ytdlp] Production path not found, falling back to python3');
+    return 'python3';
   }
 
   private runCommand(

@@ -2,7 +2,7 @@
   "name": "simplifyconvert-ai-code-assistant",
   "displayName": "SimplifyConvert AI Code Assistant",
   "description": "AI-powered code assistant with Explain, Fix, Optimize, and more",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "publisher": "SimplifyConvert",
   "license": "MIT",
   "engines": {
@@ -50,6 +50,14 @@
       {
         "command": "simplifyconvertAI.clearApiKey",
         "title": "SimplifyConvert AI: Clear API Key"
+      },
+      {
+        "command": "simplifyconvertAI.testConnection",
+        "title": "SimplifyConvert AI: Test Connection"
+      },
+      {
+        "command": "simplifyconvertAI.showSettings",
+        "title": "SimplifyConvert AI: Show Current Settings"
       }
     ],
     "menus": {
@@ -110,6 +118,12 @@
           "type": "string",
           "default": "Qwen 2.5 Coder",
           "description": "Default model name to display"
+        },
+        "simplifyconvertAI.mode": {
+          "type": "string",
+          "enum": ["quick", "smart"],
+          "default": "quick",
+          "description": "Operation mode: 'quick' (concise, 150 tokens) or 'smart' (detailed, 500 tokens)"
         }
       }
     }
@@ -123,7 +137,7 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.9.1",
     "typescript": "^5.0.0"
-  },
-  "dependencies": {}
+  }
 }

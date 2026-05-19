@@ -114,6 +114,17 @@ export class ProviderOrchestrator {
   }
 
   /**
+   * Get next provider in chain for logging
+   */
+  private getNextProvider(chain: DownloadProvider[], currentProvider: string): DownloadProvider | null {
+    const currentIndex = chain.indexOf(currentProvider as DownloadProvider);
+    if (currentIndex >= 0 && currentIndex < chain.length - 1) {
+      return chain[currentIndex + 1];
+    }
+    return null;
+  }
+
+  /**
    * Main download method with fallback chain
    */
   async download(options: DownloadOptions): Promise<DownloadResult | DownloadError> {
@@ -173,24 +184,46 @@ export class ProviderOrchestrator {
           return result;
         }
 
-        // Provider failed, record attempt and continue
+        // Provider failed, record attempt
+        const errorMsg = result.message || result.error;
         this.attempts.push({
           provider: providerName,
           status: 'failed',
-          message: result.message || result.error,
+          message: errorMsg,
           duration,
         });
 
-        // If provider says don't retry, try next
-        if (!result.shouldRetry) {
-          continue;
+        // Log provider failure and continue to next
+        const nextProvider = this.getNextProvider(providerChain, providerName);
+        if (nextProvider) {
+          console.log(`[download] Provider ${providerName} failed (${errorMsg}), trying ${nextProvider}`);
+        } else {
+          console.log(`[download] Provider ${providerName} failed (${errorMsg}), no more providers available`);
         }
+        
+        // Continue to next provider unless it's a security/validation error
+        const isSecurityError = errorMsg?.includes('SSRF') || 
+                               errorMsg?.includes('private IP') || 
+                               errorMsg?.includes('Internal');
+        if (isSecurityError) {
+          break; // Stop on security errors
+        }
+        
+        continue; // Try next provider
       } catch (error: any) {
+        const errorMsg = error?.message || 'Unknown error';
         this.attempts.push({
           provider: providerName,
           status: 'failed',
-          message: error?.message || 'Unknown error',
+          message: errorMsg,
         });
+        
+        const nextProvider = this.getNextProvider(providerChain, providerName);
+        if (nextProvider) {
+          console.log(`[download] Provider ${providerName} error (${errorMsg}), trying ${nextProvider}`);
+        }
+        
+        continue; // Try next provider
       }
     }
 

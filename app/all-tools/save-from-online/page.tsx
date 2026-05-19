@@ -133,6 +133,7 @@ export default function SaveFromOnline() {
   };
 
   const platforms = [
+    { name: 'YouTube', icon: Video, color: 'text-red-600' },
     { name: 'TikTok', icon: Video, color: 'text-black' },
     { name: 'Instagram', icon: ImageIcon, color: 'text-pink-500' },
     { name: 'Facebook', icon: Video, color: 'text-blue-600' },
@@ -173,7 +174,7 @@ export default function SaveFromOnline() {
             <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
               Download supported files from public URLs - videos, images, PDFs, documents, and more. 
               <br className="hidden md:block" />
-              Works with TikTok, Instagram, Facebook, Twitter, Vimeo, and popular platforms.
+              Works with YouTube, TikTok, Instagram, Facebook, Twitter/X, Vimeo, and more.
             </p>
           </motion.div>
 
@@ -189,7 +190,7 @@ export default function SaveFromOnline() {
               <div>
                 <h3 className="font-bold text-blue-900 mb-1">Supported Platforms</h3>
                 <p className="text-blue-800 text-sm leading-relaxed">
-                  Download from TikTok, Instagram, Facebook, Twitter, Vimeo, and other popular platforms. Always respect copyright laws and platform terms of service.
+                  Download from YouTube, TikTok, Instagram, Facebook, Twitter, Vimeo, and other popular platforms. Always respect copyright laws and platform terms of service.
                 </p>
               </div>
             </div>
@@ -338,7 +339,7 @@ export default function SaveFromOnline() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Download From Online with Our Tool?</h2>
             
             <p className="text-gray-700 mb-6 leading-relaxed">
-              Our free online downloader makes it easy to save videos, images, documents, and audio files from websites and popular social media platforms. You can download Instagram reels, TikTok content, Facebook videos, Twitter media, and other supported files with just a few clicks. No software installation required — everything works directly in your browser.
+              Our free online downloader makes it easy to save videos, images, documents, and audio files from websites and popular social media platforms. You can download YouTube videos, Instagram reels, TikTok content, Facebook videos, Twitter media, and other supported files with just a few clicks. No software installation required — everything works directly in your browser.
             </p>
 
             <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -352,7 +353,7 @@ export default function SaveFromOnline() {
               </div>
               <div className="bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
                 <h3 className="font-bold text-purple-900 mb-2">📱 Works Everywhere</h3>
-                <p className="text-purple-800 text-sm">Download from TikTok, Instagram, Facebook, Twitter, Vimeo, and popular platforms. Works on desktop, tablet, and mobile devices.</p>
+                <p className="text-purple-800 text-sm">Download from YouTube, TikTok, Instagram, Facebook, Twitter, Vimeo, and popular platforms. Works on desktop, tablet, and mobile devices.</p>
               </div>
               <div className="bg-orange-50 p-6 rounded-lg border-l-4 border-orange-500">
                 <h3 className="font-bold text-orange-900 mb-2">🔒 100% Free & Easy</h3>
@@ -362,7 +363,7 @@ export default function SaveFromOnline() {
 
             <h3 className="text-2xl font-bold text-gray-900 mb-4">How to Download From Online</h3>
             <ol className="space-y-3 text-gray-700 mb-8">
-              <li className="flex gap-3"><span className="font-bold text-green-600">1.</span> <span>Copy the public URL from TikTok, Instagram, or any website</span></li>
+              <li className="flex gap-3"><span className="font-bold text-green-600">1.</span> <span>Copy the public URL from YouTube, TikTok, Instagram, or any website</span></li>
               <li className="flex gap-3"><span className="font-bold text-green-600">2.</span> <span>Paste it into our downloader above</span></li>
               <li className="flex gap-3"><span className="font-bold text-green-600">3.</span> <span>Choose your preferred quality or format (optional)</span></li>
               <li className="flex gap-3"><span className="font-bold text-green-600">4.</span> <span>Click "Download File" and your content downloads quickly</span></li>
@@ -370,8 +371,9 @@ export default function SaveFromOnline() {
 
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Common Uses for Online Downloading</h3>
             <ul className="space-y-2 text-gray-700 mb-8">
+              <li>🎬 <strong>Download YouTube Videos:</strong> Save tutorials, music, and educational content for offline viewing</li>
               <li>📹 <strong>Save Tutorial Videos:</strong> Download educational content from popular platforms for offline learning</li>
-              <li>🎵 <strong>Extract Audio:</strong> Download audio tracks from videos on supported platforms</li>
+              <li>🎵 <strong>Extract Audio:</strong> Download MP3 audio tracks from YouTube, videos, and other supported platforms</li>
               <li>📸 <strong>Backup Photos:</strong> Download your Instagram or Facebook photos for safekeeping</li>
               <li>💼 <strong>Archive Documents:</strong> Save PDFs and presentations from websites for later reference</li>
               <li>🎬 <strong>Create Content:</strong> Download clips for editing and remixing (check platform terms)</li>
@@ -419,14 +421,15 @@ export default function SaveFromOnline() {
           <div className="space-y-12">
             {/* SOCIAL MEDIA VIDEOS SECTION */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Download Instagram, TikTok & Social Media Videos</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Download YouTube, Instagram, TikTok & Social Media Videos</h2>
               <p className="text-gray-700 mb-6">
-                Save your favorite content from Instagram, TikTok, Facebook, Twitter, and more. Whether you want to download Instagram video online for sharing, use a TikTok video downloader without watermark for content creation, or download Twitter video online for archiving, our tool handles it all in seconds.
+                Save your favorite content from YouTube, Instagram, TikTok, Facebook, Twitter, and more. Whether you want to download YouTube videos for offline viewing, download Instagram video online for sharing, use a TikTok video downloader without watermark for content creation, or download Twitter video online for archiving, our tool handles it all in seconds.
               </p>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-lg border border-green-200">
                   <h3 className="text-lg font-bold text-green-600 mb-4">📱 Platform Support</h3>
                   <ul className="space-y-2 text-gray-700">
+                    <li>✓ <strong>Download YouTube videos</strong> - Music, tutorials, educational content</li>
                     <li>✓ <strong>Download Instagram video online</strong> - Posts, reels, stories</li>
                     <li>✓ <strong>TikTok video downloader without watermark</strong> - HD quality</li>
                     <li>✓ <strong>Download Twitter video online</strong> - Full resolution</li>
@@ -494,7 +497,7 @@ export default function SaveFromOnline() {
             <div className="bg-white p-6 rounded-lg border border-green-200">
               <h3 className="text-lg font-bold text-gray-900 mb-3">Why Use Our Downloader?</h3>
               <p className="text-gray-700 mb-3">
-                Our free online downloader works with all major platforms. Whether you need to download Instagram video online, use a TikTok video downloader without watermark, download Twitter video online, save video from URL online, or extract images and documents, we've got you covered.
+                Our free online downloader works with all major platforms. Whether you need to download YouTube videos, download Instagram video online, use a TikTok video downloader without watermark, download Twitter video online, save video from URL online, or extract images and documents, we've got you covered.
               </p>
               <p className="text-gray-700">
                 Fast, reliable, and easy to use—no registration required. Download in multiple formats and quality options to suit your needs.
@@ -517,10 +520,17 @@ export default function SaveFromOnline() {
                 }
               },
               {
+                name: 'Can I download YouTube videos?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes, public YouTube videos are fully supported. You can download YouTube videos in MP4 format at various quality levels. YouTube Shorts are also supported. You can also extract audio as MP3 from YouTube videos for offline listening.'
+                }
+              },
+              {
                 name: 'Which social media platforms are supported?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Our downloader supports TikTok, Instagram, Facebook, Twitter, Vimeo, and other popular platforms. You can download videos, images, and files directly to your device. Supported formats vary depending on the platform and content type.'
+                  text: 'Our downloader supports YouTube, TikTok, Instagram, Facebook, Twitter, Vimeo, and other popular platforms. You can download videos, images, and files directly to your device. Supported formats vary depending on the platform and content type.'
                 }
               },
               {
@@ -538,10 +548,17 @@ export default function SaveFromOnline() {
                 }
               },
               {
+                name: 'Can I extract audio from YouTube videos?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes, our tool supports extracting audio from YouTube videos and converting them to MP3 format. This is useful for saving music, podcasts, and audio content for offline listening. Always check copyright permissions before downloading.'
+                }
+              },
+              {
                 name: 'Is it legal to download from online?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Downloading is legal in most cases, but you must respect copyright laws and the terms of service of the platform. Download only content you own or have permission to use. Do not use our tool to download copyrighted material without authorization.'
+                  text: 'Downloading is legal in most cases, but you must respect copyright laws and the terms of service of the platform. Download only content you own or have permission to use. Do not use our tool to download copyrighted material without authorization. Always verify you have the right to download content before proceeding.'
                 }
               },
               {
@@ -565,7 +582,7 @@ export default function SaveFromOnline() {
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
             name: 'Download From Online',
-            description: 'Free online downloader for videos, images, documents, and audio from supported platforms like TikTok, Instagram, Facebook, Twitter, and Vimeo.',
+            description: 'Free online downloader for videos, images, documents, and audio from supported platforms including YouTube, TikTok, Instagram, Facebook, Twitter, and Vimeo.',
             applicationCategory: 'UtilityApplication',
             operatingSystem: 'Web',
             url: 'https://simplifyconvert.com/all-tools/save-from-online',

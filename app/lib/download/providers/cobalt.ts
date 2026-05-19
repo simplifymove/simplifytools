@@ -42,6 +42,20 @@ export class CobaltProvider extends BaseProvider {
     }
   }
 
+  private getPlatformFromUrl(url: string): string | null {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname || '';
+      if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return 'youtube';
+      if (hostname.includes('vimeo.com')) return 'vimeo';
+      if (hostname.includes('instagram.com')) return 'instagram';
+      if (hostname.includes('facebook.com')) return 'facebook';
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   async download(options: DownloadOptions): Promise<DownloadResult | DownloadError> {
     const { url, timeoutSeconds = 120 } = options;
 
@@ -65,12 +79,29 @@ export class CobaltProvider extends BaseProvider {
       if (!response.ok) {
         clearTimeout(timeout);
         console.log('[cobalt] v11 HTTP error:', response.status);
+        
+        // For HTTP 400 on supported platforms like YouTube/Vimeo, allow retry with fallback
+        if (response.status === 400) {
+          const platform = this.getPlatformFromUrl(url);
+          const shouldRetryOn400 = ['youtube', 'vimeo'].includes(platform || '');
+          if (shouldRetryOn400) {
+            console.log(`[cobalt] HTTP 400 on ${platform}, allowing fallback to next provider`);
+            return {
+              ok: false,
+              provider: 'cobalt',
+              error: `HTTP ${response.status}`,
+              statusCode: response.status,
+              shouldRetry: true, // Allow fallback for YouTube/Vimeo on 400
+            };
+          }
+        }
+        
         return {
           ok: false,
           provider: 'cobalt',
           error: `HTTP ${response.status}`,
           statusCode: response.status,
-          shouldRetry: response.status >= 500,
+          shouldRetry: response.status >= 500, // Only retry on 5xx errors
         };
       }
 

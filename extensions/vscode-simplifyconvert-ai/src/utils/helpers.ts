@@ -22,17 +22,20 @@ export async function getOrCreateMachineId(globalState: any): Promise<string> {
  */
 export function formatErrorMessage(code: string, message: string): string {
   const friendlyMessages: { [key: string]: string } = {
-    'INVALID_API_KEY': 'Invalid API key. Please check your key and try again.',
-    'SUBSCRIPTION_EXPIRED': 'Your subscription has expired. Please renew to continue.',
-    'CREDITS_EXHAUSTED': 'You\'ve used all your monthly credits. Please upgrade your plan.',
-    'INSUFFICIENT_CREDITS': 'Not enough credits for this request.',
-    'DEVICE_MISMATCH': 'This API key is locked to a different device. Reset in your dashboard to use on this device.',
-    'PROMPT_TOO_LARGE': 'Your prompt is too large (max 40,000 characters). Please split your request.',
-    'SECRET_DETECTED': 'Your prompt contains sensitive information (API keys, credentials, etc.). Please remove them.',
-    'SERVER_BUSY': 'Server is busy. Please try again in a few seconds.',
-    'RATE_LIMITED': 'You\'ve exceeded the rate limit (30 requests/minute). Please wait a moment.',
-    'OLLAMA_UNAVAILABLE': 'AI service is temporarily unavailable. Please try again later.',
-    'INTERNAL_ERROR': 'An error occurred. Please try again or contact support.',
+    'OLLAMA_ERROR': 'AI service error. The model may be loading. Please try again in a moment.',
+    'SERVER_BUSY': 'Server is temporarily busy. Please try again in a few seconds.',
+    'DEVICE_MISMATCH': 'API key is locked to a different device. Reset in your account to use it here.',
+    'CREDITS_EXHAUSTED': 'You\'ve used all monthly credits. Upgrade your plan to continue.',
+    'SUBSCRIPTION_EXPIRED': 'Your subscription expired. Renew to continue using the AI assistant.',
+    'INVALID_API_KEY': 'Invalid API key format or expired. Please check and update your API key.',
+    'NETWORK_ERROR': 'Network error. Check your internet connection and try again.',
+    'INSUFFICIENT_CREDITS': 'Not enough credits for this request. Upgrade your plan.',
+    'PROMPT_TOO_LARGE': 'Your prompt is too large. Please split your request into smaller parts.',
+    'SECRET_DETECTED': 'Sensitive data detected (API keys, passwords, etc.). Please remove and try again.',
+    'RATE_LIMITED': 'Rate limit exceeded. Please wait a moment before trying again.',
+    'OLLAMA_UNAVAILABLE': 'AI service is loading or unavailable. Try again in a moment.',
+    'INTERNAL_ERROR': 'Server error occurred. Please try again or contact support.',
+    'TIMEOUT': 'Request timed out. The AI is taking too long. Try a simpler prompt.',
   };
 
   return friendlyMessages[code] || message || 'An error occurred';

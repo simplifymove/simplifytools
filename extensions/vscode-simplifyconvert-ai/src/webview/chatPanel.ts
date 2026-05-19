@@ -17,6 +17,7 @@ export class ChatPanel {
   private chatMessages: ChatMessage[] = [];
   private isLoading = false;
   private extensionUri: vscode.Uri | null = null;
+  private abortController: AbortController | null = null;
 
   constructor(
     private apiClient: ApiClient | null,
@@ -24,6 +25,18 @@ export class ChatPanel {
   ) {
     if (this.apiClient) {
       console.log('ApiClient initialized');
+    }
+  }
+
+  /**
+   * Update the API client (used when API key is saved)
+   */
+  setApiClient(apiClient: ApiClient | null): void {
+    this.apiClient = apiClient;
+    if (this.apiClient) {
+      console.log('[ChatPanel] ApiClient refreshed after key save');
+    } else {
+      console.log('[ChatPanel] ApiClient cleared');
     }
   }
 
@@ -43,6 +56,13 @@ export class ChatPanel {
       } else if (message.command === 'clearChat') {
         this.chatMessages = [];
         this.renderChat();
+      } else if (message.command === 'cancelRequest') {
+        if (this.abortController) {
+          console.log('[ChatPanel] Cancelling request');
+          this.abortController.abort();
+          this.isLoading = false;
+          this.renderChat();
+        }
       }
     });
   }
@@ -155,7 +175,8 @@ export class ChatPanel {
   addMessageFromCommand(
     prompt: string,
     taskType: 'explain' | 'fix' | 'optimize' | 'comments' | 'debug',
-    selectedCode?: string
+    selectedCode?: string,
+    maxOutputTokens?: number
   ): void {
     const fullPrompt = selectedCode
       ? `${prompt}\n\n\`\`\`\n${selectedCode}\n\`\`\``
@@ -189,9 +210,11 @@ export class ChatPanel {
 
     console.log('Calling generate endpoint');
     // Trigger API call
+    this.abortController = new AbortController();
     this.apiClient.generate({
       prompt: fullPrompt,
       taskType: taskType,
+      maxOutputTokens: maxOutputTokens || 500,
     }).then((response) => {
       this.isLoading = false;
 
@@ -335,7 +358,7 @@ export class ChatPanel {
             max-height: 120px;
         }
 
-        #sendBtn, #clearBtn {
+        #sendBtn, #clearBtn, #cancelBtn {
             padding: 8px 12px;
             background: var(--vscode-button-background);
             color: var(--vscode-button-foreground);
@@ -343,6 +366,7 @@ export class ChatPanel {
             border-radius: 4px;
             cursor: pointer;
             white-space: nowrap;
+            font-size: 12px;
         }
 
         #sendBtn:hover {
@@ -360,18 +384,54 @@ export class ChatPanel {
             border: 1px solid var(--vscode-button-border);
         }
 
+        #cancelBtn {
+            background: var(--vscode-toolbar-activeBackground);
+            display: none;
+        }
+
+        #cancelBtn.visible {
+            display: block;
+        }
+
         .buttonGroup {
             display: flex;
-            gap: 8px;
+            gap: 4px;
+            flex-direction: column;
+            flex-wrap: wrap;
         }
 
         .creditInfo {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--vscode-descriptionForeground);
-            margin-top: 4px;
-            padding: 4px;
+            padding: 8px;
             background: var(--vscode-editor-lineHighlightBackground);
+            border-left: 2px solid var(--vscode-focusBorder);
             border-radius: 2px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .modelInfo {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--vscode-foreground);
+            margin: 2px 0;
+        }
+
+        .loadingSpinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--vscode-descriptionForeground);
+            border-top: 2px solid var(--vscode-focusBorder);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .error {
@@ -381,13 +441,17 @@ export class ChatPanel {
     </style>
 </head>
 <body>
+    <div id="creditInfo" class="creditInfo">
+        <div class="modelInfo" id="modelName">SimplifyConvert AI</div>
+        <div id="creditsDisplay" style="font-size: 10px; margin-top: 4px;"></div>
+    </div>
     <div id="chatContainer"></div>
-    <div id="creditInfo" class="creditInfo"></div>
     <div id="inputContainer">
-        <textarea id="prompt" placeholder="Ask SimplifyConvert AI..."></textarea>
-        <div style="display: flex; gap: 4px; flex-direction: column;">
-            <button id="sendBtn">Send</button>
-            <button id="clearBtn">Clear</button>
+        <textarea id="prompt" placeholder="Ask SimplifyConvert AI... (Ctrl+Enter to send)"></textarea>
+        <div class="buttonGroup">
+            <button id="sendBtn" title="Send (Ctrl+Enter)">Send</button>
+            <button id="cancelBtn" title="Cancel request">Cancel</button>
+            <button id="clearBtn" title="Clear chat history">Clear</button>
         </div>
     </div>
 

@@ -305,6 +305,10 @@ export async function activate(context: vscode.ExtensionContext) {
   const machineId = await getOrCreateMachineId(context.globalState);
   console.log('Machine ID:', maskApiKey(machineId));
 
+  // Load API key from secrets on activation
+  console.log('[Extension] Loading API key from secrets...');
+  await initializeApiClient(context, machineId);
+
   // Register commands
   registerCommands(context, machineId);
 
@@ -345,11 +349,21 @@ function registerCommands(context: vscode.ExtensionContext, machineId: string) {
       }
 
       // Store securely in SecretStorage
+      console.log('[Extension] Saving API key...');
       await context.secrets.store('simplifyconvertAI.apiKey', apiKey);
-      vscode.window.showInformationMessage('API key saved securely!');
+      console.log('[Extension] API key saved successfully');
 
       // Reinitialize API client
-      initializeApiClient(context, machineId);
+      await initializeApiClient(context, machineId);
+
+      // Update existing ChatPanel with new ApiClient
+      if (chatPanel && apiClient) {
+        console.log('[Extension] Updating ChatPanel with new ApiClient');
+        chatPanel.setApiClient(apiClient);
+        vscode.window.showInformationMessage('API key saved and connected!');
+      } else {
+        vscode.window.showInformationMessage('API key saved securely!');
+      }
     })
   );
 
@@ -459,6 +473,67 @@ function registerCommands(context: vscode.ExtensionContext, machineId: string) {
       await vscode.commands.executeCommand('simplifyconvertAI.chatView.focus');
     })
   );
+
+  // Test Connection
+  context.subscriptions.push(
+    vscode.commands.registerCommand('simplifyconvertAI.testConnection', async () => {
+      const config = vscode.workspace.getConfiguration('simplifyconvertAI');
+      const baseUrl = config.get<string>('apiBaseUrl') || 'https://simplifyconvert.com';
+      
+      const statusItem = vscode.window.setStatusBarMessage('Testing connection...');
+      
+      try {
+        const response = await fetch(`${baseUrl}/api/health`, {
+          method: 'GET',
+          // @ts-ignore
+          timeout: 5000,
+        });
+        
+        if (!response.ok) {
+          vscode.window.showErrorMessage(
+            `Connection failed: HTTP ${response.status}. Check API base URL in settings.`
+          );
+          return;
+        }
+        
+        const data: any = await response.json();
+        const status = data.status || 'unknown';
+        const model = data.model || 'Unknown Model';
+        const ready = data.readyForRequests !== false;
+        
+        vscode.window.showInformationMessage(
+          `✓ Backend Status: ${status}\nModel: ${model}\nReady: ${ready ? 'Yes' : 'No'}`
+        );
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Connection error: ${error instanceof Error ? error.message : 'Unknown error'}. Check API URL.`
+        );
+      } finally {
+        statusItem.dispose();
+      }
+    })
+  );
+
+  // Show Current Settings
+  context.subscriptions.push(
+    vscode.commands.registerCommand('simplifyconvertAI.showSettings', async () => {
+      const config = vscode.workspace.getConfiguration('simplifyconvertAI');
+      const baseUrl = config.get<string>('apiBaseUrl') || 'https://simplifyconvert.com';
+      const mode = config.get<string>('mode') || 'quick';
+      const maxTokens = mode === 'quick' ? 150 : 500;
+      const maskedId = apiClient ? maskApiKey(apiClient.getMachineId()) : 'Not loaded';
+      
+      const message = `
+SimplifyConvert AI Settings:
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📡 API Base URL: ${baseUrl}
+⚡ Mode: ${mode} (${maxTokens} max tokens)
+🖥️ Machine ID: ${maskedId}
+`.trim();
+      
+      vscode.window.showInformationMessage(message, { modal: true });
+    })
+  );
 }
 
 /**
@@ -524,7 +599,11 @@ async function executeSelectionCommand(
     return;
   }
 
-  chatPanel.addMessageFromCommand(prompt, taskType, selectedCode);
+  const config = vscode.workspace.getConfiguration('simplifyconvertAI');
+  const mode = config.get<string>('mode') || 'quick';
+  const maxOutputTokens = mode === 'quick' ? 150 : 500;
+
+  chatPanel.addMessageFromCommand(prompt, taskType, selectedCode, maxOutputTokens);
 
   await vscode.commands.executeCommand('simplifyconvertAI.chatView.focus');
 }
@@ -534,23 +613,27 @@ async function executeSelectionCommand(
  */
 async function initializeApiClient(context: vscode.ExtensionContext, machineId: string) {
   try {
+    console.log('[Extension] Loading API key...');
     const apiKey = await context.secrets.get('simplifyconvertAI.apiKey');
 
     if (!apiKey) {
-      console.log('No API key configured');
+      console.log('[Extension] No API key configured');
+      apiClient = null;
       return;
     }
 
+    console.log('[Extension] API key loaded');
     const config = vscode.workspace.getConfiguration('simplifyconvertAI');
     const baseUrl = config.get<string>('apiBaseUrl') || 'https://simplifyconvert.com';
 
     apiClient = new ApiClient(baseUrl, apiKey, machineId);
-    console.log('API client initialized');
+    console.log('[Extension] ApiClient refreshed after key save');
   } catch (error) {
-    console.error('Failed to initialize API client:', error);
+    console.error('[Extension] Failed to initialize API client:', error);
   }
 }
 
 export function deactivate() {
   console.log('SimplifyConvert AI Code Assistant deactivated');
 }
+
