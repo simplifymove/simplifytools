@@ -104,7 +104,7 @@ function downloadWithYtDlp(url: string, format?: string): Promise<{ filePath: st
       const urlFilePathFormatted = urlFilePath.replace(/\\/g, '/');
 
       // Use --batch-file to read URLs from file (avoids encoding issues)
-      const pythonExe = process.env.PYTHON_PATH || (process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python');
+      const pythonExe = process.env.PYTHON_PATH || (process.platform === 'win32' ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe') : '/var/www/simplifyconvertapp/venv/bin/python');
       
       // Prepare environment with Python-specific variables
       const spawnEnv = {
@@ -148,7 +148,6 @@ function downloadWithYtDlp(url: string, format?: string): Promise<{ filePath: st
         outputTemplateFormatted,
         '--no-warnings',
         '--quiet',
-        '--js-runtimes', 'node',           // Use Node.js to solve YouTube JS challenges (CRITICAL for VPS)
       ];
       
       // Add cookies for authentication if available (helps with VPS/datacenter IPs)

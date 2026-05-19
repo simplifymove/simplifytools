@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import fs from 'fs';
+import path from 'path';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120; // 2 minutes
@@ -56,7 +57,7 @@ function getPythonPath(): string {
   return (
     process.env.PYTHON_PATH ||
     (process.platform === 'win32'
-      ? 'python'
+      ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
       : '/var/www/simplifyconvertapp/venv/bin/python')
   );
 }
@@ -134,8 +135,6 @@ async function discoverFormats(url: string): Promise<FormatsResponse> {
     'yt_dlp',
     '--dump-single-json',
     '--no-download',
-    '--js-runtimes',
-    'node',
     '--force-ipv4',
     '--socket-timeout',
     '30',

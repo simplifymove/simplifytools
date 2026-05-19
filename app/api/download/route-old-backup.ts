@@ -1,0 +1,715 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { spawn } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+import crypto from 'crypto';
+
+export const runtime = 'nodejs';
+export const maxDuration = 300; // 5 minutes
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+type DownloadResult =
+  | {
+      ok: true;
+      filePath: string;
+      filename: string;
+      contentType: string;
+      provider: 'local_yt_dlp';
+    }
+  | {
+      ok: true;
+      buffer: Buffer;
+      filename: string;
+      contentType: string;
+      provider: 'external_api';
+    }
+  | {
+      ok: false;
+      error: string;
+      details?: string;
+      shouldFallback?: boolean;
+      provider?: string;
+    };
+
+// ============================================================================
+// RATE LIMITING & GLOBAL QUEUE
+// ============================================================================
+
+let lastYouTubeDownloadTime = 0;
+const COOLDOWN_MS = 15000; // 15 seconds between YouTube downloads
+
+// Global queue for sequential YouTube downloads (only 1 yt-dlp process at a time)
+let youtubeDownloadInProgress = false;
+const youtubeWaiters: Array<() => void> = [];
+
+async function acquireYoutubeSlot(): Promise<void> {
+  while (youtubeDownloadInProgress) {
+    // Wait until the current download completes
+    await new Promise<void>((resolve) => {
+      youtubeWaiters.push(() => resolve());
+    });
+  }
+  youtubeDownloadInProgress = true;
+}
+
+function releaseYoutubeSlot(): void {
+  youtubeDownloadInProgress = false;
+  const waiter = youtubeWaiters.shift();
+  if (waiter) {
+    waiter();
+  }
+}
+
+async function enforceYouTubeCooldown(): Promise<void> {
+  const now = Date.now();
+  const timeSinceLastDownload = now - lastYouTubeDownloadTime;
+
+  if (timeSinceLastDownload < COOLDOWN_MS) {
+    const waitTime = COOLDOWN_MS - timeSinceLastDownload;
+    console.log(`[rate-limit] Waiting ${waitTime}ms before next YouTube download`);
+    await new Promise<void>((resolve) => setTimeout(resolve, waitTime));
+  }
+
+  lastYouTubeDownloadTime = Date.now();
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+function getPythonPath(): string {
+  return (
+    process.env.PYTHON_PATH ||
+    (process.platform === 'win32'
+      ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
+      : '/var/www/simplifyconvertapp/venv/bin/python')
+  );
+}
+
+function isValidUrl(input: string): boolean {
+  try {
+    const url = new URL(input);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function isYouTubeUrl(input: string): boolean {
+  try {
+    const host = new URL(input).hostname.toLowerCase();
+    return (
+      host.includes('youtube.com') ||
+      host.includes('youtu.be') ||
+      host.includes('music.youtube.com')
+    );
+  } catch {
+    return false;
+  }
+}
+
+function normalizeYoutubeUrl(input: string): string {
+  try {
+    const url = new URL(input);
+    const host = url.hostname.toLowerCase();
+
+    if (host.includes('youtube.com')) {
+      const videoId = url.searchParams.get('v');
+      if (videoId) return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+
+    if (host.includes('youtu.be')) {
+      const videoId = url.pathname.replace('/', '').split('?')[0];
+      if (videoId) return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+
+    return input;
+  } catch {
+    return input;
+  }
+}
+
+function shouldFallbackToExternal(stderr: string): boolean {
+  const text = stderr.toLowerCase();
+
+  // Check for conditions that warrant fallback to external API
+  return (
+    text.includes('http error 429') ||
+    text.includes('too many requests') ||
+    text.includes('sign in to confirm') ||
+    text.includes('not a bot') ||
+    text.includes('rate-limited') ||
+    text.includes('requested format is not available') ||
+    text.includes('n challenge') ||
+    text.includes('unable to extract')
+  );
+}
+
+function safeFilename(name: string): string {
+  return name
+    .replace(/[^\w.\-() ]+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 160);
+}
+
+function runCommand(
+  command: string,
+  args: string[],
+  options: {
+    cwd?: string;
+    timeout?: number;
+    env?: NodeJS.ProcessEnv;
+  } = {}
+): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: options.cwd || process.cwd(),
+      env: options.env || process.env,
+      shell: false,
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    const timer = setTimeout(() => {
+      child.kill('SIGKILL');
+      reject(new Error(`Process timeout after ${options.timeout}ms`));
+    }, options.timeout || 180000);
+
+    child.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+
+    child.on('close', (code) => {
+      clearTimeout(timer);
+
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        const err = new Error(`Process exited with code ${code}`);
+        (err as any).stdout = stdout;
+        (err as any).stderr = stderr;
+        reject(err);
+      }
+    });
+  });
+}
+
+// ============================================================================
+// LOCAL YT-DLP DOWNLOADER
+// ============================================================================
+
+async function tryLocalYtDlp(url: string, formatId?: string): Promise<DownloadResult> {
+  const pythonExe = getPythonPath();
+
+  const tmpDir = path.join(os.tmpdir(), 'simplifyconvert-downloads');
+  try {
+    fs.mkdirSync(tmpDir, { recursive: true });
+  } catch {
+    // Directory might already exist
+  }
+
+  const id = crypto.randomUUID();
+  const outputTemplate = path.join(tmpDir, `${id}.%(ext)s`);
+
+  const args = [
+    '-m',
+    'yt_dlp',
+    '--no-playlist',
+    '--force-ipv4',
+    '--sleep-interval',
+    '3',
+    '--max-sleep-interval',
+    '6',
+    '--retries',
+    '1',
+    '--fragment-retries',
+    '1',
+    '--socket-timeout',
+    '30',
+    '--user-agent',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+    '-f',
+    formatId || 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/best',
+    '--merge-output-format',
+    'mp4',
+    '-o',
+    outputTemplate,
+  ];
+
+  // Add cookies if available (do not log path)
+  if (
+    process.env.YTDLP_COOKIES_PATH &&
+    fs.existsSync(process.env.YTDLP_COOKIES_PATH)
+  ) {
+    args.push('--cookies', process.env.YTDLP_COOKIES_PATH);
+    console.log('[download] Using yt-dlp cookies file');
+  }
+
+  // Add proxy if enabled and configured (do not log proxy URL)
+  if (
+    process.env.YTDLP_PROXY_ENABLED === 'true' &&
+    process.env.YTDLP_PROXY_URL
+  ) {
+    args.push('--proxy', process.env.YTDLP_PROXY_URL);
+    console.log('[download] Using yt-dlp proxy');
+  }
+
+  args.push(url);
+
+  // Clean environment - remove conflicting Python variables
+  const cleanEnv = { ...process.env };
+  delete cleanEnv.PYTHONHOME;
+
+  try {
+    console.log('[download] Attempting local yt-dlp download');
+    await runCommand(pythonExe, args, {
+      cwd: process.cwd(),
+      timeout: 300000, // 5 minutes
+      env: cleanEnv,
+    });
+
+    // Find the downloaded file
+    const files = fs
+      .readdirSync(tmpDir)
+      .filter((file) => file.startsWith(id + '.'))
+      .map((file) => path.join(tmpDir, file));
+
+    if (!files.length) {
+      return {
+        ok: false,
+        error: 'Download completed but no output file was created.',
+      };
+    }
+
+    const filePath = files[0];
+    const ext = path.extname(filePath).toLowerCase();
+
+    console.log('[download] Local yt-dlp succeeded, file:', filePath);
+
+    return {
+      ok: true,
+      filePath,
+      filename: safeFilename(`download${ext || '.mp4'}`),
+      contentType: ext === '.mp3' ? 'audio/mpeg' : 'video/mp4',
+      provider: 'local_yt_dlp',
+    };
+  } catch (error: any) {
+    const stderr = error?.stderr || error?.message || '';
+
+    console.error('[download] local yt-dlp failed:', stderr.substring(0, 500));
+
+    return {
+      ok: false,
+      error: 'Local downloader failed.',
+      details: stderr,
+      shouldFallback: shouldFallbackToExternal(stderr),
+    };
+  }
+}
+
+// ============================================================================
+// QUALITY SELECTION UTILITIES
+// ============================================================================
+
+function getQualityOrder(): string[] {
+  return ['1080p', '720p', '480p', '360p', '240p'];
+}
+
+function extractQuality(label: string): string | null {
+  const match = label.match(/(\d+)p/);
+  return match ? match[1] + 'p' : null;
+}
+
+function findBestStream(
+  streams: any[],
+  selectedQuality?: string
+): { url: string; quality: string } | null {
+  if (!Array.isArray(streams) || streams.length === 0) {
+    return null;
+  }
+
+  // Filter for mp4 streams with both video and audio
+  const mp4Streams = streams.filter((stream: any) => {
+    const hasAudio = stream.hasAudio || stream.audio;
+    const hasVideo = stream.hasVideo || stream.video;
+    const isMp4 =
+      (stream.mimeType && stream.mimeType.includes('mp4')) ||
+      (stream.format && stream.format.toLowerCase().includes('mp4')) ||
+      (stream.type && stream.type.toLowerCase().includes('mp4'));
+
+    return isMp4 && hasAudio && hasVideo;
+  });
+
+  if (mp4Streams.length === 0) {
+    return null;
+  }
+
+  // If a specific quality was selected, try to find closest match
+  if (selectedQuality) {
+    const qualityOrder = getQualityOrder();
+    const selectedIndex = qualityOrder.indexOf(selectedQuality);
+
+    if (selectedIndex !== -1) {
+      // Look for exact match first, then fallback to closest lower quality
+      for (let i = selectedIndex; i < qualityOrder.length; i++) {
+        const targetQuality = qualityOrder[i];
+        const match = mp4Streams.find((stream: any) => {
+          const quality = extractQuality(stream.label || stream.quality || '');
+          return quality === targetQuality;
+        });
+        if (match) {
+          return {
+            url: match.url,
+            quality: targetQuality,
+          };
+        }
+      }
+    }
+  }
+
+  // Default: return highest quality (usually first)
+  const best = mp4Streams[0];
+  return {
+    url: best.url,
+    quality: extractQuality(best.label || best.quality || '') || 'best',
+  };
+}
+
+// ============================================================================
+// EXTERNAL DOWNLOADER API FALLBACK (RapidAPI - YouTube Video Audio Downloader)
+// ============================================================================
+
+async function tryExternalApi(url: string, selectedQuality?: string): Promise<DownloadResult> {
+  if (process.env.DOWNLOADER_API_ENABLED !== 'true') {
+    return {
+      ok: false,
+      error: 'External downloader API is disabled.',
+    };
+  }
+
+  const apiUrl = process.env.DOWNLOADER_API_URL || 'https://youtube-video-audio-downloader.p.rapidapi.com/api/v1/';
+  const apiHost = process.env.DOWNLOADER_API_HOST || 'youtube-video-audio-downloader.p.rapidapi.com';
+  const apiKey = process.env.DOWNLOADER_API_KEY;
+
+  if (!apiKey) {
+    console.error('[download] RapidAPI key not configured');
+    return {
+      ok: false,
+      error: 'External API key not configured',
+    };
+  }
+
+  try {
+    console.log('[download] Attempting external API (RapidAPI)');
+
+    // Determine which endpoint to use based on URL
+    let endpoint = 'youtube-media/info';
+    if (url.includes('instagram.com')) {
+      endpoint = 'instagram-media/info';
+    } else if (url.includes('tiktok.com')) {
+      endpoint = 'tiktok-media/info';
+    } else if (url.includes('soundcloud.com')) {
+      endpoint = 'soundcloud-media/info';
+    } else if (url.includes('twitter.com') || url.includes('x.com')) {
+      endpoint = 'twitter-media/info';
+    } else if (url.includes('facebook.com')) {
+      endpoint = 'facebook-media/info';
+    }
+
+    const fullUrl = `${apiUrl}${endpoint}?url=${encodeURIComponent(url)}`;
+
+    const apiResponse = await fetch(fullUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-rapidapi-host': apiHost,
+        'x-rapidapi-key': apiKey,
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+      },
+    });
+
+    console.log('[download] RapidAPI HTTP status:', apiResponse.status);
+
+    const responseText = await apiResponse.text();
+
+    if (!apiResponse.ok) {
+      console.error('[download] RapidAPI error response:', responseText.substring(0, 300));
+      return {
+        ok: false,
+        error: `RapidAPI returned HTTP ${apiResponse.status}`,
+        details: responseText.substring(0, 200),
+      };
+    }
+
+    // Parse JSON response
+    let data: any;
+    try {
+      data = JSON.parse(responseText);
+      console.log('[download] RapidAPI response parsed successfully');
+    } catch (parseError) {
+      console.error('[download] Failed to parse RapidAPI response:', responseText.substring(0, 200));
+      return {
+        ok: false,
+        error: 'RapidAPI returned invalid JSON',
+        details: responseText.substring(0, 200),
+      };
+    }
+
+    // Extract download URL from RapidAPI response
+    let downloadUrl: string | null = null;
+    if (data.downloadUrl) {
+      downloadUrl = data.downloadUrl;
+    } else if (data.url) {
+      downloadUrl = data.url;
+    } else if (data.link) {
+      downloadUrl = data.link;
+    } else if (data.result?.downloadUrl) {
+      downloadUrl = data.result.downloadUrl;
+    } else if (data.result?.url) {
+      downloadUrl = data.result.url;
+    }
+
+    if (!downloadUrl) {
+      console.error('[download] No download URL in RapidAPI response');
+      return {
+        ok: false,
+        error: 'No download URL returned by RapidAPI',
+        details: JSON.stringify(data).substring(0, 200),
+      };
+    }
+
+    // Fetch the actual video file
+    console.log('[download] Fetching video from RapidAPI download URL');
+    const videoResponse = await fetch(downloadUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+      },
+    });
+
+    if (!videoResponse.ok) {
+      return {
+        ok: false,
+        error: `Failed to fetch video: HTTP ${videoResponse.status}`,
+      };
+    }
+
+    const buffer = await videoResponse.arrayBuffer();
+    const filename = `download_${Date.now()}.mp4`;
+
+    console.log('[download] RapidAPI download succeeded');
+    return {
+      ok: true,
+      buffer: Buffer.from(buffer),
+      filename: filename,
+      contentType: 'video/mp4',
+      provider: 'external_api',
+    };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[download] RapidAPI error:', errorMsg);
+    return {
+      ok: false,
+      error: 'RapidAPI request failed',
+      details: errorMsg,
+    };
+  }
+}
+
+
+// ============================================================================
+// RESPONSE HANDLER
+// ============================================================================
+
+function fileResponse(result: Extract<DownloadResult, { ok: true }>) {
+  if ('filePath' in result) {
+    // Local file - read and cleanup
+    const buffer = fs.readFileSync(result.filePath);
+
+    try {
+      fs.unlinkSync(result.filePath);
+    } catch (e) {
+      console.warn('[download] Failed to cleanup temp file:', result.filePath);
+    }
+
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        'Content-Type': result.contentType,
+        'Content-Disposition': `attachment; filename="${result.filename}"`,
+        'X-Download-Provider': result.provider,
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
+
+  // Buffer from external API
+  return new NextResponse(new Uint8Array(result.buffer), {
+    status: 200,
+    headers: {
+      'Content-Type': result.contentType,
+      'Content-Disposition': `attachment; filename="${result.filename}"`,
+      'X-Download-Provider': result.provider,
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
+// ============================================================================
+// MAIN ENDPOINT
+// ============================================================================
+
+export async function POST(request: NextRequest) {
+  try {
+    let url = '';
+    let formatId: string | undefined;
+
+    // Parse request body or form data
+    const contentType = request.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      const body = await request.json();
+      url = body.url || '';
+      formatId = body.formatId || body.format;
+    } else {
+      const formData = await request.formData();
+      url = String(formData.get('url') || '');
+      const formFormatId = String(formData.get('formatId') || formData.get('format') || '');
+      formatId = formFormatId || undefined;
+    }
+
+    // Validate URL
+    if (!url || !isValidUrl(url)) {
+      return NextResponse.json(
+        { error: 'Please provide a valid URL.' },
+        { status: 400 }
+      );
+    }
+
+    // Normalize YouTube URLs (remove playlist params, etc)
+    if (isYouTubeUrl(url)) {
+      url = normalizeYoutubeUrl(url);
+      
+      // Acquire exclusive slot for YouTube download (only 1 at a time)
+      console.log('[download] Acquiring YouTube download slot');
+      await acquireYoutubeSlot();
+      
+      try {
+        // Enforce cooldown before processing
+        console.log('[download] Enforcing YouTube cooldown (15 seconds)');
+        await enforceYouTubeCooldown();
+        
+        const externalEnabled = process.env.DOWNLOADER_API_ENABLED === 'true';
+        const localResult = await tryLocalYtDlp(url, formatId);
+        
+        if (localResult.ok) {
+          return fileResponse(localResult);
+        }
+        
+        if (!externalEnabled) {
+          return NextResponse.json(
+            {
+              error: 'Download failed.',
+              details: localResult.details || localResult.error,
+              provider: 'local_yt_dlp',
+            },
+            { status: 500 }
+          );
+        }
+        
+        const externalResult = await tryExternalApi(url, formatId);
+        if (externalResult.ok) {
+          return fileResponse(externalResult);
+        }
+        
+        return NextResponse.json(
+          {
+            error: 'Download failed from both local downloader and external provider.',
+            localError: localResult.details || localResult.error,
+            externalError: externalResult.details || externalResult.error,
+          },
+          { status: 502 }
+        );
+      } finally {
+        releaseYoutubeSlot();
+      }
+    }
+
+    console.log('[download] Request for URL:', new URL(url).hostname);
+    if (formatId) {
+      console.log('[download] Using selected format:', formatId);
+    }
+
+    // Check if external API is enabled
+    const externalEnabled = process.env.DOWNLOADER_API_ENABLED === 'true';
+    console.log('[download] External API enabled:', externalEnabled);
+
+    // Try local yt-dlp first
+    const localResult = await tryLocalYtDlp(url, formatId);
+
+    if (localResult.ok) {
+      return fileResponse(localResult);
+    }
+
+    // Local download failed
+    console.log('[download] Local download failed:', localResult.error);
+
+    // If external API is disabled, return local error only
+    if (!externalEnabled) {
+      console.log('[download] External API disabled, returning local error');
+      return NextResponse.json(
+        {
+          error: 'Download failed.',
+          details: localResult.details || localResult.error,
+          provider: 'local_yt_dlp',
+        },
+        { status: 500 }
+      );
+    }
+
+    // External API is enabled, try it as fallback
+    console.log('[download] Local failed, attempting fallback to external API');
+    const externalResult = await tryExternalApi(url, formatId);
+
+    if (externalResult.ok) {
+      return fileResponse(externalResult);
+    }
+
+    // Both methods failed
+    console.log('[download] Both local and external API failed');
+    return NextResponse.json(
+      {
+        error: 'Download failed from both local downloader and external provider.',
+        localError: localResult.details || localResult.error,
+        externalError: externalResult.details || externalResult.error,
+      },
+      { status: 502 }
+    );
+  } catch (error: any) {
+    console.error('[download] Unexpected error:', error);
+
+    return NextResponse.json(
+      {
+        error: 'Unexpected download server error.',
+        details: error?.message || String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
