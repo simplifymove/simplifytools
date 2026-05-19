@@ -137,7 +137,14 @@ export async function POST(request: NextRequest) {
         'Content-Length': fileBuffer.length.toString(),
         'Content-Disposition': `attachment; filename="${encodeURIComponent(result.filename)}"`,
         'X-Download-Provider': result.provider,
+        // Security headers
         'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
+        'Referrer-Policy': 'no-referrer',
       },
     });
 

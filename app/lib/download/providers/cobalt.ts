@@ -48,6 +48,8 @@ export class CobaltProvider extends BaseProvider {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
 
+      console.log('[cobalt] Requesting download for:', url);
+
       // Get media info from Cobalt
       const infoResponse = await fetch(this.apiUrl, {
         method: 'POST',
@@ -66,6 +68,7 @@ export class CobaltProvider extends BaseProvider {
 
       if (!infoResponse.ok) {
         clearTimeout(timeout);
+        console.log('[cobalt] API error HTTP', infoResponse.status);
         return {
           ok: false,
           provider: 'cobalt',
@@ -77,9 +80,10 @@ export class CobaltProvider extends BaseProvider {
 
       const data = await infoResponse.json();
 
-      // Check for API errors
+      // Check for API errors (Cobalt returns error status or error field)
       if (data.error || data.status === 'error') {
         clearTimeout(timeout);
+        console.log('[cobalt] API returned error:', data.error || data.errorMessage);
         return {
           ok: false,
           provider: 'cobalt',
@@ -89,18 +93,35 @@ export class CobaltProvider extends BaseProvider {
         };
       }
 
-      // Extract download URL from response
+      // Extract download URL from response - Cobalt returns different formats
       let downloadUrl: string | null = null;
+      
+      // Try different response formats
       if (data.url && typeof data.url === 'string') {
         downloadUrl = data.url;
-      } else if (data.downloads?.[0]?.url) {
-        downloadUrl = data.downloads[0].url;
-      } else if (data.downloads?.[0]) {
-        downloadUrl = data.downloads[0];
+        console.log('[cobalt] Got URL from data.url');
+      } else if (data.downloads && Array.isArray(data.downloads)) {
+        // Array of downloads
+        if (data.downloads[0]?.url) {
+          downloadUrl = data.downloads[0].url;
+          console.log('[cobalt] Got URL from downloads array (with .url)');
+        } else if (typeof data.downloads[0] === 'string') {
+          downloadUrl = data.downloads[0];
+          console.log('[cobalt] Got URL from downloads array (string)');
+        }
+      } else if (data.download?.url) {
+        // Alternative format
+        downloadUrl = data.download.url;
+        console.log('[cobalt] Got URL from data.download.url');
+      } else if (typeof data === 'string') {
+        // Sometimes response is just URL string
+        downloadUrl = data;
+        console.log('[cobalt] Response is direct URL string');
       }
 
       if (!downloadUrl) {
         clearTimeout(timeout);
+        console.log('[cobalt] No download URL found in response:', JSON.stringify(data).substring(0, 200));
         return {
           ok: false,
           provider: 'cobalt',
@@ -109,6 +130,20 @@ export class CobaltProvider extends BaseProvider {
           shouldRetry: false,
         };
       }
+
+      // Validate URL
+      if (!downloadUrl.startsWith('http')) {
+        clearTimeout(timeout);
+        console.log('[cobalt] Invalid download URL (not HTTP):', downloadUrl.substring(0, 100));
+        return {
+          ok: false,
+          provider: 'cobalt',
+          error: 'Invalid download URL',
+          shouldRetry: false,
+        };
+      }
+
+      console.log('[cobalt] Downloading from:', downloadUrl.substring(0, 100));
 
       // Download the actual file
       const fileResponse = await fetch(downloadUrl, {
@@ -121,6 +156,7 @@ export class CobaltProvider extends BaseProvider {
       clearTimeout(timeout);
 
       if (!fileResponse.ok) {
+        console.log('[cobalt] File download failed HTTP', fileResponse.status);
         return {
           ok: false,
           provider: 'cobalt',
@@ -132,6 +168,8 @@ export class CobaltProvider extends BaseProvider {
 
       const buffer = await fileResponse.arrayBuffer();
       const filename = `download_${Date.now()}.mp4`;
+
+      console.log('[cobalt] Download successful:', filename, `(${(buffer.byteLength / 1024 / 1024).toFixed(2)}MB)`);
 
       return {
         ok: true,
@@ -145,6 +183,7 @@ export class CobaltProvider extends BaseProvider {
       const message = error?.message || String(error);
 
       if (error?.name === 'AbortError') {
+        console.log('[cobalt] Request timeout after', timeoutSeconds, 's');
         return {
           ok: false,
           provider: 'cobalt',
@@ -154,6 +193,7 @@ export class CobaltProvider extends BaseProvider {
         };
       }
 
+      console.log('[cobalt] Error:', message);
       return {
         ok: false,
         provider: 'cobalt',
