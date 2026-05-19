@@ -1,6 +1,6 @@
 /**
  * Cobalt provider - handles YouTube, Instagram, TikTok, Twitter/X, etc.
- * Uses public Cobalt.tools API
+ * Uses self-hosted Cobalt v11 API with tunnel response support
  */
 
 import { BaseProvider, DownloadOptions, DownloadResult, DownloadError } from './types';
@@ -8,12 +8,17 @@ import { BaseProvider, DownloadOptions, DownloadResult, DownloadError } from './
 export class CobaltProvider extends BaseProvider {
   name = 'cobalt' as const;
   private apiUrl: string;
+  private baseUrl: string;
   private apiKey?: string;
 
   constructor(apiUrl?: string, apiKey?: string) {
     super();
-    this.apiUrl = apiUrl || 'https://api.cobalt.tools/api/json';
+    // Normalize API URL: if just base, add trailing slash; if /api/json format, use as-is
+    this.baseUrl = apiUrl ? apiUrl.replace(/\/$/, '') : 'http://127.0.0.1:9000';
+    // For v11, we POST to root endpoint
+    this.apiUrl = this.baseUrl.endsWith('/api/json') ? this.baseUrl : `${this.baseUrl}/`;
     this.apiKey = apiKey;
+    console.log('[cobalt] Initialized with base URL:', this.baseUrl);
   }
 
   isSupported(url: string): boolean {
@@ -50,7 +55,7 @@ export class CobaltProvider extends BaseProvider {
 
       console.log('[cobalt] Requesting download for:', url);
 
-      // Get media info from Cobalt
+      // Get media info from Cobalt v11
       const infoResponse = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
@@ -79,29 +84,70 @@ export class CobaltProvider extends BaseProvider {
       }
 
       const data = await infoResponse.json();
+      console.log('[cobalt] Response status:', data.status, '| Response keys:', Object.keys(data).join(', '));
 
-      // Check for API errors (Cobalt returns error status or error field)
-      if (data.error || data.status === 'error') {
+      // Handle error status from Cobalt
+      if (data.status === 'error') {
         clearTimeout(timeout);
-        console.log('[cobalt] API returned error:', data.error || data.errorMessage);
+        const errorCode = data.code || 'UNKNOWN';
+        const errorMessage = data.error || data.message || 'Cobalt returned error';
+        console.log('[cobalt] API error status:', errorCode, '-', errorMessage);
         return {
           ok: false,
           provider: 'cobalt',
-          error: 'API error',
-          message: data.errorMessage || data.message || 'Cobalt API error',
+          error: `Cobalt error: ${errorCode}`,
+          message: errorMessage,
           shouldRetry: false,
         };
       }
 
-      // Extract download URL from response - Cobalt returns different formats
+      // Handle picker status (requires user format selection)
+      if (data.status === 'picker') {
+        clearTimeout(timeout);
+        console.log('[cobalt] Picker response - user needs to select format');
+        return {
+          ok: false,
+          provider: 'cobalt',
+          error: 'Format selection required',
+          message: 'Please select a format from the available options',
+          shouldRetry: false,
+        };
+      }
+
+      // Extract filename - prefer from Cobalt response, fallback to generic
+      let filename = data.filename || 'download.mp4';
+      console.log('[cobalt] Using filename:', filename);
+
+      // Handle different response types: tunnel, redirect, stream, or direct URL
       let downloadUrl: string | null = null;
-      
-      // Try different response formats
-      if (data.url && typeof data.url === 'string') {
+
+      if (data.status === 'tunnel') {
+        // Cobalt v11 tunnel response - URL is tunnel endpoint
+        if (data.url) {
+          // Tunnel URL might be relative to base
+          downloadUrl = data.url.startsWith('http') 
+            ? data.url 
+            : `${this.baseUrl}${data.url}`;
+          console.log('[cobalt] Tunnel response - URL:', downloadUrl?.substring(0, 100));
+        }
+      } else if (data.status === 'redirect') {
+        // Cobalt v11 redirect response
+        if (data.url) {
+          downloadUrl = data.url;
+          console.log('[cobalt] Redirect response - URL:', downloadUrl?.substring(0, 100));
+        }
+      } else if (data.status === 'stream') {
+        // Cobalt v11 stream response
+        if (data.url) {
+          downloadUrl = data.url;
+          console.log('[cobalt] Stream response - URL:', downloadUrl?.substring(0, 100));
+        }
+      } else if (data.url && typeof data.url === 'string') {
+        // Fallback to direct URL in response
         downloadUrl = data.url;
-        console.log('[cobalt] Got URL from data.url');
+        console.log('[cobalt] Direct URL in response');
       } else if (data.downloads && Array.isArray(data.downloads)) {
-        // Array of downloads
+        // Array of downloads (legacy format)
         if (data.downloads[0]?.url) {
           downloadUrl = data.downloads[0].url;
           console.log('[cobalt] Got URL from downloads array (with .url)');
@@ -121,7 +167,7 @@ export class CobaltProvider extends BaseProvider {
 
       if (!downloadUrl) {
         clearTimeout(timeout);
-        console.log('[cobalt] No download URL found in response:', JSON.stringify(data).substring(0, 200));
+        console.log('[cobalt] No download URL found in response, keys:', Object.keys(data).join(','));
         return {
           ok: false,
           provider: 'cobalt',
@@ -131,7 +177,7 @@ export class CobaltProvider extends BaseProvider {
         };
       }
 
-      // Validate URL
+      // Validate URL - TypeScript knows downloadUrl is string here
       if (!downloadUrl.startsWith('http')) {
         clearTimeout(timeout);
         console.log('[cobalt] Invalid download URL (not HTTP):', downloadUrl.substring(0, 100));
@@ -143,7 +189,7 @@ export class CobaltProvider extends BaseProvider {
         };
       }
 
-      console.log('[cobalt] Downloading from:', downloadUrl.substring(0, 100));
+      console.log('[cobalt] Fetching from URL (status:', data.status, ')');
 
       // Download the actual file
       const fileResponse = await fetch(downloadUrl, {
@@ -167,7 +213,13 @@ export class CobaltProvider extends BaseProvider {
       }
 
       const buffer = await fileResponse.arrayBuffer();
-      const filename = `download_${Date.now()}.mp4`;
+      
+      // Determine content type from response or default to video/mp4
+      let contentType = fileResponse.headers.get('content-type') || 'video/mp4';
+      if (contentType.includes(';')) {
+        contentType = contentType.split(';')[0].trim();
+      }
+      console.log('[cobalt] Content-Type:', contentType);
 
       console.log('[cobalt] Download successful:', filename, `(${(buffer.byteLength / 1024 / 1024).toFixed(2)}MB)`);
 
@@ -175,7 +227,7 @@ export class CobaltProvider extends BaseProvider {
         ok: true,
         buffer: Buffer.from(buffer),
         filename,
-        contentType: 'video/mp4',
+        contentType,
         provider: 'cobalt',
         fileSize: buffer.byteLength,
       };

@@ -44,7 +44,17 @@ async function checkCobalt(): Promise<ProviderStatus> {
     };
   }
 
-  const cobaltUrl = process.env.COBALT_API_URL || 'http://localhost:9000/api/json';
+  let cobaltUrl = process.env.COBALT_API_URL || 'http://127.0.0.1:9000';
+  
+  // Normalize URL - remove /api/json if present for v11 which uses root endpoint
+  if (cobaltUrl.endsWith('/api/json')) {
+    cobaltUrl = cobaltUrl.replace('/api/json', '');
+  }
+  // Ensure trailing slash for POST to root
+  if (!cobaltUrl.endsWith('/')) {
+    cobaltUrl += '/';
+  }
+
   const startTime = Date.now();
 
   try {
@@ -54,15 +64,15 @@ async function checkCobalt(): Promise<ProviderStatus> {
     const response = await fetch(cobaltUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: 'https://example.com' }),
+      body: JSON.stringify({ url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }),
       signal: controller.signal,
     });
 
     clearTimeout(timeout);
     const responseTime = Date.now() - startTime;
 
+    // Cobalt responds with 200 or 400 for valid requests; other codes mean unhealthy
     if (response.ok || response.status === 400) {
-      // 400 is expected for invalid URL, means API is responding
       return {
         status: 'healthy',
         responseTime,
