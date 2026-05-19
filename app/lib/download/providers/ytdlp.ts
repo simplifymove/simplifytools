@@ -84,8 +84,17 @@ export class YtDlpProvider extends BaseProvider {
         '--merge-output-format', 'mp4',
         '-o', outputTemplate,
         '--no-warnings',
-        url,
       ];
+
+      // Add cookies if available
+      const cookiesPath = process.env.YTDLP_COOKIES_PATH;
+      if (cookiesPath && fs.existsSync(cookiesPath)) {
+        console.log('[ytdlp] Using cookies file');
+        args.push('--cookies', cookiesPath);
+      }
+
+      // Add URL at the end
+      args.push(url);
 
       const result = await this.runCommand(pythonPath, args, {
         timeout: timeoutSeconds * 1000,
