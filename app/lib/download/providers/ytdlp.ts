@@ -80,11 +80,16 @@ export class YtDlpProvider extends BaseProvider {
         '--no-playlist',
         '--force-ipv4',
         '--socket-timeout', '30',
-        '-f', 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/best',
+        '--no-check-certificates',
+        '--geo-bypass',
+        '--geo-bypass-country', 'US',
+        '-f', 'bestvideo*+bestaudio/bestvideo+bestaudio/best[ext=mp4]/best',
         '--merge-output-format', 'mp4',
         '-o', outputTemplate,
         '--no-warnings',
       ];
+
+      console.log('[ytdlp] Using resilient format selector');
 
       // Add cookies if available
       const cookiesPath = process.env.YTDLP_COOKIES_PATH;
