@@ -6,7 +6,12 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate-fixtures": "node tests/fixtures/generate-fixtures.js",
+    "test:pdf-tools": "playwright test tests/pdf-tools.spec.ts",
+    "test:pdf-tools:ui": "playwright test tests/pdf-tools.spec.ts --ui",
+    "test:pdf-tools:report": "node tests/pdf-tools/generate-report.js",
+    "test:pdf-tools:full": "npm run generate-fixtures && npm run test:pdf-tools && npm run test:pdf-tools:report"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -46,6 +51,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcrypt": "^6.0.0",
     "@types/clean-css": "^4.2.11",
@@ -54,6 +60,7 @@
     "@types/nodemailer": "^7.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "adm-zip": "^0.5.17",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",

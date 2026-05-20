@@ -102,8 +102,8 @@ export default function PdfToolPage({ params }: PageProps) {
     setError('');
     setResult(null);
 
-    // Validate input
-    const validation = validatePdfInput(tool, files, url);
+    // Validate input (includes tool-specific options validation)
+    const validation = validatePdfInput(tool, files, url, options);
     if (!validation.valid) {
       setError(validation.error || 'Validation failed');
       return;
@@ -112,23 +112,23 @@ export default function PdfToolPage({ params }: PageProps) {
     // Special validation for rearrange-pdf
     if (tool.id === 'rearrange-pdf') {
       if (!pageOrder || pageOrder.length === 0) {
-        setError('Please arrange pages before submitting');
+        setError('Please arrange PDF pages before submitting.');
         return;
       }
       if (pageOrder.length !== totalPages) {
-        setError(`Page order mismatch: you have ${pageOrder.length} pages but the PDF has ${totalPages} pages`);
+        setError(`Page order mismatch: you arranged ${pageOrder.length} pages but the PDF has ${totalPages} pages. Please include all pages.`);
         return;
       }
-      // Check for valid indices
+      // Check for negative or out-of-bounds indices
       const invalidIndices = pageOrder.filter(idx => idx < 0 || idx >= totalPages);
       if (invalidIndices.length > 0) {
-        setError(`Invalid page indices: ${invalidIndices.join(', ')}`);
+        setError(`Invalid page numbers detected. Valid range is 1-${totalPages}.`);
         return;
       }
       // Check for duplicates
       const uniqueIndices = new Set(pageOrder);
       if (uniqueIndices.size !== pageOrder.length) {
-        setError('Duplicate page indices detected');
+        setError('Duplicate page numbers detected. Each page must appear exactly once in the order.');
         return;
       }
     }
@@ -422,13 +422,19 @@ export default function PdfToolPage({ params }: PageProps) {
                             className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
                           />
                         ) : (
-                          <input
-                            type={option.type}
-                            value={options[option.id] ?? option.default ?? ''}
-                            onChange={(e) => handleOptionChange(option.id, e.target.value)}
-                            placeholder={option.placeholder}
-                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
-                          />
+                          <>
+                            <input
+                              type={option.type}
+                              value={options[option.id] ?? option.default ?? ''}
+                              onChange={(e) => handleOptionChange(option.id, e.target.value)}
+                              placeholder={option.placeholder}
+                              required={option.required}
+                              className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                            />
+                            {option.hint && (
+                              <p className="text-xs text-gray-500 mt-1.5">{option.hint}</p>
+                            )}
+                          </>
                         )}
                         </div>
                       );

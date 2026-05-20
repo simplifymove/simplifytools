@@ -1,0 +1,69 @@
+/**
+ * Playwright Configuration for PDF Tools Tests
+ */
+
+import { defineConfig, devices } from '@playwright/test';
+
+const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000';
+
+export default defineConfig({
+  testDir: './tests',
+  testMatch: '**/pdf-tools.spec.ts',
+  
+  // Test configuration
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : 4, // 1 worker for CI to avoid overwhelming server
+  
+  // Reporting
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'playwright-report/report.json' }],
+    ['junit', { outputFile: 'playwright-report/junit.xml' }],
+    ['list'],
+  ],
+  
+  // Timeout configuration
+  timeout: 180000, // 3 minutes per test (increased from 2 minutes)
+  expect: {
+    timeout: 10000, // 10 seconds for expect assertions
+  },
+
+  // Use base URL
+  use: {
+    baseURL: BASE_URL,
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
+
+  // Configure servers
+  webServer: {
+    command: 'npm run dev',
+    url: BASE_URL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  },
+
+  // Browser configurations
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Uncomment to test in Firefox and WebKit as well
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
+  ],
+
+  // Global setup/teardown
+  globalSetup: undefined,
+  globalTeardown: undefined,
+});

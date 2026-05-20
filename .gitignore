@@ -97,3 +97,7 @@ debug*.txt
 *.pem
 *.p12
 secrets*
+
+# Playwright reports
+playwright-report/
+test-results/

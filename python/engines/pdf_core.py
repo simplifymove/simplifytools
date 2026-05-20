@@ -185,7 +185,12 @@ class PdfCoreEngine:
         """Rotate PDF pages"""
         try:
             pdf_path = input_paths[0]
-            angle = int(options.get('angle', 90))  # 90, 180, 270
+            # Handle both string and numeric angle values from API
+            angle_raw = options.get('angle', 90)
+            angle = int(angle_raw) if isinstance(angle_raw, str) else angle_raw
+            # Validate angle before processing
+            if angle not in [90, 180, 270]:
+                raise ValueError(f"Invalid rotation angle: {angle}. Must be 90, 180, or 270 degrees.")
             page_range = options.get('pageRange', 'all')
             
             pdf = PyPDF2.PdfReader(pdf_path)
@@ -218,28 +223,51 @@ class PdfCoreEngine:
         """Rearrange PDF pages"""
         try:
             pdf_path = input_paths[0]
-            page_order = options.get('pageOrder', [])  # e.g., [0, 2, 1, 3] or "0,2,1,3"
+            page_order = options.get('pageOrder', [])
             
+            # Validate that pageOrder was provided
             if not page_order:
-                raise ValueError("pageOrder not provided")
+                raise ValueError("Page order not provided. Please arrange all PDF pages before submitting.")
             
-            # Convert pageOrder to list of integers
+            # Convert pageOrder to list of integers (handle various formats)
             if isinstance(page_order, str):
-                # Handle comma-separated string format
-                page_order = [int(idx.strip()) for idx in page_order.split(',')]
+                # Handle comma-separated string format: "0,2,1,3"
+                try:
+                    page_order = [int(idx.strip()) for idx in page_order.split(',') if idx.strip()]
+                except ValueError:
+                    raise ValueError(f"Invalid page order format. Expected numbers separated by commas, got: {page_order}")
+            elif isinstance(page_order, list):
+                # Convert all elements to integers
+                try:
+                    page_order = [int(idx) for idx in page_order]
+                except (ValueError, TypeError):
+                    raise ValueError(f"Invalid page order: all elements must be numbers")
             else:
-                # Convert list elements to integers
-                page_order = [int(idx) for idx in page_order]
+                raise ValueError(f"Invalid page order type: {type(page_order)}")
             
+            # Validate page order is not empty
+            if not page_order:
+                raise ValueError("Page order is empty. Please specify all pages.")
+            
+            # Get total pages in PDF
             pdf = PyPDF2.PdfReader(pdf_path)
             total_pages = len(pdf.pages)
-            writer = PyPDF2.PdfWriter()
             
-            # Validate page indices
+            # Validate page order length matches PDF page count
+            if len(page_order) != total_pages:
+                raise ValueError(f"Page count mismatch: order has {len(page_order)} pages but PDF has {total_pages} pages. Include all pages.")
+            
+            # Validate all indices are valid
             invalid_indices = [idx for idx in page_order if idx < 0 or idx >= total_pages]
             if invalid_indices:
-                raise ValueError(f"Invalid page indices: {invalid_indices}. PDF has {total_pages} pages (valid indices: 0-{total_pages-1})")
+                raise ValueError(f"Invalid page numbers: {set(invalid_indices)}. Valid range is 0-{total_pages-1}.")
             
+            # Check for duplicates
+            if len(set(page_order)) != len(page_order):
+                raise ValueError("Duplicate page numbers detected. Each page must appear exactly once.")
+            
+            # Create reordered PDF
+            writer = PyPDF2.PdfWriter()
             for page_idx in page_order:
                 writer.add_page(pdf.pages[page_idx])
             
@@ -247,7 +275,7 @@ class PdfCoreEngine:
                 writer.write(f)
             return output_path
         except ValueError as ve:
-            raise Exception(f"Invalid page order: {str(ve)}")
+            raise Exception(f"Page order error: {str(ve)}")
         except Exception as e:
             raise Exception(f"Failed to rearrange PDF: {str(e)}")
     

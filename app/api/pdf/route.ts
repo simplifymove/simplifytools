@@ -6,8 +6,78 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
-import { validatePdfInput } from '@/app/lib/pdf-validation';
+import { validatePdfInput, validatePageRange, validatePageList, validatePassword } from '@/app/lib/pdf-validation';
+import {
+  validatePdfSignature,
+  validateImageSignature,
+  validateFileCount,
+  validateTotalFileSize,
+  validateFileMinimumSize,
+  validatePdfNotImage,
+  validateImageNotPdf,
+  validatePdfStructure,
+} from '@/app/lib/file-security';
 import { spawn } from 'child_process';
+
+/**
+ * Server-side validation for tool-specific requirements
+ * This runs after basic input validation
+ */
+interface ValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+function validateToolServerSide(
+  tool: any,
+  files: File[],
+  options: Record<string, any>
+): ValidationResult {
+  // Most validation is handled on frontend
+  // This adds extra safety checks for API abuse or critical issues
+
+  switch (tool.id) {
+    case 'merge-pdf':
+      if (files.length < 2) {
+        return { valid: false, error: 'Merge PDF requires at least 2 PDF files.' };
+      }
+      break;
+
+    case 'protect-pdf':
+      const userPassword = options?.userPassword;
+      if (!userPassword || userPassword.trim() === '') {
+        return { valid: false, error: 'User password is required to protect PDF.' };
+      }
+      break;
+
+    case 'unlock-pdf':
+      const password = options?.password;
+      if (!password || password.trim() === '') {
+        return { valid: false, error: 'Password is required to unlock PDF.' };
+      }
+      break;
+
+    case 'pdf-page-deleter':
+      const pagesToDelete = options?.pagesToDelete;
+      if (!pagesToDelete || pagesToDelete.trim() === '') {
+        return { valid: false, error: 'Please specify pages to delete.' };
+      }
+      break;
+
+    case 'create-pdf':
+      const numPages = options?.numPages || 0;
+      const hasImages = files && files.length > 0;
+      if (!hasImages && numPages < 1) {
+        return { valid: false, error: 'Create PDF requires at least one image or blank page count.' };
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return { valid: true };
+}
 
 export async function POST(request: NextRequest) {
   const tempDir = path.join(os.tmpdir(), 'pdf-tools');
@@ -40,14 +110,129 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate input
-    const validation = validatePdfInput(tool, files, url || '');
+    // Validate input - frontend already validates, but always validate on backend
+    const validation = validatePdfInput(tool, files, url || '', optionsJson ? JSON.parse(optionsJson) : {});
     if (!validation.valid) {
+      const errorMessage = validation.error || 'Invalid input';
       return NextResponse.json(
-        { error: validation.error },
+        { success: false, error: errorMessage },
         { status: 400 }
       );
     }
+
+    // Additional server-side validation for specific tools
+    const serverValidation = validateToolServerSide(tool, files, optionsJson ? JSON.parse(optionsJson) : {});
+    if (!serverValidation.valid) {
+      return NextResponse.json(
+        { success: false, error: serverValidation.error },
+        { status: 400 }
+      );
+    }
+
+    // FILE SECURITY VALIDATION (CRITICAL)
+    // Prevents spoofing attacks, corruption, and denial-of-service
+    console.log(`[PDF API SECURITY] Starting file validation for tool: ${toolId}, files: ${files.length}`);
+    
+    // Validate file count
+    const fileCountValidation = validateFileCount(files.length, 50);
+    if (!fileCountValidation.valid) {
+      console.warn(`[PDF API SECURITY] File count validation failed: ${fileCountValidation.error}`);
+      return NextResponse.json(
+        { success: false, error: fileCountValidation.error },
+        { status: 403 }
+      );
+    }
+
+    // Validate total file size
+    const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+    const totalSizeValidation = validateTotalFileSize(totalSize, 500 * 1024 * 1024); // 500MB
+    if (!totalSizeValidation.valid) {
+      console.warn(`[PDF API SECURITY] Total file size validation failed: ${totalSizeValidation.error}`);
+      return NextResponse.json(
+        { success: false, error: totalSizeValidation.error },
+        { status: 403 }
+      );
+    }
+
+    // Validate each file's actual signature (magic bytes)
+    // This prevents spoofing attacks (e.g., renaming exe as pdf)
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(fileBuffer);
+
+      // Check minimum file size
+      const minSizeValidation = validateFileMinimumSize(buffer, 100);
+      if (!minSizeValidation.valid) {
+        console.warn(`[PDF API SECURITY] File ${i} size validation failed: ${minSizeValidation.error}`);
+        return NextResponse.json(
+          { success: false, error: minSizeValidation.error },
+          { status: 403 }
+        );
+      }
+
+      const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+
+      // Validate PDF files by signature
+      if (ext.toLowerCase() === '.pdf' || tool.accepts.includes('.pdf')) {
+        // Check PDF signature
+        const pdfSigValidation = validatePdfSignature(buffer);
+        if (!pdfSigValidation.valid) {
+          console.warn(`[PDF API SECURITY] PDF signature validation failed for file ${i} (${file.name}): ${pdfSigValidation.error}`);
+          return NextResponse.json(
+            { success: false, error: pdfSigValidation.error },
+            { status: 403 }
+          );
+        }
+
+        // Check PDF is not an image file renamed
+        const pdfNotImageValidation = validatePdfNotImage(buffer);
+        if (!pdfNotImageValidation.valid) {
+          console.warn(`[PDF API SECURITY] File ${i} is image renamed as PDF: ${pdfNotImageValidation.error}`);
+          return NextResponse.json(
+            { success: false, error: pdfNotImageValidation.error },
+            { status: 403 }
+          );
+        }
+
+        // Validate PDF structure (detect corruption)
+        const pdfStructureValidation = validatePdfStructure(buffer);
+        if (!pdfStructureValidation.valid) {
+          console.warn(`[PDF API SECURITY] PDF structure validation failed for file ${i}: ${pdfStructureValidation.error}`);
+          return NextResponse.json(
+            { success: false, error: pdfStructureValidation.error },
+            { status: 403 }
+          );
+        }
+      }
+
+      // Validate image files by signature
+      if (
+        ['.jpg', '.jpeg', '.png', '.tiff', '.tif', '.webp', '.gif', '.heic'].includes(ext.toLowerCase())
+      ) {
+        // Check image signature
+        const imageSigValidation = validateImageSignature(buffer, ext);
+        if (!imageSigValidation.valid) {
+          console.warn(`[PDF API SECURITY] Image signature validation failed for file ${i} (${file.name}): ${imageSigValidation.error}`);
+          return NextResponse.json(
+            { success: false, error: imageSigValidation.error },
+            { status: 403 }
+          );
+        }
+
+        // Check image is not a PDF file renamed
+        const imageNotPdfValidation = validateImageNotPdf(buffer);
+        if (!imageNotPdfValidation.valid) {
+          console.warn(`[PDF API SECURITY] File ${i} is PDF renamed as image: ${imageNotPdfValidation.error}`);
+          return NextResponse.json(
+            { success: false, error: imageNotPdfValidation.error },
+            { status: 403 }
+          );
+        }
+      }
+    }
+    
+    console.log(`[PDF API SECURITY] File validation passed for all ${files.length} file(s)`);
 
     // Create temp directory if it doesn't exist
     try {
@@ -180,12 +365,27 @@ export async function POST(request: NextRequest) {
         env: spawnEnv, // Pass environment with Python variables
       });
 
-      // Set a longer timeout for OCR operations (15 minutes for model download)
-      const timeout = toolId === 'pdf-ocr' ? 15 * 60 * 1000 : 5 * 60 * 1000;
+      // TIMEOUT PROTECTION - Prevent runaway processes
+      // Different tools have different timeout requirements
+      const timeoutConfig: Record<string, number> = {
+        'pdf-ocr': 15 * 60 * 1000, // 15 minutes for OCR (needs to download models)
+        'pdf-translator': 10 * 60 * 1000, // 10 minutes for translation
+        'pdf-enhance-scan': 5 * 60 * 1000, // 5 minutes for enhancement
+        'pdf-deskew': 5 * 60 * 1000, // 5 minutes for deskewing
+        // Default 5 minutes for all other tools
+        'default': 5 * 60 * 1000,
+      };
+      
+      const timeoutMs = timeoutConfig[toolId] || timeoutConfig['default'];
       const timeoutHandle = setTimeout(() => {
-        pythonProcess.kill();
-        reject(new Error(`Python process timeout after ${timeout / 1000}s for tool: ${toolId}. For OCR on first run, EasyOCR needs to download language models (~200MB). Please try again.`));
-      }, timeout);
+        pythonProcess.kill('SIGKILL'); // Force kill
+        console.error(`[PDF API] Process timeout for tool ${toolId} after ${timeoutMs / 1000}s`);
+        const timeoutMsg =
+          toolId === 'pdf-ocr'
+            ? 'OCR processing took too long. For first run, language models need to download (~200MB). Please try again.'
+            : `Processing timeout after ${timeoutMs / 1000}s. Your file may be too large or complex. Please try a simpler file or contact support.`;
+        reject(new Error(timeoutMsg));
+      }, timeoutMs);
 
       let stdout = '';
       let stderr = '';
@@ -356,16 +556,56 @@ export async function POST(request: NextRequest) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     const fullError = error instanceof Error ? error.toString() : JSON.stringify(error);
     
-    console.error('[PDF API] Error:', { 
-      message, 
-      toolId,
-      inputFiles: inputFiles.length,
-      errorType: error instanceof Error ? 'Error' : typeof error,
-      fullError
-    });
+    // Parse structured error responses from validation
+    let userMessage = 'PDF processing failed. Please check your file and try again.';
+    let isSecurityError = false;
+    
+    try {
+      const parsed = JSON.parse(message);
+      if (parsed.error) {
+        userMessage = parsed.error;
+      }
+    } catch {
+      // If message is not JSON, use it directly
+      if (message && message.length < 500) {
+        userMessage = message;
+      }
+    }
+
+    // Detect security-related errors for enhanced logging
+    if (
+      message.includes('signature') ||
+      message.includes('spoofed') ||
+      message.includes('renamed') ||
+      message.includes('file count') ||
+      message.includes('file size') ||
+      message.includes('corrupted')
+    ) {
+      isSecurityError = true;
+    }
+    
+    // Security Event Logging
+    if (isSecurityError) {
+      console.warn('[PDF API SECURITY] Rejected request:', {
+        tool: toolId,
+        reason: message,
+        fileCount: inputFiles.length,
+        timestamp: new Date().toISOString(),
+      });
+    } else {
+      console.error('[PDF API] Error:', { 
+        message, 
+        toolId,
+        inputFiles: inputFiles.length,
+        errorType: error instanceof Error ? 'Error' : typeof error,
+        userMessage,
+        fullError: fullError.substring(0, 200) // Log truncated
+      });
+    }
+    
     return NextResponse.json(
-      { error: `PDF processing failed: ${message}` },
-      { status: 500 }
+      { success: false, error: userMessage },
+      { status: isSecurityError ? 403 : 500 }
     );
   }
 }

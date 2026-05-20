@@ -263,13 +263,19 @@ export default function ToolForm({ tool, onProcess, loading, error, result, setE
                                 className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
                               />
                             ) : (
-                              <input
-                                type={option.type}
-                                value={options[option.id] ?? option.default ?? ''}
-                                onChange={(e) => handleOptionChange(option.id, e.target.value)}
-                                placeholder={option.placeholder}
-                                className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
-                              />
+                              <>
+                                <input
+                                  type={option.type}
+                                  value={options[option.id] ?? option.default ?? ''}
+                                  onChange={(e) => handleOptionChange(option.id, e.target.value)}
+                                  placeholder={option.placeholder}
+                                  required={option.required}
+                                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                                />
+                                {option.hint && (
+                                  <p className="text-xs text-gray-500 mt-1.5">{option.hint}</p>
+                                )}
+                              </>
                             )}
                           </div>
                         );
