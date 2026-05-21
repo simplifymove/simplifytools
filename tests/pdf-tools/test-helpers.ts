@@ -6,7 +6,7 @@
 import { Page, expect, test } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as AdmZip from 'adm-zip';
+import AdmZip from 'adm-zip';
 
 // Test fixtures directory
 const FIXTURES_DIR = path.join(__dirname, '../../tests/fixtures');
@@ -63,7 +63,7 @@ export async function setOptions(
     // Skip signatures - handled separately
     if (key === 'signatures') continue;
 
-    let input;
+    let input = page.locator(`input[name="${key}"], select[name="${key}"], textarea[name="${key}"]`);
     
     // Special handling for URL inputs to avoid strict mode issues
     if (key === 'url' || key === 'website' || key === 'link') {
@@ -73,8 +73,6 @@ export async function setOptions(
       if (count > 0) {
         input = allUrlInputs.nth(count - 1); // Use last one (main form)
       }
-    } else {
-      input = page.locator(`input[name="${key}"], select[name="${key}"], textarea[name="${key}"]`);
     }
     
     const count = await input.count();

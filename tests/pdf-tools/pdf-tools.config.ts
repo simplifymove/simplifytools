@@ -27,6 +27,7 @@ export interface PdfToolTestConfig {
     name: string;
     files?: string[];
     options?: Record<string, any>;
+    url?: string;
     expectedError?: string;
     description?: string;
   }>;
@@ -745,3 +746,5 @@ export function getAllPdfToolTests(): PdfToolTestConfig[] {
 export function getPdfToolTest(slug: string): PdfToolTestConfig | undefined {
   return pdfToolsTestConfig[slug];
 }
+
+

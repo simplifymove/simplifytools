@@ -11,7 +11,23 @@
     "test:pdf-tools": "playwright test tests/pdf-tools.spec.ts",
     "test:pdf-tools:ui": "playwright test tests/pdf-tools.spec.ts --ui",
     "test:pdf-tools:report": "node tests/pdf-tools/generate-report.js",
-    "test:pdf-tools:full": "npm run generate-fixtures && npm run test:pdf-tools && npm run test:pdf-tools:report"
+    "test:pdf-tools:full": "npm run generate-fixtures && npm run test:pdf-tools && npm run test:pdf-tools:report",
+    "test:image-tools": "playwright test tests/image-tools.spec.ts --reporter=json --reporter=html",
+    "test:video-tools": "playwright test tests/video-tools.spec.ts --reporter=json --reporter=html",
+    "test:ai-writing": "playwright test tests/ai-writing.spec.ts --reporter=json --reporter=html",
+    "test:document-tools": "playwright test tests/document-tools.spec.ts --reporter=json --reporter=html",
+    "test:converter-tools": "playwright test tests/converter-tools.spec.ts --reporter=json --reporter=html",
+    "test:compression": "playwright test tests/compression.spec.ts --reporter=json --reporter=html",
+    "test:extraction": "playwright test tests/extraction.spec.ts --reporter=json --reporter=html",
+    "test:validation": "playwright test tests/validation.spec.ts --reporter=json --reporter=html",
+    "test:formatting": "playwright test tests/formatting.spec.ts --reporter=json --reporter=html",
+    "test:optimization": "playwright test tests/optimization.spec.ts --reporter=json --reporter=html",
+    "phase8:baseline": "npx ts-node scripts/performance-baseline.ts",
+    "phase8:daily-audits": "npx ts-node scripts/run-daily-audits.ts",
+    "phase8:daily-audits:concurrent": "npx ts-node scripts/run-daily-audits.ts --concurrent --concurrency=5",
+    "phase8:stress-test": "npx ts-node scripts/stress-test.ts",
+    "phase8:monitor": "npx ts-node scripts/phase8-monitoring.ts",
+    "worker": "tsx worker.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -23,6 +39,7 @@
     "@tensorflow-models/body-pix": "^2.2.1",
     "@tensorflow/tfjs": "^4.22.0",
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.76.10",
     "canvas": "^3.2.3",
     "clean-css": "^5.3.3",
     "docx": "^8.5.0",
@@ -39,10 +56,13 @@
     "nodemailer": "^7.0.13",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^3.11.174",
+    "pino": "^10.3.1",
+    "pino-pretty": "^13.1.3",
     "prettier": "^3.8.1",
     "prisma": "5.21.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "redis": "^5.12.1",
     "remotion": "^4.0.461",
     "sharp": "^0.34.5",
     "signature_pad": "^5.1.3",
@@ -53,6 +73,7 @@
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
+    "@types/adm-zip": "^0.5.8",
     "@types/bcrypt": "^6.0.0",
     "@types/clean-css": "^4.2.11",
     "@types/html-minifier-terser": "^7.0.2",
@@ -65,6 +86,7 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.3",
     "typescript": "5.9.3"
   }
 }

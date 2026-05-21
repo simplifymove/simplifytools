@@ -49,6 +49,7 @@ model User {
   image         String?
   bio           String?
   provider      String?
+  role          String    @default("user") // user | admin
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
@@ -64,6 +65,12 @@ model User {
   deviceResetLogs DeviceResetLog[]
   emailReminders  EmailReminderLog[]
   projectMemories ProjectMemory[]
+  
+  // Admin audit relationships
+  auditRuns       AuditRun[]
+  auditJobs       AuditJob[] @relation("AuditJobs")
+
+  @@index([role])
 }
 
 model VerificationToken {
@@ -222,4 +229,334 @@ model MemoryEvent {
   @@index([projectMemoryId])
   @@index([userId])
   @@index([type])
+}
+
+// Admin Audit & Testing Models
+
+enum AuditRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum AuditTestStatus {
+  PASS
+  FAIL
+  ERROR
+  SKIPPED
+  SMOKE_TESTED_ONLY
+  MANUAL_QA_REQUIRED
+}
+
+model AuditRun {
+  id                    String           @id @default(cuid())
+  userId                String           // Admin who triggered this
+  categories            String           // JSON array: ["pdf", "image", "video"]
+  status                AuditRunStatus   @default(PENDING)
+  startedAt             DateTime?
+  completedAt           DateTime?
+  totalTests            Int              @default(0)
+  passedTests           Int              @default(0)
+  failedTests           Int              @default(0)
+  errorTests            Int              @default(0)
+  skippedTests          Int              @default(0)
+  successPercentage     Float            @default(0)
+  reportHtmlPath        String?
+  reportJsonPath        String?
+  reportCsvPath         String?
+  errorMessage          String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testResults           AuditTestResult[]
+  fromJob               AuditJob[]       @relation("JobAuditRun")
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AuditTestResult {
+  id                String          @id @default(cuid())
+  auditRunId        String
+  category          String          // pdf | image | video | ai-writing | data-conversion | etc
+  toolName          String          // "Rotate PDF", "Compress PDF", etc
+  toolSlug          String          // "rotate-pdf", "compress-pdf"
+  url               String          // Full URL to tool
+  testCase          String          // Test case name/description
+  status            AuditTestStatus // pass | fail | error | skipped | smoke_tested | manual_qa
+  errorMessage      String?
+  outputGenerated   Boolean         @default(false)
+  outputType        String?         // pdf | image | zip | text | etc
+  outputPath        String?
+  screenshotPath    String?
+  logs              String?         // JSON string with detailed logs
+  durationMs        Int             @default(0)
+  timestamp         DateTime        @default(now())
+
+  auditRun          AuditRun        @relation(fields: [auditRunId], references: [id], onDelete: Cascade)
+
+  @@index([auditRunId])
+  @@index([category])
+  @@index([status])
+  @@index([timestamp])
+}
+
+// Phase 6: Job Queue & Production Enhancements
+
+enum AuditSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRYING
+  CANCELLED
+}
+
+model AuditJob {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(name: "AuditJobs", fields: [userId], references: [id], onDelete: Cascade)
+  
+  categories String[] // JSON array
+  status JobStatus @default(PENDING)
+  severity AuditSeverity?
+  
+  startedAt DateTime?
+  completedAt DateTime?
+  durationMs Int?
+  
+  retryCount Int @default(0)
+  maxRetries Int @default(3)
+  lastError String?
+  
+  // Link to actual audit run once completed
+  auditRunId String?
+  auditRun AuditRun? @relation("JobAuditRun", fields: [auditRunId], references: [id], onDelete: SetNull)
+  
+  notificationLogs NotificationLog[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([severity])
+}
+
+model NotificationLog {
+  id String @id @default(cuid())
+  auditJobId String
+  auditJob AuditJob @relation(fields: [auditJobId], references: [id], onDelete: Cascade)
+  
+  type String // "email" | "slack" | "discord"
+  recipient String
+  status String // "sent" | "failed"
+  message String?
+  errorMessage String?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([auditJobId])
+  @@index([type])
+  @@index([status])
+}
+
+// Phase 7: Observability & Monitoring Layer
+
+enum FailureType {
+  VALIDATION_ERROR
+  TIMEOUT
+  BACKEND_CRASH
+  NETWORK_FAILURE
+  PLAYWRIGHT_SELECTOR
+  FILE_GENERATION_FAILED
+  SECURITY_ERROR
+  UNKNOWN
+}
+
+enum ReliabilityStatus {
+  STABLE
+  FLAKY
+  CRITICAL
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model ToolReliability {
+  id String @id @default(cuid())
+  toolName String @unique
+  category String
+  
+  totalRuns Int @default(0)
+  successfulRuns Int @default(0)
+  failedRuns Int @default(0)
+  
+  reliability24h Float @default(0)
+  reliability7d Float @default(0)
+  reliability30d Float @default(0)
+  
+  status ReliabilityStatus @default(STABLE)
+  
+  lastRunAt DateTime?
+  lastFailureAt DateTime?
+  consecutiveFailures Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([category])
+  @@index([status])
+  @@index([reliability30d])
+}
+
+model FailureRecord {
+  id String @id @default(cuid())
+  auditJobId String?
+  auditRunId String?
+  
+  toolName String
+  category String
+  testName String?
+  
+  failureType FailureType
+  failureReason String
+  stackTrace String?
+  errorOutput String?
+  
+  isFlaky Boolean @default(false)
+  occurrenceCount Int @default(1)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt DateTime @updatedAt
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([toolName])
+  @@index([category])
+  @@index([failureType])
+  @@index([createdAt])
+  @@index([isFlaky])
+}
+
+model PlatformHealthScore {
+  id String @id @default(cuid())
+  timestamp DateTime @default(now())
+  
+  overallScore Float // 0-100
+  
+  // Category scores
+  pdfHealth Float
+  imageHealth Float
+  videoHealth Float
+  aiHealth Float
+  documentHealth Float
+  converterHealth Float
+  
+  // Aggregate metrics
+  totalRuns Int @default(0)
+  successfulRuns Int @default(0)
+  failedRuns Int @default(0)
+  
+  avgExecutionTimeMs Float @default(0)
+  avgQueueWaitTimeMs Float @default(0)
+  
+  activeWorkers Int @default(0)
+  redisConnected Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([timestamp])
+}
+
+model AlertingRule {
+  id String @id @default(cuid())
+  name String @unique
+  description String?
+  enabled Boolean @default(true)
+  
+  ruleType String // "reliability" | "critical" | "backlog" | "connection" | "offline" | "performance"
+  threshold Float
+  timeWindowMinutes Int @default(60)
+  
+  // Notification channels
+  notifyEmail Boolean @default(true)
+  notifySlack Boolean @default(false)
+  notifyDiscord Boolean @default(false)
+  
+  // Recipients
+  emailRecipients String[] // JSON array
+  
+  lastTriggeredAt DateTime?
+  lastNotifiedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  alertLogs AlertLog[]
+  
+  @@index([enabled])
+  @@index([ruleType])
+}
+
+model AlertLog {
+  id String @id @default(cuid())
+  ruleId String
+  
+  triggered Boolean @default(false)
+  message String
+  severity AlertSeverity @default(WARNING)
+  
+  details String? // JSON string with detailed info
+  
+  notificationsSent String[] // JSON array: ["email", "slack", "discord"]
+  
+  createdAt DateTime @default(now())
+  
+  alertingRule AlertingRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  
+  @@index([ruleId])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+model PlaywrightArtifact {
+  id String @id @default(cuid())
+  auditRunId String
+  
+  toolName String
+  category String
+  testName String?
+  
+  type String // "screenshot" | "video" | "trace" | "log" | "network"
+  mimeType String
+  
+  filePath String
+  fileSize Int // in bytes
+  
+  s3Path String? // for cloud storage
+  downloadUrl String?
+  
+  createdAt DateTime @default(now())
+  expiresAt DateTime? // for automatic cleanup
+  
+  @@index([auditRunId])
+  @@index([toolName])
+  @@index([type])
+  @@index([createdAt])
 }

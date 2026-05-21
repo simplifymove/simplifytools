@@ -50,6 +50,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
         })
         token.id = user.id
+        token.email = user.email // Explicitly preserve email from user
       }
 
       // Fetch user metadata from database on every JWT token call
@@ -64,18 +65,22 @@ export const authOptions: NextAuthOptions = {
           token.id = dbUser.id
           token.name = dbUser.name
           token.picture = dbUser.image
+          token.email = dbUser.email // Ensure email is set
         }
       }
 
+      console.log('[NextAuth JWT] Returning token with email:', token.email)
       return token
     },
     async session({ session, token }) {
-      console.log('[NextAuth Session] Called with token.id:', token.id, 'session.user.email:', session.user?.email)
+      console.log('[NextAuth Session] Called with token.email:', token.email, 'token.id:', token.id)
 
       if (session.user) {
         session.user.id = token.id as string
+        session.user.email = token.email as string // Explicitly copy email to session
       }
 
+      console.log('[NextAuth Session] Returning session with email:', session.user?.email)
       return session
     },
   },
