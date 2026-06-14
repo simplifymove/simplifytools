@@ -14,6 +14,133 @@ interface ToolOption {
   value: string | number | boolean;
 }
 
+interface ToolSEOContent {
+  whatItDoes: string;
+  whenToUse: string[];
+  example?: {
+    inputLabel: string;
+    input: string;
+    outputLabel: string;
+    output: string;
+  };
+  tips: string[];
+  privacyNote: string;
+}
+
+const faqItems = [
+  {
+    question: 'Is my data secure and private?',
+    answer: 'Yes. All processing happens in your browser using client-side JavaScript. Your data is never sent to our servers and is not stored anywhere.',
+  },
+  {
+    question: 'Can I use this tool offline?',
+    answer: "Yes. If you've loaded the page once, you can use it offline. All computation happens in your browser without any server connection.",
+  },
+  {
+    question: 'What browsers are supported?',
+    answer: 'This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge. It requires JavaScript to be enabled.',
+  },
+  {
+    question: 'Is there a limit on input size?',
+    answer: "Input is limited only by your browser's available memory. Most browsers can handle files up to several MB without issues.",
+  },
+  {
+    question: 'Can I use this for commercial purposes?',
+    answer: 'Yes. Feel free to use this tool for any purpose, including commercial projects. No attribution is required.',
+  },
+];
+
+const toolSeoContent: Record<string, ToolSEOContent> = {
+  'json-validator': {
+    whatItDoes: 'The JSON Validator checks whether pasted JSON is valid, highlights syntax problems, and helps you confirm that objects, arrays, strings, numbers, booleans, and null values are structured correctly before you use the data in an API, configuration file, or application.',
+    whenToUse: [
+      'Before sending JSON payloads to an API endpoint.',
+      'When debugging malformed responses from a backend service.',
+      'Before saving JSON in application configuration or environment files.',
+      'When you need to confirm commas, quotes, brackets, and nesting are correct.',
+    ],
+    example: {
+      inputLabel: 'Example JSON input',
+      input: '{\n  "name": "SimplifyConvert",\n  "active": true,\n  "tools": ["validator", "formatter"]\n}',
+      outputLabel: 'Example validation result',
+      output: 'Valid JSON. The object contains a string, a boolean, and an array with two string values.',
+    },
+    tips: [
+      'Use double quotes around JSON object keys and string values.',
+      'Remove trailing commas after the final item in an object or array.',
+      'Check that every opening brace or bracket has a matching closing character.',
+      'Validate copied API responses before pasting them into production code.',
+    ],
+    privacyNote: 'JSON validation runs in your browser, so pasted JSON is not uploaded to a server by this page. Avoid sharing secrets, tokens, or private customer data in screenshots or copied examples.',
+  },
+  'xml-to-json': {
+    whatItDoes: 'The XML to JSON converter transforms XML markup into a JSON-style structure so it is easier to inspect, pass into JavaScript code, or adapt for modern API workflows. It is useful when moving data from document-style XML into object-based formats.',
+    whenToUse: [
+      'When integrating legacy XML feeds with JavaScript or JSON-based APIs.',
+      'When you need to inspect XML data as nested objects and arrays.',
+      'Before migrating configuration, export, or partner data from XML to JSON.',
+      'When comparing XML fields with JSON payloads during debugging.',
+    ],
+    example: {
+      inputLabel: 'Example XML input',
+      input: '<user>\n  <name>Ada</name>\n  <role>developer</role>\n</user>',
+      outputLabel: 'Example JSON output',
+      output: '{\n  "user": {\n    "name": "Ada",\n    "role": "developer"\n  }\n}',
+    },
+    tips: [
+      'Make sure the XML is well formed before converting it.',
+      'Watch for repeated XML elements because they may become arrays in JSON.',
+      'Review attributes and namespaces after conversion since different tools represent them differently.',
+      'Validate the converted JSON before using it in an API request.',
+    ],
+    privacyNote: 'XML conversion happens in the browser for this tool page. Still, remove passwords, API keys, access tokens, or sensitive customer records before using sample data.',
+  },
+  'jwt-decoder': {
+    whatItDoes: 'The JWT Decoder splits a JSON Web Token into its header and payload so you can inspect claims such as issuer, subject, audience, expiration time, and custom application fields. Decoding makes the token readable, but it does not prove the signature is valid.',
+    whenToUse: [
+      'When debugging authentication or authorization flows.',
+      'When checking token claims such as exp, iss, aud, sub, or roles.',
+      'When confirming whether a JWT is expired or contains the expected user context.',
+      'When comparing tokens returned by staging, local, and production identity providers.',
+    ],
+    example: {
+      inputLabel: 'Example JWT input',
+      input: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJyb2xlIjoiYWRtaW4ifQ.signature',
+      outputLabel: 'Example decoded payload',
+      output: '{\n  "sub": "123",\n  "role": "admin"\n}',
+    },
+    tips: [
+      'Decoding a JWT is not the same as verifying its signature.',
+      'Check exp and nbf claims when troubleshooting login or session issues.',
+      'Do not trust decoded claims until your backend verifies the token signature.',
+      'Use sample or redacted tokens when documenting authentication bugs.',
+    ],
+    privacyNote: 'JWT decoding is intended for inspection in your browser. Real tokens can grant access to accounts or APIs, so avoid pasting live production tokens unless you understand the risk.',
+  },
+  'password-generator': {
+    whatItDoes: 'The Password Generator creates random passwords using the selected length and character options. It is designed for quickly producing stronger credentials than human-chosen passwords, especially when combined with a password manager.',
+    whenToUse: [
+      'When creating a new account password.',
+      'When rotating credentials after a security review.',
+      'When generating temporary passwords for development or testing.',
+      'When you need multiple random passwords with consistent character rules.',
+    ],
+    example: {
+      inputLabel: 'Example options',
+      input: 'Length: 16\nUppercase: yes\nLowercase: yes\nNumbers: yes\nSymbols: yes',
+      outputLabel: 'Example generated password',
+      output: 'N7q!vR2#sL9@pX4z',
+    },
+    tips: [
+      'Use longer passwords when a service allows them.',
+      'Include multiple character types unless a site has specific restrictions.',
+      'Store generated passwords in a trusted password manager.',
+      'Do not reuse generated passwords across different accounts.',
+    ],
+    privacyNote: 'Password generation runs locally in the browser on this page. After generating a password, save it securely and avoid sending it through chat, email, logs, or screenshots.',
+  },
+};
+
 // Map tool IDs to action-specific CTA text
 const getActionText = (toolId: string): string => {
   const actionMap: Record<string, string> = {
@@ -455,9 +582,80 @@ export default function CodeToolPage() {
 
   const relatedTools = slug ? getRelatedTools(slug) : [];
   const actionText = slug ? getActionText(slug) : 'Process';
+  const seoContent = slug ? toolSeoContent[slug] : undefined;
+  const baseUrl = 'https://simplifyconvert.com';
+  const toolUrl = `${baseUrl}/all-tools/code-tools/${slug}`;
+  const softwareApplicationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.title,
+    description: tool.description,
+    url: toolUrl,
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+  };
+  const faqPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  };
+  const breadcrumbListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: baseUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'All Tools',
+        item: `${baseUrl}/all-tools`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: 'Code Tools',
+        item: `${baseUrl}/all-tools/code-tools`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: tool.title,
+        item: toolUrl,
+      },
+    ],
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbListSchema) }}
+      />
       <HomeHeader />
       <main className="min-h-screen bg-gray-50 flex flex-col">
         <div className="flex-1">
@@ -778,6 +976,68 @@ export default function CodeToolPage() {
                   </div>
                 </div>
               </div>
+
+              {seoContent && (
+                <div className="space-y-8">
+                  <section>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">What this tool does</h2>
+                    <p className="text-gray-700 leading-relaxed">{seoContent.whatItDoes}</p>
+                  </section>
+
+                  <section>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">When to use it</h2>
+                    <ul className="space-y-3 text-gray-700">
+                      {seoContent.whenToUse.map((item) => (
+                        <li key={item} className="flex gap-3">
+                          <span className="text-green-600 font-bold">-</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+
+                  {seoContent.example && (
+                    <section>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-4">Example input and output</h2>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="border border-gray-200 rounded-lg overflow-hidden">
+                          <h3 className="bg-gray-50 border-b border-gray-200 px-4 py-3 font-semibold text-gray-900">
+                            {seoContent.example.inputLabel}
+                          </h3>
+                          <pre className="p-4 text-sm text-gray-800 overflow-auto whitespace-pre-wrap font-mono">
+                            {seoContent.example.input}
+                          </pre>
+                        </div>
+                        <div className="border border-gray-200 rounded-lg overflow-hidden">
+                          <h3 className="bg-gray-50 border-b border-gray-200 px-4 py-3 font-semibold text-gray-900">
+                            {seoContent.example.outputLabel}
+                          </h3>
+                          <pre className="p-4 text-sm text-gray-800 overflow-auto whitespace-pre-wrap font-mono">
+                            {seoContent.example.output}
+                          </pre>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+
+                  <section>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Common errors or tips</h2>
+                    <ul className="space-y-3 text-gray-700">
+                      {seoContent.tips.map((tip) => (
+                        <li key={tip} className="flex gap-3">
+                          <span className="text-green-600 font-bold">-</span>
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Privacy and security note</h2>
+                    <p className="text-gray-700 leading-relaxed">{seoContent.privacyNote}</p>
+                  </section>
+                </div>
+              )}
 
               {/* Benefits Section */}
               <div>
