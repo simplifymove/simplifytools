@@ -8,6 +8,11 @@ interface ChatMessage {
   timestamp: number;
 }
 
+interface WebviewMessage {
+  command: 'sendMessage' | 'clearChat' | 'cancelRequest';
+  text?: string;
+}
+
 /**
  * Webview Chat Panel for SimplifyConvert AI
  */
@@ -50,9 +55,9 @@ export class ChatPanel {
   private setupWebviewMessageListener(): void {
     if (!this.webview) return;
 
-    this.webview.onDidReceiveMessage(async (message) => {
+    this.webview.onDidReceiveMessage(async (message: WebviewMessage) => {
       if (message.command === 'sendMessage') {
-        await this.handleUserMessage(message.text);
+        await this.handleUserMessage(message.text || '');
       } else if (message.command === 'clearChat') {
         this.chatMessages = [];
         this.renderChat();

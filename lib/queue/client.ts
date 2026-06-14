@@ -1,8 +1,9 @@
 // lib/queue/client.ts
 // BullMQ Queue Setup and Management
 
-import { Queue, Worker, QueueEvents, Processor } from 'bullmq';
+import { Queue, QueueEvents } from 'bullmq';
 import Redis from 'ioredis';
+import { queueLogger } from '@/lib/logging/logger';
 
 // Job data types
 export interface AuditJobData {
@@ -24,25 +25,29 @@ let auditQueue: Queue<AuditJobData, any, string> | null = null;
 
 function getRedisConnection(): Redis {
   if (!redisConnection) {
-    // Try to connect to Redis, fallback to local if not available
+    queueLogger.debug({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+    }, 'Connecting to Redis');
+
     redisConnection = new Redis({
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
       maxRetriesPerRequest: null,
       enableReadyCheck: false,
       enableOfflineQueue: false,
-      retryStrategy: (times) => {
+      retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
       },
     });
 
-    redisConnection.on('error', (err) => {
-      console.error('Redis connection error:', err);
+    redisConnection.on('error', (err: Error) => {
+      queueLogger.error({ error: err }, 'Redis connection error');
     });
 
     redisConnection.on('connect', () => {
-      console.log('Redis connected');
+      queueLogger.info('Redis connected');
     });
   }
 
@@ -53,7 +58,7 @@ function getRedisConnection(): Redis {
 export function getAuditQueue(): Queue<AuditJobData, any, string> {
   if (!auditQueue) {
     const redis = getRedisConnection();
-    
+
     auditQueue = new Queue<AuditJobData, any, string, any, any, any>('audit-tests', {
       connection: redis,
       defaultJobOptions: {
@@ -66,6 +71,8 @@ export function getAuditQueue(): Queue<AuditJobData, any, string> {
         },
       },
     });
+
+    queueLogger.info('Audit queue created');
   }
 
   return auditQueue;
@@ -80,7 +87,7 @@ export function getQueueEvents(): QueueEvents {
 // Get queue statistics
 export async function getQueueStats() {
   const queue = getAuditQueue();
-  
+
   const counts = await queue.getJobCounts(
     'active',
     'completed',
@@ -109,7 +116,7 @@ export async function enqueueAuditJob(
   categories: string[],
 ): Promise<string> {
   const queue = getAuditQueue();
-  
+
   const job = await queue.add('run-audit', {
     auditRunId,
     auditJobId,
@@ -117,6 +124,7 @@ export async function enqueueAuditJob(
     categories,
   });
 
+  queueLogger.info({ jobId: job.id, auditRunId, auditJobId, categories }, 'Audit job enqueued');
   return job.id!;
 }
 
@@ -213,7 +221,7 @@ export async function checkQueueHealth(): Promise<{
     return {
       connected: true,
       redis: redisHealth === 'PONG',
-      queue: !!queueStats,
+      queue: !!queue,
       active: queueStats.active,
       pending: queueStats.waiting,
       completed: queueStats.completed,
@@ -240,7 +248,7 @@ export async function closeConnections() {
   }
 }
 
-export default {
+const queueClient = {
   getAuditQueue,
   getQueueEvents,
   getQueueStats,
@@ -252,3 +260,5 @@ export default {
   checkQueueHealth,
   closeConnections,
 };
+
+export default queueClient;

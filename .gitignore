@@ -80,6 +80,7 @@ migration.lock
 # Sensitive documentation and logs
 *CHECKLIST*
 *SECRET*
+!lib/security/secret-scanner.ts
 *verification*
 *VERIFICATION*
 build_errors*.txt

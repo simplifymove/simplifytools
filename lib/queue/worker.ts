@@ -4,9 +4,8 @@
 import { Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
 import { prisma } from '@/lib/prisma';
-import { runTestCommand, killAuditProcess, getProcessPid } from '@/lib/services/test-execution';
+import { runTestCommand } from '@/lib/services/test-execution';
 import { createNotification } from '@/lib/services/notification';
-import { recordFailure } from '@/lib/services/failure-classifier';
 import { getCategoryReliability } from '@/lib/services/reliability';
 import { generateHealthReport } from '@/lib/services/health-score';
 import { evaluateAllAlertingRules } from '@/lib/services/alerting';
@@ -14,9 +13,29 @@ import { storeArtifact } from '@/lib/services/artifact';
 import { workerLogger } from '@/lib/logging/logger';
 import { AuditJobData, AuditJobResult } from './client';
 
+const auditDebugEnabled = process.env.AUDIT_DEBUG === 'true';
+const auditDebugLog = (...args: unknown[]) => {
+  if (auditDebugEnabled) {
+    console.log(...args);
+  }
+};
+const auditDebugError = (...args: unknown[]) => {
+  if (auditDebugEnabled) {
+    console.error(...args);
+  }
+};
+
 // Worker processor function
 async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> {
   const { auditJobId, userId, categories, auditRunId } = job.data;
+  
+  auditDebugLog('[WORKER] ▶ Processing audit job:', {
+    jobId: job.id,
+    auditRunId,
+    auditJobId,
+    userId,
+    categories,
+  });
 
   // Declare variables outside try block so they're accessible in catch
   let totalTests = 0;
@@ -28,6 +47,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
   const allTestResults: any[] = [];
 
   try {
+    auditDebugLog('[WORKER] Updating AuditRun status to RUNNING...');
     workerLogger.info({ jobId: job.id }, `Starting job for categories: ${job.data.categories.join(', ')}`);
 
     // Update AuditRun status to RUNNING
@@ -35,16 +55,22 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
       where: { id: auditRunId },
       data: { status: 'RUNNING', startedAt: new Date() },
     });
+    auditDebugLog('[WORKER] ✅ AuditRun status updated to RUNNING');
 
     // Update job status to PROCESSING
+    auditDebugLog('[WORKER] Updating AuditJob status to PROCESSING...');
     await prisma.auditJob.update({
       where: { id: auditJobId },
       data: { status: 'PROCESSING', startedAt: new Date() },
     });
+    auditDebugLog('[WORKER] ✅ AuditJob status updated to PROCESSING');
 
     // Run tests for selected categories
+    auditDebugLog('[WORKER] Starting category loop with', categories.length, 'categories');
 
     for (const category of categories) {
+      auditDebugLog('[WORKER] Processing category:', category);
+      
       // Update progress
       await job.updateProgress((categories.indexOf(category) / categories.length) * 100);
 
@@ -52,10 +78,19 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
 
       try {
         // Pass auditRunId so worker can track process PID and check cancellation
+        auditDebugLog('[WORKER] Running test command for:', category);
         const result = await runTestCommand(category, auditRunId);
+        auditDebugLog('[WORKER] Test command completed with result:', {
+          totalTests: result.totalTests,
+          passedTests: result.passedTests,
+          failedTests: result.failedTests,
+          errorTests: result.errorTests,
+          error: result.error,
+        });
         
         // Check if cancelled (result will indicate cancellation)
         if (result.error === 'Audit cancelled by admin') {
+          auditDebugLog('[WORKER] ⛔ Audit cancelled by admin, stopping');
           workerLogger.warn({ category, auditRunId }, '⛔ Audit cancelled - stopping all processing');
           break; // Stop processing further categories
         }
@@ -68,12 +103,21 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
         allLogs.push(...(result.logs || []));
         allTestResults.push(...(result.results || []));
 
+        auditDebugLog('[WORKER] Aggregated totals:', {
+          totalTests,
+          passedTests,
+          failedTests,
+          errorTests,
+          skippedTests,
+        });
+
         workerLogger.info(
           { category, totalTests: result.totalTests, passedTests: result.passedTests, failedTests: result.failedTests },
           `[Parsed] Category batch: ${result.totalTests} total tests, ${result.passedTests} passed, ${result.failedTests} failed`
         );
 
         // Process each test result and persist to database
+        auditDebugLog('[WORKER] Persisting', result.results?.length || 0, 'test results to database');
         let batchTestCount = 0;
         for (const testResult of result.results || []) {
           const testStatus = testResult.passed ? 'PASS' : (testResult.skipped ? 'SKIPPED' : 'FAIL');
@@ -178,12 +222,15 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
               }
             }
           } catch (testPersistError) {
+            auditDebugError('[WORKER] ❌ Error persisting test:', testPersistError);
             workerLogger.error(
               { error: testPersistError, toolName: testResult.toolName },
               'Failed to persist test result'
             );
           }
         }
+
+        auditDebugLog('[WORKER] ✅ Persisted', batchTestCount, 'test results');
 
         // Update tool reliability scores
         try {
@@ -289,6 +336,14 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
     }
 
     // Update existing AuditRun with final statistics
+    auditDebugLog('[WORKER] Updating AuditRun with final statistics:', {
+      totalTests,
+      passedTests,
+      failedTests,
+      errorTests,
+      skippedTests,
+    });
+    
     const auditRun = await prisma.auditRun.update({
       where: { id: auditRunId },
       data: {
@@ -302,10 +357,12 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
         completedAt: new Date(),
       },
     });
+    auditDebugLog('[WORKER] ✅ AuditRun updated:', auditRun.id);
 
     // Generate health report
     try {
       const healthReport = await generateHealthReport();
+      auditDebugLog('[WORKER] Health report generated:', healthReport?.overallScore);
       workerLogger.info(
         { score: healthReport?.overallScore },
         'Health report generated'
@@ -323,6 +380,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
     }
 
     // Link job to audit run (if not already linked)
+    auditDebugLog('[WORKER] Updating AuditJob status to COMPLETED');
     await prisma.auditJob.update({
       where: { id: auditJobId },
       data: {
@@ -332,6 +390,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
         durationMs: Date.now() - new Date(job.timestamp).getTime(),
       },
     });
+    auditDebugLog('[WORKER] ✅ AuditJob status updated to COMPLETED');
 
     // Send notification
     try {
@@ -351,6 +410,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
       // Don't fail the job if notification fails
     }
 
+    auditDebugLog('[WORKER] ✅ Job completed successfully');
     workerLogger.info(
       { jobId: job.id, passed: passedTests, total: totalTests },
       'Job completed'
@@ -361,6 +421,8 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
       success: true,
     };
   } catch (error) {
+    auditDebugError('[WORKER] ❌ Job failed with error:', error);
+    
     const { auditJobId, auditRunId } = job.data;
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
@@ -371,6 +433,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
     
     const fullErrorMessage = `${errorMessage}\n\nRecent logs:\n${errorLogSummary}`;
 
+    auditDebugError('[WORKER] Updating AuditRun and AuditJob with error status');
     workerLogger.error({ error, jobId: job.id, auditRunId }, 'Job failed');
 
     // Update AuditRun with error status
@@ -383,7 +446,9 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
           completedAt: new Date(),
         },
       });
+      auditDebugLog('[WORKER] ✅ AuditRun updated with FAILED status');
     } catch (updateError) {
+      auditDebugError('[WORKER] Failed to update AuditRun:', updateError);
       workerLogger.warn({ error: updateError }, 'Failed to update AuditRun with error status');
     }
 
@@ -397,6 +462,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
         durationMs: Date.now() - new Date(job.timestamp).getTime(),
       },
     });
+    auditDebugLog('[WORKER] ✅ AuditJob updated with FAILED status');
 
     throw error;
   }
@@ -468,35 +534,52 @@ async function recoverStaleJobs() {
 }
 
 export function createWorker(concurrency: number = 2) {
+  auditDebugLog('[WORKER] Creating worker with concurrency:', concurrency);
+  
   const redis = new Redis({
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
     maxRetriesPerRequest: null,
   });
 
+  auditDebugLog('[WORKER] Redis client created for worker');
+
   const worker = new Worker('audit-tests', processAuditJob, {
     connection: redis,
     concurrency,
   });
 
+  auditDebugLog('[WORKER] BullMQ Worker created for queue "audit-tests"');
+
   // Run recovery on worker startup
+  auditDebugLog('[WORKER] Running recovery for stale jobs...');
   recoverStaleJobs();
 
-  worker.on('completed', (job) => {
-    console.log(`[Worker] Job ${job.id} completed successfully`);
+  worker.on('completed', (job: Job<AuditJobData>) => {
+    auditDebugLog(`[WORKER] ✅ Job ${job.id} completed successfully`);
+    workerLogger.info({ jobId: job.id }, 'Job completed');
   });
 
-  worker.on('failed', (job, error) => {
-    console.error(`[Worker] Job ${job?.id} failed:`, error.message);
+  worker.on('failed', (job: Job<AuditJobData> | undefined, error: Error) => {
+    auditDebugError(`[WORKER] ❌ Job ${job?.id} failed:`, error.message);
+    workerLogger.error({ jobId: job?.id, error: error.message }, 'Job failed');
   });
 
-  worker.on('error', (error) => {
-    console.error('[Worker] Error:', error);
+  worker.on('error', (error: Error) => {
+    auditDebugError('[WORKER] ❌ Worker error:', error);
+    workerLogger.error({ error }, 'Worker error');
   });
 
-  console.log(`[Worker] Started with concurrency: ${concurrency}`);
+  worker.on('active', (job: Job<AuditJobData>) => {
+    auditDebugLog(`[WORKER] 🔄 Job ${job.id} is now processing`);
+  });
+
+  auditDebugLog(`[WORKER] ✅ Worker started with concurrency: ${concurrency}`);
 
   return worker;
 }
 
-export default { createWorker, processAuditJob };
+const workerClient = { createWorker, processAuditJob };
+
+export default workerClient;
+

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth/config';
+import { getAdminSession } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
 import { promises as fs } from 'fs';
@@ -40,8 +39,8 @@ export async function DELETE(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email || session.user.email !== 'raghavaboyidi@gmail.com') {
+    const session = await getAdminSession();
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

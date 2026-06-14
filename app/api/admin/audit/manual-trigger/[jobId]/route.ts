@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth/config';
+import { getAdminSession } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
 import { killAuditProcess } from '@/lib/services/test-execution';
@@ -14,8 +13,8 @@ export async function GET(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email || session.user.email !== 'raghavaboyidi@gmail.com') {
+    const session = await getAdminSession();
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -107,15 +106,15 @@ export async function DELETE(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email || session.user.email !== 'raghavaboyidi@gmail.com') {
+    const session = await getAdminSession();
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { jobId } = await params;
 
     // Try to cancel as AuditRun
-    let auditRun = await prisma.auditRun.findUnique({
+    const auditRun = await prisma.auditRun.findUnique({
       where: { id: jobId },
       include: { fromJob: { select: { id: true, status: true } } },
     });

@@ -27,6 +27,7 @@
     "phase8:daily-audits:concurrent": "npx ts-node scripts/run-daily-audits.ts --concurrent --concurrency=5",
     "phase8:stress-test": "npx ts-node scripts/stress-test.ts",
     "phase8:monitor": "npx ts-node scripts/phase8-monitoring.ts",
+    "create-admin": "npx ts-node scripts/create-admin.ts",
     "worker": "tsx worker.ts"
   },
   "dependencies": {
@@ -49,6 +50,7 @@
     "framer-motion": "^12.35.2",
     "html-minifier-terser": "^7.2.0",
     "html2canvas": "^1.4.1",
+    "ioredis": "^5.10.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",

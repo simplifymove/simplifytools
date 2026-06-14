@@ -35,7 +35,7 @@ export function HomeHeader() {
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
       count: '55+',
-      link: '/all-tools/pdf-tools',
+      link: '/all-tools/pdf',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
     {
@@ -101,7 +101,7 @@ export function HomeHeader() {
       color: 'from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-50',
       count: '49',
-      link: '/all-tools/code-tools',
+      link: '/all-tools/code',
       glowColor: 'group-hover:shadow-green-500/20'
     },
     {
@@ -165,7 +165,7 @@ export function HomeHeader() {
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <AlertCircle size={20} className="text-orange-500 shrink-0" />
               <p className="text-sm text-gray-700 text-center md:text-left">
-                🚧 We're currently improving some features. If you notice any issues, please report them—we appreciate your feedback!
+                We're currently improving some features. If you notice any issues, please report them - we appreciate your feedback!
               </p>
             </div>
             <button
@@ -382,7 +382,7 @@ export function HomeHeader() {
             animate={{ opacity: 1, height: 'auto' }}
           >
             <div className="flex flex-col gap-4">
-              <Link href="/all-tools/pdf-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link href="/all-tools/pdf" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 PDF
               </Link>
               <Link href="/all-tools/image-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
@@ -400,7 +400,7 @@ export function HomeHeader() {
               <Link href="/all-tools/data" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Data
               </Link>
-              <Link href="/all-tools/code-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link href="/all-tools/code" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Code
               </Link>
               <Link href="/all-tools/text-to-speech" className="text-sm font-medium text-gray-600 hover:text-gray-900">
@@ -457,6 +457,5 @@ export function HomeHeader() {
     </>
   );
 }
-
 
 
