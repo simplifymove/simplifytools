@@ -438,7 +438,7 @@ export default function CodeToolPage() {
               </h1>
               <p className="text-gray-600 mb-6">The requested tool does not exist.</p>
               <Link
-                href="/all-tools/code"
+                href="/all-tools/code-tools"
                 className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-0 font-medium"
               >
                 Back to Tools
@@ -469,7 +469,7 @@ export default function CodeToolPage() {
             >
               <Link href="/" className="hover:opacity-80">Home</Link>
               <ChevronRight size={16} />
-              <Link href="/all-tools/code" className="hover:opacity-80">Code Tools</Link>
+              <Link href="/all-tools/code-tools" className="hover:opacity-80">Code Tools</Link>
               <ChevronRight size={16} />
               <span className="opacity-90">{tool.title}</span>
             </motion.div>
@@ -728,7 +728,7 @@ export default function CodeToolPage() {
                   {relatedTools.map((relTool) => (
                     <Link
                       key={relTool.id}
-                      href={`/all-tools/code/${relTool.id}`}
+                      href={`/all-tools/code-tools/${relTool.id}`}
                       className="block p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition duration-0"
                     >
                       <p className="font-medium text-gray-900">{relTool.title}</p>
@@ -959,7 +959,7 @@ export default function CodeToolPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Tools</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedTools.map((relTool) => (
-                <Link key={relTool.id} href={`/all-tools/code/${relTool.id}`}>
+                <Link key={relTool.id} href={`/all-tools/code-tools/${relTool.id}`}>
                   <motion.div
                     whileHover={{ y: -4 }}
                     className="bg-white rounded-lg p-5 shadow-lg border border-gray-200 hover:shadow-xl transition h-full flex flex-col"

@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://simplifyconvert.com/all-tools/code',
+    url: 'https://simplifyconvert.com/all-tools/code-tools',
     siteName: 'SimplifyConvert',
     title: 'Code Tools - Free Code Formatting & Conversion',
     description: 'Format, validate, convert, and minify code.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'Code Tools' }],
   },
   twitter: { card: 'summary_large_image', title: 'Code Tools - Free Code Formatting & Conversion', description: 'Format, validate, convert, and minify code.', images: ['https://simplifyconvert.com/og-image.jpg'] },
-  alternates: { canonical: 'https://simplifyconvert.com/all-tools/code' },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/code-tools' },
 };
 
 export default function CodeLayout({ children }: { children: React.ReactNode }) {

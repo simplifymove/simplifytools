@@ -66,7 +66,7 @@ export function useSearchSuggestions(query: string, limit?: number) {
         title: codeTool.title,
         description: codeTool.description,
         category: 'Code Tools', // Code tools category
-        route: `/all-tools/code`, // Code tools route
+        route: `/all-tools/code-tools`, // Code tools route
       })),
       ...Object.values(aiWriteTools).map(aiTool => ({
         id: aiTool.id,

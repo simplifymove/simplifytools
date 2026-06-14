@@ -124,6 +124,18 @@ const nextConfig = {
         destination: '/all-tools/:path*',
         permanent: true, // 301 redirect
       },
+      // /all-tools/code -> /all-tools/code-tools (canonical code tools route)
+      {
+        source: '/all-tools/code',
+        destination: '/all-tools/code-tools',
+        permanent: true, // 301 redirect
+      },
+      // /all-tools/code/* -> /all-tools/code-tools/* (canonical code tools route)
+      {
+        source: '/all-tools/code/:path*',
+        destination: '/all-tools/code-tools/:path*',
+        permanent: true, // 301 redirect
+      },
       // /all-tools/video → /all-tools/video-tools (consolidates video tools)
       {
         source: '/all-tools/video',
@@ -135,4 +147,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-

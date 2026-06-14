@@ -328,7 +328,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   }
 
   const baseUrl = 'https://simplifyconvert.com';
-  const canonicalUrl = `${baseUrl}/all-tools/code/${slug}`;
+  const canonicalUrl = `${baseUrl}/all-tools/code-tools/${slug}`;
   
   // Get SEO data from database, fallback to tool data if not found
   const seoData = toolSEODatabase[slug] || {

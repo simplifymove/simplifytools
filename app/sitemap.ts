@@ -203,7 +203,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // },
     {
       tools: extractToolIds(codeTools),
-      route: '/all-tools/code',
+      route: '/all-tools/code-tools',
       label: 'Code Tools',
     },
     {

@@ -101,7 +101,7 @@ export function HomeHeader() {
       color: 'from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-50',
       count: '49',
-      link: '/all-tools/code',
+      link: '/all-tools/code-tools',
       glowColor: 'group-hover:shadow-green-500/20'
     },
     {
@@ -400,7 +400,7 @@ export function HomeHeader() {
               <Link href="/all-tools/data" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Data
               </Link>
-              <Link href="/all-tools/code" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link href="/all-tools/code-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Code
               </Link>
               <Link href="/all-tools/text-to-speech" className="text-sm font-medium text-gray-600 hover:text-gray-900">
