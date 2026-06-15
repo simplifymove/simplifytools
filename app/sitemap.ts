@@ -195,12 +195,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       route: '/all-tools/pdf',
       label: 'PDF Tools',
     },
-    // DO NOT INCLUDE VIDEO CATEGORY - /all-tools/video returns 308 redirect
-    // {
-    //   tools: extractToolIds(videoTools),
-    //   route: '/all-tools/video',
-    //   label: 'Video Tools',
-    // },
+    {
+      tools: extractToolIds(videoTools),
+      route: '/all-tools/video',
+      label: 'Video Tools',
+      includeCategory: false,
+    },
     {
       tools: extractToolIds(codeTools),
       route: '/all-tools/code-tools',
@@ -208,12 +208,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       tools: extractToolIds(dataTools),
-      route: '/all-tools/data',
+      route: '/all-tools/data-converter',
       label: 'Data Tools',
     },
     {
       tools: extractToolIds(imageToolsRegistry),
-      route: '/all-tools/image-tools',
+      route: '/all-tools',
       label: 'Image Tools Registry',
     },
   ];
@@ -255,7 +255,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   console.log('Main tool categories:', Array.from(mainToolCategorySlugs).sort().join(', '));
 
   // Add nested tool pages and category pages
-  nestedToolMappings.forEach(({ tools, route, label }) => {
+  nestedToolMappings.forEach(({ tools, route, label, includeCategory }) => {
     if (tools.length === 0) {
       console.log(`  ✗ ${label}: 0 tools (SKIPPED)`);
       return;
@@ -276,7 +276,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Add category page (if not already added by main tools)
     // Only add if this is NOT a main tool category
     const categorySlugFromRoute = route.split('/').pop() || '';
-    if (!addedCategories.has(route) && !mainToolCategorySlugs.has(categorySlugFromRoute)) {
+    if (includeCategory !== false && !addedCategories.has(route) && !mainToolCategorySlugs.has(categorySlugFromRoute)) {
       sitemapEntries.push({
         url: `${BASE_URL}${route}`,
         lastModified: new Date(),

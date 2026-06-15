@@ -152,6 +152,18 @@ const nextConfig = {
         permanent: true, // 301 redirect
       },
       // /all-tools/video → /all-tools/video-tools (consolidates video tools)
+      // /all-tools/data/* -> /all-tools/data-converter/* (canonical data converter route)
+      {
+        source: '/all-tools/data/:path*',
+        destination: '/all-tools/data-converter/:path*',
+        permanent: true, // 301 redirect
+      },
+      // /all-tools/image-tools/* -> /all-tools/* (canonical image tool routes)
+      {
+        source: '/all-tools/image-tools/:path*',
+        destination: '/all-tools/:path*',
+        permanent: true, // 301 redirect
+      },
       {
         source: '/all-tools/video',
         destination: '/all-tools/video-tools',
