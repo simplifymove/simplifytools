@@ -112,6 +112,12 @@ const nextConfig = {
       },
       // CRITICAL: instagram-post-resizer → image-resizer (resolves Google Search Console 404 error)
       // Tool was renamed from 'instagram-post-resizer' to 'image-resizer' but old URL still indexed
+      // /tos -> /terms (consolidates terms of service canonical URL)
+      {
+        source: '/tos',
+        destination: '/terms',
+        permanent: true, // 301 redirect
+      },
       {
         source: '/all-tools/instagram-post-resizer',
         destination: '/all-tools/image-resizer',
