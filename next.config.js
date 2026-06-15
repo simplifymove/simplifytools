@@ -110,17 +110,26 @@ const nextConfig = {
         destination: '/all-tools',
         permanent: true, // 301 redirect - permanent change
       },
-      // CRITICAL: instagram-post-resizer → image-resizer (resolves Google Search Console 404 error)
-      // Tool was renamed from 'instagram-post-resizer' to 'image-resizer' but old URL still indexed
       // /tos -> /terms (consolidates terms of service canonical URL)
       {
         source: '/tos',
         destination: '/terms',
         permanent: true, // 301 redirect
       },
+      // Legacy image tool URLs -> closest live image tools
+      {
+        source: '/all-tools/remove-person',
+        destination: '/all-tools/remove-object',
+        permanent: true, // 301 redirect
+      },
+      {
+        source: '/all-tools/black-white-filter',
+        destination: '/all-tools/black-white',
+        permanent: true, // 301 redirect
+      },
       {
         source: '/all-tools/instagram-post-resizer',
-        destination: '/all-tools/image-resizer',
+        destination: '/all-tools/resize-image',
         permanent: true, // 301 redirect - permanent change
       },
       // Convert /converters/ URLs to /all-tools/ (fixes canonical URL issues)
