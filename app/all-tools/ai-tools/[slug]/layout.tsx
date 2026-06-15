@@ -43,6 +43,33 @@ function resolveToolId(slug: string): string {
   return '';
 }
 
+const faqItems = [
+  {
+    q: 'Is the content 100% original?',
+    a: 'AI tools generate variations of existing content patterns. Always review and customize the output. Original thought and editing are essential to create unique content.',
+  },
+  {
+    q: 'Can I use the output directly without editing?',
+    a: 'We recommend reviewing and editing all AI-generated content. Add your own perspective, verify facts, and customize to your voice and brand.',
+  },
+  {
+    q: 'Does AI detection flag this content?',
+    a: 'Content created with our tools may be detected by AI detection services. Mix human and AI writing, add original insights, and edit heavily to reduce detectability.',
+  },
+  {
+    q: 'Is my content private?',
+    a: 'Content processed on our platform is handled securely. Always follow your organization\'s policies regarding sensitive data and AI tool usage.',
+  },
+  {
+    q: 'Can I use this for commercial purposes?',
+    a: 'Yes, but review our terms of service. Content must not violate copyright or contain harmful material.',
+  },
+  {
+    q: 'How do I get the best results?',
+    a: 'Provide detailed context, specific requirements, and clear examples. Better inputs lead to more useful AI suggestions that require less editing.',
+  },
+];
+
 // Comprehensive SEO metadata database for AI writing tools
 const toolSEODatabase: Record<string, {
   title: string;
@@ -206,6 +233,14 @@ const toolSEODatabase: Record<string, {
   },
 };
 
+function getSeoData(toolId: string, tool: NonNullable<ReturnType<typeof getToolById>>) {
+  return toolSEODatabase[toolId] || {
+    title: `${tool.title} - Free AI Writing Tool | SimplifyConvert`,
+    description: tool.description,
+    keywords: [tool.title, 'AI writer', 'content generator', 'free tool']
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
   
@@ -231,14 +266,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   }
 
   // Get tool-specific SEO data or use defaults
-  const seoData = toolSEODatabase[toolId] || {
-    title: `${tool.title} - Free AI Writing Tool | SimplifyConvert`,
-    description: tool.description,
-    keywords: [tool.title, 'AI writer', 'content generator', 'free tool']
-  };
-
   const baseUrl = 'https://simplifyconvert.com';
   const canonicalUrl = `${baseUrl}/all-tools/ai-tools/${toolId}`;
+  const seoData = getSeoData(toolId, tool);
 
   return {
     title: seoData.title,
@@ -278,8 +308,113 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default function AiToolsSlugLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<Params>;
 }) {
-  return <>{children}</>;
+  return <AiToolsSlugLayoutContent params={params}>{children}</AiToolsSlugLayoutContent>;
+}
+
+async function AiToolsSlugLayoutContent({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<Params>;
+}) {
+  const { slug } = await params;
+  const toolId = resolveToolId(slug);
+  const tool = toolId ? getToolById(toolId) : null;
+
+  if (!tool) {
+    return <>{children}</>;
+  }
+
+  const baseUrl = 'https://simplifyconvert.com';
+  const canonicalUrl = `${baseUrl}/all-tools/ai-tools/${toolId}`;
+  const seoData = getSeoData(toolId, tool);
+
+  const softwareApplicationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.title,
+    description: seoData.description,
+    url: canonicalUrl,
+    applicationCategory: 'WritingApplication',
+    operatingSystem: 'Web',
+    isAccessibleForFree: true,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'SimplifyConvert',
+      url: baseUrl,
+    },
+  };
+
+  const faqPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.a,
+      },
+    })),
+  };
+
+  const breadcrumbListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: baseUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'All Tools',
+        item: `${baseUrl}/all-tools`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: 'AI Tools',
+        item: `${baseUrl}/all-tools/ai-tools`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: tool.title,
+        item: canonicalUrl,
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbListSchema) }}
+      />
+      {children}
+    </>
+  );
 }
