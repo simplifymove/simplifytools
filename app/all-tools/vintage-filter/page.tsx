@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 export default function VintageFilterPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -212,6 +213,39 @@ export default function VintageFilterPage() {
               </div>
             </div>
 
+            {/* SEO Content */}
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">What This Vintage Filter Tool Does</h2>
+              <p className="text-gray-700 leading-relaxed mb-6">
+                The Vintage Filter tool adds warm color shifts and a retro film-inspired look to modern images. Use it to make photos feel nostalgic, soften digital sharpness, and create consistent old-photo styling for personal or creative projects.
+              </p>
+
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Use Cases</h3>
+              <ul className="grid md:grid-cols-2 gap-3 text-gray-700 mb-6">
+                <li className="p-4 bg-yellow-50 border border-yellow-100 rounded-lg">Give portraits a classic film-photo mood.</li>
+                <li className="p-4 bg-yellow-50 border border-yellow-100 rounded-lg">Create cohesive retro visuals for social posts or blogs.</li>
+                <li className="p-4 bg-yellow-50 border border-yellow-100 rounded-lg">Add warmth to travel, lifestyle, and event photos.</li>
+                <li className="p-4 bg-yellow-50 border border-yellow-100 rounded-lg">Preview nostalgic styling before deeper photo editing.</li>
+              </ul>
+
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Example</h3>
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Input</h4>
+                  <p className="text-gray-700 text-sm">A modern JPG, PNG, or WebP photo with neutral or cool colors.</p>
+                </div>
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Output</h4>
+                  <p className="text-gray-700 text-sm">A warm retro JPEG with stronger yellow/orange tones and a nostalgic film-style appearance.</p>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                <h3 className="font-bold text-blue-900 mb-2">Privacy Note</h3>
+                <p className="text-blue-900 text-sm">Vintage filtering runs locally in your browser using canvas, so your image does not need to be uploaded for this edit.</p>
+              </div>
+            </div>
+
             {/* FAQ Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
@@ -245,21 +279,7 @@ export default function VintageFilterPage() {
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Related Image Tools</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <Link href="/all-tools/sepia-filter" className="p-4 border-2 border-yellow-200 rounded-lg hover:bg-yellow-50 transition">
-                  <h3 className="font-bold text-gray-800">Sepia Filter</h3>
-                  <p className="text-sm text-gray-600">Classic sepia tone effects</p>
-                </Link>
-                <Link href="/all-tools/color-grader" className="p-4 border-2 border-yellow-200 rounded-lg hover:bg-yellow-50 transition">
-                  <h3 className="font-bold text-gray-800">Color Grader</h3>
-                  <p className="text-sm text-gray-600">Professional color adjustment</p>
-                </Link>
-                <Link href="/all-tools/image-enhancer" className="p-4 border-2 border-yellow-200 rounded-lg hover:bg-yellow-50 transition">
-                  <h3 className="font-bold text-gray-800">Image Enhancer</h3>
-                  <p className="text-sm text-gray-600">Boost brightness and contrast</p>
-                </Link>
-              </div>
+              <RelatedToolsSection family="image" toolId="vintage-filter" limit={8} />
             </div>
           </div>
         </div>
@@ -274,11 +294,13 @@ export default function VintageFilterPage() {
       <script type="application/ld+json">
         {JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'WebApplication',
+          '@type': 'SoftwareApplication',
           name: 'Vintage Filter',
           description: 'Free online vintage filter tool to add retro effects to photos',
           url: 'https://simplifyconvert.com/all-tools/vintage-filter',
           applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'Web',
+          isAccessibleForFree: true,
           offers: {
             '@type': 'Offer',
             price: '0',
@@ -289,6 +311,28 @@ export default function VintageFilterPage() {
             ratingValue: '4.8',
             reviewCount: '240',
           },
+        })}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: [
+            { '@type': 'Question', name: 'What file formats are supported?', acceptedAnswer: { '@type': 'Answer', text: 'The vintage filter supports common image formats including JPG, PNG, WebP, BMP, and TIFF.' } },
+            { '@type': 'Question', name: 'What does the intensity slider do?', acceptedAnswer: { '@type': 'Answer', text: 'The intensity slider controls how strong the vintage effect appears, from subtle warmth to a stronger retro look.' } },
+            { '@type': 'Question', name: 'Is my image data stored?', acceptedAnswer: { '@type': 'Answer', text: 'No. Your image is processed locally in your browser and is not stored on our servers for this effect.' } },
+          ],
+        })}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://simplifyconvert.com' },
+            { '@type': 'ListItem', position: 2, name: 'All Tools', item: 'https://simplifyconvert.com/all-tools' },
+            { '@type': 'ListItem', position: 3, name: 'Vintage Filter', item: 'https://simplifyconvert.com/all-tools/vintage-filter' },
+          ],
         })}
       </script>
     </>

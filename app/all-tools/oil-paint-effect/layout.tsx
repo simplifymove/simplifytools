@@ -8,6 +8,7 @@ export const metadata = {
     type: 'website',
     url: 'https://simplifyconvert.com/all-tools/oil-paint-effect',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/oil-paint-effect' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

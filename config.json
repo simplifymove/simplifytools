@@ -1,0 +1,57 @@
+[1mdiff --git a/next.config.js b/next.config.js[m
+[1mindex d3079e45..fe46f247 100644[m
+[1m--- a/next.config.js[m
+[1m+++ b/next.config.js[m
+[36m@@ -89,20 +89,13 @@[m [mconst nextConfig = {[m
+   // All redirects are permanent (301) to preserve SEO authority[m
+   async redirects() {[m
+     return [[m
+[31m-      // CRITICAL: www → non-www domain redirect (consolidates domain canonicalization)[m
+[31m-      // Prevents duplicate content indexing and preserves SEO authority[m
+[31m-      // All requests to www.simplifyconvert.com redirect to simplifyconvert.com[m
+[31m-      {[m
+[31m-        source: '/:path*',[m
+[31m-        destination: 'https://simplifyconvert.com/:path*',[m
+[31m-        permanent: true, // 301 redirect - permanent change[m
+[31m-        has: [[m
+[31m-          {[m
+[31m-            type: 'host',[m
+[31m-            value: 'www.simplifyconvert.com',[m
+[31m-          },[m
+[31m-        ],[m
+[31m-      },[m
+[32m+[m[32m      // REMOVED: www → non-www domain redirect (2024 SEO Audit)[m
+[32m+[m[32m      // Reason: Application-level redirects add latency and crawl overhead[m
+[32m+[m[32m      // Solution: Rely on DNS/server configuration to handle www canonicalization[m
+[32m+[m[32m      // This eliminates "Page with redirect" warnings in Google Search Console[m
+[32m+[m[32m      // Google can now crawl both www and non-www versions directly without redirect[m
+[32m+[m[32m      // TODO: Verify DNS configuration serves both www and non-www from same IP[m
+[32m+[m[41m      [m
+       // CRITICAL: /tools → /all-tools (resolves Google Search Console 404 error)[m
+       // Old path was '/tools', new consolidated path is '/all-tools'[m
+       {[m
+[36m@@ -130,6 +123,24 @@[m [mconst nextConfig = {[m
+         destination: '/all-tools/video-tools',[m
+         permanent: true, // 301 redirect[m
+       },[m
+[32m+[m[41m      [m
+[32m+[m[32m      // NEW (2024 SEO Audit): Consolidate code-tools to code for backward compatibility[m
+[32m+[m[32m      // Reason: Sitemap uses /all-tools/code; old indexed URLs used /all-tools/code-tools[m
+[32m+[m[32m      // This redirect preserves SEO authority for old URLs while pointing to canonical route[m
+[32m+[m[32m      {[m
+[32m+[m[32m        source: '/all-tools/code-tools/:path*',[m
+[32m+[m[32m        destination: '/all-tools/code/:path*',[m
+[32m+[m[32m        permanent: true, // 301 redirect - preserve authority[m
+[32m+[m[32m      },[m
+[32m+[m[41m      [m
+[32m+[m[32m      // NEW (2024 SEO Audit): Consolidate pdf-tools to pdf for backward compatibility[m
+[32m+[m[32m      // Reason: Sitemap uses /all-tools/pdf; old indexed URLs used /all-tools/pdf-tools[m
+[32m+[m[32m      // This redirect preserves SEO authority for old URLs while pointing to canonical route[m
+[32m+[m[32m      {[m
+[32m+[m[32m        source: '/all-tools/pdf-tools/:path*',[m
+[32m+[m[32m        destination: '/all-tools/pdf/:path*',[m
+[32m+[m[32m        permanent: true, // 301 redirect - preserve authority[m
+[32m+[m[32m      },[m
+     ];[m
+   },[m
+ };[m

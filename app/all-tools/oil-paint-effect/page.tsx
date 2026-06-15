@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 export default function OilPaintEffectPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -226,6 +227,39 @@ export default function OilPaintEffectPage() {
               </div>
             </div>
 
+            {/* SEO Content */}
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">What This Oil Paint Effect Tool Does</h2>
+              <p className="text-gray-700 leading-relaxed mb-6">
+                The Oil Paint Effect tool turns photos into painterly artwork by smoothing details and blending nearby colors. It is useful for portraits, landscapes, pet photos, wall-art concepts, and creative images that need a hand-painted look.
+              </p>
+
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Use Cases</h3>
+              <ul className="grid md:grid-cols-2 gap-3 text-gray-700 mb-6">
+                <li className="p-4 bg-orange-50 border border-orange-100 rounded-lg">Create art-style portraits from personal photos.</li>
+                <li className="p-4 bg-orange-50 border border-orange-100 rounded-lg">Turn landscapes and travel photos into painting-like images.</li>
+                <li className="p-4 bg-orange-50 border border-orange-100 rounded-lg">Generate creative visuals for posters, covers, and social posts.</li>
+                <li className="p-4 bg-orange-50 border border-orange-100 rounded-lg">Test a painting look before sending an image to a designer or artist.</li>
+              </ul>
+
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Example</h3>
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Input</h4>
+                  <p className="text-gray-700 text-sm">A portrait, pet image, landscape, or product photo with visible texture and color.</p>
+                </div>
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Output</h4>
+                  <p className="text-gray-700 text-sm">A JPEG image with softened details and an oil-painting-inspired texture.</p>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                <h3 className="font-bold text-blue-900 mb-2">Privacy Note</h3>
+                <p className="text-blue-900 text-sm">Oil paint processing happens locally in your browser using canvas. Your image does not need to be uploaded for this effect.</p>
+              </div>
+            </div>
+
             {/* FAQ Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
@@ -259,21 +293,7 @@ export default function OilPaintEffectPage() {
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Related Art Effect Tools</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <Link href="/all-tools/cartoon-effect" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
-                  <h3 className="font-bold text-gray-800">Cartoon Effect</h3>
-                  <p className="text-sm text-gray-600">Comic style effects</p>
-                </Link>
-                <Link href="/all-tools/sketch-effect" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
-                  <h3 className="font-bold text-gray-800">Sketch Effect</h3>
-                  <p className="text-sm text-gray-600">Pencil sketch filter</p>
-                </Link>
-                <Link href="/all-tools/glow-effect" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
-                  <h3 className="font-bold text-gray-800">Glow Effect</h3>
-                  <p className="text-sm text-gray-600">Luminous glow effects</p>
-                </Link>
-              </div>
+              <RelatedToolsSection family="image" toolId="oil-paint-effect" limit={8} />
             </div>
           </div>
         </div>
@@ -286,11 +306,13 @@ export default function OilPaintEffectPage() {
       <script type="application/ld+json">
         {JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'WebApplication',
+          '@type': 'SoftwareApplication',
           name: 'Oil Paint Effect',
           description: 'Free online oil paint effect and artistic painting converter',
           url: 'https://simplifyconvert.com/all-tools/oil-paint-effect',
           applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'Web',
+          isAccessibleForFree: true,
           offers: {
             '@type': 'Offer',
             price: '0',
@@ -298,7 +320,28 @@ export default function OilPaintEffectPage() {
           },
         })}
       </script>
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: [
+            { '@type': 'Question', name: 'What intensity should I use?', acceptedAnswer: { '@type': 'Answer', text: 'Start at 5 for a balanced oil paint effect. Lower values are more subtle and higher values create stronger smoothing.' } },
+            { '@type': 'Question', name: 'Does this work on all photos?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, it works on most photos, with best results on images that have clear color areas and visible detail.' } },
+            { '@type': 'Question', name: 'Is my image private?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. The effect is processed locally in your browser.' } },
+          ],
+        })}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://simplifyconvert.com' },
+            { '@type': 'ListItem', position: 2, name: 'All Tools', item: 'https://simplifyconvert.com/all-tools' },
+            { '@type': 'ListItem', position: 3, name: 'Oil Paint Effect', item: 'https://simplifyconvert.com/all-tools/oil-paint-effect' },
+          ],
+        })}
+      </script>
     </>
   );
 }
-

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 export default function NeonGlowPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -213,6 +214,39 @@ export default function NeonGlowPage() {
               </div>
             </div>
 
+            {/* SEO Content */}
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">What This Neon Glow Tool Does</h2>
+              <p className="text-gray-700 leading-relaxed mb-6">
+                The Neon Glow tool adds a vibrant electric color treatment to your image, emphasizing bright areas with cyan, pink, and luminous highlights. It is built for stylized graphics, nightlife edits, social posts, and high-impact creative visuals.
+              </p>
+
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Use Cases</h3>
+              <ul className="grid md:grid-cols-2 gap-3 text-gray-700 mb-6">
+                <li className="p-4 bg-cyan-50 border border-cyan-100 rounded-lg">Create neon-style social media graphics and thumbnails.</li>
+                <li className="p-4 bg-cyan-50 border border-cyan-100 rounded-lg">Add futuristic lighting to portraits, products, and event photos.</li>
+                <li className="p-4 bg-cyan-50 border border-cyan-100 rounded-lg">Make dark images feel more energetic and colorful.</li>
+                <li className="p-4 bg-cyan-50 border border-cyan-100 rounded-lg">Design cyberpunk, music, gaming, or nightlife-inspired visuals.</li>
+              </ul>
+
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Example</h3>
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Input</h4>
+                  <p className="text-gray-700 text-sm">A portrait, city photo, product shot, or dark image with visible highlights.</p>
+                </div>
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Output</h4>
+                  <p className="text-gray-700 text-sm">A high-contrast JPEG with stronger neon colors and glowing highlight areas.</p>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                <h3 className="font-bold text-blue-900 mb-2">Privacy Note</h3>
+                <p className="text-blue-900 text-sm">The neon glow effect is processed in your browser with canvas, so your image does not need to be uploaded for this edit.</p>
+              </div>
+            </div>
+
             {/* FAQ Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
@@ -246,21 +280,7 @@ export default function NeonGlowPage() {
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Related Effect Tools</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <Link href="/all-tools/glow-effect" className="p-4 border-2 border-cyan-200 rounded-lg hover:bg-cyan-50 transition">
-                  <h3 className="font-bold text-gray-800">Glow Effect</h3>
-                  <p className="text-sm text-gray-600">Luminous glow effects</p>
-                </Link>
-                <Link href="/all-tools/lens-flare" className="p-4 border-2 border-cyan-200 rounded-lg hover:bg-cyan-50 transition">
-                  <h3 className="font-bold text-gray-800">Lens Flare</h3>
-                  <p className="text-sm text-gray-600">Optical lens effects</p>
-                </Link>
-                <Link href="/all-tools/duotone-effect" className="p-4 border-2 border-cyan-200 rounded-lg hover:bg-cyan-50 transition">
-                  <h3 className="font-bold text-gray-800">Duotone Effect</h3>
-                  <p className="text-sm text-gray-600">Color effects</p>
-                </Link>
-              </div>
+              <RelatedToolsSection family="image" toolId="neon-glow" limit={8} />
             </div>
           </div>
         </div>
@@ -273,16 +293,40 @@ export default function NeonGlowPage() {
       <script type="application/ld+json">
         {JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'WebApplication',
+          '@type': 'SoftwareApplication',
           name: 'Neon Glow Effect',
           description: 'Free online neon glow effect and neon lighting tool',
           url: 'https://simplifyconvert.com/all-tools/neon-glow',
           applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'Web',
+          isAccessibleForFree: true,
           offers: {
             '@type': 'Offer',
             price: '0',
             priceCurrency: 'USD',
           },
+        })}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: [
+            { '@type': 'Question', name: 'What intensity should I use?', acceptedAnswer: { '@type': 'Answer', text: 'Start at 50 for a balanced neon effect. Increase it for stronger glow or reduce it for a subtler look.' } },
+            { '@type': 'Question', name: 'Works on all photos?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, the effect works on any photo, though images with lights, contrast, and color usually produce the strongest neon look.' } },
+            { '@type': 'Question', name: 'Is my image private?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Neon glow processing runs locally in your browser.' } },
+          ],
+        })}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://simplifyconvert.com' },
+            { '@type': 'ListItem', position: 2, name: 'All Tools', item: 'https://simplifyconvert.com/all-tools' },
+            { '@type': 'ListItem', position: 3, name: 'Neon Glow Effect', item: 'https://simplifyconvert.com/all-tools/neon-glow' },
+          ],
         })}
       </script>
     </>

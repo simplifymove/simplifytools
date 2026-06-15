@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/neon-glow',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/neon-glow' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
