@@ -8,6 +8,7 @@ import { Footer } from '../../components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 const TOOL_ID = 'blur-image';
 const TOOL_NAME = 'Blur Image';
@@ -267,6 +268,49 @@ export default function BlurImagePage() {
         </div>
       </div>
 
+      {/* SEO Content Section */}
+      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <section>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">What This Blur Image Tool Does</h2>
+            <p className="text-gray-700 leading-relaxed">
+              The Blur Image tool applies a soft blur effect across your photo directly in the browser. Use it to reduce visible detail, soften busy backgrounds, create a gentle focus effect, or prepare images before sharing them online.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Common Use Cases</h2>
+            <ul className="grid md:grid-cols-2 gap-3 text-gray-700">
+              <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Blur faces, plates, addresses, or private details before posting.</li>
+              <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Create soft backgrounds for banners, thumbnails, and presentations.</li>
+              <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Reduce visual noise behind text overlays or design elements.</li>
+              <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Add a subtle creative blur to portraits, product photos, or social images.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Example</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">Input</h3>
+                <p className="text-gray-700 text-sm">A photo with a readable license plate or a busy background behind a subject.</p>
+              </div>
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">Output</h3>
+                <p className="text-gray-700 text-sm">A softened image where sensitive details are harder to read and the overall scene looks smoother.</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-900 mb-3">Privacy Note</h2>
+            <p className="text-blue-900 text-sm leading-relaxed">
+              Blurring runs locally in your browser on this page. Your image is not uploaded for the blur operation, but you should still keep the original file private and review the final result before sharing.
+            </p>
+          </section>
+        </div>
+      </div>
+
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
@@ -385,28 +429,36 @@ export default function BlurImagePage() {
         ]
       })}</script>
 
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Blur Image",
+        "description": "Blur images online with adjustable intensity for privacy, soft backgrounds, and creative photo effects.",
+        "url": "https://simplifyconvert.com/all-tools/blur-image",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Web",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      })}</script>
+
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://simplifyconvert.com" },
+          { "@type": "ListItem", "position": 2, "name": "All Tools", "item": "https://simplifyconvert.com/all-tools" },
+          { "@type": "ListItem", "position": 3, "name": "Blur Image", "item": "https://simplifyconvert.com/all-tools/blur-image" }
+        ]
+      })}</script>
+
       {/* Related Tools */}
       <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Tools</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link href="/all-tools/sharpen-image" className="p-4 bg-white rounded-lg border border-gray-200 hover:border-cyan-400 hover:shadow-md transition">
-              <p className="font-semibold text-gray-900">Sharpen Image</p>
-              <p className="text-sm text-gray-600">Enhance clarity and details</p>
-            </Link>
-            <Link href="/all-tools/crop-image" className="p-4 bg-white rounded-lg border border-gray-200 hover:border-cyan-400 hover:shadow-md transition">
-              <p className="font-semibold text-gray-900">Crop Image</p>
-              <p className="text-sm text-gray-600">Remove unwanted areas</p>
-            </Link>
-            <Link href="/all-tools/watermark-image" className="p-4 bg-white rounded-lg border border-gray-200 hover:border-cyan-400 hover:shadow-md transition">
-              <p className="font-semibold text-gray-900">Watermark Image</p>
-              <p className="text-sm text-gray-600">Add text and image watermarks</p>
-            </Link>
-            <Link href="/all-tools/image-enhancer" className="p-4 bg-white rounded-lg border border-gray-200 hover:border-cyan-400 hover:shadow-md transition">
-              <p className="font-semibold text-gray-900">Image Enhancer</p>
-              <p className="text-sm text-gray-600">Adjust brightness and contrast</p>
-            </Link>
-          </div>
+          <RelatedToolsSection family="image" toolId="blur-image" limit={8} />
         </div>
       </div>
 

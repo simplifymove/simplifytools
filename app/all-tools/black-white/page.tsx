@@ -6,6 +6,7 @@ import { Download, ChevronRight, Palette } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 type GrayscaleMethod = 'average' | 'lightness' | 'luminosity';
 
@@ -322,9 +323,136 @@ export default function BlackWhitePage() {
                 </ul>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="mt-12 space-y-8">
+              <section className="bg-white rounded-lg border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">What This Black and White Tool Does</h2>
+                <p className="text-gray-700 leading-relaxed">
+                  The Black and White tool converts color photos into monochrome images using adjustable grayscale methods and contrast control. It helps you create clean black-and-white portraits, product images, document-style scans, and artistic photo edits directly in your browser.
+                </p>
+              </section>
+
+              <section className="bg-white rounded-lg border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Use Cases</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {[
+                    'Create classic black-and-white portraits for portfolios and social profiles.',
+                    'Convert product photos into monochrome images for catalogs or design mockups.',
+                    'Prepare simple grayscale images for print, documents, or low-color designs.',
+                    'Experiment with luminosity, average, and lightness methods for different tonal results.',
+                  ].map((item) => (
+                    <div key={item} className="p-4 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="bg-white rounded-lg border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Example</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <h3 className="font-semibold text-gray-900 mb-2">Input</h3>
+                    <p className="text-gray-700 text-sm">A colorful portrait, landscape, product image, or scanned graphic.</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <h3 className="font-semibold text-gray-900 mb-2">Output</h3>
+                    <p className="text-gray-700 text-sm">A PNG image converted to black and white with your chosen grayscale method and contrast level.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section className="bg-blue-50 border border-blue-200 rounded-lg p-8">
+                <h2 className="text-3xl font-bold text-blue-900 mb-4">Privacy Note</h2>
+                <p className="text-blue-900 text-sm leading-relaxed">
+                  Black-and-white conversion runs in your browser using canvas processing. Your uploaded image is not sent to a server for this effect, and you can download the result locally.
+                </p>
+              </section>
+
+              <section className="bg-white rounded-lg border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+                <div className="space-y-4">
+                  {[
+                    {
+                      q: 'Which grayscale method should I use?',
+                      a: 'Luminosity usually looks most natural because it follows how human vision perceives red, green, and blue. Average and lightness can create flatter or more stylized results.',
+                    },
+                    {
+                      q: 'Can I adjust the contrast?',
+                      a: 'Yes. Use the contrast slider to make the black-and-white result softer or more dramatic before downloading.',
+                    },
+                    {
+                      q: 'What format is the output?',
+                      a: 'The converted image downloads as a PNG file so the result stays clean and easy to reuse.',
+                    },
+                    {
+                      q: 'Is this tool free?',
+                      a: 'Yes. You can convert images to black and white for free without signing up.',
+                    },
+                  ].map((faq) => (
+                    <details key={faq.q} className="p-4 border border-gray-200 rounded-lg">
+                      <summary className="font-semibold text-gray-900 cursor-pointer">{faq.q}</summary>
+                      <p className="text-gray-700 mt-3 text-sm">{faq.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </section>
+
+              <RelatedToolsSection family="image" toolId="black-white" limit={8} />
+            </div>
           </div>
         </div>
       </main>
+
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Black and White Image Converter",
+        "description": "Convert color images to black and white online with grayscale methods and adjustable contrast.",
+        "url": "https://simplifyconvert.com/all-tools/black-white",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Web",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      })}</script>
+
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Which grayscale method should I use?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Luminosity usually looks most natural because it follows how human vision perceives red, green, and blue." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I adjust the contrast?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Use the contrast slider to make the black-and-white result softer or more dramatic before downloading." }
+          },
+          {
+            "@type": "Question",
+            "name": "What format is the output?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The converted image downloads as a PNG file." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this tool free?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can convert images to black and white for free without signing up." }
+          }
+        ]
+      })}</script>
+
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://simplifyconvert.com" },
+          { "@type": "ListItem", "position": 2, "name": "All Tools", "item": "https://simplifyconvert.com/all-tools" },
+          { "@type": "ListItem", "position": 3, "name": "Black and White", "item": "https://simplifyconvert.com/all-tools/black-white" }
+        ]
+      })}</script>
       <Footer />
 
       {/* Hidden Canvas */}
