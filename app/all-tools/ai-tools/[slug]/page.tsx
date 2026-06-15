@@ -10,6 +10,7 @@ import type { AIWriteTool } from '@/app/lib/ai-tools';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import AIDetectorResults from '@/app/components/AIDetectorResults';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 /**
  * URL aliases for AI tools (must match layout.tsx aliases)
@@ -82,61 +83,202 @@ function getActionText(toolId: string): string {
   return actionMap[toolId] || 'Generate Content';
 }
 
-// Related AI writing tools by category and relevance
-function getRelatedTools(toolId: string): Array<{ id: string; title: string; description: string }> {
-  const relatedMap: Record<string, Array<{ id: string; title: string; description: string }>> = {
-    'paragraph-writer': [
-      { id: 'content-improver', title: 'Content Improver', description: 'Enhance your writing quality' },
-      { id: 'blog-post-generator', title: 'Blog Post Generator', description: 'Create full blog posts' },
-      { id: 'grammar-fixer', title: 'Grammar Fixer', description: 'Fix grammar and punctuation' },
-      { id: 'sentence-rewriter', title: 'Sentence Rewriter', description: 'Rewrite sentences for clarity' },
-    ],
-    'content-improver': [
-      { id: 'grammar-fixer', title: 'Grammar Fixer', description: 'Fix grammar issues' },
-      { id: 'tone-of-voice', title: 'Tone of Voice', description: 'Adjust writing tone' },
-      { id: 'content-summarizer', title: 'Content Summarizer', description: 'Condense your content' },
-      { id: 'sentence-rewriter', title: 'Sentence Rewriter', description: 'Improve sentences' },
-    ],
-    'content-summarizer': [
-      { id: 'paragraph-writer', title: 'Paragraph Writer', description: 'Write new paragraphs' },
-      { id: 'content-improver', title: 'Content Improver', description: 'Enhance content quality' },
-      { id: 'blog-post-generator', title: 'Blog Post Generator', description: 'Create blog posts' },
-      { id: 'outline-generator', title: 'Outline Generator', description: 'Create content outlines' },
-    ],
-    'grammar-fixer': [
-      { id: 'content-improver', title: 'Content Improver', description: 'Improve overall content' },
-      { id: 'tone-of-voice', title: 'Tone of Voice', description: 'Adjust tone' },
-      { id: 'sentence-rewriter', title: 'Sentence Rewriter', description: 'Rewrite sentences' },
-      { id: 'paragraph-writer', title: 'Paragraph Writer', description: 'Write paragraphs' },
-    ],
-    'blog-post-generator': [
-      { id: 'blog-rewriter', title: 'Blog Post Rewriter', description: 'Rewrite blog posts' },
-      { id: 'outline-generator', title: 'Outline Generator', description: 'Create blog outline' },
-      { id: 'content-improver', title: 'Content Improver', description: 'Polish content' },
-      { id: 'seo-optimizer', title: 'SEO Optimizer', description: 'Optimize for search' },
-    ],
-    'email-writer': [
-      { id: 'cold-email-writer', title: 'Cold Email Writer', description: 'Write cold emails' },
-      { id: 'content-improver', title: 'Content Improver', description: 'Improve email copy' },
-      { id: 'tone-of-voice', title: 'Tone of Voice', description: 'Adjust email tone' },
-      { id: 'grammar-fixer', title: 'Grammar Fixer', description: 'Fix email grammar' },
-    ],
-    'social-media-writer': [
-      { id: 'facebook-post-generator', title: 'Facebook Post Generator', description: 'Create Facebook posts' },
-      { id: 'instagram-caption-generator', title: 'Instagram Caption Generator', description: 'Write captions' },
-      { id: 'linkedin-post-generator', title: 'LinkedIn Post Generator', description: 'Create LinkedIn posts' },
-      { id: 'twitter-generator', title: 'Twitter Generator', description: 'Write tweets' },
-    ],
-    'default': [
-      { id: 'content-improver', title: 'Content Improver', description: 'Enhance any content' },
-      { id: 'paragraph-writer', title: 'Paragraph Writer', description: 'Write paragraphs' },
-      { id: 'grammar-fixer', title: 'Grammar Fixer', description: 'Fix grammar' },
-      { id: 'tone-of-voice', title: 'Tone of Voice', description: 'Adjust tone' },
-    ]
-  };
+type ToolSeoContent = {
+  introduction: string;
+  useCases: string[];
+  examples: Array<{ label: string; input: string; output: string }>;
+  faqs: Array<{ q: string; a: string }>;
+};
 
-  return relatedMap[toolId] || relatedMap['default'];
-}
+const topToolSeoContent: Record<string, ToolSeoContent> = {
+  'paragraph-writer': {
+    introduction: 'The Paragraph Writer helps turn a topic, title, or rough idea into a clear paragraph that is ready to review and adapt. It is useful when you need a polished starting point for essays, articles, landing pages, reports, or everyday writing.',
+    useCases: ['Draft essay body paragraphs from a topic sentence', 'Create article sections when you know the key idea', 'Write product, service, or feature explanations', 'Turn brief notes into readable prose'],
+    examples: [
+      {
+        label: 'Topic to paragraph',
+        input: 'Benefits of remote work for small businesses',
+        output: 'Remote work can help small businesses reduce overhead, hire from a wider talent pool, and give employees more flexibility while maintaining productivity.',
+      },
+    ],
+    faqs: [
+      { q: 'What should I enter in the Paragraph Writer?', a: 'Enter a clear topic, title, or short instruction. Adding tone, length, and language preferences helps the tool produce a more useful paragraph.' },
+      { q: 'Can I use the paragraph in an essay or article?', a: 'Yes, but review it first. Add your own facts, examples, citations, and voice before publishing or submitting the content.' },
+      { q: 'How do I get a stronger paragraph?', a: 'Give the tool a specific angle, audience, and purpose instead of a broad keyword. Specific prompts usually produce clearer writing.' },
+    ],
+  },
+  'content-improver': {
+    introduction: 'The Content Improver rewrites existing text to make it clearer, smoother, and easier to read while preserving the original meaning. It is designed for drafts that already have the right ideas but need stronger structure, tone, or wording.',
+    useCases: ['Polish blog drafts before publishing', 'Improve emails, reports, and proposals', 'Make rough notes sound more professional', 'Improve readability without changing the core message'],
+    examples: [
+      {
+        label: 'Rough draft to polished copy',
+        input: 'Our app helps teams do work better and faster with less confusion.',
+        output: 'Our app helps teams work faster, stay aligned, and reduce confusion across everyday projects.',
+      },
+    ],
+    faqs: [
+      { q: 'Will the Content Improver change my meaning?', a: 'It is intended to preserve the original meaning, but you should review the output to make sure important nuance is still correct.' },
+      { q: 'What kind of content can I improve?', a: 'You can improve emails, articles, product copy, reports, notes, social posts, and most other text-based drafts.' },
+      { q: 'Should I choose a tone?', a: 'Choosing a tone helps align the rewrite with your audience, especially for business, academic, formal, or casual writing.' },
+    ],
+  },
+  'content-summarizer': {
+    introduction: 'The Content Summarizer condenses longer text into a shorter version that keeps the most important ideas. Use it to understand lengthy articles, documents, research notes, transcripts, or internal updates faster.',
+    useCases: ['Summarize articles before sharing them', 'Extract key points from meeting notes', 'Condense research material for review', 'Create quick summaries for emails or reports'],
+    examples: [
+      {
+        label: 'Long text to key summary',
+        input: 'A 1,200-word article about how remote teams manage async communication.',
+        output: 'Remote teams work best when they document decisions, set response expectations, and reserve meetings for complex discussions.',
+      },
+    ],
+    faqs: [
+      { q: 'How long can the input be?', a: 'The tool is designed for long text, but very large documents should be summarized in sections for better accuracy.' },
+      { q: 'Can it create bullet-point summaries?', a: 'Yes. Choose the bullet option when you want scan-friendly key points instead of paragraph-style summaries.' },
+      { q: 'Does the summarizer add new information?', a: 'It should summarize the source text only. Always check the output against the original when accuracy matters.' },
+    ],
+  },
+  'grammar-fixer': {
+    introduction: 'The Grammar Fixer checks text for grammar, spelling, punctuation, and clarity issues. It helps clean up drafts while keeping your intended meaning intact.',
+    useCases: ['Fix emails before sending', 'Clean up essays and assignments', 'Correct grammar in blog or website copy', 'Improve punctuation and sentence flow'],
+    examples: [
+      {
+        label: 'Grammar correction',
+        input: 'Their is many reason why this feature are useful.',
+        output: 'There are many reasons why this feature is useful.',
+      },
+    ],
+    faqs: [
+      { q: 'Does the Grammar Fixer rewrite my whole text?', a: 'It focuses on correcting errors and improving clarity, but it may lightly rewrite awkward phrasing when needed.' },
+      { q: 'Can it fix punctuation?', a: 'Yes. It can help with commas, periods, capitalization, apostrophes, and other common punctuation issues.' },
+      { q: 'Should I still proofread the result?', a: 'Yes. Grammar tools can miss context-specific meaning, names, technical terms, or preferred style choices.' },
+    ],
+  },
+  'translate': {
+    introduction: 'The Translate tool converts text into another language for quick drafts, localization checks, and everyday communication. It is most useful when paired with human review for important, technical, legal, or brand-sensitive content.',
+    useCases: ['Translate short messages or support replies', 'Create first-draft localized content', 'Understand text written in another language', 'Prepare multilingual social or marketing copy'],
+    examples: [
+      {
+        label: 'English to Spanish',
+        input: 'Thank you for your order. We will send tracking details soon.',
+        output: 'Gracias por su pedido. Enviaremos los detalles de seguimiento pronto.',
+      },
+    ],
+    faqs: [
+      { q: 'Is machine translation always accurate?', a: 'No. Translation quality depends on context, language pair, and subject matter. Review important translations before use.' },
+      { q: 'Can I translate marketing copy?', a: 'Yes, but localized marketing copy should be reviewed for tone, idioms, and cultural fit.' },
+      { q: 'Should I include context?', a: 'Yes. Adding audience, region, and purpose helps produce a more appropriate translation.' },
+    ],
+  },
+  'blog-post-generator': {
+    introduction: 'The Blog Post Generator creates a structured draft from a topic, keywords, audience, and tone. It is built to help you move from idea to editable article faster, not to replace editorial review.',
+    useCases: ['Draft SEO blog posts from a target topic', 'Create article sections for a content calendar', 'Generate first drafts for educational content', 'Turn outlines into readable articles'],
+    examples: [
+      {
+        label: 'Topic to blog draft',
+        input: 'How small businesses can improve local SEO',
+        output: 'A structured article covering Google Business Profile, local keywords, reviews, location pages, and measurement tips.',
+      },
+    ],
+    faqs: [
+      { q: 'Can the Blog Post Generator create a complete article?', a: 'Yes, it can create a full first draft, but you should fact-check, edit, and add original examples before publishing.' },
+      { q: 'Should I provide keywords?', a: 'Providing keywords helps the draft align with search intent, but avoid forcing too many keywords into the final copy.' },
+      { q: 'Is the output SEO-ready?', a: 'It can provide an SEO-friendly draft, but final optimization should include internal links, source review, formatting, and expert edits.' },
+    ],
+  },
+  'faq-generator': {
+    introduction: 'The FAQ Generator creates question-and-answer sections for products, services, guides, landing pages, and help-center articles. It helps cover common objections and support questions before users need to ask.',
+    useCases: ['Create FAQs for product pages', 'Draft help-center question sets', 'Add support content to landing pages', 'Turn documentation topics into Q&A format'],
+    examples: [
+      {
+        label: 'Topic to FAQ',
+        input: 'Online invoice generator for freelancers',
+        output: 'Questions about pricing, data privacy, exporting invoices, tax fields, payment terms, and client sharing.',
+      },
+    ],
+    faqs: [
+      { q: 'How many FAQs should I generate?', a: 'Start with five to eight strong questions. Add more only when they answer real user concerns.' },
+      { q: 'Can I use these FAQs for SEO?', a: 'Yes, but the answers should be accurate, visible on the page, and genuinely helpful to readers.' },
+      { q: 'What makes a good FAQ prompt?', a: 'Include the product, audience, use case, and concerns you want to address.' },
+    ],
+  },
+  'word-counter': {
+    introduction: 'The Word Counter measures text length and readability signals so you can check whether a draft fits a limit or needs editing. It is useful for essays, social posts, meta copy, articles, and any writing with length constraints.',
+    useCases: ['Check essay or assignment length', 'Review social post character counts', 'Measure article draft size', 'Compare short and long versions of copy'],
+    examples: [
+      {
+        label: 'Text measurement',
+        input: 'Paste a product description or article draft.',
+        output: 'Word count, character count, and readability-style metrics for quick review.',
+      },
+    ],
+    faqs: [
+      { q: 'What can I count with this tool?', a: 'You can count words and characters in drafts, descriptions, essays, captions, emails, and other text.' },
+      { q: 'Why does word count matter?', a: 'Word count helps meet platform limits, assignment requirements, SEO guidelines, and editorial briefs.' },
+      { q: 'Can it improve my text too?', a: 'Use the related Content Improver or Grammar Fixer when you want editing help after counting your text.' },
+    ],
+  },
+  'sentence-rewriter': {
+    introduction: 'The Sentence Rewriter creates clearer alternatives for individual sentences. It is best for fixing awkward phrasing, reducing repetition, or changing sentence style without rewriting an entire document.',
+    useCases: ['Rewrite awkward sentences', 'Make a sentence more concise', 'Create clearer alternatives for headlines or intros', 'Adjust tone one sentence at a time'],
+    examples: [
+      {
+        label: 'Sentence rewrite',
+        input: 'This solution is something that can help teams in a way that saves time.',
+        output: 'This solution helps teams save time.',
+      },
+    ],
+    faqs: [
+      { q: 'When should I use the Sentence Rewriter?', a: 'Use it when one sentence feels unclear, wordy, repetitive, or mismatched with the tone of the surrounding text.' },
+      { q: 'Will it change the meaning?', a: 'It aims to preserve meaning, but review the result if the sentence includes technical, legal, or sensitive details.' },
+      { q: 'Can I rewrite multiple sentences?', a: 'You can, but for full paragraphs or longer passages the Paragraph Rewriter or Content Improver is a better fit.' },
+    ],
+  },
+  'paragraph-rewriter': {
+    introduction: 'The Paragraph Rewriter refreshes a full paragraph while keeping its main idea. It helps improve flow, reduce repetition, and create a cleaner version of text that already has the right direction.',
+    useCases: ['Rewrite paragraphs for clarity', 'Refresh duplicated or stale copy', 'Improve transitions and flow', 'Adapt paragraph tone for a different audience'],
+    examples: [
+      {
+        label: 'Paragraph rewrite',
+        input: 'A rough paragraph explaining why a new feature helps customers save time.',
+        output: 'A clearer version that explains the benefit, removes repetition, and connects the idea to the reader.',
+      },
+    ],
+    faqs: [
+      { q: 'How is this different from Sentence Rewriter?', a: 'Paragraph Rewriter improves the flow of several connected sentences, while Sentence Rewriter focuses on one sentence at a time.' },
+      { q: 'Can it make copied text unique?', a: 'It can rephrase text, but you should not use it to hide plagiarism. Add original ideas, citations, and your own perspective.' },
+      { q: 'What input works best?', a: 'Use a complete paragraph with a clear main idea. Very short fragments may work better in the Sentence Rewriter.' },
+    ],
+  },
+};
+
+const defaultFaqItems = [
+  {
+    q: 'Is the content 100% original?',
+    a: 'AI tools generate variations of existing content patterns. Always review and customize the output. Original thought and editing are essential to create unique content.'
+  },
+  {
+    q: 'Can I use the output directly without editing?',
+    a: 'We recommend reviewing and editing all AI-generated content. Add your own perspective, verify facts, and customize to your voice and brand.'
+  },
+  {
+    q: 'Does AI detection flag this content?',
+    a: 'Content created with our tools may be detected by AI detection services. Mix human and AI writing, add original insights, and edit heavily to reduce detectability.'
+  },
+  {
+    q: 'Is my content private?',
+    a: 'Content processed on our platform is handled securely. Always follow your organization\'s policies regarding sensitive data and AI tool usage.'
+  },
+  {
+    q: 'Can I use this for commercial purposes?',
+    a: 'Yes, but review our terms of service. Content must not violate copyright or contain harmful material.'
+  },
+  {
+    q: 'How do I get the best results?',
+    a: 'Provide detailed context, specific requirements, and clear examples. Better inputs lead to more useful AI suggestions that require less editing.'
+  }
+];
 
 export default function AIWriteToolPage() {
   const params = useParams();
@@ -244,6 +386,9 @@ export default function AIWriteToolPage() {
       </main>
     );
   }
+
+  const seoContent = topToolSeoContent[tool.id];
+  const faqItems = seoContent?.faqs || defaultFaqItems;
 
   return (
     <>
@@ -548,6 +693,52 @@ export default function AIWriteToolPage() {
 
         {/* SEO Content Sections */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.8 }} className="max-w-4xl mx-auto mt-24 space-y-16">
+          {seoContent && (
+            <>
+              <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">What is {tool.title}?</h2>
+                <p className="text-gray-700 leading-relaxed">{seoContent.introduction}</p>
+              </section>
+
+              <section className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Use Cases for {tool.title}</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {seoContent.useCases.map((useCase, idx) => (
+                    <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-gray-700 text-sm">{useCase}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">{tool.title} Examples</h2>
+                <div className="space-y-6">
+                  {seoContent.examples.map((example, idx) => (
+                    <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <h3 className="font-semibold text-gray-900">{example.label}</h3>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-0">
+                        <div className="p-4 border-b md:border-b-0 md:border-r border-gray-200">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Example input</p>
+                          <p className="text-gray-700 text-sm leading-relaxed">{example.input}</p>
+                        </div>
+                        <div className="p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Example output</p>
+                          <p className="text-gray-700 text-sm leading-relaxed">{example.output}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
+
           {/* How-To Guide Section */}
           <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">How to {getActionText(tool.id)}</h2>
@@ -601,32 +792,7 @@ export default function AIWriteToolPage() {
           <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
             <div className="space-y-6">
-              {[
-                {
-                  q: 'Is the content 100% original?',
-                  a: 'AI tools generate variations of existing content patterns. Always review and customize the output. Original thought and editing are essential to create unique content.'
-                },
-                {
-                  q: 'Can I use the output directly without editing?',
-                  a: 'We recommend reviewing and editing all AI-generated content. Add your own perspective, verify facts, and customize to your voice and brand.'
-                },
-                {
-                  q: 'Does AI detection flag this content?',
-                  a: 'Content created with our tools may be detected by AI detection services. Mix human and AI writing, add original insights, and edit heavily to reduce detectability.'
-                },
-                {
-                  q: 'Is my content private?',
-                  a: 'Content processed on our platform is handled securely. Always follow your organization\'s policies regarding sensitive data and AI tool usage.'
-                },
-                {
-                  q: 'Can I use this for commercial purposes?',
-                  a: 'Yes, but review our terms of service. Content must not violate copyright or contain harmful material.'
-                },
-                {
-                  q: 'How do I get the best results?',
-                  a: 'Provide detailed context, specific requirements, and clear examples. Better inputs lead to more useful AI suggestions that require less editing.'
-                }
-              ].map((faq, idx) => (
+              {faqItems.map((faq, idx) => (
                 <div key={idx} className="border-b border-gray-200 pb-6 last:border-0">
                   <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
                   <p className="text-gray-700">{faq.a}</p>
@@ -636,22 +802,12 @@ export default function AIWriteToolPage() {
           </section>
 
           {/* Related Tools Section */}
-          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Related Tools</h2>
-            <p className="text-gray-700 mb-6">Explore other AI writing tools to complement your workflow:</p>
-            <div className="grid md:grid-cols-2 gap-4">
-              {getRelatedTools(tool.id).map((relatedTool, idx) => (
-                <Link
-                  key={idx}
-                  href={`/all-tools/ai-tools/${relatedTool.id}`}
-                  className="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition"
-                >
-                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 mb-1">{relatedTool.title}</h3>
-                  <p className="text-gray-600 text-sm">{relatedTool.description}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
+          <RelatedToolsSection
+            family="ai"
+            toolId={tool.id}
+            limit={8}
+            description="Explore other AI writing tools to complement your workflow:"
+          />
 
           {/* Important Notice - AI Trust & Usage Guidelines */}
           <section className="bg-amber-50 rounded-xl border border-amber-200 p-8">

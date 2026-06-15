@@ -8,6 +8,7 @@ import { Copy, Download, RotateCcw, Play, ChevronRight, Zap, Shield, CheckCircle
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 interface ToolOption {
   name: string;
@@ -201,233 +202,6 @@ const getActionText = (toolId: string): string => {
   return actionMap[toolId] || 'Process';
 };
 
-// Get related tools for a given tool ID
-const getRelatedTools = (toolId: string): { id: string; title: string; description: string }[] => {
-  const relatedMap: Record<string, Array<{ id: string; title: string; description: string }>> = {
-    // Formatters
-    'code-minifier': [
-      { id: 'code-beautifier', title: 'Code Beautifier', description: 'Beautify and format code' },
-      { id: 'html-minifier', title: 'HTML Minifier', description: 'Minify HTML code' },
-      { id: 'css-minifier', title: 'CSS Minifier', description: 'Minify CSS code' },
-    ],
-    'code-beautifier': [
-      { id: 'code-minifier', title: 'Code Minifier', description: 'Minify code for production' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON code' },
-    ],
-    'json-formatter': [
-      { id: 'json-validator', title: 'JSON Validator', description: 'Validate JSON syntax' },
-      { id: 'json-to-csv', title: 'JSON to CSV', description: 'Convert JSON arrays to CSV' },
-      { id: 'json-to-xml', title: 'JSON to XML', description: 'Convert JSON to XML format' },
-    ],
-    'html-formatter': [
-      { id: 'html-validator', title: 'HTML Validator', description: 'Validate HTML code' },
-      { id: 'html-minifier', title: 'HTML Minifier', description: 'Minify HTML code' },
-    ],
-    'html-minifier': [
-      { id: 'html-formatter', title: 'HTML Formatter', description: 'Format HTML code' },
-      { id: 'html-validator', title: 'HTML Validator', description: 'Validate HTML code' },
-    ],
-    'css-formatter': [
-      { id: 'css-minifier', title: 'CSS Minifier', description: 'Minify CSS code' },
-      { id: 'code-beautifier', title: 'Code Beautifier', description: 'Beautify code' },
-    ],
-    'css-minifier': [
-      { id: 'css-formatter', title: 'CSS Formatter', description: 'Format CSS code' },
-      { id: 'code-minifier', title: 'Code Minifier', description: 'Minify code' },
-    ],
-    'xml-formatter': [
-      { id: 'xml-validator', title: 'XML Validator', description: 'Validate XML code' },
-      { id: 'xml-minifier', title: 'XML Minifier', description: 'Minify XML code' },
-      { id: 'xml-to-json', title: 'XML to JSON', description: 'Convert XML to JSON' },
-    ],
-    'xml-minifier': [
-      { id: 'xml-formatter', title: 'XML Formatter', description: 'Format XML code' },
-      { id: 'xml-validator', title: 'XML Validator', description: 'Validate XML code' },
-    ],
-    'sql-formatter': [
-      { id: 'code-beautifier', title: 'Code Beautifier', description: 'Beautify code' },
-      { id: 'hash-generator', title: 'Hash Generator', description: 'Generate hashes for data' },
-    ],
-    // Converters
-    'base64-encode': [
-      { id: 'base64-decode', title: 'Base64 Decoder', description: 'Decode Base64 to text' },
-      { id: 'url-encode', title: 'URL Encoder', description: 'Encode text for URLs' },
-      { id: 'html-encode', title: 'HTML Encoder', description: 'Encode HTML entities' },
-    ],
-    'base64-decode': [
-      { id: 'base64-encode', title: 'Base64 Encoder', description: 'Encode text to Base64' },
-      { id: 'jwt-decoder', title: 'JWT Decoder', description: 'Decode JWT tokens' },
-      { id: 'url-decode', title: 'URL Decoder', description: 'Decode URL-encoded text' },
-    ],
-    'url-encode': [
-      { id: 'url-decode', title: 'URL Decoder', description: 'Decode URL-encoded text' },
-      { id: 'slug-generator', title: 'Slug Generator', description: 'Generate URL-friendly slugs' },
-      { id: 'base64-encode', title: 'Base64 Encoder', description: 'Encode text to Base64' },
-    ],
-    'url-decode': [
-      { id: 'url-encode', title: 'URL Encoder', description: 'Encode text for URLs' },
-      { id: 'base64-decode', title: 'Base64 Decoder', description: 'Decode Base64 to text' },
-    ],
-    'case-converter': [
-      { id: 'slug-generator', title: 'Slug Generator', description: 'Generate URL-friendly slugs' },
-      { id: 'escape-unescape', title: 'Escape/Unescape', description: 'Escape special characters' },
-    ],
-    'json-to-csv': [
-      { id: 'csv-to-json', title: 'CSV to JSON', description: 'Convert CSV to JSON format' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-      { id: 'csv-json-converter', title: 'CSV ↔ JSON Converter', description: 'Bidirectional conversion' },
-    ],
-    'csv-to-json': [
-      { id: 'json-to-csv', title: 'JSON to CSV', description: 'Convert JSON arrays to CSV' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-      { id: 'csv-json-converter', title: 'CSV ↔ JSON Converter', description: 'Bidirectional conversion' },
-    ],
-    'json-to-xml': [
-      { id: 'xml-to-json', title: 'XML to JSON', description: 'Convert XML to JSON format' },
-      { id: 'xml-formatter', title: 'XML Formatter', description: 'Format XML code' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-    ],
-    'xml-to-json': [
-      { id: 'json-to-xml', title: 'JSON to XML', description: 'Convert JSON to XML format' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-      { id: 'xml-formatter', title: 'XML Formatter', description: 'Format XML code' },
-    ],
-    'json-to-yaml': [
-      { id: 'yaml-to-json', title: 'YAML to JSON', description: 'Convert YAML to JSON format' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-    ],
-    'yaml-to-json': [
-      { id: 'json-to-yaml', title: 'JSON to YAML', description: 'Convert JSON to YAML format' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-      { id: 'yaml-validator', title: 'YAML Validator', description: 'Validate YAML syntax' },
-    ],
-    'html-encode': [
-      { id: 'html-decode', title: 'HTML Decoder', description: 'Decode HTML entities' },
-      { id: 'base64-encode', title: 'Base64 Encoder', description: 'Encode text to Base64' },
-      { id: 'url-encode', title: 'URL Encoder', description: 'Encode text for URLs' },
-    ],
-    'html-decode': [
-      { id: 'html-encode', title: 'HTML Encoder', description: 'Encode HTML entities' },
-      { id: 'base64-decode', title: 'Base64 Decoder', description: 'Decode Base64 to text' },
-    ],
-    'slug-generator': [
-      { id: 'url-encode', title: 'URL Encoder', description: 'Encode text for URLs' },
-      { id: 'case-converter', title: 'Case Converter', description: 'Convert text case' },
-    ],
-    'base32-encode': [
-      { id: 'base32-decode', title: 'Base32 Decoder', description: 'Decode Base32 to text' },
-      { id: 'base64-encode', title: 'Base64 Encoder', description: 'Encode text to Base64' },
-    ],
-    'base32-decode': [
-      { id: 'base32-encode', title: 'Base32 Encoder', description: 'Encode text to Base32' },
-      { id: 'base64-decode', title: 'Base64 Decoder', description: 'Decode Base64 to text' },
-    ],
-    'markdown-to-html': [
-      { id: 'html-formatter', title: 'HTML Formatter', description: 'Format HTML code' },
-      { id: 'markdown-validator', title: 'Markdown Validator', description: 'Validate Markdown syntax' },
-    ],
-    'escape-unescape': [
-      { id: 'case-converter', title: 'Case Converter', description: 'Convert text case' },
-      { id: 'regex-tester', title: 'Regex Tester', description: 'Test regex patterns' },
-    ],
-    'number-base-converter': [
-      { id: 'color-converter', title: 'Color Converter', description: 'Convert color formats' },
-      { id: 'hash-generator', title: 'Hash Generator', description: 'Generate hashes' },
-    ],
-    'temperature-converter': [
-      { id: 'number-base-converter', title: 'Number Base Converter', description: 'Convert number bases' },
-      { id: 'unix-timestamp-converter', title: 'Timestamp Converter', description: 'Convert timestamps' },
-    ],
-    'csv-json-converter': [
-      { id: 'json-to-csv', title: 'JSON to CSV', description: 'Convert JSON to CSV' },
-      { id: 'csv-to-json', title: 'CSV to JSON', description: 'Convert CSV to JSON' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-    ],
-    // Validators
-    'json-validator': [
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-      { id: 'json-schema-validator', title: 'JSON Schema Validator', description: 'Validate JSON schema' },
-      { id: 'json-to-csv', title: 'JSON to CSV', description: 'Convert valid JSON to CSV' },
-    ],
-    'html-validator': [
-      { id: 'html-formatter', title: 'HTML Formatter', description: 'Format HTML code' },
-      { id: 'html-minifier', title: 'HTML Minifier', description: 'Minify HTML code' },
-    ],
-    'xml-validator': [
-      { id: 'xml-formatter', title: 'XML Formatter', description: 'Format XML code' },
-      { id: 'xml-minifier', title: 'XML Minifier', description: 'Minify XML code' },
-      { id: 'xml-to-json', title: 'XML to JSON', description: 'Convert XML to JSON' },
-    ],
-    'yaml-validator': [
-      { id: 'yaml-to-json', title: 'YAML to JSON', description: 'Convert YAML to JSON' },
-      { id: 'json-to-yaml', title: 'JSON to YAML', description: 'Convert JSON to YAML' },
-    ],
-    'markdown-validator': [
-      { id: 'markdown-to-html', title: 'Markdown to HTML', description: 'Convert Markdown to HTML' },
-      { id: 'code-beautifier', title: 'Code Beautifier', description: 'Format code blocks' },
-    ],
-    'jwt-decoder': [
-      { id: 'base64-decode', title: 'Base64 Decoder', description: 'Decode Base64 to text' },
-      { id: 'hash-generator', title: 'Hash Generator', description: 'Generate hashes' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format decoded payload' },
-    ],
-    'regex-tester': [
-      { id: 'text-diff', title: 'Text Diff Checker', description: 'Compare matched text' },
-      { id: 'escape-unescape', title: 'Escape/Unescape', description: 'Escape regex characters' },
-    ],
-    'text-diff': [
-      { id: 'regex-tester', title: 'Regex Tester', description: 'Test patterns on text' },
-      { id: 'escape-unescape', title: 'Escape/Unescape', description: 'Escape special chars' },
-    ],
-    'cron-expression-generator': [
-      { id: 'unix-timestamp-converter', title: 'Unix Timestamp Converter', description: 'Convert time formats' },
-    ],
-    'json-schema-validator': [
-      { id: 'json-validator', title: 'JSON Validator', description: 'Validate JSON data' },
-      { id: 'json-formatter', title: 'JSON Formatter', description: 'Format JSON data' },
-    ],
-    // Generators
-    'uuid-generator': [
-      { id: 'hash-generator', title: 'Hash Generator', description: 'Generate cryptographic hashes' },
-      { id: 'random-string-generator', title: 'Random String Generator', description: 'Generate random strings' },
-      { id: 'password-generator', title: 'Password Generator', description: 'Generate secure passwords' },
-    ],
-    'hash-generator': [
-      { id: 'uuid-generator', title: 'UUID Generator', description: 'Generate unique IDs' },
-      { id: 'password-generator', title: 'Password Generator', description: 'Generate secure passwords' },
-      { id: 'random-string-generator', title: 'Random String Generator', description: 'Generate random strings' },
-    ],
-    'password-generator': [
-      { id: 'hash-generator', title: 'Hash Generator', description: 'Generate hashes' },
-      { id: 'uuid-generator', title: 'UUID Generator', description: 'Generate unique IDs' },
-      { id: 'random-string-generator', title: 'Random String Generator', description: 'Generate random strings' },
-    ],
-    'lorem-ipsum-generator': [
-      { id: 'random-string-generator', title: 'Random String Generator', description: 'Generate random strings' },
-      { id: 'case-converter', title: 'Case Converter', description: 'Convert text case' },
-    ],
-    'random-string-generator': [
-      { id: 'uuid-generator', title: 'UUID Generator', description: 'Generate unique IDs' },
-      { id: 'password-generator', title: 'Password Generator', description: 'Generate secure passwords' },
-      { id: 'hash-generator', title: 'Hash Generator', description: 'Generate hashes' },
-    ],
-    'color-converter': [
-      { id: 'number-base-converter', title: 'Number Base Converter', description: 'Convert between bases' },
-      { id: 'hash-generator', title: 'Hash Generator', description: 'Generate color hashes' },
-    ],
-    'unix-timestamp-converter': [
-      { id: 'cron-expression-generator', title: 'Cron Expression Generator', description: 'Generate cron expressions' },
-      { id: 'temperature-converter', title: 'Temperature Converter', description: 'Convert measurements' },
-    ],
-    'qr-code-generator': [
-      { id: 'uuid-generator', title: 'UUID Generator', description: 'Generate unique data' },
-      { id: 'url-encode', title: 'URL Encoder', description: 'Encode URLs for QR codes' },
-      { id: 'hash-generator', title: 'Hash Generator', description: 'Generate data hashes' },
-    ],
-  };
-  return relatedMap[toolId] || [];
-};
-
 export default function CodeToolPage() {
   const params = useParams();
   const slug = params?.slug as string | undefined;
@@ -580,7 +354,6 @@ export default function CodeToolPage() {
     );
   }
 
-  const relatedTools = slug ? getRelatedTools(slug) : [];
   const actionText = slug ? getActionText(slug) : 'Process';
   const seoContent = slug ? toolSeoContent[slug] : undefined;
   const baseUrl = 'https://simplifyconvert.com';
@@ -916,30 +689,20 @@ export default function CodeToolPage() {
             </motion.div>
 
             {/* Related Tools Section */}
-            {relatedTools.length > 0 && (
+            {slug && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
-                className="max-w-6xl mx-auto mt-20 bg-white rounded-xl shadow-lg border border-gray-200 p-8"
+                className="max-w-6xl mx-auto mt-20"
               >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Tools</h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {relatedTools.map((relTool) => (
-                    <Link key={relTool.id} href={`/all-tools/code-tools/${relTool.id}`}>
-                      <motion.div
-                        whileHover={{ y: -4 }}
-                        className="bg-gradient-to-br from-white to-gray-50 rounded-lg p-5 shadow border border-gray-200 hover:shadow-lg transition h-full flex flex-col cursor-pointer"
-                      >
-                        <h3 className="font-semibold text-gray-900 mb-2">{relTool.title}</h3>
-                        <p className="text-gray-600 text-sm flex-grow">{relTool.description}</p>
-                        <div className="mt-3 text-green-600 text-sm font-medium flex items-center gap-1">
-                          Open →
-                        </div>
-                      </motion.div>
-                    </Link>
-                  ))}
-                </div>
+                <RelatedToolsSection
+                  family="code"
+                  toolId={slug}
+                  limit={8}
+                  title="Related Tools"
+                  description="Explore related developer tools that can help with the same workflow."
+                />
               </motion.div>
             )}
 
