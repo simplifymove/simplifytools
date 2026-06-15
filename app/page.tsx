@@ -142,8 +142,49 @@ export default function Home() {
 
   const popularTools = [...aiEditingTools, ...converterTools, ...aiWriteTools, ...videoTools];
 
+  const homepageFaqs = [
+    {
+      question: "Are all SimplifyConvert tools really free?",
+      answer: "Yes! All 200+ free online tools at SimplifyConvert are completely free forever. No hidden costs, premium tiers, or surprise fees. You can use any tool unlimited times without signup or payment."
+    },
+    {
+      question: "Do I need to install software to use these free online tools?",
+      answer: "No! Our free online tools work directly in your web browser. No installation, downloads, or software setup required. Works on Windows, Mac, Linux, iPhone, iPad, and Android devices."
+    },
+    {
+      question: "Is my data safe when using SimplifyConvert free online tools?",
+      answer: "Yes, your privacy is our top priority. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption and follow strict data protection standards."
+    },
+    {
+      question: "Do I need to create an account to use the free online tools?",
+      answer: "No signup required! You can start using any of our 200+ free online tools immediately without creating an account, providing an email, or any registration."
+    },
+    {
+      question: "Which free online tools are most popular?",
+      answer: "Our most-used free online tools include: JPG to PNG converter, PDF merger, image compressor, video converter, background remover, and AI image generator. Users love these tools for their speed and simplicity."
+    },
+    {
+      question: "Can I use SimplifyConvert free online tools on mobile?",
+      answer: "Absolutely! Our free online tools are fully responsive and work perfectly on smartphones and tablets. Use any tool with the same features and speed as on desktop."
+    }
+  ];
+
+  const homepageFaqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: homepageFaqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer
+      }
+    }))
+  };
+
   const getToolsByCategory = (cat: string) => {
     const filtered = popularTools.filter(tool => {
+      if (!tool.route) return false;
       if (cat === 'all') return true;
       const category = tool.category?.toLowerCase() || '';
       const title = tool.title?.toLowerCase() || '';
@@ -191,7 +232,7 @@ export default function Home() {
       icon: Combine,
       category: 'PDF',
       color: 'from-purple-500 to-purple-600',
-      link: '/all-tools/pdf-tools'
+      link: '/all-tools/pdf/merge-pdf'
     },
     {
       title: 'Compress Image',
@@ -231,7 +272,7 @@ export default function Home() {
       icon: FileText,
       category: 'PDF',
       color: 'from-purple-500 to-purple-600',
-      link: '/all-tools/pdf-tools'
+      link: '/all-tools/pdf/compress-pdf'
     },
     {
       title: 'AI Writing Tools',
@@ -245,6 +286,10 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageFaqSchema) }}
+      />
       <HomeHeader />
 
       {/* TAG LINE */}
@@ -732,7 +777,7 @@ export default function Home() {
               const Icon = tool.icon;
               return (
                 <motion.div key={tool.id} variants={itemVariants}>
-                  <Link href={tool.route || '#'}>
+                  <Link href={tool.route ?? '/all-tools'}>
                     <motion.div 
                       className="h-full rounded-2xl bg-white border border-gray-200 p-6 hover:border-gray-300 transition-all group relative overflow-hidden"
                       whileHover={{ y: -8, scale: 1.02 }}
@@ -945,32 +990,7 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            {[
-              {
-                question: "Are all SimplifyConvert tools really free?",
-                answer: "Yes! All 200+ free online tools at SimplifyConvert are completely free forever. No hidden costs, premium tiers, or surprise fees. You can use any tool unlimited times without signup or payment."
-              },
-              {
-                question: "Do I need to install software to use these free online tools?",
-                answer: "No! Our free online tools work directly in your web browser. No installation, downloads, or software setup required. Works on Windows, Mac, Linux, iPhone, iPad, and Android devices."
-              },
-              {
-                question: "Is my data safe when using SimplifyConvert free online tools?",
-                answer: "Yes, your privacy is our top priority. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption and follow strict data protection standards."
-              },
-              {
-                question: "Do I need to create an account to use the free online tools?",
-                answer: "No signup required! You can start using any of our 200+ free online tools immediately without creating an account, providing an email, or any registration."
-              },
-              {
-                question: "Which free online tools are most popular?",
-                answer: "Our most-used free online tools include: JPG to PNG converter, PDF merger, image compressor, video converter, background remover, and AI image generator. Users love these tools for their speed and simplicity."
-              },
-              {
-                question: "Can I use SimplifyConvert free online tools on mobile?",
-                answer: "Absolutely! Our free online tools are fully responsive and work perfectly on smartphones and tablets. Use any tool with the same features and speed as on desktop."
-              }
-            ].map((faq, index) => (
+            {homepageFaqs.map((faq, index) => (
               <motion.div
                 key={index}
                 className="border border-gray-200 rounded-xl overflow-hidden hover:border-orange-500 transition-colors"
@@ -994,7 +1014,6 @@ export default function Home() {
             ))}
           </motion.div>
 
-          {/* FAQ Schema - Note: FAQ schema will be added via next/script in layout.tsx for client components */}
         </div>
       </section>
 
@@ -1003,6 +1022,4 @@ export default function Home() {
     </main>
   );
 }
-
-
 
