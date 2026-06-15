@@ -132,6 +132,16 @@ const nextConfig = {
         destination: '/all-tools/resize-image',
         permanent: true, // 301 redirect - permanent change
       },
+      {
+        source: '/all-tools/image-resizer',
+        destination: '/all-tools/resize-image',
+        permanent: true, // 301 redirect - legacy image resize alias
+      },
+      {
+        source: '/all-tools/background-color-changer',
+        destination: '/all-tools/remove-background',
+        permanent: true, // 301 redirect - closest live background editing tool
+      },
       // Convert /converters/ URLs to /all-tools/ (fixes canonical URL issues)
       // Handles both direct routes (/all-tools/converters/add-border) and nested routes
       {

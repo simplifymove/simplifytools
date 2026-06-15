@@ -574,9 +574,9 @@ export default function RemoveBackgroundPage() {
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Crop Image</span><p className="text-xs text-gray-600">Remove unwanted areas</p></div>
             </Link>
-            <Link href="/all-tools/background-color-changer" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <Link href="/all-tools/make-background-transparent" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
-              <div><span className="text-gray-900 font-medium hover:text-orange-600">Background Color Changer</span><p className="text-xs text-gray-600">Change background color</p></div>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Make Background Transparent</span><p className="text-xs text-gray-600">Create transparent backgrounds</p></div>
             </Link>
           </div>
         </div>

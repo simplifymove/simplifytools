@@ -529,9 +529,9 @@ export default function ResizeImagePage() {
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Batch Resize Images</span><p className="text-xs text-gray-600">Resize multiple files</p></div>
             </Link>
-            <Link href="/all-tools/image-resizer" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <Link href="/all-tools/resize-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
-              <div><span className="text-gray-900 font-medium hover:text-orange-600">Instagram Post Resizer</span><p className="text-xs text-gray-600">Quick social resizing</p></div>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Resizer</span><p className="text-xs text-gray-600">Quick social and custom resizing</p></div>
             </Link>
           </div>
         </div>
