@@ -1,4 +1,4 @@
-export const metadata = {
+﻿export const metadata = {
   title: 'Free Vignette Effect Tool - Add Edge Darkening to Photos',
   description: 'Add professional vignette effects to your photos. Darken edges to create focus and depth with adjustable strength controls.',
   keywords: 'vignette, vignette effect, edge darkening, photo effect, focus effect, professional',
@@ -7,6 +7,7 @@ export const metadata = {
     description: 'Professional vignette effects to enhance your photos',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/vignette-effect' },
 };
 
 export default function VignetteEffectLayout({
@@ -16,3 +17,4 @@ export default function VignetteEffectLayout({
 }) {
   return <>{children}</>;
 }
+

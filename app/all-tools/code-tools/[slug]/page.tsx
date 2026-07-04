@@ -4,7 +4,42 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getToolBySlug, CodeTool } from '@/app/lib/code-tools';
-import { Copy, Download, RotateCcw, Play, ChevronRight, Zap, Shield, CheckCircle, Loader2 } from 'lucide-react';
+import {
+  Binary,
+  Braces,
+  CheckCircle,
+  CheckCircle2,
+  Clock,
+  Code2,
+  Copy,
+  Database,
+  Dice1,
+  Download,
+  FileText,
+  GitCompare,
+  Hash,
+  Link2,
+  Loader2,
+  Lock,
+  Palette,
+  Play,
+  QrCode,
+  RotateCcw,
+  RotateCw,
+  SearchCheck,
+  Shield,
+  Shuffle,
+  Slash,
+  Sparkles,
+  Table,
+  Thermometer,
+  Type,
+  Unlock,
+  Watch,
+  Zap,
+  ChevronRight,
+  type LucideIcon,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
@@ -50,6 +85,40 @@ const faqItems = [
     answer: 'Yes. Feel free to use this tool for any purpose, including commercial projects. No attribution is required.',
   },
 ];
+
+const codeToolIcons: Record<string, LucideIcon> = {
+  Binary,
+  Braces,
+  CheckCircle,
+  CheckCircle2,
+  Clock,
+  Code2,
+  Database,
+  Dice1,
+  FileText,
+  GitCompare,
+  Hash,
+  Link: Link2,
+  Link2,
+  Lock,
+  Palette,
+  QrCode,
+  RotateCw,
+  SearchCheck,
+  Shuffle,
+  Slash,
+  Sparkles,
+  Table,
+  Thermometer,
+  Type,
+  Unlock,
+  Watch,
+  Zap,
+};
+
+function getCleanToolTitle(title: string) {
+  return title.replace(/^[^A-Za-z0-9]+/, '').trim();
+}
 
 const toolSeoContent: Record<string, ToolSEOContent> = {
   'json-validator': {
@@ -355,6 +424,8 @@ export default function CodeToolPage() {
   }
 
   const actionText = slug ? getActionText(slug) : 'Process';
+  const ToolIcon = codeToolIcons[tool.icon] || Code2;
+  const displayTitle = getCleanToolTitle(tool.title);
   const seoContent = slug ? toolSeoContent[slug] : undefined;
   const baseUrl = 'https://simplifyconvert.com';
   const toolUrl = `${baseUrl}/all-tools/code-tools/${slug}`;
@@ -432,45 +503,46 @@ export default function CodeToolPage() {
       <HomeHeader />
       <main className="min-h-screen bg-gray-50 flex flex-col">
         <div className="flex-1">
-          <div className="relative bg-gradient-to-r from-green-600 to-emerald-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
-            {/* Breadcrumb */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative z-10 flex items-center gap-2 text-white text-sm mb-6"
-            >
-              <Link href="/" className="hover:opacity-80">Home</Link>
-              <ChevronRight size={16} />
-              <Link href="/all-tools/code-tools" className="hover:opacity-80">Code Tools</Link>
-              <ChevronRight size={16} />
-              <span className="opacity-90">{tool.title}</span>
-            </motion.div>
+          <div className="relative bg-gradient-to-r from-green-600 to-emerald-700 overflow-hidden min-h-[280px] py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+              {/* Breadcrumb */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex flex-wrap items-center gap-2 text-white text-sm mb-6"
+              >
+                <Link href="/" className="hover:opacity-80">Home</Link>
+                <ChevronRight size={16} />
+                <Link href="/all-tools/code-tools" className="hover:opacity-80">Code Tools</Link>
+                <ChevronRight size={16} />
+                <span className="opacity-90">{displayTitle}</span>
+              </motion.div>
 
-            {/* Header Content */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="relative z-10"
-            >
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-2xl">{tool.icon}</span>
-                </div>
-                <div>
-                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                    {tool.title}
-                  </h1>
-                  <p className="text-white text-lg opacity-95 max-w-2xl">{tool.description}</p>
-                  <div className="mt-4 flex items-center gap-3">
-                    <span className="inline-block text-white text-xs font-semibold px-4 py-1.5 rounded-full" style={{ backgroundColor: '#16A34A' }}>
-                      Code Tool
-                    </span>
+              {/* Header Content */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <ToolIcon className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                      {displayTitle}
+                    </h1>
+                    <p className="text-white text-lg opacity-95 max-w-2xl">{tool.description}</p>
+                    <div className="mt-4 flex items-center gap-3">
+                      <span className="inline-block text-white text-xs font-semibold px-4 py-1.5 rounded-full" style={{ backgroundColor: '#16A34A' }}>
+                        Code Tool
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </div>
 
           {/* Main Content */}

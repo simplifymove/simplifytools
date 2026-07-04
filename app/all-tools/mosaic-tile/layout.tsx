@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Mosaic Tile - Free Online Mosaic Pattern Creator',
@@ -10,8 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/mosaic-tile',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/mosaic-tile' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+

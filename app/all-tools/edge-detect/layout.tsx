@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Edge Detection Tool - Free Online Image Processor',
@@ -19,8 +19,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/edge-detect',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/edge-detect' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+

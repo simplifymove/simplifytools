@@ -1,4 +1,4 @@
-export const metadata = {
+﻿export const metadata = {
   title: 'Free Pixelate Image Tool - Create Mosaic Effects',
   description: 'Pixelate and mosaic your images for privacy or artistic effects. Adjust pixel size for perfect pixelation instantly.',
   keywords: 'pixelate, mosaic, pixel art, blur, privacy effect',
@@ -7,6 +7,7 @@ export const metadata = {
     description: 'Create pixelated and mosaic effects on your photos',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/pixelate-image' },
 };
 
 export default function PixelateImageLayout({
@@ -16,3 +17,4 @@ export default function PixelateImageLayout({
 }) {
   return <>{children}</>;
 }
+

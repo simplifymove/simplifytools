@@ -27,7 +27,11 @@ const nextConfig = {
     'remotion',               // Main Remotion package
   ],
   // Webpack configuration for server-side modules
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(/^node:(fs|https)$/, require.resolve('./lib/empty-node-module.js'))
+    );
+
     if (isServer) {
       // Mark packages with native binaries as external (not bundled)
       // Prevents webpack from trying to bundle .node files and compiled binaries
@@ -108,7 +112,12 @@ const nextConfig = {
       {
         source: '/tools',
         destination: '/all-tools',
-        permanent: true, // 301 redirect - permanent change
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/image',
+        destination: '/all-tools/image-tools',
+        statusCode: 301,
       },
       // /tos -> /terms (consolidates terms of service canonical URL)
       {
@@ -120,17 +129,17 @@ const nextConfig = {
       {
         source: '/all-tools/remove-person',
         destination: '/all-tools/remove-object',
-        permanent: true, // 301 redirect
+        statusCode: 301,
       },
       {
         source: '/all-tools/black-white-filter',
         destination: '/all-tools/black-white',
-        permanent: true, // 301 redirect
+        statusCode: 301,
       },
       {
         source: '/all-tools/instagram-post-resizer',
         destination: '/all-tools/resize-image',
-        permanent: true, // 301 redirect - permanent change
+        statusCode: 301,
       },
       {
         source: '/all-tools/image-resizer',
@@ -161,18 +170,38 @@ const nextConfig = {
         destination: '/all-tools/code-tools/:path*',
         permanent: true, // 301 redirect
       },
-      // /all-tools/video → /all-tools/video-tools (consolidates video tools)
-      // /all-tools/data/* -> /all-tools/data-converter/* (canonical data converter route)
+      // /all-tools/data-converter -> /all-tools/data (canonical data tools route)
+      // /all-tools/data-converter/* -> /all-tools/data/* (canonical data tools route)
       {
-        source: '/all-tools/data/:path*',
-        destination: '/all-tools/data-converter/:path*',
-        permanent: true, // 301 redirect
+        source: '/all-tools/data-converter',
+        destination: '/all-tools/data',
+        statusCode: 301,
       },
-      // /all-tools/image-tools/* -> /all-tools/* (canonical image tool routes)
       {
-        source: '/all-tools/image-tools/:path*',
-        destination: '/all-tools/:path*',
-        permanent: true, // 301 redirect
+        source: '/all-tools/data-converter/:path*',
+        destination: '/all-tools/data/:path*',
+        statusCode: 301,
+      },
+      // Broken nested image-tool URL -> existing canonical tool route.
+      {
+        source: '/all-tools/image-tools/remove-background',
+        destination: '/all-tools/remove-background',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/image-tools/remove-person',
+        destination: '/all-tools/remove-object',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/image-tools/black-white-filter',
+        destination: '/all-tools/black-white',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/image-tools/instagram-post-resizer',
+        destination: '/all-tools/resize-image',
+        statusCode: 301,
       },
       {
         source: '/all-tools/video',

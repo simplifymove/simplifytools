@@ -1,4 +1,4 @@
-export const metadata = {
+﻿export const metadata = {
   title: 'Free Hue Saturation Tool - Adjust Colors',
   description: 'Adjust hue, saturation, and lightness independently. Fine-tune colors with precision.',
   keywords: 'hue, saturation, lightness, color adjustment, image editor',
@@ -7,6 +7,7 @@ export const metadata = {
     description: 'Adjust image colors with independent controls',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/hue-saturation' },
 };
 
 export default function HueSaturationLayout({
@@ -16,3 +17,4 @@ export default function HueSaturationLayout({
 }) {
   return <>{children}</>;
 }
+

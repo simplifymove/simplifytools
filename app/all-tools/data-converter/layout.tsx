@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://simplifyconvert.com/all-tools/data-converter',
+    url: 'https://simplifyconvert.com/all-tools/data',
     siteName: 'SimplifyConvert',
     title: 'Free Data Converter for CSV, JSON, XML & Excel',
     description: 'Free data converter to transform CSV, JSON, XML, and Excel formats instantly. Convert between data formats online without signup.',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
   alternates: {
-    canonical: 'https://simplifyconvert.com/all-tools/data-converter',
+    canonical: 'https://simplifyconvert.com/all-tools/data',
   },
 };
 
@@ -38,4 +38,3 @@ export default function DataConverterLayout({
 }) {
   return <>{children}</>;
 }
-

@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Motion Blur - Free Online Motion Effect Tool',
@@ -10,8 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/motion-blur',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/motion-blur' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+

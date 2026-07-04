@@ -26,9 +26,6 @@ export const metadata: Metadata = {
     description: 'Explore 100+ free online tools for images, videos, PDFs, AI writing, and data conversion.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
-  alternates: {
-    canonical: 'https://simplifyconvert.com/all-tools',
-  },
 };
 
 export default function AllToolsLayout({

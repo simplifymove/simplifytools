@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 
   const baseUrl = 'https://simplifyconvert.com';
-  const canonicalUrl = `${baseUrl}/all-tools/data-converter/${slug}`;
+  const canonicalUrl = `${baseUrl}/all-tools/data/${slug}`;
 
   return {
     title: seoData.title,

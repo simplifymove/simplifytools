@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Tilt Shift Effect - Free Online Miniature Focus Tool',
@@ -10,8 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/tilt-shift',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/tilt-shift' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+

@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Kaleidoscope Effect - Free Online Symmetrical Pattern Creator',
@@ -10,8 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/kaleidoscope',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/kaleidoscope' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+

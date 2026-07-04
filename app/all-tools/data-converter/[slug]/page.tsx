@@ -155,14 +155,14 @@ export default function DataToolPage() {
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Data Conversion Tools",
-        "item": "https://simplifyconvert.com/all-tools/data-converter"
+        "name": "Data Tools",
+        "item": "https://simplifyconvert.com/all-tools/data"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": tool?.title || "Tool",
-        "item": `https://simplifyconvert.com/all-tools/data-converter/${slug}`
+        "item": `https://simplifyconvert.com/all-tools/data/${slug}`
       }
     ]
   };
@@ -178,7 +178,7 @@ export default function DataToolPage() {
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
               <p className="text-gray-600 mb-6">The requested tool "{slug}" does not exist.</p>
               <Link
-                href="/all-tools/data-converter"
+                href="/all-tools/data"
                 className="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition duration-0 font-medium"
               >
                 Back to Tools
@@ -339,7 +339,8 @@ export default function DataToolPage() {
       <main className="min-h-screen bg-gray-50 flex flex-col">
         <div className="flex-1">
       {/* Animated Gradient Header */}
-      <div className="relative bg-gradient-to-r from-teal-600 to-emerald-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-gradient-to-r from-teal-600 to-emerald-700 overflow-hidden min-h-[280px] py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -349,7 +350,7 @@ export default function DataToolPage() {
         >
           <Link href="/" className="hover:opacity-80">Home</Link>
           <ChevronRight size={16} />
-          <Link href="/all-tools/data-converter" className="hover:opacity-80">Data Conversion</Link>
+            <Link href="/all-tools/data" className="hover:opacity-80">Data Tools</Link>
           <ChevronRight size={16} />
           <span className="opacity-90">{tool.title}</span>
         </motion.div>
@@ -376,6 +377,7 @@ export default function DataToolPage() {
             </div>
           </div>
         </motion.div>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -384,7 +386,7 @@ export default function DataToolPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8"
+          className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8"
         >
           {/* Left Column - Convert Form (Sticky) */}
           <motion.div
@@ -611,7 +613,7 @@ export default function DataToolPage() {
         </motion.div>
 
         {/* Footer Feature Cards */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-6xl mx-auto mt-20">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-7xl mx-auto mt-20">
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
@@ -744,7 +746,7 @@ export default function DataToolPage() {
               {getRelatedTools(tool.id).map((relatedTool, idx) => (
                 <Link
                   key={idx}
-                  href={`/all-tools/data-converter/${relatedTool.id}`}
+                  href={`/all-tools/data/${relatedTool.id}`}
                   className="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:border-teal-300 hover:shadow-md transition"
                 >
                   <h3 className="font-semibold text-gray-900 group-hover:text-teal-600 mb-1">{relatedTool.title}</h3>

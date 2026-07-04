@@ -26,9 +26,6 @@ export const metadata: Metadata = {
     description: 'Free online image tools to compress, convert, resize and enhance images.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
-  alternates: {
-    canonical: 'https://simplifyconvert.com/all-tools/image-tools',
-  },
 };
 
 export default function ImageToolsLayout({
@@ -38,4 +35,3 @@ export default function ImageToolsLayout({
 }) {
   return <>{children}</>;
 }
-

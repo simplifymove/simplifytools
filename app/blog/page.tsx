@@ -12,7 +12,7 @@ const categories = [
   { id: 'image', title: 'Image Tools', icon: Image, color: 'from-orange-500 via-orange-600 to-orange-700', count: '80+', link: '/all-tools/image-tools' },
   { id: 'video', title: 'Video Tools', icon: Video, color: 'from-pink-500 via-pink-600 to-pink-700', count: '58+', link: '/all-tools/video-tools' },
   { id: 'ai', title: 'AI Writing', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '60+', link: '/all-tools/ai-tools' },
-  { id: 'data', title: 'Data Conversion', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/all-tools/data-converter' },
+  { id: 'data', title: 'Data Tools', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/all-tools/data' },
   { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '44+', link: '/all-tools' }
 ];
 
@@ -387,6 +387,5 @@ export default function BlogPage() {
     </main>
   );
 }
-
 
 

@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Histogram Equalization - Auto Contrast Enhancer',
@@ -19,8 +19,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/histogram-equalize',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/histogram-equalize' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+

@@ -27,7 +27,7 @@ export default function DataToolsPage() {
       <main className="min-h-screen bg-slate-50 flex flex-col">
         <div className="flex-1">
       {/* Premium Header */}
-      <div className="relative bg-gradient-to-r from-teal-600 via-emerald-600 to-green-600 py-16 px-4 md:px-8 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-teal-600 via-emerald-600 to-green-600 py-16 overflow-hidden">
         {/* Animated background shapes */}
         <motion.div
           className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-3xl"
@@ -35,12 +35,12 @@ export default function DataToolsPage() {
           transition={{ duration: 10, repeat: Infinity }}
         />
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
             <Link href="/" className="hover:text-white transition">Home</Link>
             <ChevronRight size={16} />            <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
-            <ChevronRight size={16} />            <span>Data Conversion Tools</span>
+            <ChevronRight size={16} />            <span>Data Tools</span>
           </div>
 
           <motion.div
@@ -48,16 +48,16 @@ export default function DataToolsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free Data Converter Online (CSV, JSON, XML, Excel)</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free Data Tools for CSV, JSON, XML & Excel</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Transform between CSV, JSON, XML, Excel, and more formats instantly. Our free online tools let you convert data securely without signup, installation, or registration required.
+              Convert and transform CSV, JSON, XML, Excel, and other data formats securely online.
             </p>
           </motion.div>
         </div>
       </div>
 
       {/* Tools Grid */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {Object.entries(toolsByCategory).map(([category, tools], catIdx) => (
           <motion.div 
             key={category} 
@@ -83,7 +83,7 @@ export default function DataToolsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <Link href={`/all-tools/data-converter/${tool.id}`}>
+                  <Link href={`/all-tools/data/${tool.id}`}>
                     <motion.div
                       className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 group border-2 border-gray-100 hover:border-gray-200 cursor-pointer overflow-hidden"
                     >
@@ -152,7 +152,7 @@ export default function DataToolsPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Online Tools?</h2>
             
             <p className="text-gray-700 leading-relaxed mb-6">
-              SimplifyConvert offers 12 free tools to transform between common data formats. <Link href="/all-tools/data-converter/csv-to-json" className="text-teal-600 font-medium hover:underline">Convert CSV to JSON</Link>, <Link href="/all-tools/data-converter/excel-to-xml" className="text-teal-600 font-medium hover:underline">export Excel as XML</Link>, split large files, or work with <Link href="/all-tools/data-converter/json-to-xml" className="text-teal-600 font-medium hover:underline">JSON and XML formats</Link>—all without any cost, signup, or installation. Our specialized tools cover the most frequently needed format conversions and deliver reliable results instantly.
+              SimplifyConvert offers 12 free tools to transform between common data formats. <Link href="/all-tools/data/csv-to-json" className="text-teal-600 font-medium hover:underline">Convert CSV to JSON</Link>, <Link href="/all-tools/data/excel-to-xml" className="text-teal-600 font-medium hover:underline">export Excel as XML</Link>, split large files, or work with <Link href="/all-tools/data/json-to-xml" className="text-teal-600 font-medium hover:underline">JSON and XML formats</Link>—all without any cost, signup, or installation. Our specialized tools cover the most frequently needed format conversions and deliver reliable results instantly.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
@@ -176,22 +176,22 @@ export default function DataToolsPage() {
 
             {/* Popular Data Tools - Internal Linking Section */}
             <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Data Conversion Tools</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Data Tools</h2>
               <p className="text-gray-700 mb-6">Quick access to our most-used data format conversion tools:</p>
               <div className="space-y-3">
-                <Link href="/all-tools/data-converter/csv-to-json" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
+                <Link href="/all-tools/data/csv-to-json" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
                   <span className="text-teal-600 font-semibold">→</span>
                   <span className="text-gray-900 font-medium hover:text-teal-600">CSV to JSON Converter - Transform CSV files</span>
                 </Link>
-                <Link href="/all-tools/data-converter/excel-to-csv" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
+                <Link href="/all-tools/data/excel-to-csv" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
                   <span className="text-teal-600 font-semibold">→</span>
                   <span className="text-gray-900 font-medium hover:text-teal-600">Excel to CSV Converter - Export spreadsheet data</span>
                 </Link>
-                <Link href="/all-tools/data-converter/csv-to-xml" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
+                <Link href="/all-tools/data/csv-to-xml" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
                   <span className="text-teal-600 font-semibold">→</span>
                   <span className="text-gray-900 font-medium hover:text-teal-600">CSV to XML Converter - Create XML from CSV</span>
                 </Link>
-                <Link href="/all-tools/data-converter/json-to-xml" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
+                <Link href="/all-tools/data/json-to-xml" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
                   <span className="text-teal-600 font-semibold">→</span>
                   <span className="text-gray-900 font-medium hover:text-teal-600">JSON to XML Converter - Convert JSON data</span>
                 </Link>
@@ -200,14 +200,14 @@ export default function DataToolsPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Our Tools</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              It's simple and intuitive. Select the tool you need from our collection—try <Link href="/all-tools/data-converter/csv-to-json" className="text-teal-600 font-medium hover:underline">CSV to JSON</Link>, <Link href="/all-tools/data-converter/excel-to-csv" className="text-teal-600 font-medium hover:underline">Excel to CSV</Link>, or any other format pair. Upload your file or paste your data, then choose your desired output format. Our tools automatically process your input and generate results instantly. Download your file or copy the output to clipboard. No signup, no registration, no learning curve—just fast, secure format transformation in seconds.
+              It's simple and intuitive. Select the tool you need from our collection—try <Link href="/all-tools/data/csv-to-json" className="text-teal-600 font-medium hover:underline">CSV to JSON</Link>, <Link href="/all-tools/data/excel-to-csv" className="text-teal-600 font-medium hover:underline">Excel to CSV</Link>, or any other format pair. Upload your file or paste your data, then choose your desired output format. Our tools automatically process your input and generate results instantly. Download your file or copy the output to clipboard. No signup, no registration, no learning curve—just fast, secure format transformation in seconds.
             </p>
           </motion.div>
         </div>
       </div>
       {/* Feature Highlight */}
       <motion.div 
-        className="max-w-7xl mx-auto px-4 py-12 pb-20"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
@@ -276,7 +276,7 @@ export default function DataToolsPage() {
             position: idx + 1,
             name: tool.title,
             description: tool.description,
-            url: `https://simplifyconvert.com/all-tools/data-converter/${tool.id}`,
+            url: `https://simplifyconvert.com/all-tools/data/${tool.id}`,
             applicationCategory: 'Utility',
             operatingSystem: 'Web',
             offers: {
@@ -310,7 +310,7 @@ export default function DataToolsPage() {
               '@type': 'ListItem',
               position: 3,
               name: 'Data Converter',
-              item: 'https://simplifyconvert.com/all-tools/data-converter'
+              item: 'https://simplifyconvert.com/all-tools/data'
             }
           ]
         })}
@@ -321,8 +321,6 @@ export default function DataToolsPage() {
     </>
   );
 }
-
-
 
 
 

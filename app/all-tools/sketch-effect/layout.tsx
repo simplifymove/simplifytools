@@ -1,4 +1,4 @@
-export const metadata = {
+﻿export const metadata = {
   title: 'Free Sketch Effect - Convert to Pencil Sketches',
   description: 'Transform photos into pencil sketches and drawings. Create artistic sketch effects instantly.',
   keywords: 'sketch effect, pencil sketch, drawing effect, sketch filter, artistic',
@@ -7,6 +7,7 @@ export const metadata = {
     description: 'Convert photos to pencil sketches and drawings',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/sketch-effect' },
 };
 
 export default function SketchEffectLayout({
@@ -16,3 +17,4 @@ export default function SketchEffectLayout({
 }) {
   return <>{children}</>;
 }
+

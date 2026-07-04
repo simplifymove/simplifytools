@@ -26,9 +26,6 @@ export const metadata: Metadata = {
     description: 'Free online code tools for developers. 49 tools to format, minify, validate, and convert code instantly.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
-  alternates: {
-    canonical: 'https://simplifyconvert.com/all-tools/code-tools',
-  },
 };
 
 export default function CodeToolsLayout({
@@ -38,4 +35,3 @@ export default function CodeToolsLayout({
 }) {
   return <>{children}</>;
 }
-

@@ -7,6 +7,9 @@ Allow: /blog/*
 Allow: /terms
 Disallow: /api/
 Disallow: /admin/
+Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /account
 Disallow: /_next/
 Disallow: *.json$
 Disallow: /?*  # Disallow query strings on root

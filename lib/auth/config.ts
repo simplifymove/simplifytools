@@ -75,9 +75,12 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       console.log('[NextAuth Session] Called with token.email:', token.email, 'token.id:', token.id)
 
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.email = token.email as string // Explicitly copy email to session
+      session.user = {
+        ...session.user,
+        id: typeof token.id === 'string' ? token.id : '',
+        name: typeof token.name === 'string' ? token.name : session.user?.name ?? null,
+        email: typeof token.email === 'string' ? token.email : session.user?.email ?? null,
+        image: typeof token.picture === 'string' ? token.picture : session.user?.image ?? null,
       }
 
       console.log('[NextAuth Session] Returning session with email:', session.user?.email)

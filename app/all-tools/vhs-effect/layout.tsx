@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'VHS Effect - Free Online Retro VHS Glitch Tool',
@@ -10,8 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/vhs-effect',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/vhs-effect' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+

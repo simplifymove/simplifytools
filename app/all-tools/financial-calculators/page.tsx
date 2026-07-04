@@ -379,7 +379,7 @@ export default function FinancialCalculatorsPage() {
 
               <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Our Financial Calculators</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
-                Using our free online financial calculators is straightforward. First, select the calculator that matches your needs from our calculator suite above. Next, enter your financial data into each input field—values like revenue, expenses, loan amount, or income. Then, review the real-time results displayed instantly. Finally, adjust inputs to explore different scenarios and download or share results as needed. Each calculator includes helpful guidance and tooltips. For detailed <Link href="/all-tools/data-converter" className="text-green-600 font-medium hover:underline">data conversion tools</Link> to format your financial data, visit our converter section.
+                Using our free online financial calculators is straightforward. First, select the calculator that matches your needs from our calculator suite above. Next, enter your financial data into each input field—values like revenue, expenses, loan amount, or income. Then, review the real-time results displayed instantly. Finally, adjust inputs to explore different scenarios and download or share results as needed. Each calculator includes helpful guidance and tooltips. For detailed <Link href="/all-tools/data" className="text-green-600 font-medium hover:underline">data conversion tools</Link> to format your financial data, visit our converter section.
               </p>
             </motion.div>
           </div>
@@ -534,4 +534,3 @@ export default function FinancialCalculatorsPage() {
     </>
   );
 }
-

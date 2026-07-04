@@ -7,10 +7,9 @@ import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { 
   FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
-  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle, ChevronDown, LogOut, Settings, LayoutDashboard
+  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle, ChevronDown, LogOut, Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { SearchBox } from './SearchBox';
 
 export function HomeHeader() {
   const router = useRouter();
@@ -73,24 +72,13 @@ export function HomeHeader() {
     },
     {
       id: 'data-conversion',
-      title: 'Data Conversion',
+      title: 'Data Tools',
       description: 'Convert between CSV, JSON, Excel, and XML formats',
       icon: Database,
       color: 'from-teal-500 via-teal-600 to-teal-700',
       bgColor: 'bg-teal-50',
       count: '12',
-      link: '/all-tools/data-converter',
-      glowColor: 'group-hover:shadow-teal-500/20'
-    },
-    {
-      id: 'data',
-      title: 'Data Tools',
-      description: 'Convert, encode, format, validate, and view data',
-      icon: Database,
-      color: 'from-cyan-500 via-teal-600 to-emerald-700',
-      bgColor: 'bg-cyan-50',
-      count: '25',
-      link: '/all-tools/data-converter',
+      link: '/all-tools/data',
       glowColor: 'group-hover:shadow-teal-500/20'
     },
     {
@@ -187,9 +175,9 @@ export function HomeHeader() {
             : 'bg-white'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4 lg:gap-6">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-2xl text-gray-900 hover:opacity-80 transition">
+          <Link href="/" className="flex shrink-0 items-center gap-2 font-bold text-2xl text-gray-900 hover:opacity-80 transition">
             <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center overflow-hidden shadow-md shadow-orange-500/40 p-1">
               <Image 
                 src="/Logo-icon.gif" 
@@ -203,7 +191,7 @@ export function HomeHeader() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex flex-1 items-center justify-center gap-5 xl:gap-7 min-w-0">
             {/* All Tools Dropdown */}
             <div className="relative group">
               <Link 
@@ -266,32 +254,35 @@ export function HomeHeader() {
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
             </Link>
             <Link 
-              href="/all-tools/data-converter"
+              href="/all-tools/data"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
             >
-              Data Conversion
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-            </Link>
-            <Link 
-              href="/all-tools/data-converter"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
-            >
-              Data
+              Data Tools
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
             </Link>
           </nav>
 
           {/* Search & CTA */}
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center w-64">
-              <SearchBox
-                placeholder="Search tools..."
-                onSearch={(query) => router.push(`/all-tools?search=${encodeURIComponent(query)}`)}
-                variant="header"
-                showSuggestions={true}
-                limit={8}
-              />
-            </div>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <Link
+              href="/all-tools"
+              className="hidden sm:inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+              aria-label="Search tools"
+              title="Search tools"
+            >
+              <Search size={18} />
+            </Link>
+
+            <Link
+              href="/ai-studio"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-slate-950 via-blue-700 to-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+            >
+              <Sparkles size={15} />
+              AI Studio
+              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                Premium
+              </span>
+            </Link>
 
             {/* Auth Section */}
             {session?.user ? (
@@ -394,11 +385,20 @@ export function HomeHeader() {
               <Link href="/all-tools/ai-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 AI Writing
               </Link>
-              <Link href="/all-tools/data-converter" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Data Conversion
+              <Link
+                href="/ai-studio"
+                className="flex items-center justify-between gap-3 rounded-lg bg-gradient-to-r from-slate-950 via-blue-700 to-cyan-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-blue-500/20"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles size={16} />
+                  AI Studio
+                </span>
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+                  Premium
+                </span>
               </Link>
-              <Link href="/all-tools/data-converter" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Data
+              <Link href="/all-tools/data" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Data Tools
               </Link>
               <Link href="/all-tools/code-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Code

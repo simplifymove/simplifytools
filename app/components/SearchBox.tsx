@@ -1,10 +1,36 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Clock, Sparkles, X } from 'lucide-react';
 import { useSearchSuggestions } from '@/app/hooks/useSearchSuggestions';
+import { getBestSearchResult } from '@/app/lib/search-index';
 import { motion, AnimatePresence } from 'framer-motion';
+
+function getSuggestionHref(suggestion: any) {
+  return suggestion.href || suggestion.route;
+}
+
+function getSuggestionDedupeKey(suggestion: any) {
+  return getSuggestionHref(suggestion) || `${suggestion.type}-${suggestion.id}`;
+}
+
+function dedupeSuggestions<T extends { type: string; id: string; href?: string; route?: string }>(
+  suggestions: T[]
+) {
+  const seen = new Set<string>();
+  const deduped: T[] = [];
+
+  suggestions.forEach((suggestion) => {
+    const key = getSuggestionDedupeKey(suggestion);
+    if (seen.has(key)) return;
+
+    seen.add(key);
+    deduped.push(suggestion);
+  });
+
+  return deduped;
+}
 
 interface SearchBoxProps {
   onSearch: (query: string) => void;
@@ -25,6 +51,7 @@ export function SearchBox({
   onClose,
   limit,
 }: SearchBoxProps) {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -34,7 +61,10 @@ export function SearchBox({
   // For header: show 8 in dropdown, for all-tools: show more
   const displayLimit = limit || (variant === 'header' ? 8 : undefined);
   const { suggestions, addRecentSearch } = useSearchSuggestions(query, displayLimit);
-  const displayedSuggestions = showSuggestions ? suggestions : [];
+  const displayedSuggestions = React.useMemo(
+    () => (showSuggestions ? dedupeSuggestions(suggestions) : []),
+    [showSuggestions, suggestions]
+  );
 
   // Close on outside click
   useEffect(() => {
@@ -90,21 +120,34 @@ export function SearchBox({
   const handleSearch = (searchQuery: string) => {
     if (searchQuery.trim()) {
       addRecentSearch(searchQuery);
+      const bestMatch = getBestSearchResult(searchQuery);
+      if (bestMatch?.route) {
+        router.push(bestMatch.route);
+        onClose?.();
+        setQuery('');
+        setIsOpen(false);
+        setSelectedIndex(-1);
+        return;
+      }
+
       onSearch(searchQuery);
       setQuery('');
       setIsOpen(false);
       setSelectedIndex(-1);
+      onClose?.();
     }
   };
 
   const handleSelectSuggestion = (suggestion: any) => {
-    if (suggestion.type === 'tool') {
+    const href = getSuggestionHref(suggestion);
+
+    if (href) {
       addRecentSearch(suggestion.title);
-      if (suggestion.route) {
-        window.location.href = suggestion.route;
-      } else {
-        handleSearch(suggestion.title);
-      }
+      router.push(href);
+      onClose?.();
+    } else if (suggestion.type === 'tool') {
+      addRecentSearch(suggestion.title);
+      handleSearch(suggestion.title);
     } else if (suggestion.type === 'category') {
       handleSearch(suggestion.title);
     } else if (suggestion.type === 'recent') {
@@ -177,13 +220,16 @@ export function SearchBox({
                 <div className="py-1">
                   {displayedSuggestions.map((suggestion, index) => (
                     <motion.button
-                      key={`${suggestion.type}-${suggestion.id}`}
+                      key={`${suggestion.type}-${suggestion.id}-${suggestion.href ?? 'no-href'}`}
                       onClick={() => handleSelectSuggestion(suggestion)}
                       onMouseEnter={() => setSelectedIndex(index)}
+                      disabled={suggestion.type !== 'recent' && !getSuggestionHref(suggestion)}
                       className={`w-full px-4 py-3 text-left transition-colors ${
                         selectedIndex === index
                           ? 'bg-orange-50 border-l-4 border-orange-500'
-                          : 'hover:bg-gray-50'
+                          : suggestion.type !== 'recent' && !getSuggestionHref(suggestion)
+                            ? 'cursor-default opacity-70'
+                            : 'hover:bg-gray-50'
                       }`}
                       whileHover={{ x: 4 }}
                     >

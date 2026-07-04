@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Film Noir - Free Online High Contrast Black & White Tool',
@@ -10,8 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/film-noir',
     type: 'website',
   },
+  alternates: { canonical: 'https://simplifyconvert.com/all-tools/film-noir' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
 }
+

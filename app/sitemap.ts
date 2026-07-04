@@ -125,7 +125,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const mainPages = [
     { url: '/all-tools', priority: 0.95, frequency: 'daily' as const, label: 'All Tools Directory' },
     { url: '/blog', priority: 0.8, frequency: 'weekly' as const, label: 'Blog' },
+    { url: '/blog/jpg-to-png-conversion-guide', priority: 0.7, frequency: 'monthly' as const, label: 'JPG to PNG Blog Guide' },
+    { url: '/about', priority: 0.5, frequency: 'monthly' as const, label: 'About' },
+    { url: '/contact', priority: 0.4, frequency: 'yearly' as const, label: 'Contact' },
+    { url: '/privacy', priority: 0.3, frequency: 'yearly' as const, label: 'Privacy Policy' },
     { url: '/terms', priority: 0.3, frequency: 'yearly' as const, label: 'Terms of Service' },
+    { url: '/ai-studio', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio' },
+    { url: '/ai-studio/presentation-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Presentation Maker' },
+    { url: '/all-tools/image-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Image Tools' },
+    { url: '/all-tools/pdf-tools', priority: 0.8, frequency: 'weekly' as const, label: 'PDF Tools' },
+    { url: '/all-tools/video-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Video Tools' },
+    { url: '/all-tools/financial-calculators', priority: 0.7, frequency: 'monthly' as const, label: 'Financial Calculators' },
+    { url: '/all-tools/ai-write', priority: 0.7, frequency: 'monthly' as const, label: 'AI Write Tools' },
+    { url: '/all-tools/resume-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Resume Maker' },
+    { url: '/all-tools/text-to-speech', priority: 0.7, frequency: 'monthly' as const, label: 'Text to Speech' },
+    { url: '/all-tools/pdf/add-text', priority: 0.6, frequency: 'monthly' as const, label: 'Add Text to PDF' },
+    { url: '/all-tools/pdf/ocr-to-text', priority: 0.6, frequency: 'monthly' as const, label: 'PDF OCR to Text' },
+    { url: '/all-tools/code-minifier', priority: 0.6, frequency: 'monthly' as const, label: 'Code Minifier' },
+    { url: '/all-tools/eps-to-png', priority: 0.6, frequency: 'monthly' as const, label: 'EPS to PNG' },
+    { url: '/all-tools/image-compressor', priority: 0.6, frequency: 'monthly' as const, label: 'Image Compressor' },
+    { url: '/all-tools/webp-to-tiff', priority: 0.6, frequency: 'monthly' as const, label: 'WebP to TIFF' },
   ];
   
   mainPages.forEach(({ url, priority, frequency, label }) => {
@@ -208,7 +227,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       tools: extractToolIds(dataTools),
-      route: '/all-tools/data-converter',
+      route: '/all-tools/data',
       label: 'Data Tools',
     },
     {
