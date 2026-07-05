@@ -37,11 +37,6 @@ interface AiStudioGenerateRequest {
   slideCount?: string;
 }
 
-const client = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: 'https://openrouter.ai/api/v1',
-});
-
 const presentationModel = process.env.AI_PRESENTATION_MODEL || 'qwen/qwen3-32b';
 const maxTokens = Number(process.env.AI_MAX_TOKENS || 6000);
 
@@ -54,7 +49,21 @@ function getErrorStatus(error: unknown) {
   return null;
 }
 
+function getOpenRouterClient() {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('OPENROUTER_API_KEY_MISSING');
+  }
+
+  return new OpenAI({
+    apiKey,
+    baseURL: 'https://openrouter.ai/api/v1',
+  });
+}
+
 async function runOpenRouterPrompt(prompt: string) {
+  const client = getOpenRouterClient();
   const response = await client.chat.completions.create({
     model: presentationModel,
     messages: [
@@ -285,7 +294,9 @@ export async function POST(request: Request) {
         errorCode:
           error instanceof AiStudioInsufficientCreditsError
             ? 'INSUFFICIENT_CREDITS'
-            : getErrorStatus(error) === 402
+            : error instanceof Error && error.message === 'OPENROUTER_API_KEY_MISSING'
+              ? 'AI_SERVICE_UNAVAILABLE'
+              : getErrorStatus(error) === 402
               ? 'AI_SERVICE_UNAVAILABLE'
               : 'GENERATION_FAILED',
         completedAt: new Date(),

@@ -2,11 +2,6 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { getAiStudioAccessForCurrentUser } from "@/lib/entitlements/ai-studio-server";
 
-const client = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: "https://openrouter.ai/api/v1",
-});
-
 const presentationModel = process.env.AI_PRESENTATION_MODEL || "qwen/qwen3-32b";
 const maxTokens = Number(process.env.AI_MAX_TOKENS || 6000);
 
@@ -17,6 +12,19 @@ function getErrorStatus(error: unknown) {
     }
 
     return null;
+}
+
+function getOpenRouterClient() {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+
+    if (!apiKey) {
+        throw new Error("OPENROUTER_API_KEY_MISSING");
+    }
+
+    return new OpenAI({
+        apiKey,
+        baseURL: "https://openrouter.ai/api/v1",
+    });
 }
 
 export async function POST(req: Request) {
@@ -46,6 +54,7 @@ export async function POST(req: Request) {
             );
         }
 
+        const client = getOpenRouterClient();
         const response = await client.chat.completions.create({
             model: presentationModel,
             messages: [
@@ -68,6 +77,13 @@ export async function POST(req: Request) {
         });
     } catch (error) {
         console.error("OpenRouter AI error:", error);
+
+        if (error instanceof Error && error.message === "OPENROUTER_API_KEY_MISSING") {
+            return NextResponse.json(
+                { error: "AI service is currently unavailable. Please try again later." },
+                { status: 503 }
+            );
+        }
 
         if (getErrorStatus(error) === 402) {
             return NextResponse.json(
