@@ -178,7 +178,7 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         {
-          error: 'Insufficient AI credits. Buy or renew a plan to continue generating presentations.',
+          error: 'Insufficient AI credits. Buy an AI Studio plan to continue.',
           estimatedCredits,
           wallet: serializeAiStudioWallet(wallet),
         },
@@ -306,7 +306,7 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof AiStudioInsufficientCreditsError) {
-      return NextResponse.json({ error: 'Insufficient AI credits. Buy or renew a plan to continue generating presentations.' }, { status: 402 });
+      return NextResponse.json({ error: 'Insufficient AI credits. Buy an AI Studio plan to continue.' }, { status: 402 });
     }
 
     return NextResponse.json(

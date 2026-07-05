@@ -1,70 +1,50 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getServerSession } from 'next-auth';
 import {
+  Activity,
+  ArrowRight,
+  BarChart3,
   ChevronRight,
+  Clock,
+  CreditCard,
   FileText,
   Presentation,
   Sparkles,
-  Table2,
-  WandSparkles,
+  WalletCards,
 } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
+import { estimateAiStudioCredits } from '@/lib/ai-studio/estimate';
+import { getOrCreateWallet, serializeAiStudioWallet } from '@/lib/ai-studio/wallet';
+import { authOptions } from '@/lib/auth/config';
 import { getAiStudioAccessForCurrentUser } from '@/lib/entitlements/ai-studio-server';
+import { prisma } from '@/lib/prisma';
 import { PremiumAccessRequired } from './components/PremiumAccessRequired';
 
 export const metadata: Metadata = {
-  title: 'AI Studio | SimplifyConvert',
+  title: 'AI Studio Dashboard | SimplifyConvert',
   description:
-    'Premium AI Workspace for professional presentations, smart visual layouts, PPTX export, and polished business work.',
+    'Premium AI Workspace dashboard for AI credits, presentation generation, usage activity, and PPTX creation.',
   alternates: {
     canonical: 'https://simplifyconvert.com/ai-studio',
   },
   openGraph: {
-    title: 'AI Studio | SimplifyConvert',
+    title: 'AI Studio Dashboard | SimplifyConvert',
     description:
-      'Premium AI Workspace for professional presentations, smart visual layouts, PPTX export, and polished business work.',
+      'Track AI credits, launch premium presentation generation, and review AI Studio usage activity.',
     url: 'https://simplifyconvert.com/ai-studio',
     siteName: 'SimplifyConvert',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Studio | SimplifyConvert',
+    title: 'AI Studio Dashboard | SimplifyConvert',
     description:
-      'Create professional presentations in minutes with AI-powered content planning and smart visual layouts.',
+      'Premium AI Workspace for professional presentations, smart visual layouts, and PPTX export.',
   },
 };
 
 export const dynamic = 'force-dynamic';
-
-const studioTools = [
-  {
-    title: 'Presentation Maker',
-    description: 'Create professional presentations in minutes with AI-powered content planning, smart visual layouts, and PPTX export.',
-    href: '/ai-studio/presentation-maker',
-    status: 'Premium',
-    icon: Presentation,
-  },
-  {
-    title: 'Document Maker',
-    description: 'Premium document planning for structured reports, briefs, proposals, and business narratives.',
-    status: 'Premium',
-    icon: FileText,
-  },
-  {
-    title: 'Spreadsheet Maker',
-    description: 'Premium spreadsheet planning for analysis tables, trackers, and data-ready business structures.',
-    status: 'Premium',
-    icon: Table2,
-  },
-];
-
-const examplePrompts = [
-  'Create a Series A pitch deck for a B2B analytics startup.',
-  'Draft a product launch strategy for an AI meeting assistant.',
-  'Build a quarterly marketing plan for a cybersecurity SaaS company.',
-  'Create a spreadsheet structure for tracking sales pipeline risk.',
-];
 
 const premiumCapabilities = [
   'AI-powered content planning',
@@ -74,12 +54,167 @@ const premiumCapabilities = [
   'Images and visual storytelling',
 ];
 
+function formatCredits(value: number) {
+  return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date);
+}
+
+async function getDashboardData() {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email ?? null;
+
+  if (!email) {
+    return {
+      wallet: null,
+      creditsUsedThisMonth: 0,
+      totalPresentationsGenerated: 0,
+      recentActivity: [],
+      signedIn: false,
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+
+  if (!user) {
+    return {
+      wallet: null,
+      creditsUsedThisMonth: 0,
+      totalPresentationsGenerated: 0,
+      recentActivity: [],
+      signedIn: false,
+    };
+  }
+
+  const wallet = await getOrCreateWallet(user.id);
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const [usageThisMonth, totalPresentationsGenerated, recentUsage, recentTransactions] = await Promise.all([
+    prisma.aiStudioUsageLog.aggregate({
+      where: {
+        userId: user.id,
+        status: 'success',
+        completedAt: { gte: startOfMonth },
+      },
+      _sum: { actualCredits: true },
+    }),
+    prisma.aiStudioUsageLog.count({
+      where: {
+        userId: user.id,
+        status: 'success',
+      },
+    }),
+    prisma.aiStudioUsageLog.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 4,
+      select: {
+        id: true,
+        topic: true,
+        slideCount: true,
+        status: true,
+        actualCredits: true,
+        estimatedCredits: true,
+        createdAt: true,
+      },
+    }),
+    prisma.aiStudioCreditTransaction.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 4,
+      select: {
+        id: true,
+        type: true,
+        amountCredits: true,
+        description: true,
+        createdAt: true,
+      },
+    }),
+  ]);
+
+  const activity = [
+    ...recentUsage.map((item) => ({
+      id: `usage-${item.id}`,
+      label: item.topic ? `Generated: ${item.topic}` : 'Presentation generation',
+      detail: `${item.slideCount} slides · ${item.status}`,
+      amount:
+        item.actualCredits?.toNumber() ??
+        item.estimatedCredits.toNumber(),
+      date: item.createdAt,
+      kind: 'usage' as const,
+    })),
+    ...recentTransactions.map((item) => ({
+      id: `transaction-${item.id}`,
+      label: item.description || `Credit ${item.type}`,
+      detail: item.type,
+      amount: item.amountCredits.toNumber(),
+      date: item.createdAt,
+      kind: 'transaction' as const,
+    })),
+  ]
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, 6);
+
+  return {
+    wallet: serializeAiStudioWallet(wallet),
+    creditsUsedThisMonth: usageThisMonth._sum.actualCredits?.toNumber() ?? 0,
+    totalPresentationsGenerated,
+    recentActivity: activity,
+    signedIn: true,
+  };
+}
+
 export default async function AIStudioPage() {
   const access = await getAiStudioAccessForCurrentUser();
 
   if (!access.allowed) {
     return <PremiumAccessRequired returnTo="/ai-studio" />;
   }
+
+  const dashboard = await getDashboardData();
+  const tenSlideEstimate = estimateAiStudioCredits(10).estimatedCredits;
+  const availableGenerations = dashboard.wallet
+    ? Math.floor(dashboard.wallet.balanceCredits / tenSlideEstimate)
+    : 0;
+
+  const stats = [
+    {
+      label: 'AI Credit Balance',
+      value: dashboard.wallet ? formatCredits(dashboard.wallet.balanceCredits) : 'Sign in',
+      detail: dashboard.wallet ? `${formatCredits(dashboard.wallet.reservedCredits)} reserved` : 'Connect an account to view wallet',
+      icon: WalletCards,
+    },
+    {
+      label: 'Estimated Available Generations',
+      value: dashboard.wallet ? availableGenerations.toLocaleString() : '0',
+      detail: `Based on a 10-slide deck at ${tenSlideEstimate} credits`,
+      icon: Presentation,
+    },
+    {
+      label: 'Credits Used This Month',
+      value: formatCredits(dashboard.creditsUsedThisMonth),
+      detail: 'Successful AI Studio generations',
+      icon: BarChart3,
+    },
+    {
+      label: 'Total Presentations Generated',
+      value: dashboard.totalPresentationsGenerated.toLocaleString(),
+      detail: 'Completed presentation maker runs',
+      icon: FileText,
+    },
+  ];
 
   return (
     <>
@@ -91,127 +226,168 @@ export default async function AIStudioPage() {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_42%,rgba(255,255,255,0.06)_100%)]" />
 
           <div className="relative z-10 mx-auto max-w-7xl">
-            <nav className="mb-12 flex items-center gap-2 text-sm text-white/70" aria-label="Breadcrumb">
-              <Link href="/" className="hover:text-white transition">
+            <nav className="mb-8 flex items-center gap-2 text-sm text-white/70" aria-label="Breadcrumb">
+              <Link href="/" className="transition hover:text-white">
                 Home
               </Link>
               <ChevronRight size={16} />
               <span>AI Studio</span>
             </nav>
 
-            <div className="mx-auto max-w-4xl text-center">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-cyan-50 shadow-lg shadow-cyan-950/30 backdrop-blur">
-                <Sparkles size={16} />
-                AI Studio
-                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-950">
-                  Premium
-                </span>
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-cyan-50 shadow-lg shadow-cyan-950/30 backdrop-blur">
+                  <Sparkles size={16} />
+                  AI Studio
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-950">
+                    Premium
+                  </span>
+                </div>
+                <h1 className="text-4xl font-bold tracking-normal text-white sm:text-5xl">
+                  Premium AI Workspace
+                </h1>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
+                  Create professional presentations in minutes with AI-powered content planning, smart visual layouts,
+                  PPTX export, professional themes, images and visual storytelling.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {premiumCapabilities.map((capability) => (
+                    <span
+                      key={capability}
+                      className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-cyan-50"
+                    >
+                      {capability}
+                    </span>
+                  ))}
+                </div>
               </div>
 
-              <h1 className="text-4xl font-bold tracking-normal text-white sm:text-5xl lg:text-6xl">
-                Premium AI Workspace
-              </h1>
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                Create professional presentations in minutes with AI-powered content planning, smart visual layouts,
-                PPTX export, professional themes, and visual storytelling.
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-2">
-                {premiumCapabilities.map((capability) => (
-                  <span
-                    key={capability}
-                    className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-cyan-50"
-                  >
-                    {capability}
-                  </span>
-                ))}
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/ai-studio/presentation-maker"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-slate-950 shadow-lg shadow-black/20 transition hover:bg-cyan-50"
+                >
+                  <Presentation size={16} />
+                  New Presentation
+                </Link>
+                <Link
+                  href="/ai-studio/pricing"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  <CreditCard size={16} />
+                  Buy Credits
+                </Link>
               </div>
             </div>
           </div>
         </section>
 
         <section className="bg-[#f7f8fb] px-4 py-10 text-slate-950 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1160px] space-y-10">
-            <div className="grid gap-4 md:grid-cols-3">
-              {studioTools.map((tool) => {
-                const Icon = tool.icon;
-                const isAvailable = Boolean(tool.href);
-                const content = (
-                  <div
-                    className={`h-full rounded-lg border bg-white p-6 shadow-lg shadow-slate-200/70 transition ${
-                      isAvailable
-                        ? 'border-cyan-200 hover:-translate-y-1 hover:border-cyan-400 hover:shadow-xl hover:shadow-cyan-100'
-                        : 'border-slate-200 opacity-80'
-                    }`}
-                  >
-                    <div className="mb-6 flex items-start justify-between gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-950 text-cyan-100">
-                        <Icon size={24} />
-                      </div>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
-                          isAvailable
-                            ? 'bg-cyan-100 text-cyan-800'
-                            : 'bg-slate-100 text-slate-500'
-                        }`}
-                      >
-                        {tool.status}
-                      </span>
+          <div className="mx-auto max-w-[1160px] space-y-8">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {stats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={stat.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/70">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-950 text-cyan-100">
+                      <Icon size={22} />
                     </div>
-                    <h2 className="text-xl font-bold text-slate-950">{tool.title}</h2>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">{tool.description}</p>
-                    {isAvailable && (
-                      <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-800">
-                        Open workspace
-                        <ChevronRight size={16} />
-                      </div>
-                    )}
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{stat.label}</p>
+                    <p className="mt-2 text-2xl font-bold text-slate-950">{stat.value}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{stat.detail}</p>
                   </div>
-                );
-
-                return isAvailable && tool.href ? (
-                  <Link key={tool.title} href={tool.href}>
-                    {content}
-                  </Link>
-                ) : (
-                  <div key={tool.title}>{content}</div>
                 );
               })}
             </div>
 
-            <section>
-              <div className="mb-4">
-                <h2 className="text-xl font-bold text-slate-950">Recent Creations</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  Premium AI Studio creations, exports, and presentation drafts will appear here.
-                </p>
-              </div>
-              <div className="grid gap-3 md:grid-cols-3">
-                {['Presentation draft', 'Document brief', 'Spreadsheet plan'].map((label) => (
-                  <div key={label} className="rounded-lg border border-dashed border-slate-300 bg-white/70 p-5">
-                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
-                      <WandSparkles size={18} className="text-slate-400" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-slate-700">{label}</h3>
-                    <div className="mt-4 h-3 w-full rounded-full bg-slate-100" />
-                    <div className="mt-2 h-3 w-4/5 rounded-full bg-slate-100" />
+            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+              <section id="activity" className="rounded-lg border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/70">
+                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-950">Recent AI Studio Activity</h2>
+                    <p className="mt-1 text-sm text-slate-600">Presentation generations and wallet updates appear here.</p>
                   </div>
-                ))}
-              </div>
-            </section>
+                  <Link href="/ai-studio/pricing" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-800">
+                    View Usage
+                    <ArrowRight size={15} />
+                  </Link>
+                </div>
 
-            <section>
-              <div className="mb-4 flex items-center gap-2">
-                <Sparkles size={20} className="text-cyan-700" />
-                <h2 className="text-xl font-bold text-slate-950">Example Prompts</h2>
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                {examplePrompts.map((prompt) => (
-                  <div key={prompt} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                    <p className="text-sm leading-6 text-slate-700">{prompt}</p>
+                {dashboard.recentActivity.length > 0 ? (
+                  <div className="divide-y divide-slate-100">
+                    {dashboard.recentActivity.map((item) => (
+                      <div key={item.id} className="flex items-start gap-3 py-4">
+                        <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-cyan-800">
+                          {item.kind === 'usage' ? <Presentation size={17} /> : <WalletCards size={17} />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-bold text-slate-950">{item.label}</p>
+                          <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            {item.detail} · {formatDate(item.date)}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                          {item.amount > 0 ? '+' : ''}
+                          {formatCredits(item.amount)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </section>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-white text-slate-500 shadow-sm">
+                      <Activity size={22} />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-950">Premium activity will appear here</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Generate a professional presentation or add AI credits to start building your AI Studio history.
+                    </p>
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/70">
+                <h2 className="text-xl font-bold text-slate-950">Quick Actions</h2>
+                <div className="mt-5 space-y-3">
+                  <Link
+                    href="/ai-studio/presentation-maker"
+                    className="flex items-center justify-between gap-4 rounded-lg border border-cyan-100 bg-cyan-50 p-4 text-cyan-950 transition hover:border-cyan-300"
+                  >
+                    <span className="flex items-center gap-3 text-sm font-bold">
+                      <Presentation size={18} />
+                      New Presentation
+                    </span>
+                    <ChevronRight size={18} />
+                  </Link>
+                  <Link
+                    href="/ai-studio/pricing"
+                    className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 text-slate-950 transition hover:border-cyan-300"
+                  >
+                    <span className="flex items-center gap-3 text-sm font-bold">
+                      <CreditCard size={18} />
+                      Buy Credits
+                    </span>
+                    <ChevronRight size={18} />
+                  </Link>
+                  <Link
+                    href="#activity"
+                    className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 text-slate-950 transition hover:border-cyan-300"
+                  >
+                    <span className="flex items-center gap-3 text-sm font-bold">
+                      <Clock size={18} />
+                      View Usage
+                    </span>
+                    <ChevronRight size={18} />
+                  </Link>
+                </div>
+
+                {!dashboard.signedIn && (
+                  <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+                    Sign in with your premium-enabled account to load wallet balance and usage activity.
+                  </div>
+                )}
+              </section>
+            </div>
           </div>
         </section>
       </main>

@@ -9,6 +9,7 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronRight,
+  CreditCard,
   Download,
   FileText,
   Loader,
@@ -85,6 +86,7 @@ const progressSteps = [
 ];
 
 const aiServiceUnavailableMessage = 'AI service is currently unavailable. Please try again later.';
+const insufficientCreditsMessage = 'Insufficient AI credits. Buy an AI Studio plan to continue.';
 
 const examplePrompts: ExamplePrompt[] = [
   {
@@ -427,7 +429,7 @@ export default function PresentationMakerClient() {
     }
 
     if (!(isDevelopment && useMockAI) && hasInsufficientCredits) {
-      setError('Insufficient AI credits. Buy or renew a plan to continue generating presentations.');
+      setError(insufficientCreditsMessage);
       return;
     }
 
@@ -478,7 +480,7 @@ export default function PresentationMakerClient() {
         if (data.wallet) {
           setWallet(data.wallet);
         }
-        setError(response.status === 402 ? data.error || 'Insufficient AI credits.' : aiServiceUnavailableMessage);
+        setError(response.status === 402 ? data.error || insufficientCreditsMessage : aiServiceUnavailableMessage);
         return;
       }
 
@@ -508,6 +510,8 @@ export default function PresentationMakerClient() {
   const presentationPlan = outline ? parsePresentationPlan(outline, topic.trim(), Number(slideCount)) : null;
   const hasInsufficientCredits =
     wallet !== null && estimatedCredits !== null && wallet.balanceCredits < estimatedCredits;
+  const isMockGeneration = isDevelopment && useMockAI;
+  const isGenerateDisabled = loading || !topic.trim() || (!isMockGeneration && hasInsufficientCredits);
 
   const toggleSlide = (slideNumber: number) => {
     setExpandedSlides((current) => ({
@@ -1258,6 +1262,15 @@ export default function PresentationMakerClient() {
                   </span>
                 ))}
               </div>
+              <div className="mt-5">
+                <Link
+                  href="/ai-studio/pricing"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  <CreditCard size={16} />
+                  Buy Credits
+                </Link>
+              </div>
             </div>
 
             <form onSubmit={handleGenerate} className="mx-auto mt-8 max-w-[1160px]">
@@ -1352,7 +1365,7 @@ export default function PresentationMakerClient() {
 
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isGenerateDisabled}
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-slate-950 px-6 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-cyan-950 disabled:bg-slate-400 sm:min-w-44"
                   >
                     {loading ? (
@@ -1394,9 +1407,14 @@ export default function PresentationMakerClient() {
                     </p>
                     <p className="mt-1 text-sm font-semibold leading-5">
                       {hasInsufficientCredits
-                        ? 'Insufficient AI credits. Buy or renew a plan to continue generating presentations.'
+                        ? insufficientCreditsMessage
                         : walletMessage || 'Credit wallet is ready for Phase 1 tracking.'}
                     </p>
+                    {hasInsufficientCredits && !isMockGeneration && (
+                      <Link href="/ai-studio/pricing" className="mt-2 inline-flex text-xs font-bold text-amber-950 underline">
+                        View AI Studio plans
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

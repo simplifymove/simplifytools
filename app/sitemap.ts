@@ -131,6 +131,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/privacy', priority: 0.3, frequency: 'yearly' as const, label: 'Privacy Policy' },
     { url: '/terms', priority: 0.3, frequency: 'yearly' as const, label: 'Terms of Service' },
     { url: '/ai-studio', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio' },
+    { url: '/ai-studio/pricing', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio Pricing' },
     { url: '/ai-studio/presentation-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Presentation Maker' },
     { url: '/all-tools/image-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Image Tools' },
     { url: '/all-tools/pdf-tools', priority: 0.8, frequency: 'weekly' as const, label: 'PDF Tools' },
