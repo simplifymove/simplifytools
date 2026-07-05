@@ -65,6 +65,12 @@ model User {
   deviceResetLogs DeviceResetLog[]
   emailReminders  EmailReminderLog[]
   projectMemories ProjectMemory[]
+
+  // AI Studio wallet relationships
+  aiStudioWallet             AiStudioWallet?
+  aiStudioCreditTransactions AiStudioCreditTransaction[]
+  aiStudioUsageLogs          AiStudioUsageLog[]
+  aiStudioPlanPurchases      AiStudioPlanPurchase[]
   
   // Admin audit relationships
   auditRuns       AuditRun[]
@@ -229,6 +235,98 @@ model MemoryEvent {
   @@index([projectMemoryId])
   @@index([userId])
   @@index([type])
+}
+
+// AI Studio Credit Wallet Models
+
+model AiStudioWallet {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  balanceCredits       Decimal  @default(0)
+  reservedCredits      Decimal  @default(0)
+  lifetimeCreditsAdded Decimal  @default(0)
+  lifetimeCreditsUsed  Decimal  @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user         User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions AiStudioCreditTransaction[]
+
+  @@index([userId])
+}
+
+model AiStudioCreditTransaction {
+  id             String   @id @default(cuid())
+  userId         String
+  walletId       String
+  type           String   // purchase | reserve | capture | release | refund | adjustment
+  amountCredits  Decimal
+  balanceAfter   Decimal
+  referenceType  String?
+  referenceId    String?
+  description    String?
+  metadataJson   String?
+  createdAt      DateTime @default(now())
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet AiStudioWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([walletId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model AiStudioUsageLog {
+  id                 String    @id @default(cuid())
+  userId             String
+  requestId          String    @unique
+  topic              String?
+  slideCount         Int
+  model              String
+  status             String    // estimated | reserved | success | failed | refunded
+  estimatedCredits   Decimal
+  reservedCredits    Decimal
+  actualCredits      Decimal?
+  inputTokens        Int?
+  outputTokens       Int?
+  providerCostUsd    Decimal?
+  providerResponseId String?
+  errorCode          String?
+  createdAt          DateTime  @default(now())
+  completedAt        DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AiStudioPlanPurchase {
+  id                        String    @id @default(cuid())
+  userId                    String
+  planId                    String
+  provider                  String    // razorpay | stripe
+  providerOrderId           String?
+  providerPaymentId         String?
+  providerCheckoutSessionId String?
+  currency                  String
+  grossAmountMinor          Int
+  aiCreditAmountMinor       Int
+  platformRevenueMinor      Int
+  creditsGranted            Decimal
+  status                    String    // created | paid | failed | refunded
+  rawPayloadJson            String?
+  createdAt                 DateTime  @default(now())
+  paidAt                    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([provider])
+  @@index([status])
+  @@index([createdAt])
 }
 
 // Admin Audit & Testing Models
