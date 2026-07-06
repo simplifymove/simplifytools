@@ -57,7 +57,20 @@ interface AggregatedProviderUsage {
   responseIds: string[];
 }
 
-const presentationModel = process.env.AI_PRESENTATION_MODEL || 'qwen/qwen3-32b';
+class OpenRouterPromptError extends Error {
+  status: number | null;
+  safeToFallback: boolean;
+
+  constructor(message: string, options: { status?: number | null; safeToFallback?: boolean } = {}) {
+    super(message);
+    this.name = 'OpenRouterPromptError';
+    this.status = options.status ?? null;
+    this.safeToFallback = options.safeToFallback ?? false;
+  }
+}
+
+const primaryPresentationModel = process.env.AI_PRESENTATION_MODEL_PRIMARY || 'anthropic/claude-sonnet-4';
+const fallbackPresentationModel = process.env.AI_PRESENTATION_MODEL_FALLBACK || 'qwen/qwen3-32b';
 const maxTokens = Number(process.env.AI_MAX_TOKENS || 6000);
 
 function getErrorStatus(error: unknown) {
@@ -128,34 +141,59 @@ function getAggregatedModel(accumulator: AggregatedProviderUsage) {
   const models = Array.from(accumulator.models);
 
   if (models.length === 0) {
-    return presentationModel;
+    return primaryPresentationModel;
   }
 
   return models.join(', ');
 }
 
-async function runOpenRouterPrompt(prompt: string): Promise<OpenRouterPromptResult> {
+function isSafeFallbackError(error: unknown) {
+  if (error instanceof OpenRouterPromptError) {
+    return error.safeToFallback;
+  }
+
+  const status = getErrorStatus(error);
+
+  if (status === null) {
+    return true;
+  }
+
+  return [408, 409, 425, 429, 500, 502, 503, 504].includes(status);
+}
+
+async function attemptOpenRouterPrompt(prompt: string, model: string): Promise<OpenRouterPromptResult> {
   const client = getOpenRouterClient();
-  const response = await client.chat.completions.create({
-    model: presentationModel,
-    messages: [
-      {
-        role: 'system',
-        content: 'You are SimplifyConvert AI. Create professional, structured, clean business output.',
-      },
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: maxTokens,
-  });
+  let response;
+
+  try {
+    response = await client.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are SimplifyConvert AI. Create professional, structured, clean business output.',
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: maxTokens,
+    });
+  } catch (error) {
+    throw new OpenRouterPromptError('OpenRouter request failed', {
+      status: getErrorStatus(error),
+      safeToFallback: isSafeFallbackError(error),
+    });
+  }
 
   const result = response.choices[0]?.message?.content || '';
 
   if (!result) {
-    throw new Error('OpenRouter returned an empty response');
+    throw new OpenRouterPromptError('OpenRouter returned an empty response', {
+      safeToFallback: false,
+    });
   }
 
   return {
@@ -164,10 +202,34 @@ async function runOpenRouterPrompt(prompt: string): Promise<OpenRouterPromptResu
       inputTokens: numberOrUndefined(response.usage?.prompt_tokens),
       outputTokens: numberOrUndefined(response.usage?.completion_tokens),
       totalTokens: numberOrUndefined(response.usage?.total_tokens),
-      model: typeof response.model === 'string' ? response.model : presentationModel,
+      model: typeof response.model === 'string' ? response.model : model,
       responseId: typeof response.id === 'string' ? response.id : undefined,
     },
   };
+}
+
+async function runOpenRouterPrompt(prompt: string): Promise<OpenRouterPromptResult> {
+  try {
+    return await attemptOpenRouterPrompt(prompt, primaryPresentationModel);
+  } catch (error) {
+    if (
+      fallbackPresentationModel &&
+      fallbackPresentationModel !== primaryPresentationModel &&
+      isSafeFallbackError(error)
+    ) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[ai-studio-generate] Primary model failed; using fallback model for this prompt.', {
+          primaryModel: primaryPresentationModel,
+          fallbackModel: fallbackPresentationModel,
+          status: getErrorStatus(error),
+        });
+      }
+
+      return attemptOpenRouterPrompt(prompt, fallbackPresentationModel);
+    }
+
+    throw error;
+  }
 }
 
 async function logUsage(input: {
@@ -192,7 +254,7 @@ async function logUsage(input: {
       requestId: input.requestId,
       topic: input.topic,
       slideCount: input.slideCount,
-      model: input.model ?? presentationModel,
+      model: input.model ?? primaryPresentationModel,
       status: input.status,
       estimatedCredits: input.estimatedCredits,
       reservedCredits: input.reservedCredits,
