@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
       amount: plan.grossAmountMinor,
       currency: plan.currency,
       receipt: `aistudio_${Date.now()}`,
-      customer_notify: 1,
       notes: {
         product: 'ai-studio',
         planId: plan.id,

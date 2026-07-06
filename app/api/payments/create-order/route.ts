@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
       amount: priceINR * 100, // Convert to paise
       currency,
       receipt: `user_${user.id}_${Date.now()}`,
-      customer_notify: 1,
       notes: {
         userId: user.id,
         userEmail: user.email || "",

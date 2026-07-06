@@ -9,7 +9,6 @@ export interface RazorpayOrderOptions {
   amount: number; // in paise (lowest unit)
   currency: string;
   receipt: string;
-  customer_notify: number;
   notes?: Record<string, string>;
 }
 
