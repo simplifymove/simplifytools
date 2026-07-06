@@ -73,6 +73,47 @@ export async function addCredits(userId: string, amountCredits: number, context:
   });
 }
 
+export async function deductCredits(userId: string, amountCredits: number, context: WalletTransactionContext = {}) {
+  const amount = toDecimal(amountCredits);
+  const wallet = await getOrCreateWallet(userId);
+
+  return prisma.$transaction(async (tx) => {
+    const updateResult = await tx.aiStudioWallet.updateMany({
+      where: {
+        id: wallet.id,
+        balanceCredits: { gte: amount },
+      },
+      data: {
+        balanceCredits: { decrement: amount },
+      },
+    });
+
+    if (updateResult.count !== 1) {
+      throw new AiStudioInsufficientCreditsError('Cannot deduct more AI Studio credits than the wallet balance');
+    }
+
+    const updatedWallet = await tx.aiStudioWallet.findUniqueOrThrow({
+      where: { id: wallet.id },
+    });
+
+    await tx.aiStudioCreditTransaction.create({
+      data: {
+        userId,
+        walletId: wallet.id,
+        type: context.transactionType || 'adjustment',
+        amountCredits: amount.negated(),
+        balanceAfter: updatedWallet.balanceCredits,
+        referenceType: context.referenceType,
+        referenceId: context.referenceId,
+        description: context.description,
+        metadataJson: serializeMetadata(context.metadata),
+      },
+    });
+
+    return updatedWallet;
+  });
+}
+
 export async function reserveCredits(userId: string, amountCredits: number, context: WalletTransactionContext = {}) {
   const amount = toDecimal(amountCredits);
   const wallet = await getOrCreateWallet(userId);
