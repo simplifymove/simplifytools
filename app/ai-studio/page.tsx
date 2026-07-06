@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { estimateAiStudioCredits } from '@/lib/ai-studio/estimate';
+import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import { getOrCreateWallet, serializeAiStudioWallet } from '@/lib/ai-studio/wallet';
 import { authOptions } from '@/lib/auth/config';
 import { getAiStudioAccessForCurrentUser } from '@/lib/entitlements/ai-studio-server';
@@ -81,10 +82,7 @@ async function getDashboardData() {
     };
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true },
-  });
+  const user = await findAiStudioUserByEmail(email);
 
   if (!user) {
     return {

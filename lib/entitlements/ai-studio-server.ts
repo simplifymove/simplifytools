@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import { prisma } from '@/lib/prisma';
+import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import {
   canAccessAiStudio,
   hasAiStudioPremiumEntitlement,
@@ -44,19 +44,7 @@ export async function getAiStudioAccessForCurrentUser(): Promise<AiStudioAccessR
       };
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        role: true,
-        subscription: {
-          select: {
-            planName: true,
-            status: true,
-            expiresAt: true,
-          },
-        },
-      },
-    });
+    const user = await findAiStudioUserByEmail(email);
 
     const entitlementUser: AiStudioUserLike | null = user
       ? {

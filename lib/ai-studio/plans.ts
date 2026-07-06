@@ -8,11 +8,23 @@ export interface AiStudioPlanConfig {
   provider: AiStudioPaymentProvider;
   currency: 'INR' | 'USD';
   grossAmountMinor: number;
-  aiCreditAmountMinor: number;
+  aiUsageValueMinor: number;
   platformRevenueMinor: number;
   creditsGranted: number;
 }
 
+function getConfiguredCredits(envName: string, temporaryFallback: number) {
+  const configured = Number(process.env[envName]);
+
+  if (Number.isFinite(configured) && configured > 0) {
+    return configured;
+  }
+
+  return temporaryFallback;
+}
+
+// Customer wallets must display and spend only internal AI Credits, never rupee/dollar balances.
+// TEMP: creditsGranted values must be finalized after measuring OpenRouter average cost per generation.
 export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
   {
     id: 'india-starter',
@@ -21,9 +33,9 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     provider: 'razorpay',
     currency: 'INR',
     grossAmountMinor: 19900,
-    aiCreditAmountMinor: 10000,
+    aiUsageValueMinor: 10000,
     platformRevenueMinor: 9900,
-    creditsGranted: 100,
+    creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_INDIA_STARTER', 1000),
   },
   {
     id: 'india-pro',
@@ -32,9 +44,9 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     provider: 'razorpay',
     currency: 'INR',
     grossAmountMinor: 49900,
-    aiCreditAmountMinor: 30000,
+    aiUsageValueMinor: 30000,
     platformRevenueMinor: 19900,
-    creditsGranted: 300,
+    creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_INDIA_PRO', 3000),
   },
   {
     id: 'global-starter',
@@ -43,9 +55,9 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     provider: 'stripe',
     currency: 'USD',
     grossAmountMinor: 599,
-    aiCreditAmountMinor: 300,
+    aiUsageValueMinor: 300,
     platformRevenueMinor: 299,
-    creditsGranted: 300,
+    creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_GLOBAL_STARTER', 3000),
   },
   {
     id: 'global-pro',
@@ -54,9 +66,9 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     provider: 'stripe',
     currency: 'USD',
     grossAmountMinor: 1299,
-    aiCreditAmountMinor: 800,
+    aiUsageValueMinor: 800,
     platformRevenueMinor: 499,
-    creditsGranted: 800,
+    creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_GLOBAL_PRO', 8000),
   },
 ];
 

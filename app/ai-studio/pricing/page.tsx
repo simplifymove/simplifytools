@@ -41,14 +41,14 @@ function formatPlanPrice(plan: AiStudioPlanConfig) {
   return `$${majorAmount.toFixed(2)}`;
 }
 
-function formatCreditValue(plan: AiStudioPlanConfig) {
-  const majorAmount = plan.aiCreditAmountMinor / 100;
+function formatAiUsageValue(plan: AiStudioPlanConfig) {
+  const majorAmount = plan.aiUsageValueMinor / 100;
 
   if (plan.currency === 'INR') {
-    return `₹${majorAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })} AI credits value`;
+    return `Includes ₹${majorAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })} worth of AI usage`;
   }
 
-  return `$${majorAmount.toFixed(2)} AI credits value`;
+  return `Includes $${majorAmount.toFixed(2)} worth of AI usage`;
 }
 
 export default async function AiStudioPricingPage() {
@@ -133,9 +133,9 @@ export default async function AiStudioPricingPage() {
 
                   <div className="mt-6 rounded-lg border border-cyan-100 bg-cyan-50 p-4">
                     <p className="text-sm font-bold text-cyan-950">
-                      {plan.creditsGranted.toLocaleString()} AI credits
+                      {plan.creditsGranted.toLocaleString()} AI Credits
                     </p>
-                    <p className="mt-1 text-sm leading-6 text-cyan-900">{formatCreditValue(plan)}</p>
+                    <p className="mt-1 text-sm leading-6 text-cyan-900">{formatAiUsageValue(plan)}</p>
                   </div>
 
                   <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">

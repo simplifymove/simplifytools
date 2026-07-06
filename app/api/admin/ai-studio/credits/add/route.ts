@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSession } from '@/lib/auth/admin';
-import { prisma } from '@/lib/prisma';
+import { findAiStudioUserByEmail, normalizeAiStudioEmail } from '@/lib/ai-studio/user';
 import { addCredits, serializeAiStudioWallet } from '@/lib/ai-studio/wallet';
 
 interface AddAiStudioCreditsRequest {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json().catch(() => ({}))) as AddAiStudioCreditsRequest;
-    const userEmail = typeof body.userEmail === 'string' ? body.userEmail.trim().toLowerCase() : '';
+    const userEmail = normalizeAiStudioEmail(typeof body.userEmail === 'string' ? body.userEmail : null);
     const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
     const credits = typeof body.credits === 'number' ? body.credits : Number(body.credits);
 
@@ -34,10 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'reason is required' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: { id: true, email: true },
-    });
+    const user = await findAiStudioUserByEmail(userEmail);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });

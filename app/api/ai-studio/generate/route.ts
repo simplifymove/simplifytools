@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/prisma';
 import { estimateAiStudioCredits, normalizeAiStudioSlideCount } from '@/lib/ai-studio/estimate';
+import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import {
   AiStudioInsufficientCreditsError,
   captureCredits,
@@ -37,6 +38,25 @@ interface AiStudioGenerateRequest {
   slideCount?: string;
 }
 
+interface OpenRouterPromptResult {
+  content: string;
+  usage: {
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+    model?: string;
+    responseId?: string;
+  };
+}
+
+interface AggregatedProviderUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  models: Set<string>;
+  responseIds: string[];
+}
+
 const presentationModel = process.env.AI_PRESENTATION_MODEL || 'qwen/qwen3-32b';
 const maxTokens = Number(process.env.AI_MAX_TOKENS || 6000);
 
@@ -62,7 +82,59 @@ function getOpenRouterClient() {
   });
 }
 
-async function runOpenRouterPrompt(prompt: string) {
+function createProviderUsageAccumulator(): AggregatedProviderUsage {
+  return {
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0,
+    models: new Set<string>(),
+    responseIds: [],
+  };
+}
+
+function numberOrUndefined(value: unknown) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function addProviderUsage(accumulator: AggregatedProviderUsage, usage: OpenRouterPromptResult['usage']) {
+  if (typeof usage.inputTokens === 'number') {
+    accumulator.inputTokens += usage.inputTokens;
+  }
+
+  if (typeof usage.outputTokens === 'number') {
+    accumulator.outputTokens += usage.outputTokens;
+  }
+
+  if (typeof usage.totalTokens === 'number') {
+    accumulator.totalTokens += usage.totalTokens;
+  }
+
+  if (usage.model) {
+    accumulator.models.add(usage.model);
+  }
+
+  if (usage.responseId) {
+    accumulator.responseIds.push(usage.responseId);
+  }
+}
+
+function serializeProviderResponseIds(responseIds: string[]) {
+  if (responseIds.length === 0) return undefined;
+
+  return JSON.stringify(responseIds);
+}
+
+function getAggregatedModel(accumulator: AggregatedProviderUsage) {
+  const models = Array.from(accumulator.models);
+
+  if (models.length === 0) {
+    return presentationModel;
+  }
+
+  return models.join(', ');
+}
+
+async function runOpenRouterPrompt(prompt: string): Promise<OpenRouterPromptResult> {
   const client = getOpenRouterClient();
   const response = await client.chat.completions.create({
     model: presentationModel,
@@ -86,7 +158,16 @@ async function runOpenRouterPrompt(prompt: string) {
     throw new Error('OpenRouter returned an empty response');
   }
 
-  return result;
+  return {
+    content: result,
+    usage: {
+      inputTokens: numberOrUndefined(response.usage?.prompt_tokens),
+      outputTokens: numberOrUndefined(response.usage?.completion_tokens),
+      totalTokens: numberOrUndefined(response.usage?.total_tokens),
+      model: typeof response.model === 'string' ? response.model : presentationModel,
+      responseId: typeof response.id === 'string' ? response.id : undefined,
+    },
+  };
 }
 
 async function logUsage(input: {
@@ -98,6 +179,10 @@ async function logUsage(input: {
   estimatedCredits: number;
   reservedCredits: number;
   actualCredits?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  providerResponseId?: string;
+  model?: string;
   errorCode?: string;
   completedAt?: Date;
 }) {
@@ -107,11 +192,14 @@ async function logUsage(input: {
       requestId: input.requestId,
       topic: input.topic,
       slideCount: input.slideCount,
-      model: presentationModel,
+      model: input.model ?? presentationModel,
       status: input.status,
       estimatedCredits: input.estimatedCredits,
       reservedCredits: input.reservedCredits,
       actualCredits: input.actualCredits,
+      inputTokens: input.inputTokens,
+      outputTokens: input.outputTokens,
+      providerResponseId: input.providerResponseId,
       errorCode: input.errorCode,
       completedAt: input.completedAt,
     },
@@ -125,6 +213,7 @@ export async function POST(request: Request) {
   let topic = '';
   let normalizedSlideCount = 10;
   let estimatedCredits = 0;
+  const providerUsage = createProviderUsageAccumulator();
 
   try {
     const session = await getServerSession(authOptions);
@@ -133,10 +222,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Sign in with a premium-enabled account to use AI Studio.' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true },
-    });
+    const user = await findAiStudioUserByEmail(session.user.email);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -194,7 +280,7 @@ export async function POST(request: Request) {
     });
     reserved = true;
 
-    const researchRaw = await runOpenRouterPrompt(
+    const researchResult = await runOpenRouterPrompt(
       buildResearchAgentPrompt({
         topic,
         slideCount,
@@ -202,9 +288,10 @@ export async function POST(request: Request) {
         tone,
       })
     );
-    const research = parseResearchAgentOutput(researchRaw);
+    addProviderUsage(providerUsage, researchResult.usage);
+    const research = parseResearchAgentOutput(researchResult.content);
 
-    const storytellingRaw = await runOpenRouterPrompt(
+    const storytellingResult = await runOpenRouterPrompt(
       buildStorytellingAgentPrompt({
         topic,
         slideCount,
@@ -213,9 +300,10 @@ export async function POST(request: Request) {
         research,
       })
     );
-    const storytelling = parseStorytellingAgentOutput(storytellingRaw);
+    addProviderUsage(providerUsage, storytellingResult.usage);
+    const storytelling = parseStorytellingAgentOutput(storytellingResult.content);
 
-    const visualDesignRaw = await runOpenRouterPrompt(
+    const visualDesignResult = await runOpenRouterPrompt(
       buildVisualDesignAgentPrompt({
         topic,
         slideCount,
@@ -225,9 +313,10 @@ export async function POST(request: Request) {
         storytelling,
       })
     );
-    const visualDesign = parseVisualDesignAgentOutput(visualDesignRaw, normalizedSlideCount);
+    addProviderUsage(providerUsage, visualDesignResult.usage);
+    const visualDesign = parseVisualDesignAgentOutput(visualDesignResult.content, normalizedSlideCount);
 
-    const outline = await runOpenRouterPrompt(
+    const outlineResult = await runOpenRouterPrompt(
       buildPresentationPrompt({
         topic,
         slideCount,
@@ -238,6 +327,8 @@ export async function POST(request: Request) {
         visualDesignContext: serializeVisualDesignForPlanner(visualDesign),
       })
     );
+    addProviderUsage(providerUsage, outlineResult.usage);
+    const outline = outlineResult.content;
 
     const updatedWallet = await captureCredits(userId, estimatedCredits, {
       referenceType: 'ai_studio_generation',
@@ -246,6 +337,20 @@ export async function POST(request: Request) {
       metadata: { topic, audience, tone, slideCount: normalizedSlideCount },
     });
     reserved = false;
+
+    const loggedModel = getAggregatedModel(providerUsage);
+    const providerResponseId = serializeProviderResponseIds(providerUsage.responseIds);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ai-studio-generate] Provider usage', {
+        slideCount: normalizedSlideCount,
+        model: loggedModel,
+        inputTokens: providerUsage.inputTokens,
+        outputTokens: providerUsage.outputTokens,
+        totalTokens: providerUsage.totalTokens,
+        creditsCharged: estimatedCredits,
+      });
+    }
 
     await logUsage({
       userId,
@@ -256,6 +361,10 @@ export async function POST(request: Request) {
       estimatedCredits,
       reservedCredits: estimatedCredits,
       actualCredits: estimatedCredits,
+      inputTokens: providerUsage.inputTokens || undefined,
+      outputTokens: providerUsage.outputTokens || undefined,
+      providerResponseId,
+      model: loggedModel,
       completedAt: new Date(),
     });
 
@@ -291,6 +400,10 @@ export async function POST(request: Request) {
         status: 'failed',
         estimatedCredits,
         reservedCredits: reserved ? estimatedCredits : 0,
+        inputTokens: providerUsage.inputTokens || undefined,
+        outputTokens: providerUsage.outputTokens || undefined,
+        providerResponseId: serializeProviderResponseIds(providerUsage.responseIds),
+        model: getAggregatedModel(providerUsage),
         errorCode:
           error instanceof AiStudioInsufficientCreditsError
             ? 'INSUFFICIENT_CREDITS'
