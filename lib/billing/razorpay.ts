@@ -84,6 +84,28 @@ export function verifyRazorpayWebhookSignature(
 }
 
 /**
+ * Verify a Razorpay Checkout payment callback signature.
+ */
+export function verifyRazorpayPaymentSignature(
+  orderId: string,
+  paymentId: string,
+  signature: string
+): boolean {
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keySecret) {
+    throw new Error("Razorpay credentials not configured");
+  }
+
+  const expectedSignature = crypto
+    .createHmac("sha256", keySecret)
+    .update(`${orderId}|${paymentId}`)
+    .digest("hex");
+
+  return expectedSignature === signature;
+}
+
+/**
  * Fetch payment details from Razorpay
  */
 export async function fetchRazorpayPayment(
