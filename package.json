@@ -70,6 +70,7 @@
     "remotion": "^4.0.461",
     "sharp": "^0.34.5",
     "signature_pad": "^5.1.3",
+    "stripe": "^22.3.0",
     "terser": "^5.46.0",
     "tesseract.js": "^5.1.1",
     "uuid": "^13.0.0"

@@ -93,8 +93,8 @@ export default async function AiStudioPricingPage() {
             <AiStudioPricingClient plans={plans} />
 
             <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-600 shadow-sm">
-              Razorpay checkout is enabled for India plans. Global USD plans are disabled until Stripe is connected in
-              the next billing phase.
+              Razorpay checkout is enabled for India plans. Stripe Checkout is enabled for global USD plans as a
+              one-time AI Credits purchase.
             </div>
           </div>
         </section>

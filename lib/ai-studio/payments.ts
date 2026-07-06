@@ -7,6 +7,12 @@ interface FulfillAiStudioPurchaseOptions {
   rawPayload: unknown;
 }
 
+interface FulfillAiStudioStripePurchaseOptions {
+  checkoutSessionId: string;
+  providerPaymentId?: string;
+  rawPayload: unknown;
+}
+
 function serializeRawPayload(rawPayload: unknown) {
   return JSON.stringify(rawPayload);
 }
@@ -16,11 +22,52 @@ export async function fulfillAiStudioRazorpayPurchase({
   providerPaymentId,
   rawPayload,
 }: FulfillAiStudioPurchaseOptions) {
+  return fulfillAiStudioPurchase({
+    provider: 'razorpay',
+    providerPaymentId,
+    rawPayload,
+    lookup: {
+      providerOrderId,
+    },
+  });
+}
+
+export async function fulfillAiStudioStripePurchase({
+  checkoutSessionId,
+  providerPaymentId,
+  rawPayload,
+}: FulfillAiStudioStripePurchaseOptions) {
+  return fulfillAiStudioPurchase({
+    provider: 'stripe',
+    providerPaymentId,
+    rawPayload,
+    lookup: {
+      providerCheckoutSessionId: checkoutSessionId,
+    },
+  });
+}
+
+interface FulfillAiStudioPurchaseByProviderOptions {
+  provider: 'razorpay' | 'stripe';
+  providerPaymentId?: string;
+  rawPayload: unknown;
+  lookup: {
+    providerOrderId?: string;
+    providerCheckoutSessionId?: string;
+  };
+}
+
+async function fulfillAiStudioPurchase({
+  provider,
+  providerPaymentId,
+  rawPayload,
+  lookup,
+}: FulfillAiStudioPurchaseByProviderOptions) {
   return prisma.$transaction(async (tx) => {
     const purchase = await tx.aiStudioPlanPurchase.findFirst({
       where: {
-        provider: 'razorpay',
-        providerOrderId,
+        provider,
+        ...lookup,
       },
     });
 
@@ -47,7 +94,7 @@ export async function fulfillAiStudioRazorpayPurchase({
     if (providerPaymentId) {
       const existingPaidPayment = await tx.aiStudioPlanPurchase.findFirst({
         where: {
-          provider: 'razorpay',
+          provider,
           providerPaymentId,
           status: 'paid',
         },
@@ -121,6 +168,7 @@ export async function fulfillAiStudioRazorpayPurchase({
         metadataJson: JSON.stringify({
           provider: paidPurchase.provider,
           providerOrderId: paidPurchase.providerOrderId,
+          providerCheckoutSessionId: paidPurchase.providerCheckoutSessionId,
           providerPaymentId: paidPurchase.providerPaymentId,
           planId: paidPurchase.planId,
           currency: paidPurchase.currency,

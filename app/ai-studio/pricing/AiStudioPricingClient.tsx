@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, CreditCard } from 'lucide-react';
 import type { AiStudioPlanConfig } from '@/lib/ai-studio/plans';
@@ -72,11 +72,38 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({ status: 'idle', message: '' });
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const stripeStatus = params.get('stripe');
+
+    if (stripeStatus === 'success') {
+      setCheckoutState({
+        status: 'success',
+        message: 'Payment received. AI Credits will appear in your wallet after Stripe confirms the payment.',
+      });
+      router.refresh();
+    }
+
+    if (stripeStatus === 'cancelled') {
+      setCheckoutState({
+        status: 'error',
+        message: 'Stripe Checkout was cancelled. No payment was taken.',
+      });
+    }
+  }, [router]);
+
   async function handleBuyPlan(plan: AiStudioPlanConfig) {
-    if (plan.provider !== 'razorpay' || plan.currency !== 'INR') {
+    if (plan.provider === 'razorpay' && plan.currency === 'INR') {
+      await handleRazorpayPlan(plan);
       return;
     }
 
+    if (plan.provider === 'stripe' && plan.currency === 'USD') {
+      await handleStripePlan(plan);
+    }
+  }
+
+  async function handleRazorpayPlan(plan: AiStudioPlanConfig) {
     setLoadingPlanId(plan.id);
     setCheckoutState({ status: 'idle', message: '' });
 
@@ -166,6 +193,36 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
     }
   }
 
+  async function handleStripePlan(plan: AiStudioPlanConfig) {
+    setLoadingPlanId(plan.id);
+    setCheckoutState({ status: 'idle', message: '' });
+
+    try {
+      const checkoutResponse = await fetch('/api/ai-studio/payments/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: plan.id }),
+      });
+
+      const checkoutData = (await checkoutResponse.json().catch(() => ({}))) as {
+        error?: string;
+        url?: string | null;
+      };
+
+      if (!checkoutResponse.ok || !checkoutData.url) {
+        throw new Error(checkoutData.error || 'Unable to start Stripe Checkout');
+      }
+
+      window.location.assign(checkoutData.url);
+    } catch (error) {
+      setCheckoutState({
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Unable to start Stripe Checkout',
+      });
+      setLoadingPlanId(null);
+    }
+  }
+
   return (
     <>
       {checkoutState.status !== 'idle' && (
@@ -183,6 +240,8 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
       <div className="grid gap-5 md:grid-cols-2">
         {plans.map((plan) => {
           const isRazorpayPlan = plan.provider === 'razorpay' && plan.currency === 'INR';
+          const isStripePlan = plan.provider === 'stripe' && plan.currency === 'USD';
+          const canBuyPlan = isRazorpayPlan || isStripePlan;
           const isLoading = loadingPlanId === plan.id;
 
           return (
@@ -229,14 +288,20 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
               <button
                 type="button"
                 onClick={() => handleBuyPlan(plan)}
-                disabled={!isRazorpayPlan || Boolean(loadingPlanId)}
+                disabled={!canBuyPlan || Boolean(loadingPlanId)}
                 className={`mt-7 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold shadow-lg transition ${
-                  isRazorpayPlan
+                  canBuyPlan
                     ? 'bg-slate-950 text-white shadow-slate-950/20 hover:bg-slate-800 disabled:cursor-wait disabled:opacity-70'
                     : 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none'
                 }`}
               >
-                {isRazorpayPlan ? (isLoading ? 'Opening checkout...' : 'Buy with Razorpay') : 'Stripe coming next'}
+                {isLoading
+                  ? 'Opening checkout...'
+                  : isRazorpayPlan
+                    ? 'Buy with Razorpay'
+                    : isStripePlan
+                      ? 'Buy with Stripe'
+                      : 'Payment coming next'}
               </button>
             </article>
           );
