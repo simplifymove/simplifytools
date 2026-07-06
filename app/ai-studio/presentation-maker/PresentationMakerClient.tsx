@@ -17,6 +17,7 @@ import {
   Sparkles,
   Table2,
   WandSparkles,
+  WalletCards,
 } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import {
@@ -1262,13 +1263,20 @@ export default function PresentationMakerClient() {
                   </span>
                 ))}
               </div>
-              <div className="mt-5">
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
                 <Link
                   href="/ai-studio/pricing"
                   className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
                 >
                   <CreditCard size={16} />
                   Buy Credits
+                </Link>
+                <Link
+                  href="/ai-studio/billing"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  <WalletCards size={16} />
+                  Wallet History
                 </Link>
               </div>
             </div>

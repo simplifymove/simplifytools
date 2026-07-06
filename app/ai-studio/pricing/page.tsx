@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ChevronRight, Sparkles, WalletCards } from 'lucide-react';
+import { ChevronRight, History, Sparkles, WalletCards } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { AI_STUDIO_PLANS } from '@/lib/ai-studio/plans';
 import { getAiStudioRequestRegion } from '@/lib/ai-studio/region';
@@ -83,6 +83,15 @@ export default async function AiStudioPricingPage() {
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-cyan-50">
                 <WalletCards size={16} />
                 {regionLabel}
+              </div>
+              <div className="mt-5">
+                <Link
+                  href="/ai-studio/billing"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  <History size={16} />
+                  Billing History
+                </Link>
               </div>
             </div>
           </div>

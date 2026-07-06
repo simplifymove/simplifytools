@@ -16,7 +16,10 @@ type CheckoutState =
 
 declare global {
   interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+    Razorpay?: new (options: Record<string, unknown>) => {
+      on: (eventName: string, handler: (response: unknown) => void) => void;
+      open: () => void;
+    };
   }
 }
 
@@ -150,6 +153,15 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
         theme: {
           color: '#0891b2',
         },
+        modal: {
+          ondismiss: () => {
+            setLoadingPlanId(null);
+            setCheckoutState({
+              status: 'error',
+              message: 'Payment cancelled. You can try again anytime.',
+            });
+          },
+        },
         handler: async (response: Record<string, string>) => {
           try {
             const verifyResponse = await fetch('/api/ai-studio/payments/razorpay/verify', {
@@ -181,6 +193,14 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
             setLoadingPlanId(null);
           }
         },
+      });
+
+      checkout.on('payment.failed', () => {
+        setLoadingPlanId(null);
+        setCheckoutState({
+          status: 'error',
+          message: 'Payment cancelled. You can try again anytime.',
+        });
       });
 
       checkout.open();

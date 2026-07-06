@@ -9,6 +9,7 @@ import {
   Clock,
   CreditCard,
   FileText,
+  History,
   Presentation,
   Sparkles,
   WalletCards,
@@ -275,6 +276,13 @@ export default async function AIStudioPage() {
                   <CreditCard size={16} />
                   Buy Credits
                 </Link>
+                <Link
+                  href="/ai-studio/billing"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  <History size={16} />
+                  Billing
+                </Link>
               </div>
             </div>
           </div>
@@ -305,7 +313,7 @@ export default async function AIStudioPage() {
                     <h2 className="text-xl font-bold text-slate-950">Recent AI Studio Activity</h2>
                     <p className="mt-1 text-sm text-slate-600">Presentation generations and wallet updates appear here.</p>
                   </div>
-                  <Link href="/ai-studio/pricing" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-800">
+                  <Link href="/ai-studio/billing" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-800">
                     View Usage
                     <ArrowRight size={15} />
                   </Link>
@@ -368,12 +376,12 @@ export default async function AIStudioPage() {
                     <ChevronRight size={18} />
                   </Link>
                   <Link
-                    href="#activity"
+                    href="/ai-studio/billing"
                     className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 text-slate-950 transition hover:border-cyan-300"
                   >
                     <span className="flex items-center gap-3 text-sm font-bold">
                       <Clock size={18} />
-                      View Usage
+                      Billing & Usage
                     </span>
                     <ChevronRight size={18} />
                   </Link>
