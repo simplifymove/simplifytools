@@ -51,15 +51,67 @@ function buildSpreadsheetPrompt(input: {
   spreadsheetType: string;
   complexity: string;
 }) {
+  const typeGuidance: Record<string, string> = {
+    budget:
+      'Create income, expense, budget, actual, variance, and variance percentage structure with totals and formulas.',
+    'sales report':
+      'Create leads, opportunities, deal stage, owner, expected revenue, probability, weighted revenue, conversion, and totals.',
+    'project tracker':
+      'Create tasks, owners, priority, status, due dates, progress, dependencies, risk, and next action.',
+    invoice:
+      'Create invoice line items, quantity, rate, subtotal, tax, discount, total, due date, and payment notes.',
+    'comparison table':
+      'Create options, criteria, scores, weighted total, pros, cons, and recommendation.',
+    plan:
+      'Create milestones, timeline, owner, dependencies, status, progress, risks, and success metric.',
+  };
+
   return [
-    'Create structured spreadsheet data for SimplifyConvert AI Studio.',
-    'Return only valid JSON with this shape:',
-    '{"title":"string","columns":["string"],"rows":[["string or number"]],"notes":["string"]}',
+    'Create a polished, professional SaaS-quality Excel workbook for SimplifyConvert AI Studio.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      workbookTitle: 'string',
+      sheets: [
+        {
+          sheetName: 'string',
+          description: 'string',
+          columns: ['string'],
+          rows: [['string or number']],
+          formulas: [
+            {
+              cell: 'string like E12',
+              formula: 'string without leading =',
+              label: 'string',
+            },
+          ],
+          summaryMetrics: [
+            {
+              label: 'string',
+              value: 'string or number',
+              format: 'text | number | currency | percent | date',
+            },
+          ],
+          chartSuggestions: ['string'],
+        },
+      ],
+      summaryMetrics: [
+        {
+          label: 'string',
+          value: 'string or number',
+          format: 'text | number | currency | percent | date',
+        },
+      ],
+      chartSuggestions: ['string'],
+      notes: ['string'],
+    }),
     'Rules:',
-    '- Do not include markdown fences.',
-    '- Return a useful table that can be exported directly to Excel.',
-    '- Keep rows realistic, coherent, and aligned with the requested spreadsheet type.',
-    '- Use numbers for numeric cells where useful.',
+    '- Include at least one detailed main data sheet.',
+    '- Include formulas that make sense for totals, variance, weighted revenue, invoice totals, scores, or progress where applicable.',
+    '- Use numbers for numeric cells and ISO-like dates for date cells.',
+    '- Provide summaryMetrics for dashboard-style summary output.',
+    '- Provide chartSuggestions that explain useful charts, even if charts are not embedded.',
+    `Spreadsheet type guidance: ${typeGuidance[input.spreadsheetType] || typeGuidance.budget}`,
     `Spreadsheet type: ${input.spreadsheetType}`,
     `Complexity: ${input.complexity}`,
     `Topic or brief: ${input.topic}`,
@@ -82,12 +134,73 @@ function extractJsonObject(content: string) {
 
 function parseSpreadsheetContent(content: string) {
   const parsed = JSON.parse(extractJsonObject(content)) as {
+    workbookTitle?: unknown;
     title?: unknown;
+    sheets?: unknown;
     columns?: unknown;
     rows?: unknown;
+    formulas?: unknown;
+    summaryMetrics?: unknown;
+    chartSuggestions?: unknown;
     notes?: unknown;
   };
 
+  const normalizeMetric = (metric: unknown) => {
+    const input = metric as { label?: unknown; value?: unknown; format?: unknown };
+
+    return {
+      label: String(input.label || 'Metric'),
+      value: typeof input.value === 'number' ? input.value : String(input.value ?? ''),
+      format: String(input.format || 'text'),
+    };
+  };
+  const normalizeSheet = (sheet: unknown) => {
+    const input = sheet as {
+      sheetName?: unknown;
+      description?: unknown;
+      columns?: unknown;
+      rows?: unknown;
+      formulas?: unknown;
+      summaryMetrics?: unknown;
+      chartSuggestions?: unknown;
+    };
+    const columns = Array.isArray(input.columns)
+      ? input.columns.map((item) => String(item || '')).filter(Boolean)
+      : [];
+    const rows = Array.isArray(input.rows)
+      ? input.rows
+          .filter((row): row is unknown[] => Array.isArray(row))
+          .map((row) => row.map((cell) => (typeof cell === 'number' ? cell : String(cell ?? ''))))
+      : [];
+
+    return {
+      sheetName: String(input.sheetName || 'Main Data'),
+      description: String(input.description || ''),
+      columns: columns.length > 0 ? columns : ['Item', 'Value'],
+      rows,
+      formulas: Array.isArray(input.formulas)
+        ? input.formulas.map((formula) => {
+            const formulaInput = formula as { cell?: unknown; formula?: unknown; label?: unknown };
+
+            return {
+              cell: String(formulaInput.cell || ''),
+              formula: String(formulaInput.formula || '').replace(/^=/, ''),
+              label: String(formulaInput.label || ''),
+            };
+          }).filter((formula) => formula.cell && formula.formula)
+        : [],
+      summaryMetrics: Array.isArray(input.summaryMetrics)
+        ? input.summaryMetrics.map(normalizeMetric)
+        : [],
+      chartSuggestions: Array.isArray(input.chartSuggestions)
+        ? input.chartSuggestions.map((item) => String(item)).filter(Boolean)
+        : [],
+    };
+  };
+
+  const sheets = Array.isArray(parsed.sheets)
+    ? parsed.sheets.map(normalizeSheet)
+    : [];
   const columns = Array.isArray(parsed.columns)
     ? parsed.columns.map((item) => String(item || '')).filter(Boolean)
     : [];
@@ -97,11 +210,25 @@ function parseSpreadsheetContent(content: string) {
         .map((row) => row.map((cell) => (typeof cell === 'number' ? cell : String(cell ?? ''))))
     : [];
   const safeColumns = columns.length > 0 ? columns : ['Item', 'Value'];
-
-  return {
-    title: String(parsed.title || 'AI Studio Spreadsheet'),
+  const fallbackSheet = {
+    sheetName: 'Main Data',
+    description: '',
     columns: safeColumns,
     rows: rows.length > 0 ? rows : [['Generated content', content]],
+    formulas: [],
+    summaryMetrics: [],
+    chartSuggestions: [],
+  };
+
+  return {
+    workbookTitle: String(parsed.workbookTitle || parsed.title || 'AI Studio Spreadsheet'),
+    sheets: sheets.length > 0 ? sheets : [fallbackSheet],
+    summaryMetrics: Array.isArray(parsed.summaryMetrics)
+      ? parsed.summaryMetrics.map(normalizeMetric)
+      : [],
+    chartSuggestions: Array.isArray(parsed.chartSuggestions)
+      ? parsed.chartSuggestions.map((item) => String(item)).filter(Boolean)
+      : [],
     notes: Array.isArray(parsed.notes)
       ? parsed.notes.map((item) => String(item)).filter(Boolean)
       : [],

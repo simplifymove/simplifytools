@@ -54,14 +54,54 @@ function buildDocumentPrompt(input: {
   tone: string;
   length: string;
 }) {
+  const typeGuidance: Record<string, string> = {
+    report:
+      'Use executive summary, findings, evidence, key insights, recommendations, and conclusion.',
+    proposal:
+      'Use problem, proposed solution, scope of work, timeline, deliverables, pricing or next steps, and decision criteria.',
+    'business plan':
+      'Use market overview, product or service, customer segments, go-to-market strategy, operations, risks, and financial assumptions.',
+    resume:
+      'Use profile summary, core skills, professional experience, achievements, education, and optional certifications.',
+    letter:
+      'Use formal letter structure with subject, greeting, concise body sections, requested action, and closing.',
+    'blog article':
+      'Use compelling title, introduction, scannable sections, practical examples, key takeaways, and conclusion.',
+  };
+
   return [
-    'Create structured document content for SimplifyConvert AI Studio.',
-    'Return only valid JSON with this shape:',
-    '{"title":"string","summary":"string","sections":[{"heading":"string","paragraphs":["string"],"bullets":["string"]}],"closing":"string"}',
+    'Create a polished, professional SaaS-quality document for SimplifyConvert AI Studio.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      title: 'string',
+      subtitle: 'string',
+      executiveSummary: 'string',
+      sections: [
+        {
+          heading: 'string',
+          paragraphs: ['string'],
+          bulletPoints: ['string'],
+          tables: [
+            {
+              title: 'string',
+              columns: ['string'],
+              rows: [['string or number']],
+            },
+          ],
+        },
+      ],
+      keyInsights: ['string'],
+      recommendations: ['string'],
+      conclusion: 'string',
+    }),
     'Rules:',
-    '- Do not include markdown fences.',
-    '- Keep content polished, specific, and ready for a Word document.',
-    '- Use paragraphs and bullets appropriate for the requested document type.',
+    '- Make the output boardroom-ready, specific, and useful without filler.',
+    '- Use short paragraphs, strong headings, and concrete details.',
+    '- Include tables where they improve clarity, comparison, timelines, pricing, assumptions, or metrics.',
+    '- Include 3-6 keyInsights and 3-6 recommendations unless the document type makes recommendations inappropriate.',
+    '- Avoid generic claims. Infer realistic structure from the user brief.',
+    `Document type guidance: ${typeGuidance[input.documentType] || typeGuidance.report}`,
     `Document type: ${input.documentType}`,
     `Tone: ${input.tone}`,
     `Length: ${input.length}`,
@@ -86,13 +126,18 @@ function extractJsonObject(content: string) {
 function parseDocumentContent(content: string) {
   const parsed = JSON.parse(extractJsonObject(content)) as {
     title?: unknown;
-    summary?: unknown;
+    subtitle?: unknown;
+    executiveSummary?: unknown;
     sections?: Array<{
       heading?: unknown;
       paragraphs?: unknown;
+      bulletPoints?: unknown;
       bullets?: unknown;
+      tables?: unknown;
     }>;
-    closing?: unknown;
+    keyInsights?: unknown;
+    recommendations?: unknown;
+    conclusion?: unknown;
   };
 
   const sections = Array.isArray(parsed.sections)
@@ -101,17 +146,51 @@ function parseDocumentContent(content: string) {
         paragraphs: Array.isArray(section.paragraphs)
           ? section.paragraphs.map((item) => String(item)).filter(Boolean)
           : [],
-        bullets: Array.isArray(section.bullets)
-          ? section.bullets.map((item) => String(item)).filter(Boolean)
+        bulletPoints: Array.isArray(section.bulletPoints)
+          ? section.bulletPoints.map((item) => String(item)).filter(Boolean)
+          : Array.isArray(section.bullets)
+            ? section.bullets.map((item) => String(item)).filter(Boolean)
+            : [],
+        tables: Array.isArray(section.tables)
+          ? section.tables.map((table) => {
+              const tableInput = table as {
+                title?: unknown;
+                columns?: unknown;
+                rows?: unknown;
+              };
+              const columns = Array.isArray(tableInput.columns)
+                ? tableInput.columns.map((item) => String(item)).filter(Boolean)
+                : [];
+              const rows = Array.isArray(tableInput.rows)
+                ? tableInput.rows
+                    .filter((row): row is unknown[] => Array.isArray(row))
+                    .map((row) => row.map((cell) => (typeof cell === 'number' ? cell : String(cell ?? ''))))
+                : [];
+
+              return {
+                title: String(tableInput.title || 'Table'),
+                columns,
+                rows,
+              };
+            }).filter((table) => table.columns.length > 0 && table.rows.length > 0)
           : [],
       }))
     : [];
 
   return {
     title: String(parsed.title || 'AI Studio Document'),
-    summary: String(parsed.summary || ''),
-    sections: sections.length > 0 ? sections : [{ heading: 'Overview', paragraphs: [content], bullets: [] }],
-    closing: String(parsed.closing || ''),
+    subtitle: String(parsed.subtitle || ''),
+    executiveSummary: String(parsed.executiveSummary || ''),
+    sections: sections.length > 0
+      ? sections
+      : [{ heading: 'Overview', paragraphs: [content], bulletPoints: [], tables: [] }],
+    keyInsights: Array.isArray(parsed.keyInsights)
+      ? parsed.keyInsights.map((item) => String(item)).filter(Boolean)
+      : [],
+    recommendations: Array.isArray(parsed.recommendations)
+      ? parsed.recommendations.map((item) => String(item)).filter(Boolean)
+      : [],
+    conclusion: String(parsed.conclusion || ''),
   };
 }
 

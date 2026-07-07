@@ -1,40 +1,82 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { createXlsxBuffer, type SpreadsheetCellValue } from '@/lib/ai-studio/xlsx';
+import {
+  createProfessionalXlsxBuffer,
+  type ProfessionalWorkbook,
+  type SpreadsheetMetric,
+  type WorkbookSheet,
+} from '@/lib/ai-studio/xlsx';
 import { authOptions } from '@/lib/auth/config';
 import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 
 interface ExportSpreadsheetRequest {
+  workbookTitle?: string;
   title?: string;
+  sheets?: WorkbookSheet[];
   columns?: string[];
   rows?: Array<Array<string | number>>;
+  summaryMetrics?: SpreadsheetMetric[];
+  chartSuggestions?: string[];
   notes?: string[];
 }
 
-function sanitizeRows(body: ExportSpreadsheetRequest): SpreadsheetCellValue[][] {
-  const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : 'AI Studio Spreadsheet';
+function sanitizeWorkbook(body: ExportSpreadsheetRequest): ProfessionalWorkbook {
+  const workbookTitle =
+    typeof body.workbookTitle === 'string' && body.workbookTitle.trim()
+      ? body.workbookTitle.trim()
+      : typeof body.title === 'string' && body.title.trim()
+        ? body.title.trim()
+        : 'AI Studio Spreadsheet';
+  const sheets = Array.isArray(body.sheets)
+    ? body.sheets
+        .map((sheet) => ({
+          sheetName: String(sheet.sheetName || 'Main Data'),
+          description: typeof sheet.description === 'string' ? sheet.description : '',
+          columns: Array.isArray(sheet.columns)
+            ? sheet.columns.map((column) => String(column || '')).filter(Boolean)
+            : [],
+          rows: Array.isArray(sheet.rows)
+            ? sheet.rows
+                .filter((row): row is Array<string | number> => Array.isArray(row))
+                .map((row) => row.map((cell) => (typeof cell === 'number' ? cell : String(cell ?? ''))))
+            : [],
+          formulas: Array.isArray(sheet.formulas) ? sheet.formulas : [],
+          summaryMetrics: Array.isArray(sheet.summaryMetrics) ? sheet.summaryMetrics : [],
+          chartSuggestions: Array.isArray(sheet.chartSuggestions)
+            ? sheet.chartSuggestions.map((item) => String(item)).filter(Boolean)
+            : [],
+        }))
+        .filter((sheet) => sheet.columns.length > 0)
+    : [];
   const columns = Array.isArray(body.columns)
     ? body.columns.map((column) => String(column || '')).filter(Boolean)
     : [];
   const rows = Array.isArray(body.rows)
     ? body.rows
         .filter((row): row is Array<string | number> => Array.isArray(row))
-        .map((row) => row.map((cell) => ({ value: typeof cell === 'number' ? cell : String(cell ?? '') })))
+        .map((row) => row.map((cell) => (typeof cell === 'number' ? cell : String(cell ?? ''))))
     : [];
-  const output: SpreadsheetCellValue[][] = [[{ value: title }], []];
-
-  if (columns.length > 0) {
-    output.push(columns.map((column) => ({ value: column })));
-  }
-
-  output.push(...rows);
 
   const notes = Array.isArray(body.notes) ? body.notes.map((note) => String(note)).filter(Boolean) : [];
-  if (notes.length > 0) {
-    output.push([], [{ value: 'Notes' }], ...notes.map((note) => [{ value: note }]));
-  }
 
-  return output;
+  return {
+    workbookTitle,
+    sheets: sheets.length > 0
+      ? sheets
+      : [
+          {
+            sheetName: 'Main Data',
+            description: 'Generated with SimplifyConvert AI Studio',
+            columns: columns.length > 0 ? columns : ['Item', 'Value'],
+            rows: rows.length > 0 ? rows : [['No data', '']],
+          },
+        ],
+    summaryMetrics: Array.isArray(body.summaryMetrics) ? body.summaryMetrics : [],
+    chartSuggestions: Array.isArray(body.chartSuggestions)
+      ? body.chartSuggestions.map((item) => String(item)).filter(Boolean)
+      : [],
+    notes,
+  };
 }
 
 export async function POST(request: Request) {
@@ -52,7 +94,7 @@ export async function POST(request: Request) {
     }
 
     const body = (await request.json()) as ExportSpreadsheetRequest;
-    const buffer = createXlsxBuffer(sanitizeRows(body));
+    const buffer = createProfessionalXlsxBuffer(sanitizeWorkbook(body));
 
     return new NextResponse(new Uint8Array(buffer), {
       headers: {

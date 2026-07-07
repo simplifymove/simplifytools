@@ -24,14 +24,22 @@ interface AiStudioWalletSummary {
 interface DocumentSection {
   heading: string;
   paragraphs: string[];
-  bullets: string[];
+  bulletPoints: string[];
+  tables: Array<{
+    title: string;
+    columns: string[];
+    rows: Array<Array<string | number>>;
+  }>;
 }
 
 interface GeneratedDocument {
   title: string;
-  summary: string;
+  subtitle: string;
+  executiveSummary: string;
   sections: DocumentSection[];
-  closing: string;
+  keyInsights: string[];
+  recommendations: string[];
+  conclusion: string;
 }
 
 const documentTypes = ['report', 'proposal', 'business plan', 'resume', 'letter', 'blog article'];
@@ -260,7 +268,9 @@ export default function DocumentMakerClient() {
                   {loading ? <Loader size={16} className="animate-spin" /> : <FileText size={16} />}
                   {loading ? 'Generating document' : 'Generate Document'}
                 </button>
-                <span className="text-sm text-slate-500">Fixed cost: {creditCost} credits</span>
+                <span className="text-sm text-slate-500">
+                  {creditCost} credits required - DOCX export - professional formatting included
+                </span>
               </div>
             </form>
 
@@ -287,13 +297,58 @@ export default function DocumentMakerClient() {
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h2 className="text-2xl font-bold">{document.title}</h2>
-                    {document.summary && <p className="mt-2 text-sm leading-6 text-slate-600">{document.summary}</p>}
+                    {document.subtitle && <p className="mt-1 text-sm font-semibold text-cyan-800">{document.subtitle}</p>}
+                    {document.executiveSummary && <p className="mt-2 text-sm leading-6 text-slate-600">{document.executiveSummary}</p>}
                   </div>
                   <button onClick={handleExport} disabled={exporting} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white disabled:bg-slate-400">
                     {exporting ? <Loader size={16} className="animate-spin" /> : <Download size={16} />}
                     {exporting ? 'Exporting' : 'Export DOCX'}
                   </button>
                 </div>
+                <div className="mb-6 grid gap-3 md:grid-cols-3">
+                  <div className="rounded-lg border border-cyan-100 bg-cyan-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-cyan-800">Sections</p>
+                    <p className="mt-1 text-2xl font-bold text-cyan-950">{document.sections.length}</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Export</p>
+                    <p className="mt-1 font-bold text-slate-950">DOCX with cover page</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Formatting</p>
+                    <p className="mt-1 font-bold text-slate-950">Headings, tables, callouts</p>
+                  </div>
+                </div>
+                {(document.keyInsights.length > 0 || document.recommendations.length > 0) && (
+                  <div className="mb-6 grid gap-4 md:grid-cols-2">
+                    {document.keyInsights.length > 0 && (
+                      <div className="rounded-lg border border-cyan-100 bg-cyan-50 p-4">
+                        <h3 className="text-sm font-bold text-cyan-950">Key Insights</h3>
+                        <ul className="mt-3 space-y-2 text-sm text-cyan-900">
+                          {document.keyInsights.slice(0, 4).map((item) => (
+                            <li key={item} className="flex gap-2">
+                              <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cyan-700" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {document.recommendations.length > 0 && (
+                      <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
+                        <h3 className="text-sm font-bold text-emerald-950">Recommendations</h3>
+                        <ul className="mt-3 space-y-2 text-sm text-emerald-900">
+                          {document.recommendations.slice(0, 4).map((item) => (
+                            <li key={item} className="flex gap-2">
+                              <span className="mt-2 h-1.5 w-1.5 rounded-full bg-emerald-700" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="space-y-5">
                   {document.sections.map((section) => (
                     <section key={section.heading} className="rounded-lg border border-slate-100 bg-slate-50 p-4">
@@ -301,15 +356,20 @@ export default function DocumentMakerClient() {
                       {section.paragraphs.map((paragraph) => (
                         <p key={paragraph} className="mt-3 text-sm leading-7 text-slate-700">{paragraph}</p>
                       ))}
-                      {section.bullets.length > 0 && (
+                      {section.bulletPoints.length > 0 && (
                         <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
-                          {section.bullets.map((bullet) => (
+                          {section.bulletPoints.map((bullet) => (
                             <li key={bullet} className="flex gap-2">
                               <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-700" />
                               <span>{bullet}</span>
                             </li>
                           ))}
                         </ul>
+                      )}
+                      {section.tables.length > 0 && (
+                        <p className="mt-3 text-xs font-bold uppercase tracking-wide text-cyan-800">
+                          Includes {section.tables.length} formatted table{section.tables.length === 1 ? '' : 's'} in DOCX
+                        </p>
                       )}
                     </section>
                   ))}
@@ -320,7 +380,8 @@ export default function DocumentMakerClient() {
                 <FileText size={24} className="text-cyan-800" />
                 <h2 className="mt-4 text-lg font-bold">Your generated document will appear here</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Add a brief, choose the document type, then generate a DOCX-ready draft.
+                  Add a brief, choose the document type, then generate a DOCX-ready draft with cover page,
+                  overview, section hierarchy, tables, insights, and recommendations.
                 </p>
               </div>
             )}

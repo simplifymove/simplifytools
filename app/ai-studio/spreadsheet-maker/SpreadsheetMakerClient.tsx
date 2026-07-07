@@ -22,9 +22,18 @@ interface AiStudioWalletSummary {
 }
 
 interface GeneratedSpreadsheet {
-  title: string;
-  columns: string[];
-  rows: Array<Array<string | number>>;
+  workbookTitle: string;
+  sheets: Array<{
+    sheetName: string;
+    description: string;
+    columns: string[];
+    rows: Array<Array<string | number>>;
+    formulas: Array<{ cell: string; formula: string; label: string }>;
+    summaryMetrics: Array<{ label: string; value: string | number; format: string }>;
+    chartSuggestions: string[];
+  }>;
+  summaryMetrics: Array<{ label: string; value: string | number; format: string }>;
+  chartSuggestions: string[];
   notes: string[];
 }
 
@@ -160,7 +169,7 @@ export default function SpreadsheetMakerClient() {
       const url = URL.createObjectURL(blob);
       const anchor = window.document.createElement('a');
       anchor.href = url;
-      anchor.download = buildFileName(spreadsheet.title);
+      anchor.download = buildFileName(spreadsheet.workbookTitle);
       anchor.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -244,7 +253,9 @@ export default function SpreadsheetMakerClient() {
                   {loading ? <Loader size={16} className="animate-spin" /> : <Table2 size={16} />}
                   {loading ? 'Generating spreadsheet' : 'Generate Spreadsheet'}
                 </button>
-                <span className="text-sm text-slate-500">Fixed cost: {creditCost} credits</span>
+                <span className="text-sm text-slate-500">
+                  {creditCost} credits required - XLSX export - professional formatting included
+                </span>
               </div>
             </form>
 
@@ -270,7 +281,7 @@ export default function SpreadsheetMakerClient() {
               <article className="rounded-lg border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/70">
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold">{spreadsheet.title}</h2>
+                    <h2 className="text-2xl font-bold">{spreadsheet.workbookTitle}</h2>
                     {spreadsheet.notes.length > 0 && (
                       <p className="mt-2 text-sm leading-6 text-slate-600">{spreadsheet.notes[0]}</p>
                     )}
@@ -280,19 +291,48 @@ export default function SpreadsheetMakerClient() {
                     {exporting ? 'Exporting' : 'Export XLSX'}
                   </button>
                 </div>
+                <div className="mb-6 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-lg border border-cyan-100 bg-cyan-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-cyan-800">Sheets</p>
+                    <p className="mt-1 text-2xl font-bold text-cyan-950">{spreadsheet.sheets.length + 2}</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Metrics</p>
+                    <p className="mt-1 font-bold text-slate-950">{spreadsheet.summaryMetrics.length}</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Formulas</p>
+                    <p className="mt-1 font-bold text-slate-950">{spreadsheet.sheets.reduce((total, sheet) => total + sheet.formulas.length, 0)}</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Export</p>
+                    <p className="mt-1 font-bold text-slate-950">Styled XLSX workbook</p>
+                  </div>
+                </div>
+                {spreadsheet.summaryMetrics.length > 0 && (
+                  <div className="mb-6 grid gap-3 md:grid-cols-3">
+                    {spreadsheet.summaryMetrics.slice(0, 6).map((metric) => (
+                      <div key={metric.label} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{metric.label}</p>
+                        <p className="mt-1 text-lg font-bold text-slate-950">{metric.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="overflow-x-auto rounded-lg border border-slate-200">
+                  {spreadsheet.sheets.length > 0 && (
                   <table className="min-w-full text-left text-sm">
                     <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
                       <tr>
-                        {spreadsheet.columns.map((column) => (
+                        {spreadsheet.sheets[0].columns.map((column) => (
                           <th key={column} className="px-4 py-3">{column}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {spreadsheet.rows.map((row, rowIndex) => (
-                        <tr key={`${spreadsheet.title}-${rowIndex}`}>
-                          {spreadsheet.columns.map((column, columnIndex) => (
+                      {spreadsheet.sheets[0].rows.slice(0, 8).map((row, rowIndex) => (
+                        <tr key={`${spreadsheet.workbookTitle}-${rowIndex}`}>
+                          {spreadsheet.sheets[0].columns.map((column, columnIndex) => (
                             <td key={`${column}-${columnIndex}`} className="px-4 py-3 text-slate-700">
                               {row[columnIndex] ?? ''}
                             </td>
@@ -301,6 +341,15 @@ export default function SpreadsheetMakerClient() {
                       ))}
                     </tbody>
                   </table>
+                  )}
+                </div>
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {spreadsheet.sheets.map((sheet) => (
+                    <div key={sheet.sheetName} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                      <p className="font-bold text-slate-950">{sheet.sheetName}</p>
+                      <p className="mt-1 text-sm text-slate-600">{sheet.description || `${sheet.rows.length} rows`}</p>
+                    </div>
+                  ))}
                 </div>
               </article>
             ) : (
@@ -308,7 +357,8 @@ export default function SpreadsheetMakerClient() {
                 <Table2 size={24} className="text-cyan-800" />
                 <h2 className="mt-4 text-lg font-bold">Your generated spreadsheet will appear here</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Add a brief, choose the spreadsheet type, then generate an XLSX-ready table.
+                  Add a brief, choose the spreadsheet type, then generate a styled XLSX workbook with Summary,
+                  data sheets, formulas, formatting, filters, and notes.
                 </p>
               </div>
             )}
