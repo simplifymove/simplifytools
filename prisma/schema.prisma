@@ -281,6 +281,7 @@ model AiStudioUsageLog {
   id                 String    @id @default(cuid())
   userId             String
   requestId          String    @unique
+  toolType           String    @default("presentation")
   topic              String?
   slideCount         Int
   model              String
@@ -301,6 +302,7 @@ model AiStudioUsageLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([toolType])
   @@index([model])
   @@index([provider])
   @@index([status])

@@ -13,6 +13,7 @@ import {
   History,
   Presentation,
   Sparkles,
+  Table2,
   WalletCards,
 } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
@@ -72,6 +73,30 @@ const creditSteps = [
     title: 'Export PPTX',
     description: 'Download editable PowerPoint files for review, delivery, or sharing.',
     icon: Download,
+  },
+];
+
+const studioTools = [
+  {
+    title: 'Presentation Maker',
+    description: 'Create slide-by-slide presentation plans and export editable PPTX files.',
+    href: '/ai-studio/presentation-maker',
+    cta: 'Create Presentation',
+    icon: Presentation,
+  },
+  {
+    title: 'Document Maker',
+    description: 'Generate reports, proposals, business plans, resumes, letters, and blog articles.',
+    href: '/ai-studio/document-maker',
+    cta: 'Create Document',
+    icon: FileText,
+  },
+  {
+    title: 'Spreadsheet Maker',
+    description: 'Build budgets, reports, trackers, invoices, comparison tables, and plans.',
+    href: '/ai-studio/spreadsheet-maker',
+    cta: 'Create Spreadsheet',
+    icon: Table2,
   },
 ];
 
@@ -141,6 +166,7 @@ async function getDashboardData() {
       select: {
         id: true,
         topic: true,
+        toolType: true,
         slideCount: true,
         status: true,
         actualCredits: true,
@@ -165,8 +191,11 @@ async function getDashboardData() {
   const activity = [
     ...recentUsage.map((item) => ({
       id: `usage-${item.id}`,
-      label: item.topic ? `Generated: ${item.topic}` : 'Presentation generation',
-      detail: `${item.slideCount} slides · ${item.status}`,
+      label: item.topic ? `Generated: ${item.topic}` : 'AI Studio generation',
+      detail:
+        item.toolType === 'presentation'
+          ? `${item.slideCount} slides - ${item.status}`
+          : `${item.toolType} - ${item.status}`,
       amount:
         item.actualCredits?.toNumber() ??
         item.estimatedCredits.toNumber(),
@@ -227,9 +256,9 @@ export default async function AIStudioPage() {
       icon: BarChart3,
     },
     {
-      label: 'Total Presentations Generated',
+      label: 'Total Generations',
       value: dashboard.totalPresentationsGenerated.toLocaleString(),
-      detail: 'Completed presentation maker runs',
+      detail: 'Completed AI Studio generations',
       icon: FileText,
     },
   ];
@@ -289,6 +318,20 @@ export default async function AIStudioPage() {
                   Create Presentation
                 </Link>
                 <Link
+                  href="/ai-studio/document-maker"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  <FileText size={16} />
+                  Create Document
+                </Link>
+                <Link
+                  href="/ai-studio/spreadsheet-maker"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  <Table2 size={16} />
+                  Create Spreadsheet
+                </Link>
+                <Link
                   href="/ai-studio/pricing"
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
                 >
@@ -309,6 +352,35 @@ export default async function AIStudioPage() {
 
         <section className="bg-[#f7f8fb] px-4 py-10 text-slate-950 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[1160px] space-y-8">
+            <section className="grid gap-4 md:grid-cols-3">
+              {studioTools.map((tool) => {
+                const Icon = tool.icon;
+
+                return (
+                  <Link
+                    key={tool.title}
+                    href={tool.href}
+                    className="rounded-lg border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/70 transition hover:-translate-y-0.5 hover:border-cyan-300"
+                  >
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-950 text-cyan-100">
+                        <Icon size={22} />
+                      </div>
+                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                        Available
+                      </span>
+                    </div>
+                    <h2 className="text-lg font-bold text-slate-950">{tool.title}</h2>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{tool.description}</p>
+                    <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-cyan-800">
+                      {tool.cta}
+                      <ArrowRight size={15} />
+                    </span>
+                  </Link>
+                );
+              })}
+            </section>
+
             <section className="grid gap-4 md:grid-cols-3">
               {creditSteps.map((step, index) => {
                 const Icon = step.icon;
@@ -351,7 +423,7 @@ export default async function AIStudioPage() {
                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-slate-950">Recent AI Studio Activity</h2>
-                    <p className="mt-1 text-sm text-slate-600">Presentation generations and wallet updates appear here.</p>
+                    <p className="mt-1 text-sm text-slate-600">AI Studio generations and wallet updates appear here.</p>
                   </div>
                   <Link href="/ai-studio/billing" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-800">
                     View Usage
@@ -402,6 +474,26 @@ export default async function AIStudioPage() {
                     <span className="flex items-center gap-3 text-sm font-bold">
                       <Presentation size={18} />
                       Create Presentation
+                    </span>
+                    <ChevronRight size={18} />
+                  </Link>
+                  <Link
+                    href="/ai-studio/document-maker"
+                    className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 text-slate-950 transition hover:border-cyan-300"
+                  >
+                    <span className="flex items-center gap-3 text-sm font-bold">
+                      <FileText size={18} />
+                      Create Document
+                    </span>
+                    <ChevronRight size={18} />
+                  </Link>
+                  <Link
+                    href="/ai-studio/spreadsheet-maker"
+                    className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 text-slate-950 transition hover:border-cyan-300"
+                  >
+                    <span className="flex items-center gap-3 text-sm font-bold">
+                      <Table2 size={18} />
+                      Create Spreadsheet
                     </span>
                     <ChevronRight size={18} />
                   </Link>

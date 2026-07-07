@@ -298,6 +298,7 @@ async function logUsage(input: {
     data: {
       userId: input.userId,
       requestId: input.requestId,
+      toolType: 'presentation',
       topic: input.topic,
       slideCount: input.slideCount,
       model: input.model ?? primaryPresentationModel,

@@ -4,6 +4,9 @@ export const AI_STUDIO_ESTIMATE_CONFIG = {
   agentOverheadCredits: 8,
 };
 
+export const AI_STUDIO_DOCUMENT_CREDITS = 5;
+export const AI_STUDIO_SPREADSHEET_CREDITS = 5;
+
 export function normalizeAiStudioSlideCount(slideCount: unknown) {
   const parsed = Number(slideCount);
 

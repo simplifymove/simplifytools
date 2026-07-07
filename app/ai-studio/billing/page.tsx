@@ -287,6 +287,7 @@ async function getBillingData() {
         select: {
           id: true,
           topic: true,
+          toolType: true,
           slideCount: true,
           model: true,
           status: true,
@@ -648,6 +649,7 @@ export default async function AiStudioBillingPage() {
                     <thead className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
                       <tr>
                         <th className="px-4 py-3">Topic</th>
+                        <th className="px-4 py-3">Tool</th>
                         <th className="px-4 py-3">Slides</th>
                         <th className="px-4 py-3">Credits Used</th>
                         <th className="px-4 py-3">Status</th>
@@ -671,10 +673,15 @@ export default async function AiStudioBillingPage() {
                         return (
                           <tr key={usage.id} className="align-top">
                             <td className="max-w-[300px] px-4 py-4 font-semibold text-slate-950">
-                              {usage.topic || 'Untitled presentation'}
+                              {usage.topic || 'Untitled AI Studio generation'}
                             </td>
                             <td className="px-4 py-4 text-slate-700">
-                              {usage.slideCount}
+                              {titleCase(usage.toolType)}
+                            </td>
+                            <td className="px-4 py-4 text-slate-700">
+                              {usage.toolType === 'presentation'
+                                ? usage.slideCount
+                                : '-'}
                             </td>
                             <td className="px-4 py-4 font-semibold text-slate-950">
                               {formatCredits(creditsUsed)}
@@ -710,7 +717,7 @@ export default async function AiStudioBillingPage() {
                 <EmptyState
                   icon={Presentation}
                   title="No generations yet"
-                  detail="AI Studio presentation generation usage will appear here after you create a deck."
+                  detail="AI Studio generation usage will appear here after you create a presentation, document, or spreadsheet."
                 />
               )}
             </section>

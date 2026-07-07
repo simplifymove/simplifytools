@@ -860,6 +860,7 @@ export default async function AiStudioAdminPage({
     id: item.id,
     userName: item.user.name || 'Unnamed user',
     userEmail: item.user.email || 'No email',
+    toolType: item.toolType,
     topic: item.topic || 'Untitled presentation',
     slideCount: item.slideCount,
     creditsCharged: toNumber(item.actualCredits ?? item.estimatedCredits),

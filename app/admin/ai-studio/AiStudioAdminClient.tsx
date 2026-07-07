@@ -47,6 +47,7 @@ interface UsageRow {
   id: string;
   userName: string;
   userEmail: string;
+  toolType: string;
   topic: string;
   slideCount: number;
   creditsCharged: number;
@@ -866,7 +867,7 @@ export function AiStudioAdminClient({
                 <h2 className="text-lg font-bold">Usage History</h2>
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                Recent AI presentation generations.
+                Recent AI Studio premium generations.
               </p>
             </div>
             <div className="max-h-[520px] overflow-auto">
@@ -874,6 +875,7 @@ export function AiStudioAdminClient({
                 <thead className="sticky top-0 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
                   <tr>
                     <th className="px-5 py-3">Topic</th>
+                    <th className="px-5 py-3">Tool</th>
                     <th className="px-5 py-3">Slides</th>
                     <th className="px-5 py-3">Credits</th>
                     <th className="px-5 py-3">Provider</th>
@@ -892,7 +894,14 @@ export function AiStudioAdminClient({
                           {item.userEmail}
                         </p>
                       </td>
-                      <td className="px-5 py-3">{item.slideCount}</td>
+                      <td className="px-5 py-3 text-slate-600">
+                        {item.toolType}
+                      </td>
+                      <td className="px-5 py-3">
+                        {item.toolType === 'presentation'
+                          ? item.slideCount
+                          : '-'}
+                      </td>
                       <td className="px-5 py-3 font-bold">
                         {formatCredits(item.creditsCharged)}
                       </td>
@@ -921,7 +930,7 @@ export function AiStudioAdminClient({
                     <tr>
                       <td
                         className="px-5 py-8 text-center text-slate-500"
-                        colSpan={8}
+                        colSpan={9}
                       >
                         No usage records yet.
                       </td>
