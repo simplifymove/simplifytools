@@ -80,7 +80,7 @@ const calculatorConfig: Record<string, any> = {
 
 export default function CalculatorPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = (params?.slug as string | undefined) ?? '';
 
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<string | null>(null);

@@ -13,10 +13,10 @@ function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
-  const error = searchParams.get('error')
+  const error = searchParams?.get('error')
   
   // Read callbackUrl from query params, default to /account
-  const callbackUrl = searchParams.get('callbackUrl') || '/account'
+  const callbackUrl = searchParams?.get('callbackUrl') || '/account'
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)

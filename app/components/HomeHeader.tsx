@@ -184,6 +184,7 @@ export function HomeHeader() {
                 alt="SimplifyConvert free online tools logo" 
                 width={20} 
                 height={20}
+                unoptimized
                 className="w-full h-full object-cover"
               />
             </div>

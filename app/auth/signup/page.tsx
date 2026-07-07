@@ -14,7 +14,7 @@ function SignUpContent() {
   const [isLoading, setIsLoading] = useState(false)
   
   // Read callbackUrl from query params, default to /account
-  const callbackUrl = searchParams.get('callbackUrl') || '/account'
+  const callbackUrl = searchParams?.get('callbackUrl') || '/account'
 
   const handleGoogleSignUp = async () => {
     setIsLoading(true)

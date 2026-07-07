@@ -24,8 +24,8 @@ function ToolsContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get('category');
-  const searchParam = searchParams.get('search');
+  const categoryParam = searchParams?.get('category');
+  const searchParam = searchParams?.get('search');
 
   // Initialize searchTerm from URL parameter
   React.useEffect(() => {
@@ -371,7 +371,6 @@ export default function ToolsPage() {
     </Suspense>
   );
 }
-
 
 
 

@@ -282,7 +282,7 @@ const defaultFaqItems = [
 
 export default function AIWriteToolPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = (params?.slug as string | undefined) ?? '';
 
   const [tool, setTool] = useState<AIWriteTool | null>(null);
   const [inputs, setInputs] = useState<Record<string, any>>({});

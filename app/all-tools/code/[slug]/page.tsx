@@ -303,7 +303,7 @@ const getRelatedTools = (toolId: string): { id: string; title: string; descripti
 
 export default function CodeToolPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = (params?.slug as string | undefined) ?? '';
 
   const [tool, setTool] = useState<CodeTool | null>(null);
   const [input, setInput] = useState('');

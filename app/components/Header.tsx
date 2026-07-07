@@ -101,6 +101,7 @@ export function Header() {
                 alt="SimplifyConvert free online tools logo" 
                 width={28} 
                 height={28}
+                unoptimized
                 className="w-full h-full object-cover"
               />
             </div>
@@ -335,5 +336,4 @@ export function Header() {
     </header>
   );
 }
-
 

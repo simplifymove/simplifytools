@@ -74,7 +74,7 @@ function getRelatedTools(toolId: string): Array<{ id: string; title: string; des
 export default function DataToolPage() {
   const params = useParams();
   const router = useRouter();
-  const slug = params.slug as string;
+  const slug = (params?.slug as string | undefined) ?? '';
 
   const tool = getDataToolById(slug);
 
