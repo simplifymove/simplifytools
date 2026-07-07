@@ -388,10 +388,10 @@ export default async function AiStudioBillingPage() {
                   </span>
                 </div>
                 <h1 className="text-4xl font-bold tracking-normal text-white sm:text-5xl">
-                  Purchase & Wallet History
+                  Purchase and Wallet History
                 </h1>
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                  Review AI Credit balance, plan purchases, credit adjustments,
+                  Review purchases, current wallet balance, credit movements,
                   and presentation generation usage in one place.
                 </p>
               </div>
@@ -409,7 +409,7 @@ export default async function AiStudioBillingPage() {
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
                 >
                   <Presentation size={16} />
-                  New Presentation
+                  Create Presentation
                 </Link>
               </div>
             </div>

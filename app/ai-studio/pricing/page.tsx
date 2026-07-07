@@ -41,7 +41,7 @@ export default async function AiStudioPricingPage() {
 
   const region = await getAiStudioRequestRegion();
   const plans = AI_STUDIO_PLANS.filter((plan) => plan.region === region);
-  const regionLabel = region === 'india' ? 'India plans · INR' : 'Global plans · USD';
+  const regionLabel = region === 'india' ? 'India plans - INR via Razorpay' : 'Global plans - USD via Stripe';
 
   return (
     <>
@@ -77,8 +77,8 @@ export default async function AiStudioPricingPage() {
                 Buy AI Studio Credits
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                Choose credits for professional AI presentations, smart visual layouts, images and visual storytelling,
-                and PPTX export.
+                Choose a one-time credit pack for professional AI presentations, smart visual layouts,
+                and editable PPTX export.
               </p>
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-cyan-50">
                 <WalletCards size={16} />
@@ -102,8 +102,8 @@ export default async function AiStudioPricingPage() {
             <AiStudioPricingClient plans={plans} />
 
             <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-600 shadow-sm">
-              Razorpay checkout is enabled for India plans. Stripe Checkout is enabled for global USD plans as a
-              one-time AI Credits purchase.
+              Razorpay checkout is used for INR plans. Stripe Checkout is used for global USD plans.
+              Credits are used only for AI Studio premium tools and are not a cash balance.
             </div>
           </div>
         </section>

@@ -86,8 +86,9 @@ const progressSteps = [
   'Preparing export',
 ];
 
-const aiServiceUnavailableMessage = 'AI service is currently unavailable. Please try again later.';
-const insufficientCreditsMessage = 'Insufficient AI credits. Buy an AI Studio plan to continue.';
+const aiServiceUnavailableMessage =
+  'AI Studio could not complete this generation right now. Please try again in a few minutes; credits are only used after a successful generation.';
+const insufficientCreditsMessage = 'Not enough AI Studio credits for this presentation.';
 
 const examplePrompts: ExamplePrompt[] = [
   {
@@ -511,6 +512,10 @@ export default function PresentationMakerClient() {
   const presentationPlan = outline ? parsePresentationPlan(outline, topic.trim(), Number(slideCount)) : null;
   const hasInsufficientCredits =
     wallet !== null && estimatedCredits !== null && wallet.balanceCredits < estimatedCredits;
+  const lowCreditDetail =
+    wallet !== null && estimatedCredits !== null
+      ? `You have ${wallet.balanceCredits.toLocaleString()} credits and this deck is estimated at ${estimatedCredits.toLocaleString()} credits.`
+      : 'Buy credits to continue generating AI Studio presentations.';
   const isMockGeneration = isDevelopment && useMockAI;
   const isGenerateDisabled = loading || !topic.trim() || (!isMockGeneration && hasInsufficientCredits);
 
@@ -1247,11 +1252,11 @@ export default function PresentationMakerClient() {
               </div>
 
               <h1 className="text-4xl font-bold tracking-normal text-white sm:text-5xl lg:text-6xl">
-                AI Presentation Maker
+                Create an editable PPTX with AI
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                Create professional presentations in minutes with AI-powered content planning, smart visual layouts,
-                professional themes, and PPTX export.
+                Describe the deck you need. AI Studio plans the story, slide structure, visual direction, and
+                export-ready PowerPoint file.
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {premiumPresentationFeatures.map((feature) => (
@@ -1379,7 +1384,7 @@ export default function PresentationMakerClient() {
                     {loading ? (
                       <>
                         <Loader size={18} className="animate-spin" />
-                        Thinking
+                        Generating deck
                       </>
                     ) : (
                       <>
@@ -1398,7 +1403,7 @@ export default function PresentationMakerClient() {
                     </p>
                   </div>
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Estimated Cost</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Estimated Credits</p>
                     <p className="mt-1 text-lg font-bold text-slate-950">
                       {estimatedCredits !== null ? `${estimatedCredits.toLocaleString()} credits` : 'Calculating'}
                     </p>
@@ -1415,8 +1420,8 @@ export default function PresentationMakerClient() {
                     </p>
                     <p className="mt-1 text-sm font-semibold leading-5">
                       {hasInsufficientCredits
-                        ? insufficientCreditsMessage
-                        : walletMessage || 'Credit wallet is ready for Phase 1 tracking.'}
+                        ? `${insufficientCreditsMessage} ${lowCreditDetail}`
+                        : walletMessage || 'Your credit wallet is ready.'}
                     </p>
                     {hasInsufficientCredits && !isMockGeneration && (
                       <Link href="/ai-studio/pricing" className="mt-2 inline-flex text-xs font-bold text-amber-950 underline">
@@ -1448,8 +1453,11 @@ export default function PresentationMakerClient() {
                 <div className="mx-auto mt-4 max-w-3xl rounded-lg border border-white/15 bg-white/10 p-4 text-left text-sm text-white/82 backdrop-blur">
                   <div className="mb-3 flex items-center gap-2 font-semibold text-cyan-50">
                     <Loader size={16} className="animate-spin" />
-                    {progressSteps[progressIndex]}
+                    {progressSteps[progressIndex]} for your presentation
                   </div>
+                  <p className="mb-3 text-white/68">
+                    This can take a moment while AI Studio creates the outline, slide intent, and visual plan.
+                  </p>
                   <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
                     {progressSteps.map((step, index) => (
                       <div key={step} className="space-y-2">
@@ -1634,11 +1642,25 @@ export default function PresentationMakerClient() {
                     <Presentation size={24} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-slate-950">Your premium presentation plan will appear here</h2>
+                    <h2 className="text-lg font-bold text-slate-950">Start by describing the deck you want</h2>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      AI Studio will prepare AI-powered content planning, smart visual layouts, professional themes,
-                      images and visual storytelling, and a PPTX-ready slide structure.
+                      Include the audience, goal, tone, and any key points. AI Studio will return a PPTX-ready
+                      outline with slide-by-slide visual direction.
                     </p>
+                  </div>
+                </div>
+                <div className="mt-5 grid gap-3 text-sm text-slate-700 md:grid-cols-3">
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                    <p className="font-bold text-slate-950">1. Write a brief</p>
+                    <p className="mt-1 leading-6">Tell AI Studio what the presentation should achieve.</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                    <p className="font-bold text-slate-950">2. Generate slides</p>
+                    <p className="mt-1 leading-6">Review the planned story, visuals, and slide structure.</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                    <p className="font-bold text-slate-950">3. Export PPTX</p>
+                    <p className="mt-1 leading-6">Download an editable PowerPoint file when ready.</p>
                   </div>
                 </div>
               </section>

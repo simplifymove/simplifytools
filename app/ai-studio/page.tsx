@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Clock,
   CreditCard,
+  Download,
   FileText,
   History,
   Presentation,
@@ -54,6 +55,24 @@ const premiumCapabilities = [
   'PPTX export',
   'Professional themes',
   'Images and visual storytelling',
+];
+
+const creditSteps = [
+  {
+    title: 'Buy credits',
+    description: 'Choose a one-time AI Studio credit pack for your region.',
+    icon: CreditCard,
+  },
+  {
+    title: 'Generate presentations',
+    description: 'Use credits to create structured, professional presentation drafts.',
+    icon: Presentation,
+  },
+  {
+    title: 'Export PPTX',
+    description: 'Download editable PowerPoint files for review, delivery, or sharing.',
+    icon: Download,
+  },
 ];
 
 function formatCredits(value: number) {
@@ -243,11 +262,11 @@ export default async function AIStudioPage() {
                   </span>
                 </div>
                 <h1 className="text-4xl font-bold tracking-normal text-white sm:text-5xl">
-                  Premium AI Workspace
+                  Create presentation decks with AI credits
                 </h1>
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                  Create professional presentations in minutes with AI-powered content planning, smart visual layouts,
-                  PPTX export, professional themes, images and visual storytelling.
+                  Buy credits once, generate professional presentation outlines with smart visual direction,
+                  and export editable PPTX files from AI Studio.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {premiumCapabilities.map((capability) => (
@@ -267,7 +286,7 @@ export default async function AIStudioPage() {
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-slate-950 shadow-lg shadow-black/20 transition hover:bg-cyan-50"
                 >
                   <Presentation size={16} />
-                  New Presentation
+                  Create Presentation
                 </Link>
                 <Link
                   href="/ai-studio/pricing"
@@ -281,7 +300,7 @@ export default async function AIStudioPage() {
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
                 >
                   <History size={16} />
-                  Billing
+                  View Billing
                 </Link>
               </div>
             </div>
@@ -290,6 +309,27 @@ export default async function AIStudioPage() {
 
         <section className="bg-[#f7f8fb] px-4 py-10 text-slate-950 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[1160px] space-y-8">
+            <section className="grid gap-4 md:grid-cols-3">
+              {creditSteps.map((step, index) => {
+                const Icon = step.icon;
+
+                return (
+                  <div key={step.title} className="rounded-lg border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/70">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-950 text-cyan-100">
+                        <Icon size={22} />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        Step {index + 1}
+                      </span>
+                    </div>
+                    <h2 className="text-lg font-bold text-slate-950">{step.title}</h2>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{step.description}</p>
+                  </div>
+                );
+              })}
+            </section>
+
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {stats.map((stat) => {
                 const Icon = stat.icon;
@@ -361,7 +401,7 @@ export default async function AIStudioPage() {
                   >
                     <span className="flex items-center gap-3 text-sm font-bold">
                       <Presentation size={18} />
-                      New Presentation
+                      Create Presentation
                     </span>
                     <ChevronRight size={18} />
                   </Link>
@@ -381,7 +421,7 @@ export default async function AIStudioPage() {
                   >
                     <span className="flex items-center gap-3 text-sm font-bold">
                       <Clock size={18} />
-                      Billing & Usage
+                      View Billing
                     </span>
                     <ChevronRight size={18} />
                   </Link>

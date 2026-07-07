@@ -282,12 +282,25 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
 
               <div className="flex items-end gap-2">
                 <span className="text-4xl font-bold text-slate-950">{formatPlanPrice(plan)}</span>
-                <span className="pb-2 text-sm font-semibold text-slate-500">gross plan price</span>
+                <span className="pb-2 text-sm font-semibold text-slate-500">one-time purchase</span>
               </div>
 
               <div className="mt-6 rounded-lg border border-cyan-100 bg-cyan-50 p-4">
-                <p className="text-sm font-bold text-cyan-950">{plan.creditsGranted.toLocaleString()} AI Credits</p>
+                <p className="text-2xl font-bold text-cyan-950">{plan.creditsGranted.toLocaleString()} AI Credits</p>
                 <p className="mt-1 text-sm leading-6 text-cyan-900">{formatAiUsageValue(plan)}</p>
+              </div>
+
+              <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Payment</p>
+                  <p className="mt-1 font-semibold text-slate-950">
+                    {isRazorpayPlan ? 'Razorpay - INR' : isStripePlan ? 'Stripe - USD' : 'Coming soon'}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Use for</p>
+                  <p className="mt-1 font-semibold text-slate-950">AI Studio premium tools</p>
+                </div>
               </div>
 
               <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
