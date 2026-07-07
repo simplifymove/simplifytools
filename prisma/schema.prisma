@@ -284,12 +284,14 @@ model AiStudioUsageLog {
   topic              String?
   slideCount         Int
   model              String
+  provider           String?
   status             String    // estimated | reserved | success | failed | refunded
   estimatedCredits   Decimal
   reservedCredits    Decimal
   actualCredits      Decimal?
   inputTokens        Int?
   outputTokens       Int?
+  totalTokens        Int?
   providerCostUsd    Decimal?
   providerResponseId String?
   errorCode          String?
@@ -299,6 +301,8 @@ model AiStudioUsageLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([model])
+  @@index([provider])
   @@index([status])
   @@index([createdAt])
 }
@@ -317,6 +321,7 @@ model AiStudioPlanPurchase {
   platformRevenueMinor      Int
   creditsGranted            Decimal
   status                    String    // created | paid | failed | refunded
+  receiptEmailSentAt        DateTime?
   rawPayloadJson            String?
   createdAt                 DateTime  @default(now())
   paidAt                    DateTime?

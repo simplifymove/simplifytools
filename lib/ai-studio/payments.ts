@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { sendAiStudioPurchaseReceiptEmail } from '@/lib/ai-studio/receipt-email';
 import { prisma } from '@/lib/prisma';
 
 interface FulfillAiStudioPurchaseOptions {
@@ -63,7 +64,7 @@ async function fulfillAiStudioPurchase({
   rawPayload,
   lookup,
 }: FulfillAiStudioPurchaseByProviderOptions) {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const purchase = await tx.aiStudioPlanPurchase.findFirst({
       where: {
         provider,
@@ -88,7 +89,9 @@ async function fulfillAiStudioPurchase({
     }
 
     if (purchase.status !== 'created') {
-      throw new Error(`AI Studio purchase cannot be paid from status ${purchase.status}`);
+      throw new Error(
+        `AI Studio purchase cannot be paid from status ${purchase.status}`,
+      );
     }
 
     if (providerPaymentId) {
@@ -101,7 +104,9 @@ async function fulfillAiStudioPurchase({
       });
 
       if (existingPaidPayment && existingPaidPayment.id !== purchase.id) {
-        throw new Error('Razorpay payment is already linked to another AI Studio purchase');
+        throw new Error(
+          'Razorpay payment is already linked to another AI Studio purchase',
+        );
       }
     }
 
@@ -134,7 +139,9 @@ async function fulfillAiStudioPurchase({
         };
       }
 
-      throw new Error(`AI Studio purchase cannot be paid from status ${latestPurchase.status}`);
+      throw new Error(
+        `AI Studio purchase cannot be paid from status ${latestPurchase.status}`,
+      );
     }
 
     const paidPurchase = await tx.aiStudioPlanPurchase.findUniqueOrThrow({
@@ -183,4 +190,8 @@ async function fulfillAiStudioPurchase({
       alreadyPaid: false,
     };
   });
+
+  await sendAiStudioPurchaseReceiptEmail(result.purchase.id);
+
+  return result;
 }

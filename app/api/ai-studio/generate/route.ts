@@ -1,10 +1,15 @@
 import OpenAI from 'openai';
 import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/prisma';
-import { estimateAiStudioCredits, normalizeAiStudioSlideCount } from '@/lib/ai-studio/estimate';
+import {
+  estimateAiStudioCredits,
+  normalizeAiStudioSlideCount,
+} from '@/lib/ai-studio/estimate';
+import { estimateOpenRouterCostUsd } from '@/lib/ai-studio/openrouter-pricing';
 import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import {
   AiStudioInsufficientCreditsError,
@@ -53,6 +58,8 @@ interface AggregatedProviderUsage {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  estimatedCostUsd: Prisma.Decimal | null;
+  hasUnknownCost: boolean;
   models: Set<string>;
   responseIds: string[];
 }
@@ -61,7 +68,10 @@ class OpenRouterPromptError extends Error {
   status: number | null;
   safeToFallback: boolean;
 
-  constructor(message: string, options: { status?: number | null; safeToFallback?: boolean } = {}) {
+  constructor(
+    message: string,
+    options: { status?: number | null; safeToFallback?: boolean } = {},
+  ) {
     super(message);
     this.name = 'OpenRouterPromptError';
     this.status = options.status ?? null;
@@ -69,8 +79,10 @@ class OpenRouterPromptError extends Error {
   }
 }
 
-const primaryPresentationModel = process.env.AI_PRESENTATION_MODEL_PRIMARY || 'anthropic/claude-sonnet-4';
-const fallbackPresentationModel = process.env.AI_PRESENTATION_MODEL_FALLBACK || 'qwen/qwen3-32b';
+const primaryPresentationModel =
+  process.env.AI_PRESENTATION_MODEL_PRIMARY || 'anthropic/claude-sonnet-4';
+const fallbackPresentationModel =
+  process.env.AI_PRESENTATION_MODEL_FALLBACK || 'qwen/qwen3-32b';
 const maxTokens = Number(process.env.AI_MAX_TOKENS || 6000);
 
 function getErrorStatus(error: unknown) {
@@ -100,16 +112,23 @@ function createProviderUsageAccumulator(): AggregatedProviderUsage {
     inputTokens: 0,
     outputTokens: 0,
     totalTokens: 0,
+    estimatedCostUsd: new Prisma.Decimal(0),
+    hasUnknownCost: false,
     models: new Set<string>(),
     responseIds: [],
   };
 }
 
 function numberOrUndefined(value: unknown) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : undefined;
 }
 
-function addProviderUsage(accumulator: AggregatedProviderUsage, usage: OpenRouterPromptResult['usage']) {
+function addProviderUsage(
+  accumulator: AggregatedProviderUsage,
+  usage: OpenRouterPromptResult['usage'],
+) {
   if (typeof usage.inputTokens === 'number') {
     accumulator.inputTokens += usage.inputTokens;
   }
@@ -124,6 +143,21 @@ function addProviderUsage(accumulator: AggregatedProviderUsage, usage: OpenRoute
 
   if (usage.model) {
     accumulator.models.add(usage.model);
+  }
+
+  const cost = estimateOpenRouterCostUsd({
+    model: usage.model,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+  });
+
+  if (cost) {
+    accumulator.estimatedCostUsd = (
+      accumulator.estimatedCostUsd ?? new Prisma.Decimal(0)
+    ).add(cost);
+  } else {
+    accumulator.hasUnknownCost = true;
+    accumulator.estimatedCostUsd = null;
   }
 
   if (usage.responseId) {
@@ -161,7 +195,10 @@ function isSafeFallbackError(error: unknown) {
   return [408, 409, 425, 429, 500, 502, 503, 504].includes(status);
 }
 
-async function attemptOpenRouterPrompt(prompt: string, model: string): Promise<OpenRouterPromptResult> {
+async function attemptOpenRouterPrompt(
+  prompt: string,
+  model: string,
+): Promise<OpenRouterPromptResult> {
   const client = getOpenRouterClient();
   let response;
 
@@ -171,7 +208,8 @@ async function attemptOpenRouterPrompt(prompt: string, model: string): Promise<O
       messages: [
         {
           role: 'system',
-          content: 'You are SimplifyConvert AI. Create professional, structured, clean business output.',
+          content:
+            'You are SimplifyConvert AI. Create professional, structured, clean business output.',
         },
         {
           role: 'user',
@@ -208,7 +246,9 @@ async function attemptOpenRouterPrompt(prompt: string, model: string): Promise<O
   };
 }
 
-async function runOpenRouterPrompt(prompt: string): Promise<OpenRouterPromptResult> {
+async function runOpenRouterPrompt(
+  prompt: string,
+): Promise<OpenRouterPromptResult> {
   try {
     return await attemptOpenRouterPrompt(prompt, primaryPresentationModel);
   } catch (error) {
@@ -218,11 +258,14 @@ async function runOpenRouterPrompt(prompt: string): Promise<OpenRouterPromptResu
       isSafeFallbackError(error)
     ) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[ai-studio-generate] Primary model failed; using fallback model for this prompt.', {
-          primaryModel: primaryPresentationModel,
-          fallbackModel: fallbackPresentationModel,
-          status: getErrorStatus(error),
-        });
+        console.warn(
+          '[ai-studio-generate] Primary model failed; using fallback model for this prompt.',
+          {
+            primaryModel: primaryPresentationModel,
+            fallbackModel: fallbackPresentationModel,
+            status: getErrorStatus(error),
+          },
+        );
       }
 
       return attemptOpenRouterPrompt(prompt, fallbackPresentationModel);
@@ -243,6 +286,9 @@ async function logUsage(input: {
   actualCredits?: number;
   inputTokens?: number;
   outputTokens?: number;
+  totalTokens?: number;
+  provider?: string;
+  providerCostUsd?: Prisma.Decimal | null;
   providerResponseId?: string;
   model?: string;
   errorCode?: string;
@@ -261,6 +307,9 @@ async function logUsage(input: {
       actualCredits: input.actualCredits,
       inputTokens: input.inputTokens,
       outputTokens: input.outputTokens,
+      totalTokens: input.totalTokens,
+      provider: input.provider,
+      providerCostUsd: input.providerCostUsd,
       providerResponseId: input.providerResponseId,
       errorCode: input.errorCode,
       completedAt: input.completedAt,
@@ -281,7 +330,10 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Sign in with a premium-enabled account to use AI Studio.' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Sign in with a premium-enabled account to use AI Studio.' },
+        { status: 401 },
+      );
     }
 
     const user = await findAiStudioUserByEmail(session.user.email);
@@ -300,11 +352,20 @@ export async function POST(request: Request) {
     const slideCount = String(normalizedSlideCount);
 
     if (!topic) {
-      return NextResponse.json({ error: 'Describe the presentation you want to create.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Describe the presentation you want to create.' },
+        { status: 400 },
+      );
     }
 
     if (!audience) {
-      return NextResponse.json({ error: 'Add the intended audience so the outline has the right level and angle.' }, { status: 400 });
+      return NextResponse.json(
+        {
+          error:
+            'Add the intended audience so the outline has the right level and angle.',
+        },
+        { status: 400 },
+      );
     }
 
     const estimate = estimateAiStudioCredits(normalizedSlideCount);
@@ -330,7 +391,7 @@ export async function POST(request: Request) {
           estimatedCredits,
           wallet: serializeAiStudioWallet(wallet),
         },
-        { status: 402 }
+        { status: 402 },
       );
     }
 
@@ -348,7 +409,7 @@ export async function POST(request: Request) {
         slideCount,
         audience,
         tone,
-      })
+      }),
     );
     addProviderUsage(providerUsage, researchResult.usage);
     const research = parseResearchAgentOutput(researchResult.content);
@@ -360,10 +421,12 @@ export async function POST(request: Request) {
         audience,
         tone,
         research,
-      })
+      }),
     );
     addProviderUsage(providerUsage, storytellingResult.usage);
-    const storytelling = parseStorytellingAgentOutput(storytellingResult.content);
+    const storytelling = parseStorytellingAgentOutput(
+      storytellingResult.content,
+    );
 
     const visualDesignResult = await runOpenRouterPrompt(
       buildVisualDesignAgentPrompt({
@@ -373,10 +436,13 @@ export async function POST(request: Request) {
         tone,
         research,
         storytelling,
-      })
+      }),
     );
     addProviderUsage(providerUsage, visualDesignResult.usage);
-    const visualDesign = parseVisualDesignAgentOutput(visualDesignResult.content, normalizedSlideCount);
+    const visualDesign = parseVisualDesignAgentOutput(
+      visualDesignResult.content,
+      normalizedSlideCount,
+    );
 
     const outlineResult = await runOpenRouterPrompt(
       buildPresentationPrompt({
@@ -387,7 +453,7 @@ export async function POST(request: Request) {
         researchContext: serializeResearchForPlanner(research),
         storytellingContext: serializeStorytellingForPlanner(storytelling),
         visualDesignContext: serializeVisualDesignForPlanner(visualDesign),
-      })
+      }),
     );
     addProviderUsage(providerUsage, outlineResult.usage);
     const outline = outlineResult.content;
@@ -401,7 +467,9 @@ export async function POST(request: Request) {
     reserved = false;
 
     const loggedModel = getAggregatedModel(providerUsage);
-    const providerResponseId = serializeProviderResponseIds(providerUsage.responseIds);
+    const providerResponseId = serializeProviderResponseIds(
+      providerUsage.responseIds,
+    );
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[ai-studio-generate] Provider usage', {
@@ -410,6 +478,7 @@ export async function POST(request: Request) {
         inputTokens: providerUsage.inputTokens,
         outputTokens: providerUsage.outputTokens,
         totalTokens: providerUsage.totalTokens,
+        estimatedCostUsd: providerUsage.estimatedCostUsd?.toString() ?? null,
         creditsCharged: estimatedCredits,
       });
     }
@@ -425,6 +494,11 @@ export async function POST(request: Request) {
       actualCredits: estimatedCredits,
       inputTokens: providerUsage.inputTokens || undefined,
       outputTokens: providerUsage.outputTokens || undefined,
+      totalTokens: providerUsage.totalTokens || undefined,
+      provider: 'openrouter',
+      providerCostUsd: providerUsage.hasUnknownCost
+        ? null
+        : providerUsage.estimatedCostUsd,
       providerResponseId,
       model: loggedModel,
       completedAt: new Date(),
@@ -445,11 +519,15 @@ export async function POST(request: Request) {
         wallet = await releaseCredits(userId, estimatedCredits, {
           referenceType: 'ai_studio_generation',
           referenceId: requestId,
-          description: 'Released reserved credits after failed presentation generation',
+          description:
+            'Released reserved credits after failed presentation generation',
           metadata: { topic, slideCount: normalizedSlideCount },
         });
       } catch (releaseError) {
-        console.error('[ai-studio-generate] Failed to release reserved credits:', releaseError);
+        console.error(
+          '[ai-studio-generate] Failed to release reserved credits:',
+          releaseError,
+        );
       }
     }
 
@@ -464,24 +542,40 @@ export async function POST(request: Request) {
         reservedCredits: reserved ? estimatedCredits : 0,
         inputTokens: providerUsage.inputTokens || undefined,
         outputTokens: providerUsage.outputTokens || undefined,
-        providerResponseId: serializeProviderResponseIds(providerUsage.responseIds),
+        totalTokens: providerUsage.totalTokens || undefined,
+        provider: 'openrouter',
+        providerCostUsd: providerUsage.hasUnknownCost
+          ? null
+          : providerUsage.estimatedCostUsd,
+        providerResponseId: serializeProviderResponseIds(
+          providerUsage.responseIds,
+        ),
         model: getAggregatedModel(providerUsage),
         errorCode:
           error instanceof AiStudioInsufficientCreditsError
             ? 'INSUFFICIENT_CREDITS'
-            : error instanceof Error && error.message === 'OPENROUTER_API_KEY_MISSING'
+            : error instanceof Error &&
+                error.message === 'OPENROUTER_API_KEY_MISSING'
               ? 'AI_SERVICE_UNAVAILABLE'
               : getErrorStatus(error) === 402
-              ? 'AI_SERVICE_UNAVAILABLE'
-              : 'GENERATION_FAILED',
+                ? 'AI_SERVICE_UNAVAILABLE'
+                : 'GENERATION_FAILED',
         completedAt: new Date(),
       }).catch((logError) => {
-        console.error('[ai-studio-generate] Failed to write usage log:', logError);
+        console.error(
+          '[ai-studio-generate] Failed to write usage log:',
+          logError,
+        );
       });
     }
 
     if (error instanceof AiStudioInsufficientCreditsError) {
-      return NextResponse.json({ error: 'Insufficient AI credits. Buy an AI Studio plan to continue.' }, { status: 402 });
+      return NextResponse.json(
+        {
+          error: 'Insufficient AI credits. Buy an AI Studio plan to continue.',
+        },
+        { status: 402 },
+      );
     }
 
     return NextResponse.json(
@@ -489,7 +583,7 @@ export async function POST(request: Request) {
         error: 'AI service is currently unavailable. Please try again later.',
         wallet: wallet ? serializeAiStudioWallet(wallet) : undefined,
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }

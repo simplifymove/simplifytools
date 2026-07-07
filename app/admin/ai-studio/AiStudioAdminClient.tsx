@@ -4,8 +4,10 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Activity,
+  BarChart3,
   Coins,
   CreditCard,
+  DollarSign,
   History,
   Loader2,
   MinusCircle,
@@ -49,10 +51,71 @@ interface UsageRow {
   slideCount: number;
   creditsCharged: number;
   model: string;
+  provider: string;
   inputTokens: number | null;
   outputTokens: number | null;
+  totalTokens: number | null;
+  providerCostUsd: string;
   status: string;
   date: string;
+}
+
+interface CostSummary {
+  totalEstimatedCostUsd: string;
+  costTodayUsd: string;
+  costThisMonthUsd: string;
+  failedGenerationsCount: string;
+  averageCostPerSuccessfulGenerationUsd: string;
+  pricingSource: string;
+}
+
+interface ModelCostRow {
+  model: string;
+  estimatedCostUsd: string;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  generations: number;
+}
+
+interface RevenueAnalytics {
+  summary: DashboardMetric[];
+  sales: {
+    revenueByDay: Array<{ period: string; revenue: string }>;
+    revenueByMonth: Array<{ period: string; revenue: string }>;
+    purchasesByPlan: Array<{
+      plan: string;
+      purchases: number;
+      revenue: string;
+      creditsSold: string;
+    }>;
+    purchasesByProvider: Array<{
+      provider: string;
+      purchases: number;
+      revenue: string;
+    }>;
+  };
+  userSummary: DashboardMetric[];
+  profit: DashboardMetric[];
+  recentPurchases: Array<{
+    id: string;
+    userName: string;
+    userEmail: string;
+    plan: string;
+    provider: string;
+    amount: string;
+    credits: string;
+    status: string;
+    purchaseDate: string;
+  }>;
+  topCustomers: Array<{
+    userId: string;
+    userName: string;
+    userEmail: string;
+    purchases: number;
+    totalSpent: string;
+    creditsPurchased: string;
+  }>;
 }
 
 interface AiStudioAdminClientProps {
@@ -60,6 +123,9 @@ interface AiStudioAdminClientProps {
   wallets: WalletRow[];
   transactions: TransactionRow[];
   usage: UsageRow[];
+  costSummary: CostSummary;
+  modelCosts: ModelCostRow[];
+  revenueAnalytics: RevenueAnalytics;
   initialSearch: string;
 }
 
@@ -77,9 +143,207 @@ function formatDate(value: string) {
 }
 
 function statusClass(status: string) {
-  if (status === 'success') return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
+  if (status === 'success')
+    return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
   if (status === 'failed') return 'bg-rose-50 text-rose-700 ring-rose-200';
   return 'bg-slate-100 text-slate-700 ring-slate-200';
+}
+
+function AnalyticsCards({ metrics }: { metrics: DashboardMetric[] }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {metrics.map((metric) => (
+        <div
+          key={metric.label}
+          className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+        >
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            {metric.label}
+          </p>
+          <p className="mt-3 text-xl font-bold text-slate-950">
+            {metric.value}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">{metric.detail}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MiniTable({
+  title,
+  headers,
+  rows,
+  emptyText,
+}: {
+  title: string;
+  headers: string[];
+  rows: string[][];
+  emptyText: string;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="border-b border-slate-200 px-4 py-3">
+        <h3 className="text-sm font-bold">{title}</h3>
+      </div>
+      <div className="max-h-72 overflow-auto">
+        <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <thead className="sticky top-0 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+            <tr>
+              {headers.map((header) => (
+                <th key={header} className="px-4 py-3">
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.map((row, rowIndex) => (
+              <tr key={`${title}-${rowIndex}`}>
+                {row.map((cell, cellIndex) => (
+                  <td
+                    key={`${title}-${rowIndex}-${cellIndex}`}
+                    className={`${cellIndex === 0 ? 'font-semibold text-slate-950' : 'text-slate-600'} px-4 py-3`}
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr>
+                <td
+                  className="px-4 py-8 text-center text-slate-500"
+                  colSpan={headers.length}
+                >
+                  {emptyText}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function RevenueAnalyticsSection({
+  analytics,
+}: {
+  analytics: RevenueAnalytics;
+}) {
+  return (
+    <section className="mt-6 rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-5 py-4">
+        <div className="flex items-center gap-2">
+          <CreditCard size={18} className="text-cyan-700" />
+          <h2 className="text-lg font-bold">Revenue Analytics</h2>
+        </div>
+        <p className="mt-1 text-sm text-slate-500">
+          Purchase, sales, customer, and profit analytics aggregated server-side
+          from AI Studio billing records.
+        </p>
+      </div>
+
+      <div className="space-y-6 p-5">
+        <div>
+          <h3 className="mb-3 text-base font-bold">Revenue Summary</h3>
+          <AnalyticsCards metrics={analytics.summary} />
+        </div>
+
+        <div>
+          <h3 className="mb-3 text-base font-bold">Sales Analytics</h3>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <MiniTable
+              title="Revenue by Day (Last 30 Days)"
+              headers={['Day', 'Revenue']}
+              rows={analytics.sales.revenueByDay.map((row) => [
+                row.period,
+                row.revenue,
+              ])}
+              emptyText="No paid purchases in the last 30 days."
+            />
+            <MiniTable
+              title="Revenue by Month"
+              headers={['Month', 'Revenue']}
+              rows={analytics.sales.revenueByMonth.map((row) => [
+                row.period,
+                row.revenue,
+              ])}
+              emptyText="No monthly revenue yet."
+            />
+            <MiniTable
+              title="Purchases by Plan"
+              headers={['Plan', 'Purchases', 'Revenue', 'Credits Sold']}
+              rows={analytics.sales.purchasesByPlan.map((row) => [
+                row.plan,
+                row.purchases.toLocaleString(),
+                row.revenue,
+                row.creditsSold,
+              ])}
+              emptyText="No paid plans yet."
+            />
+            <MiniTable
+              title="Purchases by Provider"
+              headers={['Provider', 'Purchases', 'Revenue']}
+              rows={analytics.sales.purchasesByProvider.map((row) => [
+                row.provider,
+                row.purchases.toLocaleString(),
+                row.revenue,
+              ])}
+              emptyText="No paid providers yet."
+            />
+          </div>
+        </div>
+
+        <div>
+          <h3 className="mb-3 text-base font-bold">User Analytics</h3>
+          <AnalyticsCards metrics={analytics.userSummary} />
+        </div>
+
+        <div>
+          <h3 className="mb-3 text-base font-bold">Profit Overview</h3>
+          <AnalyticsCards metrics={analytics.profit} />
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          <MiniTable
+            title="Recent Purchases"
+            headers={[
+              'User',
+              'Plan',
+              'Provider',
+              'Amount',
+              'Credits',
+              'Status',
+              'Purchase Date',
+            ]}
+            rows={analytics.recentPurchases.map((row) => [
+              `${row.userName} (${row.userEmail})`,
+              row.plan,
+              row.provider,
+              row.amount,
+              row.credits,
+              row.status,
+              formatDate(row.purchaseDate),
+            ])}
+            emptyText="No purchases yet."
+          />
+          <MiniTable
+            title="Top Customers"
+            headers={['User', 'Purchases', 'Total Spent', 'Credits Purchased']}
+            rows={analytics.topCustomers.map((row) => [
+              `${row.userName} (${row.userEmail})`,
+              row.purchases.toLocaleString(),
+              row.totalSpent,
+              row.creditsPurchased,
+            ])}
+            emptyText="No paying customers yet."
+          />
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export function AiStudioAdminClient({
@@ -87,11 +351,16 @@ export function AiStudioAdminClient({
   wallets,
   transactions,
   usage,
+  costSummary,
+  modelCosts,
+  revenueAnalytics,
   initialSearch,
 }: AiStudioAdminClientProps) {
   const router = useRouter();
   const [search, setSearch] = useState(initialSearch);
-  const [selectedEmail, setSelectedEmail] = useState(wallets[0]?.userEmail ?? '');
+  const [selectedEmail, setSelectedEmail] = useState(
+    wallets[0]?.userEmail ?? '',
+  );
   const [action, setAction] = useState<'add' | 'deduct'>('add');
   const [credits, setCredits] = useState('');
   const [reason, setReason] = useState('');
@@ -101,13 +370,17 @@ export function AiStudioAdminClient({
 
   const selectedWallet = useMemo(
     () => wallets.find((wallet) => wallet.userEmail === selectedEmail) ?? null,
-    [selectedEmail, wallets]
+    [selectedEmail, wallets],
   );
 
   const submitSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmed = search.trim();
-    router.push(trimmed ? `/admin/ai-studio?q=${encodeURIComponent(trimmed)}` : '/admin/ai-studio');
+    router.push(
+      trimmed
+        ? `/admin/ai-studio?q=${encodeURIComponent(trimmed)}`
+        : '/admin/ai-studio',
+    );
   };
 
   const submitAdjustment = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -127,18 +400,26 @@ export function AiStudioAdminClient({
           reason,
         }),
       });
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      const data = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
 
       if (!response.ok) {
         throw new Error(data.error || 'Unable to adjust credits');
       }
 
-      setMessage(`Credits ${action === 'add' ? 'added' : 'deducted'} successfully.`);
+      setMessage(
+        `Credits ${action === 'add' ? 'added' : 'deducted'} successfully.`,
+      );
       setCredits('');
       setReason('');
       router.refresh();
     } catch (adjustmentError) {
-      setError(adjustmentError instanceof Error ? adjustmentError.message : 'Unable to adjust credits');
+      setError(
+        adjustmentError instanceof Error
+          ? adjustmentError.message
+          : 'Unable to adjust credits',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -149,10 +430,15 @@ export function AiStudioAdminClient({
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-cyan-700">Admin</p>
-            <h1 className="mt-2 text-3xl font-bold tracking-normal">AI Studio Management</h1>
+            <p className="text-sm font-semibold uppercase tracking-wide text-cyan-700">
+              Admin
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-normal">
+              AI Studio Management
+            </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Manage AI credit wallets, admin adjustments, generation usage and transaction audit history.
+              Manage AI credit wallets, admin adjustments, generation usage and
+              transaction audit history.
             </p>
           </div>
 
@@ -161,7 +447,10 @@ export function AiStudioAdminClient({
               Search wallets
             </label>
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={18}
+              />
               <input
                 id="ai-studio-wallet-search"
                 value={search}
@@ -170,7 +459,10 @@ export function AiStudioAdminClient({
                 className="h-11 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-3 text-sm outline-none ring-cyan-600 transition focus:ring-2"
               />
             </div>
-            <button className="h-11 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white" type="submit">
+            <button
+              className="h-11 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white"
+              type="submit"
+            >
               Search
             </button>
           </form>
@@ -178,12 +470,23 @@ export function AiStudioAdminClient({
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {metrics.map((metric, index) => {
-            const icons = [WalletCards, PlusCircle, MinusCircle, Activity, CreditCard];
+            const icons = [
+              WalletCards,
+              PlusCircle,
+              MinusCircle,
+              Activity,
+              CreditCard,
+            ];
             const Icon = icons[index] ?? Coins;
             return (
-              <div key={metric.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <div
+                key={metric.label}
+                className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+              >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{metric.label}</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                    {metric.label}
+                  </p>
                   <Icon size={18} className="text-cyan-700" />
                 </div>
                 <p className="mt-4 text-2xl font-bold">{metric.value}</p>
@@ -193,11 +496,131 @@ export function AiStudioAdminClient({
           })}
         </section>
 
+        <section className="mt-6 rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-5 py-4">
+            <div className="flex items-center gap-2">
+              <DollarSign size={18} className="text-cyan-700" />
+              <h2 className="text-lg font-bold">OpenRouter Cost Dashboard</h2>
+            </div>
+            <p className="mt-1 text-sm text-slate-500">
+              Estimated AI Studio provider cost from known OpenRouter pricing.
+              Unknown model prices are not estimated.
+            </p>
+          </div>
+
+          <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-5">
+            {[
+              {
+                label: 'Total Estimated Cost',
+                value: costSummary.totalEstimatedCostUsd,
+                detail: 'Known OpenRouter usage',
+              },
+              {
+                label: 'Cost Today',
+                value: costSummary.costTodayUsd,
+                detail: 'Since local midnight',
+              },
+              {
+                label: 'Cost This Month',
+                value: costSummary.costThisMonthUsd,
+                detail: 'Current calendar month',
+              },
+              {
+                label: 'Failed Generations',
+                value: costSummary.failedGenerationsCount,
+                detail: 'All failed AI Studio logs',
+              },
+              {
+                label: 'Avg Success Cost',
+                value: costSummary.averageCostPerSuccessfulGenerationUsd,
+                detail: 'Known-cost successful generations',
+              },
+            ].map((metric) => (
+              <div
+                key={metric.label}
+                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  {metric.label}
+                </p>
+                <p className="mt-3 text-xl font-bold text-slate-950">
+                  {metric.value}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">{metric.detail}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-slate-200 px-5 py-4">
+            <div className="mb-3 flex items-center gap-2">
+              <BarChart3 size={18} className="text-cyan-700" />
+              <h3 className="text-base font-bold">
+                Cost and Token Usage by Model
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 text-sm">
+                <thead className="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3">Model</th>
+                    <th className="px-4 py-3 text-right">Cost</th>
+                    <th className="px-4 py-3 text-right">Prompt Tokens</th>
+                    <th className="px-4 py-3 text-right">Completion Tokens</th>
+                    <th className="px-4 py-3 text-right">Total Tokens</th>
+                    <th className="px-4 py-3 text-right">Generations</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {modelCosts.map((row) => (
+                    <tr key={row.model}>
+                      <td className="max-w-[320px] px-4 py-3 font-semibold text-slate-950 break-all">
+                        {row.model}
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold">
+                        {row.estimatedCostUsd}
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-600">
+                        {row.inputTokens.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-600">
+                        {row.outputTokens.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-600">
+                        {row.totalTokens.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-600">
+                        {row.generations.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                  {modelCosts.length === 0 && (
+                    <tr>
+                      <td
+                        className="px-4 py-8 text-center text-slate-500"
+                        colSpan={6}
+                      >
+                        No OpenRouter usage records yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Pricing source: {costSummary.pricingSource}
+            </p>
+          </div>
+        </section>
+
+        <RevenueAnalyticsSection analytics={revenueAnalytics} />
+
         <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.65fr)]">
           <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 px-5 py-4">
               <h2 className="text-lg font-bold">Wallet Management</h2>
-              <p className="mt-1 text-sm text-slate-500">Search, inspect balances and choose a wallet for adjustment.</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Search, inspect balances and choose a wallet for adjustment.
+              </p>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
@@ -220,17 +643,32 @@ export function AiStudioAdminClient({
                         selectedEmail === wallet.userEmail ? 'bg-cyan-50' : ''
                       }`}
                     >
-                      <td className="px-5 py-3 font-semibold">{wallet.userName}</td>
-                      <td className="px-5 py-3 text-slate-600">{wallet.userEmail}</td>
-                      <td className="px-5 py-3 text-right font-bold">{formatCredits(wallet.balanceCredits)}</td>
-                      <td className="px-5 py-3 text-right">{formatCredits(wallet.lifetimeCreditsAdded)}</td>
-                      <td className="px-5 py-3 text-right">{formatCredits(wallet.lifetimeCreditsUsed)}</td>
-                      <td className="px-5 py-3 text-slate-500">{formatDate(wallet.lastActivity)}</td>
+                      <td className="px-5 py-3 font-semibold">
+                        {wallet.userName}
+                      </td>
+                      <td className="px-5 py-3 text-slate-600">
+                        {wallet.userEmail}
+                      </td>
+                      <td className="px-5 py-3 text-right font-bold">
+                        {formatCredits(wallet.balanceCredits)}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        {formatCredits(wallet.lifetimeCreditsAdded)}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        {formatCredits(wallet.lifetimeCreditsUsed)}
+                      </td>
+                      <td className="px-5 py-3 text-slate-500">
+                        {formatDate(wallet.lastActivity)}
+                      </td>
                     </tr>
                   ))}
                   {wallets.length === 0 && (
                     <tr>
-                      <td className="px-5 py-8 text-center text-slate-500" colSpan={6}>
+                      <td
+                        className="px-5 py-8 text-center text-slate-500"
+                        colSpan={6}
+                      >
                         No AI Studio wallets found.
                       </td>
                     </tr>
@@ -240,13 +678,21 @@ export function AiStudioAdminClient({
             </div>
           </div>
 
-          <form onSubmit={submitAdjustment} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <form
+            onSubmit={submitAdjustment}
+            className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+          >
             <div className="mb-5">
               <h2 className="text-lg font-bold">Credit Management</h2>
-              <p className="mt-1 text-sm text-slate-500">Add or deduct internal AI Credits with an audit reason.</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Add or deduct internal AI Credits with an audit reason.
+              </p>
             </div>
 
-            <label className="text-xs font-bold uppercase tracking-wide text-slate-500" htmlFor="wallet-email">
+            <label
+              className="text-xs font-bold uppercase tracking-wide text-slate-500"
+              htmlFor="wallet-email"
+            >
               Wallet
             </label>
             <select
@@ -265,7 +711,10 @@ export function AiStudioAdminClient({
 
             {selectedWallet && (
               <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
-                Current balance: <span className="font-bold text-slate-950">{formatCredits(selectedWallet.balanceCredits)} AI Credits</span>
+                Current balance:{' '}
+                <span className="font-bold text-slate-950">
+                  {formatCredits(selectedWallet.balanceCredits)} AI Credits
+                </span>
               </div>
             )}
 
@@ -274,7 +723,9 @@ export function AiStudioAdminClient({
                 type="button"
                 onClick={() => setAction('add')}
                 className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg border text-sm font-semibold ${
-                  action === 'add' ? 'border-emerald-600 bg-emerald-50 text-emerald-700' : 'border-slate-300 text-slate-600'
+                  action === 'add'
+                    ? 'border-emerald-600 bg-emerald-50 text-emerald-700'
+                    : 'border-slate-300 text-slate-600'
                 }`}
               >
                 <PlusCircle size={16} />
@@ -284,7 +735,9 @@ export function AiStudioAdminClient({
                 type="button"
                 onClick={() => setAction('deduct')}
                 className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg border text-sm font-semibold ${
-                  action === 'deduct' ? 'border-rose-600 bg-rose-50 text-rose-700' : 'border-slate-300 text-slate-600'
+                  action === 'deduct'
+                    ? 'border-rose-600 bg-rose-50 text-rose-700'
+                    : 'border-slate-300 text-slate-600'
                 }`}
               >
                 <MinusCircle size={16} />
@@ -292,7 +745,10 @@ export function AiStudioAdminClient({
               </button>
             </div>
 
-            <label className="mt-5 block text-xs font-bold uppercase tracking-wide text-slate-500" htmlFor="credit-amount">
+            <label
+              className="mt-5 block text-xs font-bold uppercase tracking-wide text-slate-500"
+              htmlFor="credit-amount"
+            >
               Credits
             </label>
             <input
@@ -306,7 +762,10 @@ export function AiStudioAdminClient({
               required
             />
 
-            <label className="mt-5 block text-xs font-bold uppercase tracking-wide text-slate-500" htmlFor="adjustment-reason">
+            <label
+              className="mt-5 block text-xs font-bold uppercase tracking-wide text-slate-500"
+              htmlFor="adjustment-reason"
+            >
               Adjustment Reason
             </label>
             <textarea
@@ -318,8 +777,16 @@ export function AiStudioAdminClient({
               required
             />
 
-            {message && <p className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">{message}</p>}
-            {error && <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{error}</p>}
+            {message && (
+              <p className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+                {message}
+              </p>
+            )}
+            {error && (
+              <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
+                {error}
+              </p>
+            )}
 
             <button
               type="submit"
@@ -339,7 +806,9 @@ export function AiStudioAdminClient({
                 <History size={18} className="text-cyan-700" />
                 <h2 className="text-lg font-bold">Transaction History</h2>
               </div>
-              <p className="mt-1 text-sm text-slate-500">Latest 100 wallet transactions.</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Latest 100 wallet transactions.
+              </p>
             </div>
             <div className="max-h-[520px] overflow-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
@@ -357,17 +826,30 @@ export function AiStudioAdminClient({
                     <tr key={transaction.id}>
                       <td className="px-5 py-3">
                         <p className="font-semibold">{transaction.userName}</p>
-                        <p className="text-xs text-slate-500">{transaction.userEmail}</p>
+                        <p className="text-xs text-slate-500">
+                          {transaction.userEmail}
+                        </p>
                       </td>
-                      <td className="px-5 py-3 capitalize">{transaction.type}</td>
-                      <td className="px-5 py-3 text-right font-bold">{formatCredits(transaction.amountCredits)}</td>
-                      <td className="px-5 py-3 text-slate-600">{transaction.reason}</td>
-                      <td className="px-5 py-3 text-slate-500">{formatDate(transaction.date)}</td>
+                      <td className="px-5 py-3 capitalize">
+                        {transaction.type}
+                      </td>
+                      <td className="px-5 py-3 text-right font-bold">
+                        {formatCredits(transaction.amountCredits)}
+                      </td>
+                      <td className="px-5 py-3 text-slate-600">
+                        {transaction.reason}
+                      </td>
+                      <td className="px-5 py-3 text-slate-500">
+                        {formatDate(transaction.date)}
+                      </td>
                     </tr>
                   ))}
                   {transactions.length === 0 && (
                     <tr>
-                      <td className="px-5 py-8 text-center text-slate-500" colSpan={5}>
+                      <td
+                        className="px-5 py-8 text-center text-slate-500"
+                        colSpan={5}
+                      >
                         No transactions yet.
                       </td>
                     </tr>
@@ -383,7 +865,9 @@ export function AiStudioAdminClient({
                 <Activity size={18} className="text-cyan-700" />
                 <h2 className="text-lg font-bold">Usage History</h2>
               </div>
-              <p className="mt-1 text-sm text-slate-500">Recent AI presentation generations.</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Recent AI presentation generations.
+              </p>
             </div>
             <div className="max-h-[520px] overflow-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
@@ -392,8 +876,10 @@ export function AiStudioAdminClient({
                     <th className="px-5 py-3">Topic</th>
                     <th className="px-5 py-3">Slides</th>
                     <th className="px-5 py-3">Credits</th>
+                    <th className="px-5 py-3">Provider</th>
                     <th className="px-5 py-3">Model</th>
                     <th className="px-5 py-3">Tokens</th>
+                    <th className="px-5 py-3">Cost</th>
                     <th className="px-5 py-3">Status</th>
                   </tr>
                 </thead>
@@ -402,16 +888,30 @@ export function AiStudioAdminClient({
                     <tr key={item.id}>
                       <td className="px-5 py-3">
                         <p className="font-semibold">{item.topic}</p>
-                        <p className="text-xs text-slate-500">{item.userEmail}</p>
+                        <p className="text-xs text-slate-500">
+                          {item.userEmail}
+                        </p>
                       </td>
                       <td className="px-5 py-3">{item.slideCount}</td>
-                      <td className="px-5 py-3 font-bold">{formatCredits(item.creditsCharged)}</td>
+                      <td className="px-5 py-3 font-bold">
+                        {formatCredits(item.creditsCharged)}
+                      </td>
+                      <td className="px-5 py-3 text-slate-600">
+                        {item.provider}
+                      </td>
                       <td className="px-5 py-3 text-slate-600">{item.model}</td>
                       <td className="px-5 py-3 text-slate-600">
-                        {item.inputTokens ?? 0} in / {item.outputTokens ?? 0} out
+                        {item.totalTokens != null
+                          ? `${item.totalTokens.toLocaleString()} total`
+                          : `${item.inputTokens ?? 0} in / ${item.outputTokens ?? 0} out`}
+                      </td>
+                      <td className="px-5 py-3 font-semibold text-slate-700">
+                        {item.providerCostUsd}
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`rounded-full px-2 py-1 text-xs font-bold ring-1 ${statusClass(item.status)}`}>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs font-bold ring-1 ${statusClass(item.status)}`}
+                        >
                           {item.status}
                         </span>
                       </td>
@@ -419,7 +919,10 @@ export function AiStudioAdminClient({
                   ))}
                   {usage.length === 0 && (
                     <tr>
-                      <td className="px-5 py-8 text-center text-slate-500" colSpan={6}>
+                      <td
+                        className="px-5 py-8 text-center text-slate-500"
+                        colSpan={8}
+                      >
                         No usage records yet.
                       </td>
                     </tr>
