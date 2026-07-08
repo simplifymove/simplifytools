@@ -2,7 +2,7 @@
 
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, Suspense } from 'react'
+import { useState, Suspense, type FormEvent } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { HomeHeader } from '@/app/components/HomeHeader'
@@ -12,9 +12,80 @@ function SignUpContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
+  const [isEmailLoading, setIsEmailLoading] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
   
   // Read callbackUrl from query params, default to /account
   const callbackUrl = searchParams?.get('callbackUrl') || '/account'
+
+  const handleManualSignUp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError('')
+
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+      setError('All fields are required.')
+      return
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Enter a valid email address.')
+      return
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Confirm password must match.')
+      return
+    }
+
+    setIsEmailLoading(true)
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          confirmPassword,
+        }),
+      })
+      const result = (await response.json()) as { error?: string }
+
+      if (!response.ok) {
+        setError(result.error || 'Unable to create account.')
+        return
+      }
+
+      const signInResult = await signIn('credentials', {
+        email: email.trim().toLowerCase(),
+        password,
+        redirect: false,
+        callbackUrl,
+      })
+
+      if (signInResult?.error) {
+        router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+        return
+      }
+
+      router.push(signInResult?.url || callbackUrl)
+      router.refresh()
+    } catch (error) {
+      console.error('Manual sign up failed:', error)
+      setError('Unable to create account right now. Please try again.')
+    } finally {
+      setIsEmailLoading(false)
+    }
+  }
 
   const handleGoogleSignUp = async () => {
     setIsLoading(true)
@@ -101,6 +172,93 @@ function SignUpContent() {
               </svg>
               {isLoading ? 'Creating account...' : 'Sign up with Google'}
             </motion.button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">or</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleManualSignUp} className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  autoComplete="name"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  autoComplete="email"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="new-password"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  autoComplete="new-password"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                />
+              </div>
+
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700"
+                >
+                  {error}
+                </motion.div>
+              )}
+
+              <motion.button
+                type="submit"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isEmailLoading || !name.trim() || !email.trim() || !password || !confirmPassword}
+                className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isEmailLoading ? 'Creating account...' : 'Create Account'}
+              </motion.button>
+            </form>
 
             {/* Terms */}
             <p className="text-xs text-center text-gray-500">

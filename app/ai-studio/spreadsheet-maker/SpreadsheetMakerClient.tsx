@@ -37,7 +37,7 @@ interface GeneratedSpreadsheet {
   notes: string[];
 }
 
-const spreadsheetTypes = ['budget', 'sales report', 'project tracker', 'invoice', 'comparison table', 'plan'];
+const spreadsheetTypes = ['budget', 'sales report', 'project tracker', 'invoice', 'inventory', 'comparison table', 'plan'];
 const complexities = ['simple', 'medium', 'detailed'];
 const creditCost = 5;
 
@@ -196,7 +196,7 @@ export default function SpreadsheetMakerClient() {
               <div>
                 <h1 className="text-4xl font-bold sm:text-5xl">AI Spreadsheet Maker</h1>
                 <p className="mt-4 max-w-2xl text-base leading-7 text-white/78">
-                  Generate budgets, reports, trackers, invoices, comparison tables, and planning sheets.
+                  Generate budgets, reports, trackers, invoices, inventory sheets, comparison tables, and planning sheets.
                   Each generation uses {creditCost} AI Studio credits.
                 </p>
               </div>

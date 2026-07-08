@@ -36,15 +36,37 @@ function AuthContent() {
     );
   }
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmailSignIn = async () => {
     setError('');
+
+    if (!email.trim() || !password) {
+      setError('Email and password are required.');
+      return;
+    }
+
     setIsLoading(true);
-    
-    // For now, this will show an error since we don't have credentials provider set up
-    // In production, you would set up NextAuth with a credentials provider
-    setError('Email sign-in requires additional setup. Use OAuth options below.');
-    setIsLoading(false);
+
+    try {
+      const result = await signIn('credentials', {
+        email: email.trim().toLowerCase(),
+        password,
+        redirect: false,
+        callbackUrl: '/account',
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password.');
+        return;
+      }
+
+      router.push(result?.url || '/account');
+      router.refresh();
+    } catch (error) {
+      console.error('Email sign in failed:', error);
+      setError('Unable to sign in right now. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleSignIn = () => signIn('google', { callbackUrl: '/account' });
@@ -83,6 +105,15 @@ function AuthContent() {
           </svg>
           Sign in with Google
         </motion.button>
+
+        <div className="relative mb-8">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">or</span>
+          </div>
+        </div>
 
         {/* Email Field */}
         <div className="mb-4">
@@ -175,6 +206,4 @@ export default function AuthPage() {
     </Suspense>
   );
 }
-
-
 

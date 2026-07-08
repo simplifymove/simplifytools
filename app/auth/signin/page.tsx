@@ -2,9 +2,8 @@
 
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, Suspense } from 'react'
+import { useState, Suspense, type FormEvent } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { HomeHeader } from '@/app/components/HomeHeader'
 import { Footer } from '@/app/components/Footer'
@@ -13,10 +12,49 @@ function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
+  const [isEmailLoading, setIsEmailLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [formError, setFormError] = useState('')
   const error = searchParams?.get('error')
   
   // Read callbackUrl from query params, default to /account
   const callbackUrl = searchParams?.get('callbackUrl') || '/account'
+
+  const handleEmailSignIn = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setFormError('')
+
+    const normalizedEmail = email.trim().toLowerCase()
+
+    if (!normalizedEmail || !password) {
+      setFormError('Email and password are required.')
+      return
+    }
+
+    setIsEmailLoading(true)
+    try {
+      const result = await signIn('credentials', {
+        email: normalizedEmail,
+        password,
+        redirect: false,
+        callbackUrl,
+      })
+
+      if (result?.error) {
+        setFormError('Invalid email or password.')
+        return
+      }
+
+      router.push(result?.url || callbackUrl)
+      router.refresh()
+    } catch (error) {
+      console.error('Email sign in failed:', error)
+      setFormError('Unable to sign in right now. Please try again.')
+    } finally {
+      setIsEmailLoading(false)
+    }
+  }
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
@@ -106,16 +144,68 @@ function SignInContent() {
             </div>
           </div>
 
-          {/* Sign Up Link */}
-          <div className="text-center space-y-4">
-            <p className="text-gray-600">Don't have an account?</p>
-            <Link
-              href="/auth/signup"
-              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+          <form onSubmit={handleEmailSignIn} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <Link href="#" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                Forgot Password
+              </Link>
+            </div>
+
+            {formError && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700"
+              >
+                {formError}
+              </motion.div>
+            )}
+
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={isEmailLoading || !email.trim() || !password}
+              className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              {isEmailLoading ? 'Logging in...' : 'Login'}
+            </motion.button>
+          </form>
+
+          <p className="text-center text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-medium">
               Create Account
             </Link>
-          </div>
+          </p>
 
           {/* Footer Links */}
           <div className="text-center text-sm text-gray-500 space-y-1 border-t border-gray-200 pt-6 mt-6">

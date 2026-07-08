@@ -27,6 +27,7 @@
     "phase8:daily-audits:concurrent": "npx ts-node scripts/run-daily-audits.ts --concurrent --concurrency=5",
     "phase8:stress-test": "npx ts-node scripts/stress-test.ts",
     "phase8:monitor": "npx ts-node scripts/phase8-monitoring.ts",
+    "ai-studio:quality-eval": "tsx scripts/ai-studio-quality-eval.ts",
     "create-admin": "npx ts-node scripts/create-admin.ts",
     "worker": "tsx worker.ts"
   },

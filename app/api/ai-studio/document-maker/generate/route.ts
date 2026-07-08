@@ -44,10 +44,87 @@ const lengths = new Set(['short', 'medium', 'detailed']);
 const agentTimeoutMs = Number(process.env.AI_STUDIO_AGENT_TIMEOUT_MS || 45000);
 const fallbackTimeoutMs = Number(process.env.AI_STUDIO_FALLBACK_TIMEOUT_MS || 70000);
 
+const documentBlueprints: Record<string, {
+  label: string;
+  sections: string[];
+  richElements: string[];
+  writingGuidance: string;
+}> = {
+  proposal: {
+    label: 'Business Proposal',
+    sections: [
+      'Executive Summary',
+      'Problem',
+      'Proposed Solution',
+      'Scope',
+      'Timeline',
+      'Deliverables',
+      'Pricing Assumptions',
+      'Benefits',
+      'Risks',
+      'Conclusion',
+    ],
+    richElements: ['timeline table', 'scope checklist', 'deliverables table', 'risk and mitigation table', 'action items'],
+    writingGuidance: 'Write like a consultant selling a practical, credible engagement. Be specific about outcomes, tradeoffs, implementation path, and decision criteria.',
+  },
+  'business plan': {
+    label: 'Business Plan',
+    sections: [
+      'Executive Summary',
+      'Market Analysis',
+      'Competitor Analysis',
+      'SWOT',
+      'Business Model',
+      'Marketing Strategy',
+      'Financial Projections',
+      'Risks',
+      'Conclusion',
+    ],
+    richElements: ['market sizing assumptions table', 'competitor comparison', 'SWOT table', 'go-to-market checklist', 'financial assumptions'],
+    writingGuidance: 'Write like a founder-ready business plan prepared for operators, advisors, and investors. Use realistic assumptions and avoid impossible claims.',
+  },
+  report: {
+    label: 'Business Report',
+    sections: ['Summary', 'Background', 'Findings', 'Analysis', 'Recommendations', 'Conclusion'],
+    richElements: ['findings table', 'recommendation priority matrix', 'best practices', 'action items'],
+    writingGuidance: 'Write like an analyst summarizing evidence and business implications. Distinguish facts, assumptions, and recommendations.',
+  },
+  resume: {
+    label: 'Resume',
+    sections: ['Professional Summary', 'Skills', 'Experience', 'Education', 'Certifications', 'Projects'],
+    richElements: ['skills matrix', 'achievement bullets', 'project highlights'],
+    writingGuidance: 'Write concise, achievement-oriented resume content with measurable impact where reasonable. Do not invent employers, degrees, or credentials not implied by the request.',
+  },
+  letter: {
+    label: 'Professional Letter',
+    sections: ['Subject', 'Greeting', 'Context', 'Message', 'Requested Action', 'Closing'],
+    richElements: ['clear request', 'next steps', 'deadline or response expectation'],
+    writingGuidance: 'Write in a direct, polished business-letter style. Keep the document brief, respectful, and action-oriented.',
+  },
+  'blog article': {
+    label: 'Blog Article',
+    sections: ['Hook', 'Introduction', 'Core Idea', 'Practical Examples', 'Best Practices', 'Key Takeaways', 'Conclusion'],
+    richElements: ['H2/H3-style sections', 'examples', 'checklists', 'FAQs when useful', 'key takeaways'],
+    writingGuidance: 'Write like a sharp editorial strategist: useful, natural, scannable, and specific. Avoid marketing fluff and generic introductions.',
+  },
+};
+
 function normalizeOption(value: unknown, allowed: Set<string>, fallback: string) {
   const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
 
   return allowed.has(normalized) ? normalized : fallback;
+}
+
+function selectDocumentBlueprint(input: { topic: string; documentType: string }) {
+  const topic = input.topic.toLowerCase();
+
+  if (/\b(proposal|rfp|scope of work|sow|pitch)\b/.test(topic)) return documentBlueprints.proposal;
+  if (/\b(business plan|startup plan|go-to-market plan|financial projections)\b/.test(topic)) return documentBlueprints['business plan'];
+  if (/\b(resume|cv|curriculum vitae)\b/.test(topic)) return documentBlueprints.resume;
+  if (/\b(blog|article|post|guide)\b/.test(topic)) return documentBlueprints['blog article'];
+  if (/\b(letter|email|memo)\b/.test(topic)) return documentBlueprints.letter;
+
+  return documentBlueprints[input.documentType] || documentBlueprints.report;
 }
 
 function buildDocumentPrompt(input: {
@@ -56,20 +133,7 @@ function buildDocumentPrompt(input: {
   tone: string;
   length: string;
 }) {
-  const typeGuidance: Record<string, string> = {
-    report:
-      'Use executive summary, findings, evidence, key insights, recommendations, and conclusion.',
-    proposal:
-      'Use problem, proposed solution, scope of work, timeline, deliverables, pricing or next steps, and decision criteria.',
-    'business plan':
-      'Use market overview, product or service, customer segments, go-to-market strategy, operations, risks, and financial assumptions.',
-    resume:
-      'Use profile summary, core skills, professional experience, achievements, education, and optional certifications.',
-    letter:
-      'Use formal letter structure with subject, greeting, concise body sections, requested action, and closing.',
-    'blog article':
-      'Use compelling title, introduction, scannable sections, practical examples, key takeaways, and conclusion.',
-  };
+  const blueprint = selectDocumentBlueprint(input);
 
   return [
     'Create a polished, professional SaaS-quality document for SimplifyConvert AI Studio.',
@@ -103,7 +167,9 @@ function buildDocumentPrompt(input: {
     '- Include tables where they improve clarity, comparison, timelines, pricing, assumptions, or metrics.',
     '- Include 3-6 keyInsights and 3-6 recommendations unless the document type makes recommendations inappropriate.',
     '- Avoid generic claims. Infer realistic structure from the user brief.',
-    `Document type guidance: ${typeGuidance[input.documentType] || typeGuidance.report}`,
+    '- Avoid repeated section titles, repeated opening phrases, and generic AI wording.',
+    '- Use realistic examples, assumptions, ranges, and next steps only when they fit the request.',
+    `Selected blueprint: ${JSON.stringify(blueprint)}`,
     `Document type: ${input.documentType}`,
     `Tone: ${input.tone}`,
     `Length: ${input.length}`,
@@ -117,6 +183,8 @@ function buildResearchAgentPrompt(input: {
   tone: string;
   length: string;
 }) {
+  const blueprint = selectDocumentBlueprint(input);
+
   return [
     'You are the Research Agent for an AI document maker.',
     'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
@@ -133,8 +201,11 @@ function buildResearchAgentPrompt(input: {
     }),
     'Rules:',
     '- Identify the real document type from the user request, even when the UI option is generic.',
+    '- Select the closest blueprint and use its required sections unless the user request clearly needs a variation.',
     '- Make assumptions explicit and useful, not defensive.',
     '- Choose sections that a professional consultant would expect.',
+    '- Capture missing assumptions such as audience, company size, timeframe, buyer, market, geography, and source data.',
+    `Available selected blueprint: ${JSON.stringify(blueprint)}`,
     `Requested document type: ${input.documentType}`,
     `Requested tone: ${input.tone}`,
     `Requested length: ${input.length}`,
@@ -149,6 +220,8 @@ function buildPlannerPrompt(input: {
   length: string;
   researchBrief: DocumentResearchBrief;
 }) {
+  const blueprint = selectDocumentBlueprint(input);
+
   return [
     'You are the Document Planner for a premium AI workspace product.',
     'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
@@ -170,10 +243,13 @@ function buildPlannerPrompt(input: {
       ],
     }),
     'Rules:',
-    '- Use 4-7 sections for most business documents.',
+    '- Use the selected blueprint as the default structure. Keep section headings distinct and non-repetitive.',
+    '- Use 6-10 sections for proposals and business plans, 5-7 for reports and blogs, and 4-6 for letters/resumes unless the request requires more.',
     '- Place tables only where they clarify scope, timelines, pricing, comparisons, assumptions, or metrics.',
     '- Place callouts only for important insight, risk, decision, or recommendation moments.',
+    '- Plan rich content selectively: comparison tables, numbered steps, checklists, best practices, examples, FAQs, and action items only when useful.',
     '- Keep the outline specific enough that each section can be written independently.',
+    `Selected blueprint: ${JSON.stringify(blueprint)}`,
     `UI inputs: ${JSON.stringify({ documentType: input.documentType, tone: input.tone, length: input.length })}`,
     `Research brief: ${JSON.stringify(input.researchBrief)}`,
     `User brief: ${input.topic}`,
@@ -209,9 +285,12 @@ function buildSectionWriterPrompt(input: {
     'Rules:',
     '- Write like an experienced consultant: specific, direct, and commercially useful.',
     '- Avoid generic AI wording such as "in today\'s fast-paced world" or "leverage cutting-edge solutions".',
+    '- Avoid repeated paragraph openings and repeated claims from nearby sections.',
+    '- Use natural transitions and concrete nouns. Prefer concise business prose over hype.',
     '- Include bullets only if the plan asks for bullets.',
     '- Include a table only if the plan asks for a table and the table improves clarity.',
-    '- Include examples when useful, embedded naturally in paragraphs or bullets.',
+    '- Include examples, numbered steps, checklists, best practices, FAQs, or action items when useful for this exact section.',
+    '- Do not fabricate impossible data. If exact facts are unknown, present realistic assumptions as assumptions.',
     '- Keep paragraphs concise and balanced with the surrounding outline.',
     `Section number: ${input.sectionIndex + 1}`,
     `Assigned section: ${JSON.stringify(input.section)}`,
@@ -259,6 +338,8 @@ function buildEditorialReviewerPrompt(input: {
     '- Improve transitions, professional tone, terminology consistency, and readability.',
     '- Keep section balance and make the conclusion match the objectives.',
     '- Preserve useful tables, bullets, examples, recommendations, and key insights.',
+    '- Remove generic AI phrases, duplicated ideas, and repeated section titles.',
+    '- Ensure the final document feels like management consultant, analyst, or project-manager work.',
     '- Do not add pricing, billing, payment, wallet, or export-route content.',
     `Original user brief: ${input.topic}`,
     `Research brief: ${JSON.stringify(input.researchBrief)}`,
@@ -454,7 +535,7 @@ function parseDocumentPlan(content: string) {
     subtitle: String(parsed.subtitle || ''),
     executiveSummary: String(parsed.executiveSummary || ''),
     sections: sections.length > 0
-      ? sections.slice(0, 5)
+      ? sections.slice(0, 10)
       : [{
           heading: 'Overview',
           purpose: 'Provide a concise professional overview.',
@@ -528,29 +609,26 @@ function buildDeterministicDocument(input: {
   tone: string;
 }) {
   const title = input.topic.replace(/[.?!]\s*$/, '') || 'AI Studio Document';
+  const blueprint = selectDocumentBlueprint(input);
+  const sections = blueprint.sections.slice(0, 6).map((heading, index) => ({
+    heading,
+    paragraphs: [
+      `${heading} for ${title} should be refined with organization-specific details, but the core focus is ${index === 0 ? 'the business objective, audience, and decision context' : 'clear assumptions, realistic actions, and measurable outcomes'}.`,
+    ],
+    bulletPoints: index === 0
+      ? []
+      : [
+          'Confirm the relevant assumptions with stakeholders.',
+          'Add company-specific data, owners, and timing before final use.',
+        ],
+    tables: [],
+  }));
 
   return {
     title,
-    subtitle: `${input.tone} ${input.documentType}`,
+    subtitle: `${input.tone} ${blueprint.label}`,
     executiveSummary: `This document provides a structured, professional response to: ${input.topic}`,
-    sections: [
-      {
-        heading: 'Overview',
-        paragraphs: [`The request focuses on ${input.topic}. This draft organizes the core context, priorities, and next steps in a format suitable for review.`],
-        bulletPoints: [],
-        tables: [],
-      },
-      {
-        heading: 'Recommended Next Steps',
-        paragraphs: ['Use this draft as a starting point for stakeholder review, then refine assumptions, owners, timing, and commercial details before distribution.'],
-        bulletPoints: [
-          'Confirm the target audience and decision criteria.',
-          'Add any company-specific facts, numbers, and constraints.',
-          'Review the final document for legal, finance, and operational accuracy.',
-        ],
-        tables: [],
-      },
-    ],
+    sections,
     keyInsights: ['The document should be refined with organization-specific data before final use.'],
     recommendations: ['Validate assumptions with internal stakeholders before sharing externally.'],
     conclusion: 'The final document should align the requested objective with clear action steps and accountable follow-through.',

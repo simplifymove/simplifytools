@@ -37,10 +37,69 @@ const spreadsheetTypes = new Set([
   'invoice',
   'comparison table',
   'plan',
+  'inventory',
 ]);
 const complexities = new Set(['simple', 'medium', 'detailed']);
 const agentTimeoutMs = Number(process.env.AI_STUDIO_AGENT_TIMEOUT_MS || 45000);
 const fallbackTimeoutMs = Number(process.env.AI_STUDIO_FALLBACK_TIMEOUT_MS || 70000);
+
+const spreadsheetBlueprints: Record<string, {
+  label: string;
+  sheets: string[];
+  metrics: string[];
+  formulas: string[];
+  dataGuidance: string;
+}> = {
+  budget: {
+    label: 'Budget Workbook',
+    sheets: ['Summary', 'Income', 'Expenses', 'Monthly Overview', 'Dashboard Notes'],
+    metrics: ['Total income', 'Total expenses', 'Net cash flow', 'Budget variance', 'Expense ratio'],
+    formulas: ['SUM', 'AVERAGE', 'Variance', 'Variance percentage', 'SUBTOTAL'],
+    dataGuidance: 'Use realistic monthly income and expense categories with budget, actual, variance, and variance percent.',
+  },
+  'sales report': {
+    label: 'Sales Dashboard',
+    sheets: ['Summary', 'Sales Data', 'KPIs', 'Monthly Trends', 'Forecast'],
+    metrics: ['MRR', 'ARR', 'Pipeline value', 'Win rate', 'Average deal size', 'Forecast revenue'],
+    formulas: ['SUM', 'AVERAGE', 'COUNTIF', 'IF', 'Percentage calculations', 'Growth calculations', 'Forecast'],
+    dataGuidance: 'Use realistic SaaS segments, pipeline stages, monthly periods, deal values, probabilities, MRR, win rates, and forecast assumptions.',
+  },
+  'project tracker': {
+    label: 'Project Tracker',
+    sheets: ['Dashboard', 'Tasks', 'Milestones', 'Resources', 'Risks'],
+    metrics: ['Open tasks', 'Overdue tasks', 'Completion rate', 'At-risk milestones', 'Resource load'],
+    formulas: ['COUNTIF', 'AVERAGE', 'IF', 'Percentage complete', 'Days remaining'],
+    dataGuidance: 'Use realistic task owners, due dates, statuses, priorities, dependencies, progress percentages, and risk ratings.',
+  },
+  invoice: {
+    label: 'Invoice Workbook',
+    sheets: ['Invoice', 'Items', 'Tax Summary', 'Payment Notes'],
+    metrics: ['Subtotal', 'Tax', 'Discount', 'Total due', 'Payment status'],
+    formulas: ['SUM', 'Quantity x rate', 'Tax calculation', 'Discount calculation', 'Total due'],
+    dataGuidance: 'Use realistic invoice line items, quantities, rates, tax assumptions, payment terms, and due dates.',
+  },
+  inventory: {
+    label: 'Inventory Workbook',
+    sheets: ['Inventory', 'Suppliers', 'Stock Alerts', 'Summary'],
+    metrics: ['Units on hand', 'Reorder value', 'Low-stock SKUs', 'Inventory value', 'Supplier lead time'],
+    formulas: ['SUM', 'COUNTIF', 'IF', 'VLOOKUP/XLOOKUP when useful', 'Reorder calculations'],
+    dataGuidance: 'Use realistic SKUs, product categories, suppliers, reorder points, unit costs, lead times, and low-stock flags.',
+  },
+  'comparison table': {
+    label: 'Comparison Workbook',
+    sheets: ['Summary', 'Options', 'Scoring', 'Recommendation'],
+    metrics: ['Weighted score', 'Cost score', 'Risk score', 'Recommended option'],
+    formulas: ['SUMPRODUCT-style weighted totals', 'AVERAGE', 'Rank', 'IF'],
+    dataGuidance: 'Use realistic options, criteria, weights, scores, pros, cons, and recommendation logic.',
+  },
+  plan: {
+    label: 'Planning Workbook',
+    sheets: ['Dashboard', 'Milestones', 'Owners', 'Risks', 'Notes'],
+    metrics: ['Milestones complete', 'Open risks', 'Owner workload', 'Progress rate'],
+    formulas: ['COUNTIF', 'AVERAGE', 'IF', 'Percentage complete'],
+    dataGuidance: 'Use realistic milestones, owners, dependencies, due dates, progress, status, and risks.',
+  },
+};
 
 function normalizeOption(value: unknown, allowed: Set<string>, fallback: string) {
   const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -48,25 +107,25 @@ function normalizeOption(value: unknown, allowed: Set<string>, fallback: string)
   return allowed.has(normalized) ? normalized : fallback;
 }
 
+function selectSpreadsheetBlueprint(input: { topic: string; spreadsheetType: string }) {
+  const topic = input.topic.toLowerCase();
+
+  if (/\b(saas|sales dashboard|sales report|pipeline|mrr|arr|revenue dashboard)\b/.test(topic)) return spreadsheetBlueprints['sales report'];
+  if (/\b(project|tracker|task|milestone|resource|risk register)\b/.test(topic)) return spreadsheetBlueprints['project tracker'];
+  if (/\b(invoice|billing|payment due|tax summary)\b/.test(topic)) return spreadsheetBlueprints.invoice;
+  if (/\b(inventory|stock|sku|supplier|reorder)\b/.test(topic)) return spreadsheetBlueprints.inventory;
+  if (/\b(budget|expense|income|cash flow|variance)\b/.test(topic)) return spreadsheetBlueprints.budget;
+  if (/\b(compare|comparison|scorecard|vendor selection|options)\b/.test(topic)) return spreadsheetBlueprints['comparison table'];
+
+  return spreadsheetBlueprints[input.spreadsheetType] || spreadsheetBlueprints.budget;
+}
+
 function buildSpreadsheetPrompt(input: {
   topic: string;
   spreadsheetType: string;
   complexity: string;
 }) {
-  const typeGuidance: Record<string, string> = {
-    budget:
-      'Create income, expense, budget, actual, variance, and variance percentage structure with totals and formulas.',
-    'sales report':
-      'Create leads, opportunities, deal stage, owner, expected revenue, probability, weighted revenue, conversion, and totals.',
-    'project tracker':
-      'Create tasks, owners, priority, status, due dates, progress, dependencies, risk, and next action.',
-    invoice:
-      'Create invoice line items, quantity, rate, subtotal, tax, discount, total, due date, and payment notes.',
-    'comparison table':
-      'Create options, criteria, scores, weighted total, pros, cons, and recommendation.',
-    plan:
-      'Create milestones, timeline, owner, dependencies, status, progress, risks, and success metric.',
-  };
+  const blueprint = selectSpreadsheetBlueprint(input);
 
   return [
     'Create a polished, professional SaaS-quality Excel workbook for SimplifyConvert AI Studio.',
@@ -109,11 +168,12 @@ function buildSpreadsheetPrompt(input: {
     }),
     'Rules:',
     '- Include at least one detailed main data sheet.',
-    '- Include formulas that make sense for totals, variance, weighted revenue, invoice totals, scores, or progress where applicable.',
+    '- Include formulas that make sense for totals, averages, COUNTIF, IF logic, variance, weighted revenue, invoice totals, scores, growth, forecast, or progress where applicable.',
     '- Use numbers for numeric cells and ISO-like dates for date cells.',
     '- Provide summaryMetrics for dashboard-style summary output.',
     '- Provide chartSuggestions that explain useful charts, even if charts are not embedded.',
-    `Spreadsheet type guidance: ${typeGuidance[input.spreadsheetType] || typeGuidance.budget}`,
+    '- Use realistic sample values. Avoid placeholders like TBD, N/A, Sample, or Example unless the workbook is explicitly a template.',
+    `Selected blueprint: ${JSON.stringify(blueprint)}`,
     `Spreadsheet type: ${input.spreadsheetType}`,
     `Complexity: ${input.complexity}`,
     `Topic or brief: ${input.topic}`,
@@ -166,6 +226,8 @@ function buildRequirementsAnalyzerPrompt(input: {
   spreadsheetType: string;
   complexity: string;
 }) {
+  const blueprint = selectSpreadsheetBlueprint(input);
+
   return [
     'You are the Requirements Analyzer for an AI spreadsheet maker.',
     'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
@@ -181,8 +243,11 @@ function buildRequirementsAnalyzerPrompt(input: {
     }),
     'Rules:',
     '- Infer a realistic business domain and workbook purpose from the brief.',
+    '- Select the closest workbook blueprint and use its required sheets unless the user request clearly needs a variation.',
     '- Include calculations and metrics that a business analyst would build into the workbook.',
     '- Keep requiredSheets focused; do not invent unnecessary feature areas.',
+    '- Required calculations should include real Excel functions where useful: SUM, AVERAGE, COUNTIF, IF, SUBTOTAL, growth %, variance %, forecast, and lookup formulas only when the sheet relationship supports them.',
+    `Selected blueprint: ${JSON.stringify(blueprint)}`,
     `Requested spreadsheet type: ${input.spreadsheetType}`,
     `Complexity: ${input.complexity}`,
     `User brief: ${input.topic}`,
@@ -195,6 +260,8 @@ function buildWorkbookPlannerPrompt(input: {
   complexity: string;
   requirements: WorkbookRequirements;
 }) {
+  const blueprint = selectSpreadsheetBlueprint(input);
+
   return [
     'You are the Workbook Planner for a premium AI workspace product.',
     'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
@@ -214,10 +281,13 @@ function buildWorkbookPlannerPrompt(input: {
       ],
     }),
     'Rules:',
-    '- Use 2-5 sheets for most workbooks.',
+    '- Use the selected blueprint as the default workbook structure. Preserve its core sheets unless the brief requires a smaller workbook.',
+    '- Use 4-5 sheets for budgets, sales dashboards, project trackers, and inventory; 3-4 sheets for invoices or simple comparisons.',
     '- Make columns realistic, analyst-friendly, and consistent with the required calculations.',
-    '- Formulas should describe intended calculations, not final cell references yet.',
+    '- Formulas should describe intended calculations, not final cell references yet. Include SUM, AVERAGE, COUNTIF, IF, SUBTOTAL, percentage, growth, variance, forecast, or lookup logic where appropriate.',
     '- Include dashboard or summary sheets only when appropriate for the brief.',
+    '- Avoid duplicate sheet names and vague columns such as Item/Value unless the workbook is intentionally simple.',
+    `Selected blueprint: ${JSON.stringify(blueprint)}`,
     `UI inputs: ${JSON.stringify({ spreadsheetType: input.spreadsheetType, complexity: input.complexity })}`,
     `Requirements: ${JSON.stringify(input.requirements)}`,
     `User brief: ${input.topic}`,
@@ -231,6 +301,11 @@ function buildDataBuilderPrompt(input: {
   sheet: WorkbookPlanSheet;
   sheetIndex: number;
 }) {
+  const blueprint = selectSpreadsheetBlueprint({
+    topic: input.topic,
+    spreadsheetType: input.requirements.spreadsheetType,
+  });
+
   return [
     'You are the Data Builder for one sheet in a professional workbook.',
     'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
@@ -261,9 +336,14 @@ function buildDataBuilderPrompt(input: {
     'Rules:',
     '- Build the sheet like a business analyst prepared it for review.',
     '- Use realistic headers and rows for the domain. Use numbers for numeric cells.',
+    '- Use realistic sample values. Avoid placeholders like TBD, N/A, Sample, or Example unless explicitly requested.',
     '- Keep formulas consistent with columns and row counts. Do not include a leading equals sign.',
+    '- Use real Excel formulas where appropriate: SUM, AVERAGE, COUNTIF, IF, SUBTOTAL, percentage calculations, growth calculations, totals, variance, forecast, and XLOOKUP/VLOOKUP only when useful.',
+    '- Formula cell references must point to cells that exist in the generated sheet or a clearly named related sheet.',
     '- Include totals or summary rows when useful, but keep the data readable.',
-    '- Avoid generic placeholder rows.',
+    '- Use ISO-like dates for dates. Use decimal percentages such as 0.24, not "24%", when a cell is numeric.',
+    '- For SaaS sales dashboards, include realistic MRR, ARR, leads, opportunities, stages, win rates, forecast, customer segment, and month values.',
+    `Selected blueprint: ${JSON.stringify(blueprint)}`,
     `Sheet number: ${input.sheetIndex + 1}`,
     `Assigned sheet plan: ${JSON.stringify(input.sheet)}`,
     `Full workbook plan: ${JSON.stringify(input.plan)}`,
@@ -322,6 +402,9 @@ function buildWorkbookReviewerPrompt(input: {
     '- Validate formulas, column consistency, summary metrics, sheet relationships, readability, and professionalism.',
     '- Remove duplicate or inconsistent metrics.',
     '- Keep formulas compatible with the generated rows and columns.',
+    '- Ensure workbook sheets match the selected business use case and do not collapse into one generic data sheet.',
+    '- Preserve real formulas and realistic sample values. Remove impossible values and placeholders.',
+    '- Make output feel like business analyst, financial analyst, or project manager work.',
     '- Do not add pricing, billing, payment, wallet, or export-route content.',
     `Original user brief: ${input.topic}`,
     `Requirements: ${JSON.stringify(input.requirements)}`,
@@ -503,7 +586,7 @@ function parseWorkbookPlan(content: string) {
   return {
     workbookTitle: String(parsed.workbookTitle || 'AI Studio Spreadsheet'),
     sheets: sheets.length > 0
-      ? sheets.slice(0, 5)
+      ? sheets.slice(0, 6)
       : [{
           name: 'Main Data',
           description: 'Generated business data',
@@ -554,7 +637,15 @@ function buildSimpleSheetFallback(sheet: WorkbookPlanSheet): BuiltWorkbookSheet 
     description: sheet.description,
     columns,
     rows: [
-      columns.map((column, index) => (index === 0 ? `${column} example` : '')),
+      columns.map((column, index) => {
+        const normalized = column.toLowerCase();
+        if (index === 0) return sheet.name;
+        if (/\b(date|month)\b/.test(normalized)) return '2026-01-01';
+        if (/\b(revenue|mrr|arr|amount|cost|budget|value|price)\b/.test(normalized)) return 12500;
+        if (/\b(rate|percent|margin|growth|probability)\b/.test(normalized)) return 0.24;
+        if (/\b(count|leads|opportunities|units|tasks)\b/.test(normalized)) return 24;
+        return `${sheet.name} detail`;
+      }),
     ],
     formulas: [],
     summaryMetrics: sheet.summaryMetrics.slice(0, 3).map((metric) => ({
@@ -571,12 +662,64 @@ function buildDeterministicSpreadsheet(input: {
   topic: string;
   spreadsheetType: string;
 }) {
+  const blueprint = selectSpreadsheetBlueprint(input);
+
+  if (blueprint === spreadsheetBlueprints['sales report']) {
+    return {
+      workbookTitle: input.topic.replace(/[.?!]\s*$/, '') || 'SaaS Monthly Sales Dashboard',
+      sheets: [
+        {
+          sheetName: 'Sales Data',
+          description: 'Monthly SaaS sales performance by segment and channel.',
+          columns: ['Month', 'Segment', 'Channel', 'Leads', 'Opportunities', 'Closed Won', 'MRR', 'Win Rate'],
+          rows: [
+            ['2026-01-01', 'SMB', 'Inbound', 420, 96, 28, 68500, 0.29],
+            ['2026-01-01', 'Mid-Market', 'Partner', 180, 54, 14, 82000, 0.26],
+            ['2026-01-01', 'Enterprise', 'Outbound', 48, 16, 4, 34000, 0.25],
+          ],
+          formulas: [
+            { cell: 'G6', formula: 'SUM(G2:G4)', label: 'Total MRR' },
+            { cell: 'H6', formula: 'AVERAGE(H2:H4)', label: 'Average win rate' },
+            { cell: 'D6', formula: 'SUM(D2:D4)', label: 'Total leads' },
+          ],
+          summaryMetrics: [
+            { label: 'Total MRR', value: 184500, format: 'currency' },
+            { label: 'Average win rate', value: 0.27, format: 'percent' },
+          ],
+          chartSuggestions: ['Line chart for MRR by month.', 'Column chart for closed won by segment.'],
+        },
+        {
+          sheetName: 'Forecast',
+          description: 'Simple revenue forecast assumptions.',
+          columns: ['Month', 'Base MRR', 'Growth Rate', 'Forecast MRR'],
+          rows: [
+            ['2026-02-01', 184500, 0.08, ''],
+            ['2026-03-01', 199260, 0.07, ''],
+          ],
+          formulas: [
+            { cell: 'D2', formula: 'B2*(1+C2)', label: 'Forecast MRR' },
+            { cell: 'D3', formula: 'D2*(1+C3)', label: 'Next month forecast' },
+          ],
+          summaryMetrics: [{ label: 'Forecast horizon', value: '2 months', format: 'text' }],
+          chartSuggestions: ['Line chart comparing base MRR and forecast MRR.'],
+        },
+      ],
+      summaryMetrics: [
+        { label: 'Monthly Recurring Revenue', value: 184500, format: 'currency' },
+        { label: 'Average Win Rate', value: 0.27, format: 'percent' },
+        { label: 'Closed Won Deals', value: 46, format: 'number' },
+      ],
+      chartSuggestions: ['Create a line chart for MRR trend.', 'Create a segment bar chart for closed won deals.'],
+      notes: ['Generated as a schema-safe SaaS sales dashboard fallback with realistic sample values.'],
+    };
+  }
+
   return {
     workbookTitle: input.topic.replace(/[.?!]\s*$/, '') || 'AI Studio Spreadsheet',
     sheets: [
       {
-        sheetName: 'Main Data',
-        description: `Structured starting point for ${input.spreadsheetType}.`,
+        sheetName: blueprint.sheets[0] || 'Main Data',
+        description: `Structured starting point for ${blueprint.label}.`,
         columns: ['Category', 'Metric', 'Current Value', 'Target', 'Notes'],
         rows: [
           ['Overview', 'Primary objective', input.topic, '', 'Add company-specific data before use'],
@@ -593,7 +736,7 @@ function buildDeterministicSpreadsheet(input: {
     summaryMetrics: [
       { label: 'Workbook status', value: 'Draft', format: 'text' },
     ],
-    chartSuggestions: ['Add charts after replacing placeholder values with business data.'],
+    chartSuggestions: blueprint.metrics.slice(0, 2).map((metric) => `Create a chart for ${metric}.`),
     notes: ['Generated as a schema-safe fallback. Review and replace placeholder values before distribution.'],
   };
 }
