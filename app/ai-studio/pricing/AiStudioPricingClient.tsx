@@ -33,14 +33,12 @@ function formatPlanPrice(plan: AiStudioPlanConfig) {
   return `$${majorAmount.toFixed(2)}`;
 }
 
-function formatAiUsageValue(plan: AiStudioPlanConfig) {
-  const majorAmount = plan.aiUsageValueMinor / 100;
-
-  if (plan.currency === 'INR') {
-    return `Includes ₹${majorAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })} worth of AI usage`;
+function getPlanDescription(plan: AiStudioPlanConfig) {
+  if (plan.name.toLowerCase().includes('pro')) {
+    return 'Best value for frequent AI content creation.';
   }
 
-  return `Includes $${majorAmount.toFixed(2)} worth of AI usage`;
+  return 'Perfect for occasional AI content creation.';
 }
 
 function loadRazorpayScript() {
@@ -287,7 +285,10 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
 
               <div className="mt-6 rounded-lg border border-cyan-100 bg-cyan-50 p-4">
                 <p className="text-2xl font-bold text-cyan-950">{plan.creditsGranted.toLocaleString()} AI Credits</p>
-                <p className="mt-1 text-sm leading-6 text-cyan-900">{formatAiUsageValue(plan)}</p>
+                <p className="mt-1 text-sm leading-6 text-cyan-900">{getPlanDescription(plan)}</p>
+                <p className="mt-1 text-sm leading-6 text-cyan-900">
+                  Use credits across all AI Studio premium tools.
+                </p>
               </div>
 
               <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
@@ -305,11 +306,11 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
 
               <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
                 {[
-                  'AI-powered content planning',
-                  'Smart visual layouts',
-                  'PPTX export',
-                  'Professional themes',
-                  'Images and visual storytelling',
+                  'AI Presentation Maker',
+                  'AI Document Maker',
+                  'AI Spreadsheet Maker',
+                  'PPTX, DOCX & XLSX exports',
+                  'Professional AI generation',
                 ].map((feature) => (
                   <li key={feature} className="flex gap-2">
                     <CheckCircle size={17} className="mt-0.5 shrink-0 text-cyan-700" />

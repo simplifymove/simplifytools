@@ -20,6 +20,14 @@ export default function AccountPage() {
   const [editName, setEditName] = useState('')
   const [editBio, setEditBio] = useState('')
   const [saveMessage, setSaveMessage] = useState('')
+  const [passwordStatusLoading, setPasswordStatusLoading] = useState(true)
+  const [hasPassword, setHasPassword] = useState<boolean | null>(null)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [passwordMessage, setPasswordMessage] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   useEffect(() => {
     console.log('[Account Page] Session status:', status)
@@ -40,6 +48,27 @@ export default function AccountPage() {
     setLoading(false)
     setEditName(session.user.name || '')
     setEditBio(session.user.bio || '')
+
+    let cancelled = false
+    setPasswordStatusLoading(true)
+    fetch('/api/user/change-password')
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Unable to load account security status')
+        return response.json() as Promise<{ hasPassword?: boolean }>
+      })
+      .then((data) => {
+        if (!cancelled) setHasPassword(Boolean(data.hasPassword))
+      })
+      .catch(() => {
+        if (!cancelled) setHasPassword(null)
+      })
+      .finally(() => {
+        if (!cancelled) setPasswordStatusLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [session, status, router])
 
   const handleSaveProfile = async () => {
@@ -93,6 +122,60 @@ export default function AccountPage() {
     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   }
 
+  const handleChangePassword = async () => {
+    setPasswordMessage('')
+    setPasswordError('')
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      setPasswordError('All password fields are required.')
+      return
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters.')
+      return
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError('Confirm new password must match.')
+      return
+    }
+
+    if (currentPassword === newPassword) {
+      setPasswordError('New password must be different from your current password.')
+      return
+    }
+
+    setIsChangingPassword(true)
+
+    try {
+      const response = await fetch('/api/user/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+          confirmNewPassword,
+        }),
+      })
+      const result = await response.json().catch(() => ({})) as { error?: string }
+
+      if (!response.ok) {
+        setPasswordError(result.error || 'Unable to change password right now.')
+        return
+      }
+
+      setPasswordMessage('Password changed successfully.')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmNewPassword('')
+    } catch {
+      setPasswordError('Unable to change password right now.')
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
   if (loading || !session?.user) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -110,6 +193,93 @@ export default function AccountPage() {
     { id: 'security', label: 'Security', icon: Lock },
     { id: 'account', label: 'Account', icon: Mail },
   ]
+
+  const renderPasswordSection = (isMobile = false) => (
+    <div className={`${isMobile ? 'pb-4' : 'pb-6'} border-b border-gray-200`}>
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className={`${isMobile ? 'font-semibold' : 'text-lg font-semibold'} text-gray-900`}>
+            Change Password
+          </h3>
+          {hasPassword === false && (
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+              Google Sign-In
+            </span>
+          )}
+        </div>
+        <p className="text-gray-600 text-sm">
+          {hasPassword === false
+            ? 'This account uses Google Sign-In and does not currently have a password.'
+            : 'Change your password to keep your account secure.'}
+        </p>
+      </div>
+
+      {passwordStatusLoading && (
+        <p className="text-sm text-gray-500">Loading password settings...</p>
+      )}
+
+      {!passwordStatusLoading && hasPassword === true && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              autoComplete="current-password"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              autoComplete="new-password"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+            <input
+              type="password"
+              value={confirmNewPassword}
+              onChange={(event) => setConfirmNewPassword(event.target.value)}
+              autoComplete="new-password"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+          </div>
+
+          {passwordError && (
+            <div className="p-4 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200">
+              {passwordError}
+            </div>
+          )}
+          {passwordMessage && (
+            <div className="p-4 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-200">
+              {passwordMessage}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleChangePassword}
+            disabled={isChangingPassword}
+            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium disabled:opacity-50"
+          >
+            {isChangingPassword ? 'Changing...' : 'Change Password'}
+          </button>
+        </div>
+      )}
+
+      {!passwordStatusLoading && hasPassword === null && (
+        <div className="p-4 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200">
+          Unable to load password settings right now.
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -295,31 +465,7 @@ export default function AccountPage() {
               >
                 <h2 className="text-2xl font-bold text-gray-900">Security</h2>
 
-                {/* Password */}
-                <div className={`pb-6 border-b border-gray-200 ${user.provider === 'google' ? 'opacity-75' : ''}`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">Password</h3>
-                        {user.provider === 'google' && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                            Managed by Google
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-gray-600 text-sm">
-                        {user.provider === 'google' 
-                          ? 'You signed in using Google. Password changes are managed in your Google account.'
-                          : 'Change your password to keep your account secure.'}
-                      </p>
-                    </div>
-                    {user.provider !== 'google' && (
-                      <button className="px-4 py-2 text-orange-600 font-medium hover:bg-orange-50 rounded-lg transition whitespace-nowrap ml-4">
-                        Change
-                      </button>
-                    )}
-                  </div>
-                </div>
+                {renderPasswordSection()}
 
                 {/* Two-Factor Authentication */}
                 <div>
@@ -473,21 +619,7 @@ export default function AccountPage() {
             >
               <h2 className="text-xl font-bold text-gray-900">Security</h2>
               <div className="space-y-4">
-                <div className="pb-4 border-b border-gray-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-900">Password</h3>
-                    {user.provider === 'google' && (
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                        Google
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-gray-600 text-sm">
-                    {user.provider === 'google' 
-                      ? 'You signed in using Google. Password changes are managed in your Google account.'
-                      : 'Change your password to keep your account secure.'}
-                  </p>
-                </div>
+                {renderPasswordSection(true)}
                 <div>
                   <h3 className="font-semibold text-gray-900">2FA</h3>
                   <p className="text-gray-600 text-sm mt-1">Coming Soon</p>
