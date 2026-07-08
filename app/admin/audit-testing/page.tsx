@@ -19,7 +19,6 @@ const AUDIT_CATEGORIES = [
   { id: 'pdf-tools', name: 'PDF Tools', toolsCount: 15, estimatedTests: 15 },
   { id: 'image-tools', name: 'Image Tools', toolsCount: 12, estimatedTests: 12 },
   { id: 'video-tools', name: 'Video Tools', toolsCount: 8, estimatedTests: 8 },
-  { id: 'ai-writing-tools', name: 'AI Writing Tools', toolsCount: 10, estimatedTests: 10 },
   { id: 'data-conversion-tools', name: 'Data Conversion Tools', toolsCount: 18, estimatedTests: 18 },
   { id: 'data-tools', name: 'Data Tools', toolsCount: 14, estimatedTests: 14 },
   { id: 'code-tools', name: 'Code Tools', toolsCount: 9, estimatedTests: 9 },

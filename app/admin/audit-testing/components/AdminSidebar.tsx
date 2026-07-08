@@ -25,6 +25,7 @@ const menuItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const environmentLabel = process.env.NODE_ENV === 'production' ? 'Production' : 'Local Development';
 
   return (
     <div className="w-64 bg-gray-900 text-white h-screen fixed left-0 top-0 overflow-y-auto">
@@ -43,11 +44,12 @@ export function AdminSidebar() {
         <div className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const href = item.href.startsWith('/') ? item.href : `/admin/${item.href}`;
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   isActive
                     ? 'bg-blue-600 text-white'
@@ -68,7 +70,7 @@ export function AdminSidebar() {
         <div className="text-xs text-gray-400 space-y-2">
           <div>
             <span className="text-gray-500">Environment:</span>
-            <span className="block font-medium text-gray-300">Local Development</span>
+            <span className="block font-medium text-gray-300">{environmentLabel}</span>
           </div>
           <div className="text-xs text-gray-500 mt-2">v1.0.0</div>
         </div>

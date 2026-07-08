@@ -116,6 +116,52 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
           `[Parsed] Category batch: ${result.totalTests} total tests, ${result.passedTests} passed, ${result.failedTests} failed`
         );
 
+        if ((!result.results || result.results.length === 0) && result.error) {
+          const failureMessage = result.error.substring(0, 1000);
+
+          try {
+            await prisma.auditTestResult.create({
+              data: {
+                auditRunId,
+                category,
+                toolName: category,
+                toolSlug: category,
+                url: `http://localhost:3000/${category}`,
+                testCase: 'Audit command execution',
+                status: 'ERROR' as any,
+                errorMessage: failureMessage,
+                outputGenerated: false,
+                logs: JSON.stringify({
+                  stdout: result.stdout?.substring(0, 2000) || '',
+                  stderr: result.stderr?.substring(0, 2000) || '',
+                }),
+                durationMs: 0,
+                timestamp: new Date(),
+              },
+            });
+
+            await prisma.failureRecord.create({
+              data: {
+                auditJobId,
+                auditRunId,
+                toolName: category,
+                category,
+                testName: 'Audit command execution',
+                failureType: 'UNKNOWN',
+                failureReason: failureMessage,
+                errorOutput: result.stderr?.substring(0, 2000) || result.stdout?.substring(0, 2000) || '',
+                isFlaky: false,
+                firstSeenAt: new Date(),
+              },
+            });
+          } catch (failurePersistError) {
+            workerLogger.warn(
+              { error: failurePersistError, category },
+              'Failed to persist audit command failure details'
+            );
+          }
+        }
+
         // Process each test result and persist to database
         auditDebugLog('[WORKER] Persisting', result.results?.length || 0, 'test results to database');
         let batchTestCount = 0;
@@ -245,7 +291,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
 
         // Determine severity based on results
         if (result.failedTests > 0 || result.errorTests > 0) {
-          const failureRate = ((result.failedTests + result.errorTests) / result.totalTests) * 100;
+          const failureRate = ((result.failedTests + result.errorTests) / Math.max(result.totalTests, 1)) * 100;
           if (failureRate >= 50) {
             await prisma.auditJob.update({
               where: { id: auditJobId },
@@ -307,7 +353,11 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
 
     // Validate that test results were actually produced
     if (totalTests === 0) {
-      const errorMsg = 'No test results were produced. Check test command or report parser.';
+      const categoryReasons = allLogs
+        .map((log) => `${log.category}: ${log.error || log.stderr || 'No test output was parsed'}`)
+        .filter(Boolean)
+        .join('\n');
+      const errorMsg = `No test results were produced. ${categoryReasons || 'Check test command or report parser.'}`.substring(0, 2000);
       
       workerLogger.error({ categories, errorMsg }, 'Job failed: No test results produced');
 

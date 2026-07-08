@@ -97,11 +97,10 @@ const CATEGORY_TEST_COMMANDS = {
   'pdf-tools': 'test:pdf-tools',
   'image-tools': 'test:image-tools',
   'video-tools': 'test:video-tools',
-  'ai-writing-tools': 'test:ai-writing',
   'data-conversion-tools': 'test:converter-tools',
   'data-tools': 'test:document-tools',  // Use document-tools as data-tools substitute
   'code-tools': 'test:validation',      // Use validation as code-tools substitute
-  // Note: save-from-online, financial-calculators, resume-maker, text-to-speech
+  // Note: ai-writing-tools, save-from-online, financial-calculators, resume-maker, text-to-speech
   // don't have test scripts yet, so they won't be available in audit
 };
 
@@ -443,6 +442,10 @@ async function parsePlaywrightResults(
   const errorLines = stdout.split('\n').filter((line) =>
     line.includes('Error') || line.includes('FAIL') || line.includes('error') || line.includes('Expected')
   );
+  const failureReason =
+    exitCode !== 0 && totalTests === 0
+      ? summarizeCommandFailure(stdout, stderr, category)
+      : undefined;
 
   logs.push({
     category,
@@ -455,6 +458,7 @@ async function parsePlaywrightResults(
     exitCode,
     stdout: stdout.substring(0, 2000),
     stderr: stderr.substring(0, 1000),
+    error: failureReason,
     timestamp: new Date(),
   });
 
@@ -468,7 +472,27 @@ async function parsePlaywrightResults(
     skippedTests,
     logs,
     results,
+    error: failureReason,
+    stdout,
+    stderr,
   };
+}
+
+function summarizeCommandFailure(stdout: string, stderr: string, category: string): string {
+  const combinedOutput = `${stderr}\n${stdout}`
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const meaningfulLine = combinedOutput.find((line) =>
+    /no tests found|cannot find|not found|error|failed|missing|unknown/i.test(line)
+  );
+
+  if (meaningfulLine) {
+    return meaningfulLine.substring(0, 500);
+  }
+
+  return `Audit command for ${category} exited without producing test results. Check the mapped npm script and Playwright report output.`;
 }
 
 /**

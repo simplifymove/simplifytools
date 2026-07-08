@@ -13,7 +13,6 @@ const VALID_CATEGORIES = [
   'pdf-tools',
   'image-tools',
   'video-tools',
-  'ai-writing-tools',
   'data-conversion-tools',
   'data-tools',
   'code-tools',
