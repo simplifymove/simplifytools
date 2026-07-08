@@ -94,13 +94,13 @@ export function killAuditProcess(auditRunId: string): boolean {
 }
 
 const CATEGORY_TEST_COMMANDS = {
-  'pdf-tools': 'npm run test:pdf-tools',
-  'image-tools': 'npm run test:image-tools',
-  'video-tools': 'npm run test:video-tools',
-  'ai-writing-tools': 'npm run test:ai-writing',
-  'data-conversion-tools': 'npm run test:converter-tools',
-  'data-tools': 'npm run test:document-tools',  // Use document-tools as data-tools substitute
-  'code-tools': 'npm run test:validation',      // Use validation as code-tools substitute
+  'pdf-tools': 'test:pdf-tools',
+  'image-tools': 'test:image-tools',
+  'video-tools': 'test:video-tools',
+  'ai-writing-tools': 'test:ai-writing',
+  'data-conversion-tools': 'test:converter-tools',
+  'data-tools': 'test:document-tools',  // Use document-tools as data-tools substitute
+  'code-tools': 'test:validation',      // Use validation as code-tools substitute
   // Note: save-from-online, financial-calculators, resume-maker, text-to-speech
   // don't have test scripts yet, so they won't be available in audit
 };
@@ -138,7 +138,10 @@ export async function runTestCommand(
     };
   }
 
-  const command = CATEGORY_TEST_COMMANDS[category as keyof typeof CATEGORY_TEST_COMMANDS];
+  const scriptName = CATEGORY_TEST_COMMANDS[category as keyof typeof CATEGORY_TEST_COMMANDS];
+  const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+  const commandArgs = ['run', scriptName];
+  const commandLabel = `${command} ${commandArgs.join(' ')}`;
   const projectRoot = process.cwd();
 
   return new Promise((resolve) => {
@@ -147,11 +150,11 @@ export async function runTestCommand(
     let stderr = '';
     let isCancelled = false;
 
-    console.log(`[Test] Running: ${command}`);
+    console.log(`[Test] Running: ${commandLabel}`);
 
-    const child = spawn(command, [], {
+    const child = spawn(command, commandArgs, {
       cwd: projectRoot,
-      shell: process.platform === 'win32',
+      shell: false,
       timeout: 600000, // 10 minutes
     });
 
@@ -220,7 +223,7 @@ export async function runTestCommand(
         return;
       }
 
-      console.log(`[Test] ${command} completed with code ${code} (${durationMs}ms)`);
+      console.log(`[Test] ${commandLabel} completed with code ${code} (${durationMs}ms)`);
 
       // Parse Playwright output and JSON report
       parsePlaywrightResults(stdout, stderr, code ?? 1, category, durationMs)
@@ -243,7 +246,7 @@ export async function runTestCommand(
             skippedTests: 0,
             logs: [{
               category,
-              command,
+              command: commandLabel,
               exitCode: code,
               stdout: stdout.substring(0, 1000),
               stderr: stderr.substring(0, 1000),
@@ -261,7 +264,7 @@ export async function runTestCommand(
         clearInterval(cancellationCheckInterval);
       }
 
-      console.error(`[Test] Failed to run ${command}:`, error);
+      console.error(`[Test] Failed to run ${commandLabel}:`, error);
       if (auditRunId) {
         processRegistry.delete(auditRunId);
       }

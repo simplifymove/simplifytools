@@ -15,6 +15,14 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const BASE_URL = 'https://simplifyconvert.com';
+const SITEMAP_DEBUG =
+  process.env.NODE_ENV === 'development' || process.env.SITEMAP_DEBUG === 'true';
+
+function sitemapDebugLog(...args: Parameters<typeof console.log>) {
+  if (SITEMAP_DEBUG) {
+    console.log(...args);
+  }
+}
 
 // Tool patterns to exclude: YouTube, Instagram, TikTok downloaders
 // These are either not functional or have platform restrictions
@@ -49,7 +57,7 @@ const TOOLS_WITHOUT_PAGES = [
  */
 function extractToolIds(toolsObject: any): string[] {
   if (!toolsObject) {
-    console.log('    ⚠️  toolsObject is null/undefined');
+    sitemapDebugLog('    ⚠️  toolsObject is null/undefined');
     return [];
   }
 
@@ -68,7 +76,7 @@ function extractToolIds(toolsObject: any): string[] {
       
       return isValidTool && !hasNoPage;
     });
-    console.log(`    Object type: ${keys.length} keys → ${filtered.length} valid tools (excluded ${keys.length - filtered.length} without pages)`);
+    sitemapDebugLog(`    Object type: ${keys.length} keys → ${filtered.length} valid tools (excluded ${keys.length - filtered.length} without pages)`);
     return filtered;
   }
 
@@ -81,11 +89,11 @@ function extractToolIds(toolsObject: any): string[] {
         return !TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolId);
       })
       .map(tool => tool.id || tool.key);
-    console.log(`    Array type: ${toolsObject.length} items → ${filtered.length} valid tools (excluded ${toolsObject.length - filtered.length} without pages)`);
+    sitemapDebugLog(`    Array type: ${toolsObject.length} items → ${filtered.length} valid tools (excluded ${toolsObject.length - filtered.length} without pages)`);
     return filtered;
   }
 
-  console.log(`    Unknown type: ${typeof toolsObject}`);
+  sitemapDebugLog(`    Unknown type: ${typeof toolsObject}`);
   return [];
 }
 
@@ -105,9 +113,9 @@ function extractToolIds(toolsObject: any): string[] {
 export default function sitemap(): MetadataRoute.Sitemap {
   const sitemapEntries: MetadataRoute.Sitemap = [];
   
-  console.log('\n╔════════════════════════════════════════════════════════╗');
-  console.log('║          SITEMAP GENERATION DEBUG - DETAILED             ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  sitemapDebugLog('\n╔════════════════════════════════════════════════════════╗');
+  sitemapDebugLog('║          SITEMAP GENERATION DEBUG - DETAILED             ║');
+  sitemapDebugLog('╚════════════════════════════════════════════════════════╝\n');
 
   // 1. ADD HOMEPAGE - highest priority
   sitemapEntries.push({
@@ -116,11 +124,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'daily',
     priority: 1.0,
   });
-  console.log('✓ Added homepage: 1 URL');
+  sitemapDebugLog('✓ Added homepage: 1 URL');
 
   // 1.5 ADD MAIN PAGES - important category and static pages
-  console.log('\n📄 MAIN PAGES');
-  console.log('─────────────────────────────');
+  sitemapDebugLog('\n📄 MAIN PAGES');
+  sitemapDebugLog('─────────────────────────────');
   
   const mainPages = [
     { url: '/all-tools', priority: 0.95, frequency: 'daily' as const, label: 'All Tools Directory' },
@@ -155,17 +163,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: frequency,
       priority,
     });
-    console.log(`✓ Added ${label}: ${url}`);
+    sitemapDebugLog(`✓ Added ${label}: ${url}`);
   });
 
   // 2. MAIN TOOLS from tools.ts
-  console.log('\n📋 MAIN TOOLS (from tools.ts)');
-  console.log('─────────────────────────────');
+  sitemapDebugLog('\n📋 MAIN TOOLS (from tools.ts)');
+  sitemapDebugLog('─────────────────────────────');
   
-  console.log('allTools type:', typeof allTools);
-  console.log('allTools is Array:', Array.isArray(allTools));
+  sitemapDebugLog('allTools type:', typeof allTools);
+  sitemapDebugLog('allTools is Array:', Array.isArray(allTools));
   const allToolsCount = Array.isArray(allTools) ? allTools.length : Object.keys(allTools).length;
-  console.log('Total items in allTools:', allToolsCount);
+  sitemapDebugLog('Total items in allTools:', allToolsCount);
   
   const validMainTools = allTools.filter((tool) => {
     // Must have a route
@@ -186,7 +194,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     return !isExcluded && !hasNoPage;
   });
 
-  console.log('✓ Valid main tools (with routes, not excluded):', validMainTools.length);
+  sitemapDebugLog('✓ Valid main tools (with routes, not excluded):', validMainTools.length);
 
   // Add main tool pages
   validMainTools.forEach((tool) => {
@@ -198,11 +206,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   });
   
-  console.log('✓ Added main tool pages:', validMainTools.length);
+  sitemapDebugLog('✓ Added main tool pages:', validMainTools.length);
 
   // 3. NESTED TOOLS from libraries
-  console.log('\n🗂️  NESTED TOOL LIBRARIES');
-  console.log('─────────────────────────────');
+  sitemapDebugLog('\n🗂️  NESTED TOOL LIBRARIES');
+  sitemapDebugLog('─────────────────────────────');
   
   const nestedToolMappings = [
     {
@@ -239,26 +247,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // DEBUG: Log nested tool counts with detailed info
-  console.log('\nRAW IMPORT DATA:');
-  console.log('  aiWriteTools type:', typeof aiWriteTools, '| Keys:', Object.keys(aiWriteTools || {}).length);
-  console.log('  pdfTools type:', typeof pdfTools, '| Keys:', Object.keys(pdfTools || {}).length);
-  console.log('  videoTools type:', typeof videoTools, '| Keys:', Object.keys(videoTools || {}).length);
-  console.log('  codeTools type:', typeof codeTools, '| Keys:', Object.keys(codeTools || {}).length);
-  console.log('  dataTools type:', typeof dataTools, '| Keys:', Object.keys(dataTools || {}).length);
-  console.log('  imageToolsRegistry type:', typeof imageToolsRegistry, '| Items:', Array.isArray(imageToolsRegistry) ? imageToolsRegistry.length : Object.keys(imageToolsRegistry || {}).length);
+  sitemapDebugLog('\nRAW IMPORT DATA:');
+  sitemapDebugLog('  aiWriteTools type:', typeof aiWriteTools, '| Keys:', Object.keys(aiWriteTools || {}).length);
+  sitemapDebugLog('  pdfTools type:', typeof pdfTools, '| Keys:', Object.keys(pdfTools || {}).length);
+  sitemapDebugLog('  videoTools type:', typeof videoTools, '| Keys:', Object.keys(videoTools || {}).length);
+  sitemapDebugLog('  codeTools type:', typeof codeTools, '| Keys:', Object.keys(codeTools || {}).length);
+  sitemapDebugLog('  dataTools type:', typeof dataTools, '| Keys:', Object.keys(dataTools || {}).length);
+  sitemapDebugLog('  imageToolsRegistry type:', typeof imageToolsRegistry, '| Items:', Array.isArray(imageToolsRegistry) ? imageToolsRegistry.length : Object.keys(imageToolsRegistry || {}).length);
   
-  console.log('\nEXTRACTED TOOL IDS:');
+  sitemapDebugLog('\nEXTRACTED TOOL IDS:');
   let totalNestedTools = 0;
   nestedToolMappings.forEach(({ tools, label }) => {
-    console.log(`  ${label}: ${tools.length}`);
+    sitemapDebugLog(`  ${label}: ${tools.length}`);
     totalNestedTools += tools.length;
   });
-  console.log(`\n  TOTAL NESTED TOOLS: ${totalNestedTools}`);
+  sitemapDebugLog(`\n  TOTAL NESTED TOOLS: ${totalNestedTools}`);
 
   // Create a Set of main tool IDs for deduplication
   const mainToolIds = new Set(validMainTools.map(tool => tool.id.toLowerCase()));
   
-  console.log('Main tool IDs to exclude from nested: ' + mainToolIds.size);
+  sitemapDebugLog('Main tool IDs to exclude from nested: ' + mainToolIds.size);
 
   const addedCategories = new Set<string>();
   
@@ -272,12 +280,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     mainToolCategorySlugs.add(categorySlug);
   });
   
-  console.log('Main tool categories:', Array.from(mainToolCategorySlugs).sort().join(', '));
+  sitemapDebugLog('Main tool categories:', Array.from(mainToolCategorySlugs).sort().join(', '));
 
   // Add nested tool pages and category pages
   nestedToolMappings.forEach(({ tools, route, label, includeCategory }) => {
     if (tools.length === 0) {
-      console.log(`  ✗ ${label}: 0 tools (SKIPPED)`);
+      sitemapDebugLog(`  ✗ ${label}: 0 tools (SKIPPED)`);
       return;
     }
 
@@ -288,9 +296,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     
     const duplicatesInThisCategory = tools.length - uniqueNestedTools.length;
     if (duplicatesInThisCategory > 0) {
-      console.log(`  ⚠️  ${label}: ${tools.length} tools → ${uniqueNestedTools.length} unique (removed ${duplicatesInThisCategory} duplicates)`);
+      sitemapDebugLog(`  ⚠️  ${label}: ${tools.length} tools → ${uniqueNestedTools.length} unique (removed ${duplicatesInThisCategory} duplicates)`);
     } else {
-      console.log(`  ✓ ${label}: ${uniqueNestedTools.length} tools`);
+      sitemapDebugLog(`  ✓ ${label}: ${uniqueNestedTools.length} tools`);
     }
 
     // Add category page (if not already added by main tools)
@@ -303,7 +311,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: 'weekly',
         priority: 0.8,
       });
-      console.log(`    → Added category page: ${route}`);
+      sitemapDebugLog(`    → Added category page: ${route}`);
       addedCategories.add(route);
     }
 
@@ -327,27 +335,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // 4. DO NOT ADD MAIN TOOL CATEGORY PAGES
   // These don't have actual pages, so they return 404
   // Only nested category pages (ai-tools, pdf, code, data, image-tools) are real pages
-  console.log('\n🏷️  CATEGORY PAGES');
-  console.log('─────────────────────────────');
-  console.log('⚠️  NOT adding main tool categories (downloader, financial-calculator, image, video - these pages don\'t exist)');
-  console.log('✓ Only including nested category pages that have actual pages');
+  sitemapDebugLog('\n🏷️  CATEGORY PAGES');
+  sitemapDebugLog('─────────────────────────────');
+  sitemapDebugLog('⚠️  NOT adding main tool categories (downloader, financial-calculator, image, video - these pages don\'t exist)');
+  sitemapDebugLog('✓ Only including nested category pages that have actual pages');
 
   // 5. REMOVE DUPLICATES using Set
-  console.log('\n🔄 DEDUPLICATION');
-  console.log('─────────────────────────────');
-  console.log('Total entries before dedup:', sitemapEntries.length);
+  sitemapDebugLog('\n🔄 DEDUPLICATION');
+  sitemapDebugLog('─────────────────────────────');
+  sitemapDebugLog('Total entries before dedup:', sitemapEntries.length);
   
   const urlSet = new Set<string>();
   const deduplicatedSitemap = sitemapEntries.filter((entry) => {
     if (urlSet.has(entry.url)) {
-      console.log(`  ⚠️  Unexpected duplicate: ${entry.url}`);
+      sitemapDebugLog(`  ⚠️  Unexpected duplicate: ${entry.url}`);
       return false; // Skip duplicate
     }
     urlSet.add(entry.url);
     return true; // Keep unique entry
   });
   
-  console.log('✓ Total entries after dedup:', deduplicatedSitemap.length);
+  sitemapDebugLog('✓ Total entries after dedup:', deduplicatedSitemap.length);
 
   // Sort by URL priority: homepage first, then by path
   deduplicatedSitemap.sort((a, b) => {
@@ -357,11 +365,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   });
 
   // Debug: Log comprehensive final breakdown
-  console.log('\n📊 FINAL SITEMAP BREAKDOWN');
-  console.log('─────────────────────────────');
-  console.log('Homepage entries: 1');
-  console.log('Main pages (All Tools, Blog, Terms): 3');
-  console.log('Main tool pages: ' + validMainTools.length);
+  sitemapDebugLog('\n📊 FINAL SITEMAP BREAKDOWN');
+  sitemapDebugLog('─────────────────────────────');
+  sitemapDebugLog('Homepage entries: 1');
+  sitemapDebugLog('Main pages (All Tools, Blog, Terms): 3');
+  sitemapDebugLog('Main tool pages: ' + validMainTools.length);
   
   // Count unique nested tools (excluding duplicates with main tools)
   let uniqueNestedToolsCount = 0;
@@ -372,22 +380,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     uniqueNestedToolsCount += uniqueTools.length;
   });
   
-  console.log('Unique nested tool pages: ' + uniqueNestedToolsCount);
-  console.log('Category pages: ' + addedCategories.size);
+  sitemapDebugLog('Unique nested tool pages: ' + uniqueNestedToolsCount);
+  sitemapDebugLog('Category pages: ' + addedCategories.size);
   
   const expectedCount = 1 + 3 + validMainTools.length + uniqueNestedToolsCount + addedCategories.size;
-  console.log('\n📈 EXPECTED TOTAL:', expectedCount);
-  console.log('✅ ACTUAL FINAL TOTAL:', deduplicatedSitemap.length, 'URLs');
+  sitemapDebugLog('\n📈 EXPECTED TOTAL:', expectedCount);
+  sitemapDebugLog('✅ ACTUAL FINAL TOTAL:', deduplicatedSitemap.length, 'URLs');
   
   if (Math.abs(expectedCount - deduplicatedSitemap.length) > 5) {
-    console.log('\n⚠️  MISMATCH: Expected', expectedCount, 'but got', deduplicatedSitemap.length);
+    sitemapDebugLog('\n⚠️  MISMATCH: Expected', expectedCount, 'but got', deduplicatedSitemap.length);
   } else {
-    console.log('\n✅ PERFECT MATCH: All URLs accounted for!');
+    sitemapDebugLog('\n✅ PERFECT MATCH: All URLs accounted for!');
   }
   
-  console.log('\n╔════════════════════════════════════════════════════════╗');
-  console.log('║                  END DEBUG OUTPUT                        ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  sitemapDebugLog('\n╔════════════════════════════════════════════════════════╗');
+  sitemapDebugLog('║                  END DEBUG OUTPUT                        ║');
+  sitemapDebugLog('╚════════════════════════════════════════════════════════╝\n');
 
   return deduplicatedSitemap;
 }
