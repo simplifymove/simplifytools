@@ -251,7 +251,7 @@ export default function SpreadsheetMakerClient() {
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <button disabled={isGenerateDisabled} className="inline-flex h-11 items-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white disabled:bg-slate-400">
                   {loading ? <Loader size={16} className="animate-spin" /> : <Table2 size={16} />}
-                  {loading ? 'Generating spreadsheet' : 'Generate Spreadsheet'}
+                  {loading ? 'Analyzing, building, and reviewing' : 'Generate Spreadsheet'}
                 </button>
                 <span className="text-sm text-slate-500">
                   {creditCost} credits required - XLSX export - professional formatting included

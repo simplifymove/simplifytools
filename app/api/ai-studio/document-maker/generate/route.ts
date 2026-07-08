@@ -41,6 +41,8 @@ const documentTypes = new Set([
 ]);
 const tones = new Set(['professional', 'simple', 'formal', 'marketing']);
 const lengths = new Set(['short', 'medium', 'detailed']);
+const agentTimeoutMs = Number(process.env.AI_STUDIO_AGENT_TIMEOUT_MS || 45000);
+const fallbackTimeoutMs = Number(process.env.AI_STUDIO_FALLBACK_TIMEOUT_MS || 70000);
 
 function normalizeOption(value: unknown, allowed: Set<string>, fallback: string) {
   const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -109,6 +111,201 @@ function buildDocumentPrompt(input: {
   ].join('\n');
 }
 
+function buildResearchAgentPrompt(input: {
+  topic: string;
+  documentType: string;
+  tone: string;
+  length: string;
+}) {
+  return [
+    'You are the Research Agent for an AI document maker.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Understand the request, infer the business context, and create a structured content brief.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      documentType: 'string',
+      audience: 'string',
+      tone: 'string',
+      objectives: ['string'],
+      assumptions: ['string'],
+      requiredSections: ['string'],
+      estimatedLength: 'string',
+    }),
+    'Rules:',
+    '- Identify the real document type from the user request, even when the UI option is generic.',
+    '- Make assumptions explicit and useful, not defensive.',
+    '- Choose sections that a professional consultant would expect.',
+    `Requested document type: ${input.documentType}`,
+    `Requested tone: ${input.tone}`,
+    `Requested length: ${input.length}`,
+    `User brief: ${input.topic}`,
+  ].join('\n');
+}
+
+function buildPlannerPrompt(input: {
+  topic: string;
+  documentType: string;
+  tone: string;
+  length: string;
+  researchBrief: DocumentResearchBrief;
+}) {
+  return [
+    'You are the Document Planner for a premium AI workspace product.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Create a professional outline and decide where tables, bullets, and callouts belong.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      title: 'string',
+      subtitle: 'string',
+      executiveSummary: 'string',
+      sections: [
+        {
+          heading: 'string',
+          purpose: 'string',
+          estimatedParagraphs: 2,
+          includeTable: true,
+          includeBullets: true,
+          includeCallout: true,
+        },
+      ],
+    }),
+    'Rules:',
+    '- Use 4-7 sections for most business documents.',
+    '- Place tables only where they clarify scope, timelines, pricing, comparisons, assumptions, or metrics.',
+    '- Place callouts only for important insight, risk, decision, or recommendation moments.',
+    '- Keep the outline specific enough that each section can be written independently.',
+    `UI inputs: ${JSON.stringify({ documentType: input.documentType, tone: input.tone, length: input.length })}`,
+    `Research brief: ${JSON.stringify(input.researchBrief)}`,
+    `User brief: ${input.topic}`,
+  ].join('\n');
+}
+
+function buildSectionWriterPrompt(input: {
+  topic: string;
+  researchBrief: DocumentResearchBrief;
+  plan: DocumentPlan;
+  section: DocumentPlanSection;
+  sectionIndex: number;
+}) {
+  return [
+    'You are the Content Writer for one section of a professional document.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Write only the assigned section. Do not write the full document.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      heading: 'string',
+      paragraphs: ['string'],
+      bulletPoints: ['string'],
+      tables: [
+        {
+          title: 'string',
+          columns: ['string'],
+          rows: [['string or number']],
+        },
+      ],
+      keyInsights: ['string'],
+      recommendations: ['string'],
+    }),
+    'Rules:',
+    '- Write like an experienced consultant: specific, direct, and commercially useful.',
+    '- Avoid generic AI wording such as "in today\'s fast-paced world" or "leverage cutting-edge solutions".',
+    '- Include bullets only if the plan asks for bullets.',
+    '- Include a table only if the plan asks for a table and the table improves clarity.',
+    '- Include examples when useful, embedded naturally in paragraphs or bullets.',
+    '- Keep paragraphs concise and balanced with the surrounding outline.',
+    `Section number: ${input.sectionIndex + 1}`,
+    `Assigned section: ${JSON.stringify(input.section)}`,
+    `Full document plan: ${JSON.stringify(input.plan)}`,
+    `Research brief: ${JSON.stringify(input.researchBrief)}`,
+    `User brief: ${input.topic}`,
+  ].join('\n');
+}
+
+function buildEditorialReviewerPrompt(input: {
+  topic: string;
+  researchBrief: DocumentResearchBrief;
+  plan: DocumentPlan;
+  sections: DocumentSectionContent[];
+}) {
+  return [
+    'You are the Editorial Reviewer for a premium AI document maker.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Review the complete document and return the final export JSON.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      title: 'string',
+      subtitle: 'string',
+      executiveSummary: 'string',
+      sections: [
+        {
+          heading: 'string',
+          paragraphs: ['string'],
+          bulletPoints: ['string'],
+          tables: [
+            {
+              title: 'string',
+              columns: ['string'],
+              rows: [['string or number']],
+            },
+          ],
+        },
+      ],
+      keyInsights: ['string'],
+      recommendations: ['string'],
+      conclusion: 'string',
+    }),
+    'Responsibilities:',
+    '- Remove repetition without deleting useful substance.',
+    '- Improve transitions, professional tone, terminology consistency, and readability.',
+    '- Keep section balance and make the conclusion match the objectives.',
+    '- Preserve useful tables, bullets, examples, recommendations, and key insights.',
+    '- Do not add pricing, billing, payment, wallet, or export-route content.',
+    `Original user brief: ${input.topic}`,
+    `Research brief: ${JSON.stringify(input.researchBrief)}`,
+    `Document plan: ${JSON.stringify(input.plan)}`,
+    `Draft sections: ${JSON.stringify(input.sections)}`,
+  ].join('\n');
+}
+
+interface DocumentResearchBrief {
+  documentType: string;
+  audience: string;
+  tone: string;
+  objectives: string[];
+  assumptions: string[];
+  requiredSections: string[];
+  estimatedLength: string;
+}
+
+interface DocumentPlanSection {
+  heading: string;
+  purpose: string;
+  estimatedParagraphs: number;
+  includeTable: boolean;
+  includeBullets: boolean;
+  includeCallout: boolean;
+}
+
+interface DocumentPlan {
+  title: string;
+  subtitle: string;
+  executiveSummary: string;
+  sections: DocumentPlanSection[];
+}
+
+interface DocumentSectionContent {
+  heading: string;
+  paragraphs: string[];
+  bulletPoints: string[];
+  tables: Array<{
+    title: string;
+    columns: string[];
+    rows: Array<Array<string | number>>;
+  }>;
+  keyInsights: string[];
+  recommendations: string[];
+}
+
 function extractJsonObject(content: string) {
   const trimmed = content.trim();
   const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -123,8 +320,23 @@ function extractJsonObject(content: string) {
   return candidate.slice(start, end + 1);
 }
 
+function parseJsonObject(content: string) {
+  const json = extractJsonObject(content);
+
+  try {
+    return JSON.parse(json) as Record<string, unknown>;
+  } catch {
+    const repaired = json
+      .replace(/^\uFEFF/, '')
+      .replace(/,\s*([}\]])/g, '$1')
+      .replace(/[\u0000-\u001F]+/g, ' ');
+
+    return JSON.parse(repaired) as Record<string, unknown>;
+  }
+}
+
 function parseDocumentContent(content: string) {
-  const parsed = JSON.parse(extractJsonObject(content)) as {
+  const parsed = parseJsonObject(content) as {
     title?: unknown;
     subtitle?: unknown;
     executiveSummary?: unknown;
@@ -192,6 +404,265 @@ function parseDocumentContent(content: string) {
       : [],
     conclusion: String(parsed.conclusion || ''),
   };
+}
+
+function asStringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.map((item) => String(item ?? '').trim()).filter(Boolean)
+    : [];
+}
+
+function parseResearchBrief(content: string, fallback: {
+  documentType: string;
+  tone: string;
+  length: string;
+}) {
+  const parsed = parseJsonObject(content) as Partial<DocumentResearchBrief>;
+
+  return {
+    documentType: String(parsed.documentType || fallback.documentType),
+    audience: String(parsed.audience || 'Business decision-makers'),
+    tone: String(parsed.tone || fallback.tone),
+    objectives: asStringArray(parsed.objectives),
+    assumptions: asStringArray(parsed.assumptions),
+    requiredSections: asStringArray(parsed.requiredSections),
+    estimatedLength: String(parsed.estimatedLength || fallback.length),
+  };
+}
+
+function parseDocumentPlan(content: string) {
+  const parsed = parseJsonObject(content) as Partial<DocumentPlan>;
+  const sections = Array.isArray(parsed.sections)
+    ? parsed.sections.map((section) => {
+        const input = section as Partial<DocumentPlanSection>;
+
+        return {
+          heading: String(input.heading || 'Section'),
+          purpose: String(input.purpose || ''),
+          estimatedParagraphs: Number.isFinite(Number(input.estimatedParagraphs))
+            ? Math.max(1, Math.min(5, Number(input.estimatedParagraphs)))
+            : 2,
+          includeTable: Boolean(input.includeTable),
+          includeBullets: Boolean(input.includeBullets),
+          includeCallout: Boolean(input.includeCallout),
+        };
+      }).filter((section) => section.heading)
+    : [];
+
+  return {
+    title: String(parsed.title || 'AI Studio Document'),
+    subtitle: String(parsed.subtitle || ''),
+    executiveSummary: String(parsed.executiveSummary || ''),
+    sections: sections.length > 0
+      ? sections.slice(0, 5)
+      : [{
+          heading: 'Overview',
+          purpose: 'Provide a concise professional overview.',
+          estimatedParagraphs: 2,
+          includeTable: false,
+          includeBullets: true,
+          includeCallout: false,
+        }],
+  };
+}
+
+function parseSectionContent(content: string, plannedHeading: string): DocumentSectionContent {
+  const parsed = parseJsonObject(content) as Partial<DocumentSectionContent>;
+  const normalized = parseDocumentContent(JSON.stringify({
+    title: 'Section',
+    sections: [{
+      heading: parsed.heading || plannedHeading,
+      paragraphs: parsed.paragraphs,
+      bulletPoints: parsed.bulletPoints,
+      tables: parsed.tables,
+    }],
+    keyInsights: parsed.keyInsights,
+    recommendations: parsed.recommendations,
+  }));
+  const section = normalized.sections[0];
+
+  return {
+    heading: section.heading,
+    paragraphs: section.paragraphs,
+    bulletPoints: section.bulletPoints,
+    tables: section.tables,
+    keyInsights: normalized.keyInsights,
+    recommendations: normalized.recommendations,
+  };
+}
+
+async function runTrackedPrompt(
+  prompt: string,
+  providerUsage: ReturnType<typeof createProviderUsageAccumulator>,
+  timeoutMs = agentTimeoutMs,
+) {
+  const result = await runAiStudioOpenRouterPrompt(prompt, { timeoutMs });
+  addProviderUsage(providerUsage, result.usage);
+
+  return result.content;
+}
+
+function buildSimpleSectionFallback(section: DocumentPlanSection): DocumentSectionContent {
+  const paragraph = section.purpose
+    ? section.purpose
+    : `This section summarizes the most important considerations for ${section.heading.toLowerCase()}.`;
+
+  return {
+    heading: section.heading,
+    paragraphs: [paragraph],
+    bulletPoints: section.includeBullets
+      ? [
+          'Clarify the decision criteria and success measures before execution.',
+          'Assign accountable owners for the next stage of work.',
+        ]
+      : [],
+    tables: [],
+    keyInsights: [],
+    recommendations: [],
+  };
+}
+
+function buildDeterministicDocument(input: {
+  topic: string;
+  documentType: string;
+  tone: string;
+}) {
+  const title = input.topic.replace(/[.?!]\s*$/, '') || 'AI Studio Document';
+
+  return {
+    title,
+    subtitle: `${input.tone} ${input.documentType}`,
+    executiveSummary: `This document provides a structured, professional response to: ${input.topic}`,
+    sections: [
+      {
+        heading: 'Overview',
+        paragraphs: [`The request focuses on ${input.topic}. This draft organizes the core context, priorities, and next steps in a format suitable for review.`],
+        bulletPoints: [],
+        tables: [],
+      },
+      {
+        heading: 'Recommended Next Steps',
+        paragraphs: ['Use this draft as a starting point for stakeholder review, then refine assumptions, owners, timing, and commercial details before distribution.'],
+        bulletPoints: [
+          'Confirm the target audience and decision criteria.',
+          'Add any company-specific facts, numbers, and constraints.',
+          'Review the final document for legal, finance, and operational accuracy.',
+        ],
+        tables: [],
+      },
+    ],
+    keyInsights: ['The document should be refined with organization-specific data before final use.'],
+    recommendations: ['Validate assumptions with internal stakeholders before sharing externally.'],
+    conclusion: 'The final document should align the requested objective with clear action steps and accountable follow-through.',
+  };
+}
+
+async function generateSimpleDocumentFallback(input: {
+  topic: string;
+  documentType: string;
+  tone: string;
+  length: string;
+  providerUsage: ReturnType<typeof createProviderUsageAccumulator>;
+}) {
+  try {
+    return parseDocumentContent(
+      await runTrackedPrompt(
+        buildDocumentPrompt(input),
+        input.providerUsage,
+        fallbackTimeoutMs,
+      ),
+    );
+  } catch (error) {
+    console.error('[ai-studio-document-maker] Simple fallback failed:', error);
+
+    return buildDeterministicDocument(input);
+  }
+}
+
+async function generateDocumentPipeline(input: {
+  topic: string;
+  documentType: string;
+  tone: string;
+  length: string;
+  providerUsage: ReturnType<typeof createProviderUsageAccumulator>;
+}) {
+  let researchBrief: DocumentResearchBrief;
+  let plan: DocumentPlan;
+
+  try {
+    researchBrief = parseResearchBrief(
+      await runTrackedPrompt(buildResearchAgentPrompt(input), input.providerUsage),
+      input,
+    );
+    plan = parseDocumentPlan(
+      await runTrackedPrompt(buildPlannerPrompt({ ...input, researchBrief }), input.providerUsage),
+    );
+  } catch (error) {
+    console.error('[ai-studio-document-maker] Planning pipeline failed; using simple fallback:', error);
+
+    return generateSimpleDocumentFallback(input);
+  }
+
+  const sections = await Promise.all(
+    plan.sections.map(async (section, sectionIndex) =>
+      {
+        try {
+          return parseSectionContent(
+            await runTrackedPrompt(
+              buildSectionWriterPrompt({
+                topic: input.topic,
+                researchBrief,
+                plan,
+                section,
+                sectionIndex,
+              }),
+              input.providerUsage,
+            ),
+            section.heading,
+          );
+        } catch (error) {
+          console.error('[ai-studio-document-maker] Section agent failed; using section fallback:', {
+            section: section.heading,
+            error,
+          });
+
+          return buildSimpleSectionFallback(section);
+        }
+      }
+    ),
+  );
+  const draft = {
+    title: plan.title,
+    subtitle: plan.subtitle,
+    executiveSummary: plan.executiveSummary,
+    sections: sections.map((section) => ({
+      heading: section.heading,
+      paragraphs: section.paragraphs,
+      bulletPoints: section.bulletPoints,
+      tables: section.tables,
+    })),
+    keyInsights: sections.flatMap((section) => section.keyInsights).slice(0, 6),
+    recommendations: sections.flatMap((section) => section.recommendations).slice(0, 6),
+    conclusion: '',
+  };
+
+  try {
+    const reviewed = await runTrackedPrompt(
+      buildEditorialReviewerPrompt({
+        topic: input.topic,
+        researchBrief,
+        plan,
+        sections,
+      }),
+      input.providerUsage,
+    );
+
+    return parseDocumentContent(reviewed);
+  } catch (error) {
+    console.error('[ai-studio-document-maker] Editorial review failed; returning draft:', error);
+
+    return draft;
+  }
 }
 
 async function logUsage(input: {
@@ -292,11 +763,13 @@ export async function POST(request: Request) {
     });
     reserved = true;
 
-    const result = await runAiStudioOpenRouterPrompt(
-      buildDocumentPrompt({ topic, documentType, tone, length }),
-    );
-    addProviderUsage(providerUsage, result.usage);
-    const document = parseDocumentContent(result.content);
+    const document = await generateDocumentPipeline({
+      topic,
+      documentType,
+      tone,
+      length,
+      providerUsage,
+    });
 
     const updatedWallet = await captureCredits(userId, AI_STUDIO_DOCUMENT_CREDITS, {
       referenceType: 'ai_studio_document',

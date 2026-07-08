@@ -23,6 +23,10 @@ export interface AiStudioProviderUsage {
   responseIds: string[];
 }
 
+interface AiStudioPromptOptions {
+  timeoutMs?: number;
+}
+
 export class AiStudioOpenRouterError extends Error {
   status: number | null;
   safeToFallback: boolean;
@@ -101,32 +105,44 @@ function isSafeFallbackError(error: unknown) {
 async function attemptOpenRouterPrompt(
   prompt: string,
   model: string,
+  options: AiStudioPromptOptions = {},
 ): Promise<AiStudioPromptResult> {
   const client = getOpenRouterClient();
+  const controller = options.timeoutMs ? new AbortController() : null;
+  const timeout = controller && options.timeoutMs
+    ? setTimeout(() => controller.abort(), options.timeoutMs)
+    : null;
   let response;
 
   try {
-    response = await client.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are SimplifyConvert AI. Create professional, structured, clean business output.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.55,
-      max_tokens: maxTokens,
-    });
+    response = await client.chat.completions.create(
+      {
+        model,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are SimplifyConvert AI. Create professional, structured, clean business output.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.55,
+        max_tokens: maxTokens,
+      },
+      controller ? { signal: controller.signal } : undefined,
+    );
   } catch (error) {
     throw new AiStudioOpenRouterError('OpenRouter request failed', {
       status: getErrorStatus(error),
       safeToFallback: isSafeFallbackError(error),
     });
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
   }
 
   const content = response.choices[0]?.message?.content || '';
@@ -151,9 +167,10 @@ async function attemptOpenRouterPrompt(
 
 export async function runAiStudioOpenRouterPrompt(
   prompt: string,
+  options: AiStudioPromptOptions = {},
 ): Promise<AiStudioPromptResult> {
   try {
-    return await attemptOpenRouterPrompt(prompt, primaryAiStudioModel);
+    return await attemptOpenRouterPrompt(prompt, primaryAiStudioModel, options);
   } catch (error) {
     if (
       fallbackAiStudioModel &&
@@ -168,7 +185,7 @@ export async function runAiStudioOpenRouterPrompt(
         });
       }
 
-      return attemptOpenRouterPrompt(prompt, fallbackAiStudioModel);
+      return attemptOpenRouterPrompt(prompt, fallbackAiStudioModel, options);
     }
 
     throw error;

@@ -39,6 +39,8 @@ const spreadsheetTypes = new Set([
   'plan',
 ]);
 const complexities = new Set(['simple', 'medium', 'detailed']);
+const agentTimeoutMs = Number(process.env.AI_STUDIO_AGENT_TIMEOUT_MS || 45000);
+const fallbackTimeoutMs = Number(process.env.AI_STUDIO_FALLBACK_TIMEOUT_MS || 70000);
 
 function normalizeOption(value: unknown, allowed: Set<string>, fallback: string) {
   const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -118,6 +120,216 @@ function buildSpreadsheetPrompt(input: {
   ].join('\n');
 }
 
+interface WorkbookRequirements {
+  spreadsheetType: string;
+  businessDomain: string;
+  workbookPurpose: string;
+  requiredCalculations: string[];
+  requiredMetrics: string[];
+  requiredSheets: string[];
+}
+
+interface WorkbookPlanSheet {
+  name: string;
+  description: string;
+  columns: string[];
+  formulas: string[];
+  summaryMetrics: string[];
+  chartSuggestions: string[];
+}
+
+interface WorkbookPlan {
+  workbookTitle: string;
+  sheets: WorkbookPlanSheet[];
+}
+
+interface BuiltWorkbookSheet {
+  sheetName: string;
+  description: string;
+  columns: string[];
+  rows: Array<Array<string | number>>;
+  formulas: Array<{
+    cell: string;
+    formula: string;
+    label: string;
+  }>;
+  summaryMetrics: Array<{
+    label: string;
+    value: string | number;
+    format: string;
+  }>;
+  chartSuggestions: string[];
+}
+
+function buildRequirementsAnalyzerPrompt(input: {
+  topic: string;
+  spreadsheetType: string;
+  complexity: string;
+}) {
+  return [
+    'You are the Requirements Analyzer for an AI spreadsheet maker.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Determine the workbook requirements for a professional business spreadsheet.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      spreadsheetType: 'string',
+      businessDomain: 'string',
+      workbookPurpose: 'string',
+      requiredCalculations: ['string'],
+      requiredMetrics: ['string'],
+      requiredSheets: ['string'],
+    }),
+    'Rules:',
+    '- Infer a realistic business domain and workbook purpose from the brief.',
+    '- Include calculations and metrics that a business analyst would build into the workbook.',
+    '- Keep requiredSheets focused; do not invent unnecessary feature areas.',
+    `Requested spreadsheet type: ${input.spreadsheetType}`,
+    `Complexity: ${input.complexity}`,
+    `User brief: ${input.topic}`,
+  ].join('\n');
+}
+
+function buildWorkbookPlannerPrompt(input: {
+  topic: string;
+  spreadsheetType: string;
+  complexity: string;
+  requirements: WorkbookRequirements;
+}) {
+  return [
+    'You are the Workbook Planner for a premium AI workspace product.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Create the workbook structure before data is generated.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      workbookTitle: 'string',
+      sheets: [
+        {
+          name: 'string',
+          description: 'string',
+          columns: ['string'],
+          formulas: ['string'],
+          summaryMetrics: ['string'],
+          chartSuggestions: ['string'],
+        },
+      ],
+    }),
+    'Rules:',
+    '- Use 2-5 sheets for most workbooks.',
+    '- Make columns realistic, analyst-friendly, and consistent with the required calculations.',
+    '- Formulas should describe intended calculations, not final cell references yet.',
+    '- Include dashboard or summary sheets only when appropriate for the brief.',
+    `UI inputs: ${JSON.stringify({ spreadsheetType: input.spreadsheetType, complexity: input.complexity })}`,
+    `Requirements: ${JSON.stringify(input.requirements)}`,
+    `User brief: ${input.topic}`,
+  ].join('\n');
+}
+
+function buildDataBuilderPrompt(input: {
+  topic: string;
+  requirements: WorkbookRequirements;
+  plan: WorkbookPlan;
+  sheet: WorkbookPlanSheet;
+  sheetIndex: number;
+}) {
+  return [
+    'You are the Data Builder for one sheet in a professional workbook.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Generate only the assigned sheet, including realistic rows, formulas, summaries, and notes where useful.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      sheetName: 'string',
+      description: 'string',
+      columns: ['string'],
+      rows: [['string or number']],
+      formulas: [
+        {
+          cell: 'string like E12',
+          formula: 'string without leading =',
+          label: 'string',
+        },
+      ],
+      summaryMetrics: [
+        {
+          label: 'string',
+          value: 'string or number',
+          format: 'text | number | currency | percent | date',
+        },
+      ],
+      chartSuggestions: ['string'],
+      notes: ['string'],
+    }),
+    'Rules:',
+    '- Build the sheet like a business analyst prepared it for review.',
+    '- Use realistic headers and rows for the domain. Use numbers for numeric cells.',
+    '- Keep formulas consistent with columns and row counts. Do not include a leading equals sign.',
+    '- Include totals or summary rows when useful, but keep the data readable.',
+    '- Avoid generic placeholder rows.',
+    `Sheet number: ${input.sheetIndex + 1}`,
+    `Assigned sheet plan: ${JSON.stringify(input.sheet)}`,
+    `Full workbook plan: ${JSON.stringify(input.plan)}`,
+    `Requirements: ${JSON.stringify(input.requirements)}`,
+    `User brief: ${input.topic}`,
+  ].join('\n');
+}
+
+function buildWorkbookReviewerPrompt(input: {
+  topic: string;
+  requirements: WorkbookRequirements;
+  plan: WorkbookPlan;
+  sheets: BuiltWorkbookSheet[];
+}) {
+  return [
+    'You are the Workbook Reviewer for a premium AI spreadsheet maker.',
+    'Return only valid JSON. Do not include markdown fences, commentary, or trailing text.',
+    'Validate and polish the completed workbook, then return the final workbook JSON.',
+    'Use this exact JSON shape:',
+    JSON.stringify({
+      workbookTitle: 'string',
+      sheets: [
+        {
+          sheetName: 'string',
+          description: 'string',
+          columns: ['string'],
+          rows: [['string or number']],
+          formulas: [
+            {
+              cell: 'string like E12',
+              formula: 'string without leading =',
+              label: 'string',
+            },
+          ],
+          summaryMetrics: [
+            {
+              label: 'string',
+              value: 'string or number',
+              format: 'text | number | currency | percent | date',
+            },
+          ],
+          chartSuggestions: ['string'],
+        },
+      ],
+      summaryMetrics: [
+        {
+          label: 'string',
+          value: 'string or number',
+          format: 'text | number | currency | percent | date',
+        },
+      ],
+      chartSuggestions: ['string'],
+      notes: ['string'],
+    }),
+    'Responsibilities:',
+    '- Validate formulas, column consistency, summary metrics, sheet relationships, readability, and professionalism.',
+    '- Remove duplicate or inconsistent metrics.',
+    '- Keep formulas compatible with the generated rows and columns.',
+    '- Do not add pricing, billing, payment, wallet, or export-route content.',
+    `Original user brief: ${input.topic}`,
+    `Requirements: ${JSON.stringify(input.requirements)}`,
+    `Workbook plan: ${JSON.stringify(input.plan)}`,
+    `Draft sheets: ${JSON.stringify(input.sheets)}`,
+  ].join('\n');
+}
+
 function extractJsonObject(content: string) {
   const trimmed = content.trim();
   const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -132,8 +344,23 @@ function extractJsonObject(content: string) {
   return candidate.slice(start, end + 1);
 }
 
+function parseJsonObject(content: string) {
+  const json = extractJsonObject(content);
+
+  try {
+    return JSON.parse(json) as Record<string, unknown>;
+  } catch {
+    const repaired = json
+      .replace(/^\uFEFF/, '')
+      .replace(/,\s*([}\]])/g, '$1')
+      .replace(/[\u0000-\u001F]+/g, ' ');
+
+    return JSON.parse(repaired) as Record<string, unknown>;
+  }
+}
+
 function parseSpreadsheetContent(content: string) {
-  const parsed = JSON.parse(extractJsonObject(content)) as {
+  const parsed = parseJsonObject(content) as {
     workbookTitle?: unknown;
     title?: unknown;
     sheets?: unknown;
@@ -235,6 +462,240 @@ function parseSpreadsheetContent(content: string) {
   };
 }
 
+function asStringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.map((item) => String(item ?? '').trim()).filter(Boolean)
+    : [];
+}
+
+function parseRequirements(content: string, fallback: {
+  spreadsheetType: string;
+}) {
+  const parsed = parseJsonObject(content) as Partial<WorkbookRequirements>;
+
+  return {
+    spreadsheetType: String(parsed.spreadsheetType || fallback.spreadsheetType),
+    businessDomain: String(parsed.businessDomain || 'General business'),
+    workbookPurpose: String(parsed.workbookPurpose || 'Track and analyze business performance'),
+    requiredCalculations: asStringArray(parsed.requiredCalculations),
+    requiredMetrics: asStringArray(parsed.requiredMetrics),
+    requiredSheets: asStringArray(parsed.requiredSheets),
+  };
+}
+
+function parseWorkbookPlan(content: string) {
+  const parsed = parseJsonObject(content) as Partial<WorkbookPlan>;
+  const sheets = Array.isArray(parsed.sheets)
+    ? parsed.sheets.map((sheet) => {
+        const input = sheet as Partial<WorkbookPlanSheet>;
+
+        return {
+          name: String(input.name || 'Main Data'),
+          description: String(input.description || ''),
+          columns: asStringArray(input.columns),
+          formulas: asStringArray(input.formulas),
+          summaryMetrics: asStringArray(input.summaryMetrics),
+          chartSuggestions: asStringArray(input.chartSuggestions),
+        };
+      }).filter((sheet) => sheet.name && sheet.columns.length > 0)
+    : [];
+
+  return {
+    workbookTitle: String(parsed.workbookTitle || 'AI Studio Spreadsheet'),
+    sheets: sheets.length > 0
+      ? sheets.slice(0, 5)
+      : [{
+          name: 'Main Data',
+          description: 'Generated business data',
+          columns: ['Item', 'Value'],
+          formulas: [],
+          summaryMetrics: [],
+          chartSuggestions: [],
+        }],
+  };
+}
+
+function parseBuiltSheet(content: string, plannedSheet: WorkbookPlanSheet): BuiltWorkbookSheet & { notes: string[] } {
+  const normalized = parseSpreadsheetContent(JSON.stringify({
+    workbookTitle: 'Sheet',
+    sheets: [parseJsonObject(content)],
+  }));
+  const sheet = normalized.sheets[0];
+  const parsed = parseJsonObject(content) as { notes?: unknown };
+
+  return {
+    sheetName: sheet.sheetName || plannedSheet.name,
+    description: sheet.description || plannedSheet.description,
+    columns: sheet.columns.length > 0 ? sheet.columns : plannedSheet.columns,
+    rows: sheet.rows,
+    formulas: sheet.formulas,
+    summaryMetrics: sheet.summaryMetrics,
+    chartSuggestions: sheet.chartSuggestions,
+    notes: asStringArray(parsed.notes),
+  };
+}
+
+async function runTrackedPrompt(
+  prompt: string,
+  providerUsage: ReturnType<typeof createProviderUsageAccumulator>,
+  timeoutMs = agentTimeoutMs,
+) {
+  const result = await runAiStudioOpenRouterPrompt(prompt, { timeoutMs });
+  addProviderUsage(providerUsage, result.usage);
+
+  return result.content;
+}
+
+function buildSimpleSheetFallback(sheet: WorkbookPlanSheet): BuiltWorkbookSheet & { notes: string[] } {
+  const columns = sheet.columns.length > 0 ? sheet.columns : ['Item', 'Value'];
+
+  return {
+    sheetName: sheet.name,
+    description: sheet.description,
+    columns,
+    rows: [
+      columns.map((column, index) => (index === 0 ? `${column} example` : '')),
+    ],
+    formulas: [],
+    summaryMetrics: sheet.summaryMetrics.slice(0, 3).map((metric) => ({
+      label: metric,
+      value: '',
+      format: 'text',
+    })),
+    chartSuggestions: sheet.chartSuggestions,
+    notes: ['This sheet was generated with a simplified fallback after one workbook agent failed.'],
+  };
+}
+
+function buildDeterministicSpreadsheet(input: {
+  topic: string;
+  spreadsheetType: string;
+}) {
+  return {
+    workbookTitle: input.topic.replace(/[.?!]\s*$/, '') || 'AI Studio Spreadsheet',
+    sheets: [
+      {
+        sheetName: 'Main Data',
+        description: `Structured starting point for ${input.spreadsheetType}.`,
+        columns: ['Category', 'Metric', 'Current Value', 'Target', 'Notes'],
+        rows: [
+          ['Overview', 'Primary objective', input.topic, '', 'Add company-specific data before use'],
+          ['Planning', 'Owner', '', '', 'Assign accountable owner'],
+          ['Review', 'Status', 'Draft', 'Approved', 'Validate calculations and assumptions'],
+        ],
+        formulas: [],
+        summaryMetrics: [
+          { label: 'Workbook status', value: 'Draft', format: 'text' },
+        ],
+        chartSuggestions: ['Add charts after replacing placeholder values with business data.'],
+      },
+    ],
+    summaryMetrics: [
+      { label: 'Workbook status', value: 'Draft', format: 'text' },
+    ],
+    chartSuggestions: ['Add charts after replacing placeholder values with business data.'],
+    notes: ['Generated as a schema-safe fallback. Review and replace placeholder values before distribution.'],
+  };
+}
+
+async function generateSimpleSpreadsheetFallback(input: {
+  topic: string;
+  spreadsheetType: string;
+  complexity: string;
+  providerUsage: ReturnType<typeof createProviderUsageAccumulator>;
+}) {
+  try {
+    return parseSpreadsheetContent(
+      await runTrackedPrompt(
+        buildSpreadsheetPrompt(input),
+        input.providerUsage,
+        fallbackTimeoutMs,
+      ),
+    );
+  } catch (error) {
+    console.error('[ai-studio-spreadsheet-maker] Simple fallback failed:', error);
+
+    return buildDeterministicSpreadsheet(input);
+  }
+}
+
+async function generateSpreadsheetPipeline(input: {
+  topic: string;
+  spreadsheetType: string;
+  complexity: string;
+  providerUsage: ReturnType<typeof createProviderUsageAccumulator>;
+}) {
+  let requirements: WorkbookRequirements;
+  let plan: WorkbookPlan;
+
+  try {
+    requirements = parseRequirements(
+      await runTrackedPrompt(buildRequirementsAnalyzerPrompt(input), input.providerUsage),
+      input,
+    );
+    plan = parseWorkbookPlan(
+      await runTrackedPrompt(buildWorkbookPlannerPrompt({ ...input, requirements }), input.providerUsage),
+    );
+  } catch (error) {
+    console.error('[ai-studio-spreadsheet-maker] Planning pipeline failed; using simple fallback:', error);
+
+    return generateSimpleSpreadsheetFallback(input);
+  }
+
+  const builtSheets = await Promise.all(
+    plan.sheets.map(async (sheet, sheetIndex) =>
+      {
+        try {
+          return parseBuiltSheet(
+            await runTrackedPrompt(
+              buildDataBuilderPrompt({
+                topic: input.topic,
+                requirements,
+                plan,
+                sheet,
+                sheetIndex,
+              }),
+              input.providerUsage,
+            ),
+            sheet,
+          );
+        } catch (error) {
+          console.error('[ai-studio-spreadsheet-maker] Sheet agent failed; using sheet fallback:', {
+            sheet: sheet.name,
+            error,
+          });
+
+          return buildSimpleSheetFallback(sheet);
+        }
+      }
+    ),
+  );
+  const draft = {
+    workbookTitle: plan.workbookTitle,
+    sheets: builtSheets.map(({ notes: _notes, ...sheet }) => sheet),
+    summaryMetrics: builtSheets.flatMap((sheet) => sheet.summaryMetrics).slice(0, 8),
+    chartSuggestions: builtSheets.flatMap((sheet) => sheet.chartSuggestions).slice(0, 8),
+    notes: builtSheets.flatMap((sheet) => sheet.notes).slice(0, 6),
+  };
+  try {
+    const reviewed = await runTrackedPrompt(
+      buildWorkbookReviewerPrompt({
+        topic: input.topic,
+        requirements,
+        plan,
+        sheets: draft.sheets,
+      }),
+      input.providerUsage,
+    );
+
+    return parseSpreadsheetContent(reviewed);
+  } catch (error) {
+    console.error('[ai-studio-spreadsheet-maker] Workbook review failed; returning draft:', error);
+
+    return draft;
+  }
+}
+
 async function logUsage(input: {
   userId: string;
   requestId: string;
@@ -332,11 +793,12 @@ export async function POST(request: Request) {
     });
     reserved = true;
 
-    const result = await runAiStudioOpenRouterPrompt(
-      buildSpreadsheetPrompt({ topic, spreadsheetType, complexity }),
-    );
-    addProviderUsage(providerUsage, result.usage);
-    const spreadsheet = parseSpreadsheetContent(result.content);
+    const spreadsheet = await generateSpreadsheetPipeline({
+      topic,
+      spreadsheetType,
+      complexity,
+      providerUsage,
+    });
 
     const updatedWallet = await captureCredits(userId, AI_STUDIO_SPREADSHEET_CREDITS, {
       referenceType: 'ai_studio_spreadsheet',
