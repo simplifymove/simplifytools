@@ -84,9 +84,7 @@ export async function POST(request: NextRequest) {
             unit_amount: plan.grossAmountMinor,
             product_data: {
               name: `AI Studio ${plan.name.replace('Global ', '')}`,
-              description: `${plan.creditsGranted.toLocaleString()} AI Credits. Includes $${(
-                plan.aiUsageValueMinor / 100
-              ).toFixed(2)} worth of AI usage.`,
+              description: `${plan.creditsGranted.toLocaleString()} AI Credits for AI Studio premium tools.`,
               metadata: {
                 product: 'ai-studio',
                 planId: plan.id,

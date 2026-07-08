@@ -5,6 +5,10 @@ import { Prisma } from '@prisma/client';
 import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/prisma';
 import { AI_STUDIO_SPREADSHEET_CREDITS } from '@/lib/ai-studio/estimate';
+import {
+  assertOpenRouterBalanceAvailable,
+  isOpenRouterProviderBalanceError,
+} from '@/lib/ai-studio/openrouter-balance';
 import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import {
   AiStudioInsufficientCreditsError,
@@ -928,6 +932,8 @@ export async function POST(request: Request) {
       );
     }
 
+    await assertOpenRouterBalanceAvailable();
+
     await reserveCredits(userId, AI_STUDIO_SPREADSHEET_CREDITS, {
       referenceType: 'ai_studio_spreadsheet',
       referenceId: requestId,
@@ -983,6 +989,7 @@ export async function POST(request: Request) {
           description: 'Released reserved credits after failed spreadsheet generation',
           metadata: { topic },
         });
+        reserved = false;
       } catch (releaseError) {
         console.error('[ai-studio-spreadsheet-maker] Failed to release reserved credits:', releaseError);
       }
@@ -1001,16 +1008,38 @@ export async function POST(request: Request) {
         providerResponseId: serializeProviderResponseIds(providerUsage.responseIds),
         model: getAggregatedModel(providerUsage),
         errorCode:
-          error instanceof AiStudioInsufficientCreditsError
+          isOpenRouterProviderBalanceError(error)
+            ? 'provider_insufficient_credits'
+            : error instanceof AiStudioInsufficientCreditsError
             ? 'INSUFFICIENT_CREDITS'
             : error instanceof Error && error.message === 'OPENROUTER_API_KEY_MISSING'
               ? 'AI_SERVICE_UNAVAILABLE'
               : getErrorStatus(error) === 402
-                ? 'AI_SERVICE_UNAVAILABLE'
+                ? 'provider_insufficient_credits'
                 : 'GENERATION_FAILED',
       }).catch((logError) => {
         console.error('[ai-studio-spreadsheet-maker] Failed to write usage log:', logError);
       });
+    }
+
+    if (isOpenRouterProviderBalanceError(error)) {
+      return NextResponse.json(
+        {
+          error: 'AI generation is temporarily unavailable due to provider balance. Your credits were not used.',
+          wallet: wallet ? serializeAiStudioWallet(wallet) : undefined,
+        },
+        { status: 503 },
+      );
+    }
+
+    if (getErrorStatus(error) === 402) {
+      return NextResponse.json(
+        {
+          error: 'AI generation is temporarily unavailable. Your SimplifyConvert credits were not used.',
+          wallet: wallet ? serializeAiStudioWallet(wallet) : undefined,
+        },
+        { status: 503 },
+      );
     }
 
     return NextResponse.json(

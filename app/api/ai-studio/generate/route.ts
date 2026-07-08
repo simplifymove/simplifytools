@@ -10,6 +10,10 @@ import {
   normalizeAiStudioSlideCount,
 } from '@/lib/ai-studio/estimate';
 import { estimateOpenRouterCostUsd } from '@/lib/ai-studio/openrouter-pricing';
+import {
+  assertOpenRouterBalanceAvailable,
+  isOpenRouterProviderBalanceError,
+} from '@/lib/ai-studio/openrouter-balance';
 import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import {
   AiStudioInsufficientCreditsError,
@@ -396,6 +400,8 @@ export async function POST(request: Request) {
       );
     }
 
+    await assertOpenRouterBalanceAvailable();
+
     await reserveCredits(userId, estimatedCredits, {
       referenceType: 'ai_studio_generation',
       referenceId: requestId,
@@ -524,6 +530,7 @@ export async function POST(request: Request) {
             'Released reserved credits after failed presentation generation',
           metadata: { topic, slideCount: normalizedSlideCount },
         });
+        reserved = false;
       } catch (releaseError) {
         console.error(
           '[ai-studio-generate] Failed to release reserved credits:',
@@ -553,13 +560,15 @@ export async function POST(request: Request) {
         ),
         model: getAggregatedModel(providerUsage),
         errorCode:
-          error instanceof AiStudioInsufficientCreditsError
+          isOpenRouterProviderBalanceError(error)
+            ? 'provider_insufficient_credits'
+            : error instanceof AiStudioInsufficientCreditsError
             ? 'INSUFFICIENT_CREDITS'
             : error instanceof Error &&
                 error.message === 'OPENROUTER_API_KEY_MISSING'
               ? 'AI_SERVICE_UNAVAILABLE'
               : getErrorStatus(error) === 402
-                ? 'AI_SERVICE_UNAVAILABLE'
+                ? 'provider_insufficient_credits'
                 : 'GENERATION_FAILED',
         completedAt: new Date(),
       }).catch((logError) => {
@@ -576,6 +585,28 @@ export async function POST(request: Request) {
           error: 'Insufficient AI credits. Buy an AI Studio plan to continue.',
         },
         { status: 402 },
+      );
+    }
+
+    if (isOpenRouterProviderBalanceError(error)) {
+      return NextResponse.json(
+        {
+          error:
+            'AI generation is temporarily unavailable due to provider balance. Your credits were not used.',
+          wallet: wallet ? serializeAiStudioWallet(wallet) : undefined,
+        },
+        { status: 503 },
+      );
+    }
+
+    if (getErrorStatus(error) === 402) {
+      return NextResponse.json(
+        {
+          error:
+            'AI generation is temporarily unavailable. Your SimplifyConvert credits were not used.',
+          wallet: wallet ? serializeAiStudioWallet(wallet) : undefined,
+        },
+        { status: 503 },
       );
     }
 

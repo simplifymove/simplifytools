@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Activity,
+  AlertTriangle,
   BarChart3,
   Coins,
   CreditCard,
@@ -70,6 +71,19 @@ interface CostSummary {
   pricingSource: string;
 }
 
+interface OpenRouterBalanceSummary {
+  totalCredits: string;
+  totalUsage: string;
+  availableBalance: string;
+  minBalance: string;
+  isLow: boolean;
+  isNegative: boolean;
+  isConfigured: boolean;
+  checkedAt: string;
+  error: string | null;
+  suggestedAction: string;
+}
+
 interface ModelCostRow {
   model: string;
   estimatedCostUsd: string;
@@ -77,6 +91,14 @@ interface ModelCostRow {
   outputTokens: number;
   totalTokens: number;
   generations: number;
+}
+
+interface ToolEconomicsRow {
+  tool: string;
+  generations: number;
+  averageProviderCostUsd: string;
+  averageCreditsCharged: string;
+  estimatedMarginUsd: string;
 }
 
 interface RevenueAnalytics {
@@ -125,6 +147,9 @@ interface AiStudioAdminClientProps {
   transactions: TransactionRow[];
   usage: UsageRow[];
   costSummary: CostSummary;
+  openRouterBalance: OpenRouterBalanceSummary;
+  economicsSummary: DashboardMetric[];
+  toolEconomics: ToolEconomicsRow[];
   modelCosts: ModelCostRow[];
   revenueAnalytics: RevenueAnalytics;
   initialSearch: string;
@@ -353,6 +378,9 @@ export function AiStudioAdminClient({
   transactions,
   usage,
   costSummary,
+  openRouterBalance,
+  economicsSummary,
+  toolEconomics,
   modelCosts,
   revenueAnalytics,
   initialSearch,
@@ -550,6 +578,127 @@ export function AiStudioAdminClient({
                 <p className="mt-1 text-xs text-slate-500">{metric.detail}</p>
               </div>
             ))}
+          </div>
+
+          <div className="border-t border-slate-200 px-5 py-4">
+            <div
+              className={`rounded-lg border p-4 ${
+                openRouterBalance.isLow
+                  ? 'border-amber-200 bg-amber-50 text-amber-950'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-950'
+              }`}
+            >
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    {openRouterBalance.isLow && (
+                      <AlertTriangle size={18} className="text-amber-700" />
+                    )}
+                    <h3 className="text-base font-bold">
+                      OpenRouter Provider Balance
+                    </h3>
+                  </div>
+                  <p className="mt-1 text-sm">
+                    {openRouterBalance.isLow
+                      ? openRouterBalance.isNegative
+                        ? 'Warning: OpenRouter balance is negative. Generation is blocked before user credits are reserved.'
+                        : 'Warning: OpenRouter balance is below the safe threshold. Generation is blocked before user credits are reserved.'
+                      : 'OpenRouter balance is above the configured safe threshold.'}
+                  </p>
+                  {openRouterBalance.error && (
+                    <p className="mt-2 text-sm font-semibold">
+                      Balance check issue: {openRouterBalance.error}
+                    </p>
+                  )}
+                  <p className="mt-2 text-sm">
+                    Suggested action: {openRouterBalance.suggestedAction}
+                  </p>
+                </div>
+                <p className="text-xs text-slate-600">
+                  Checked {formatDate(openRouterBalance.checkedAt)}
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-4">
+                {[
+                  {
+                    label: 'Total Credits',
+                    value: openRouterBalance.totalCredits,
+                  },
+                  {
+                    label: 'Total Usage',
+                    value: openRouterBalance.totalUsage,
+                  },
+                  {
+                    label: 'Available Balance',
+                    value: openRouterBalance.availableBalance,
+                  },
+                  {
+                    label: 'Safe Threshold',
+                    value: openRouterBalance.minBalance,
+                  },
+                ].map((metric) => (
+                  <div
+                    key={metric.label}
+                    className="rounded-lg border border-white/70 bg-white/70 p-3"
+                  >
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-600">
+                      {metric.label}
+                    </p>
+                    <p className="mt-2 text-lg font-bold">{metric.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 px-5 py-4">
+            <div className="mb-3 flex items-center gap-2">
+              <Activity size={18} className="text-cyan-700" />
+              <h3 className="text-base font-bold">
+                Credit Economics Audit
+              </h3>
+            </div>
+            <p className="mb-4 text-sm text-slate-500">
+              Admin-only view based on paid purchases and successful usage logs. Estimated margin uses USD-plan revenue per credit where available.
+            </p>
+
+            <AnalyticsCards metrics={economicsSummary} />
+
+            <div className="mt-5 overflow-x-auto rounded-lg border border-slate-200">
+              <table className="min-w-full divide-y divide-slate-200 text-sm">
+                <thead className="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3">Tool</th>
+                    <th className="px-4 py-3 text-right">Generations</th>
+                    <th className="px-4 py-3 text-right">Avg OpenRouter Cost</th>
+                    <th className="px-4 py-3 text-right">Avg Credits Charged</th>
+                    <th className="px-4 py-3 text-right">Estimated Margin</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {toolEconomics.map((row) => (
+                    <tr key={row.tool}>
+                      <td className="px-4 py-3 font-semibold text-slate-950">
+                        {row.tool}
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-600">
+                        {row.generations.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold">
+                        {row.averageProviderCostUsd}
+                      </td>
+                      <td className="px-4 py-3 text-right text-slate-600">
+                        {row.averageCreditsCharged}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold">
+                        {row.estimatedMarginUsd}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div className="border-t border-slate-200 px-5 py-4">

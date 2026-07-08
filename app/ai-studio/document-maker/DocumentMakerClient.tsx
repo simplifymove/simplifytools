@@ -117,7 +117,7 @@ export default function DocumentMakerClient() {
     }
 
     if (hasInsufficientCredits) {
-      setError(`Not enough AI Studio credits. You need ${creditCost} credits to generate a document.`);
+      setError('Not enough AI Studio credits for this document. Larger or more complex requests may use more credits.');
       return;
     }
 
@@ -204,7 +204,7 @@ export default function DocumentMakerClient() {
                 <h1 className="text-4xl font-bold sm:text-5xl">AI Document Maker</h1>
                 <p className="mt-4 max-w-2xl text-base leading-7 text-white/78">
                   Generate structured reports, proposals, business plans, resumes, letters, and blog articles.
-                  Each generation uses {creditCost} AI Studio credits.
+                  Credits are deducted only after successful generation. Usage depends on output size and complexity.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -257,9 +257,12 @@ export default function DocumentMakerClient() {
                   </select>
                 </label>
                 <div className={`rounded-lg border p-3 ${hasInsufficientCredits ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-cyan-100 bg-cyan-50 text-cyan-950'}`}>
-                  <p className="text-xs font-bold uppercase tracking-wide">Credits</p>
+                  <p className="text-xs font-bold uppercase tracking-wide">AI Credits Balance</p>
                   <p className="mt-1 text-sm font-semibold">
-                    {walletLoading ? 'Loading wallet' : wallet ? `${wallet.balanceCredits.toLocaleString()} available - ${creditCost} needed` : walletMessage}
+                    {walletLoading ? 'Loading wallet' : wallet ? `${wallet.balanceCredits.toLocaleString()} credits` : walletMessage}
+                  </p>
+                  <p className="mt-1 text-xs leading-5">
+                    Larger or more complex requests may use more credits.
                   </p>
                 </div>
               </div>
@@ -269,7 +272,7 @@ export default function DocumentMakerClient() {
                   {loading ? 'Planning, writing, and reviewing' : 'Generate Document'}
                 </button>
                 <span className="text-sm text-slate-500">
-                  {creditCost} credits required - DOCX export - professional formatting included
+                  Credits are deducted only after successful generation. DOCX export and professional formatting included.
                 </span>
               </div>
             </form>

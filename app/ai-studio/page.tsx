@@ -17,7 +17,6 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
-import { estimateAiStudioCredits } from '@/lib/ai-studio/estimate';
 import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import { getOrCreateWallet, serializeAiStudioWallet } from '@/lib/ai-studio/wallet';
 import { authOptions } from '@/lib/auth/config';
@@ -231,22 +230,18 @@ export default async function AIStudioPage() {
   }
 
   const dashboard = await getDashboardData();
-  const tenSlideEstimate = estimateAiStudioCredits(10).estimatedCredits;
-  const availableGenerations = dashboard.wallet
-    ? Math.floor(dashboard.wallet.balanceCredits / tenSlideEstimate)
-    : 0;
 
   const stats = [
     {
-      label: 'AI Credit Balance',
-      value: dashboard.wallet ? formatCredits(dashboard.wallet.balanceCredits) : 'Sign in',
+      label: 'AI Credits Balance',
+      value: dashboard.wallet ? `${formatCredits(dashboard.wallet.balanceCredits)} credits` : 'Sign in',
       detail: dashboard.wallet ? `${formatCredits(dashboard.wallet.reservedCredits)} reserved` : 'Connect an account to view wallet',
       icon: WalletCards,
     },
     {
-      label: 'Estimated Available Generations',
-      value: dashboard.wallet ? availableGenerations.toLocaleString() : '0',
-      detail: `Based on a 10-slide deck at ${tenSlideEstimate} credits`,
+      label: 'Generation Usage',
+      value: 'Variable',
+      detail: 'Usage depends on output size and complexity',
       icon: Presentation,
     },
     {

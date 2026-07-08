@@ -514,7 +514,7 @@ export default function PresentationMakerClient() {
     wallet !== null && estimatedCredits !== null && wallet.balanceCredits < estimatedCredits;
   const lowCreditDetail =
     wallet !== null && estimatedCredits !== null
-      ? `You have ${wallet.balanceCredits.toLocaleString()} credits and this deck is estimated at ${estimatedCredits.toLocaleString()} credits.`
+      ? 'Add credits to continue with larger or more complex requests.'
       : 'Buy credits to continue generating AI Studio presentations.';
   const isMockGeneration = isDevelopment && useMockAI;
   const isGenerateDisabled = loading || !topic.trim() || (!isMockGeneration && hasInsufficientCredits);
@@ -1397,15 +1397,15 @@ export default function PresentationMakerClient() {
 
                 <div className="grid gap-3 border-t border-slate-200 px-2 py-3 sm:grid-cols-3">
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">AI Credits</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">AI Credits Balance</p>
                     <p className="mt-1 text-lg font-bold text-slate-950">
-                      {walletLoading ? 'Loading' : wallet ? wallet.balanceCredits.toLocaleString() : 'Unavailable'}
+                      {walletLoading ? 'Loading' : wallet ? `${wallet.balanceCredits.toLocaleString()} credits` : 'Unavailable'}
                     </p>
                   </div>
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Estimated Credits</p>
-                    <p className="mt-1 text-lg font-bold text-slate-950">
-                      {estimatedCredits !== null ? `${estimatedCredits.toLocaleString()} credits` : 'Calculating'}
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Credit Usage</p>
+                    <p className="mt-1 text-sm font-semibold leading-5 text-slate-950">
+                      Usage depends on output size and complexity.
                     </p>
                   </div>
                   <div
@@ -1416,12 +1416,12 @@ export default function PresentationMakerClient() {
                     }`}
                   >
                     <p className="text-xs font-bold uppercase tracking-wide">
-                      {hasInsufficientCredits ? 'Credits Needed' : 'Wallet Status'}
+                      {hasInsufficientCredits ? 'Add Credits' : 'Wallet Status'}
                     </p>
                     <p className="mt-1 text-sm font-semibold leading-5">
                       {hasInsufficientCredits
                         ? `${insufficientCreditsMessage} ${lowCreditDetail}`
-                        : walletMessage || 'Your credit wallet is ready.'}
+                        : walletMessage || 'Credits are deducted only after successful generation.'}
                     </p>
                     {hasInsufficientCredits && !isMockGeneration && (
                       <Link href="/ai-studio/pricing" className="mt-2 inline-flex text-xs font-bold text-amber-950 underline">

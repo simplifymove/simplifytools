@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { getOpenRouterPricingSource } from '@/lib/ai-studio/openrouter-pricing';
+import { getOpenRouterCreditBalance } from '@/lib/ai-studio/openrouter-balance';
 import { AiStudioAdminClient } from './AiStudioAdminClient';
 
 export const metadata: Metadata = {
@@ -59,6 +60,15 @@ function formatUsd(value: number | null | undefined) {
   }).format(value);
 }
 
+function formatProviderBalanceUsd(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  }).format(value);
+}
+
 function formatMoneyMinor(amountMinor: number, currency: string) {
   return new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'en-US', {
     style: 'currency',
@@ -96,6 +106,10 @@ function formatPercent(value: number | null | undefined) {
   }
 
   return `${value.toFixed(2)}%`;
+}
+
+function safeDivide(numerator: number, denominator: number) {
+  return denominator > 0 ? numerator / denominator : null;
 }
 
 function addMinorAmount(
@@ -155,6 +169,7 @@ export default async function AiStudioAdminPage({
     successfulKnownCostGenerations,
     failedGenerationsCount,
     costByModel,
+    successfulUsageByTool,
     revenueTotals,
     revenueTodayTotals,
     revenueMonthTotals,
@@ -170,6 +185,7 @@ export default async function AiStudioAdminPage({
     topCustomerGroups,
     creditsPurchasedTotal,
     outstandingWalletCredits,
+    openRouterBalance,
   ] = await Promise.all([
     prisma.aiStudioWallet.count(),
     prisma.aiStudioWallet.aggregate({
@@ -301,6 +317,23 @@ export default async function AiStudioAdminPage({
       },
       take: 20,
     }),
+    prisma.aiStudioUsageLog.groupBy({
+      by: ['toolType'],
+      where: {
+        status: 'success',
+      },
+      _count: {
+        id: true,
+      },
+      _sum: {
+        actualCredits: true,
+        providerCostUsd: true,
+      },
+      _avg: {
+        actualCredits: true,
+        providerCostUsd: true,
+      },
+    }),
     prisma.aiStudioPlanPurchase.groupBy({
       by: ['currency'],
       where: { status: 'paid' },
@@ -348,6 +381,7 @@ export default async function AiStudioAdminPage({
         provider: true,
         currency: true,
         grossAmountMinor: true,
+        aiCreditAmountMinor: true,
         creditsGranted: true,
         paidAt: true,
         createdAt: true,
@@ -413,6 +447,7 @@ export default async function AiStudioAdminPage({
         balanceCredits: true,
       },
     }),
+    getOpenRouterCreditBalance(),
   ]);
 
   const userIds = wallets.map((wallet) => wallet.userId);
@@ -484,6 +519,20 @@ export default async function AiStudioAdminPage({
     pricingSource: getOpenRouterPricingSource(),
   };
 
+  const openRouterBalanceSummary = {
+    totalCredits: formatProviderBalanceUsd(openRouterBalance.totalCredits),
+    totalUsage: formatProviderBalanceUsd(openRouterBalance.totalUsage),
+    availableBalance: formatProviderBalanceUsd(openRouterBalance.availableBalance),
+    minBalance: formatProviderBalanceUsd(openRouterBalance.minBalance),
+    isLow: openRouterBalance.isLow,
+    isNegative: openRouterBalance.availableBalance < 0,
+    isConfigured: openRouterBalance.isConfigured,
+    checkedAt: openRouterBalance.checkedAt,
+    error: openRouterBalance.error || null,
+    suggestedAction:
+      'Top up OpenRouter or enable OpenRouter auto top-up in the OpenRouter dashboard.',
+  };
+
   const modelCostRows = costByModel.map((row) => ({
     model: row.model,
     estimatedCostUsd: row._sum.providerCostUsd
@@ -496,6 +545,89 @@ export default async function AiStudioAdminPage({
       (row._sum.inputTokens ?? 0) + (row._sum.outputTokens ?? 0),
     generations: row._count.id,
   }));
+
+  const creditsSold = toNumber(creditsPurchasedTotal._sum.creditsGranted);
+  const creditsConsumed = toNumber(walletCreditTotals._sum.lifetimeCreditsUsed);
+  const outstandingCreditLiability = toNumber(outstandingWalletCredits._sum.balanceCredits);
+  const paidUsdPurchases = paidPurchasesForAnalytics.filter((purchase) => purchase.currency === 'USD');
+  const unitUsdRevenueMinor = paidUsdPurchases.reduce((total, purchase) => total + purchase.grossAmountMinor, 0);
+  const usdCreditsSold = paidUsdPurchases.reduce(
+    (total, purchase) => total + toNumber(purchase.creditsGranted),
+    0,
+  );
+  const revenuePerCreditUsd = safeDivide(unitUsdRevenueMinor / 100, usdCreditsSold);
+  const providerCostPerCreditUsd = safeDivide(totalCost, creditsConsumed);
+  const revenuePerThousandCreditsUsd =
+    revenuePerCreditUsd === null ? null : revenuePerCreditUsd * 1000;
+  const providerCostPerThousandCreditsUsd =
+    providerCostPerCreditUsd === null ? null : providerCostPerCreditUsd * 1000;
+
+  const revenuePerThousandCreditsByCurrency = ['INR', 'USD'].map((currency) => {
+    const purchases = paidPurchasesForAnalytics.filter((purchase) => purchase.currency === currency);
+    const revenueMinor = purchases.reduce((total, purchase) => total + purchase.grossAmountMinor, 0);
+    const credits = purchases.reduce((total, purchase) => total + toNumber(purchase.creditsGranted), 0);
+    const revenuePerThousandMinor = safeDivide(revenueMinor, credits);
+
+    return {
+      label: `${currency} revenue / 1,000 credits`,
+      value:
+        revenuePerThousandMinor === null
+          ? 'Unknown'
+          : formatMoneyMinor(revenuePerThousandMinor * 1000, currency),
+      detail: `${formatCredits(credits)} credits sold`,
+    };
+  });
+
+  const toolLabel = (toolType: string) =>
+    toolType === 'presentation'
+      ? 'Presentation'
+      : toolType === 'document'
+        ? 'Document'
+        : toolType === 'spreadsheet'
+          ? 'Spreadsheet'
+          : formatPlanName(toolType);
+
+  const toolEconomics = ['presentation', 'document', 'spreadsheet'].map((toolType) => {
+    const row = successfulUsageByTool.find((item) => item.toolType === toolType);
+    const averageCreditsCharged = toNumber(row?._avg.actualCredits);
+    const averageProviderCost = toNumber(row?._avg.providerCostUsd);
+    const estimatedRevenue =
+      revenuePerCreditUsd === null ? null : averageCreditsCharged * revenuePerCreditUsd;
+    const estimatedMargin =
+      estimatedRevenue === null ? null : estimatedRevenue - averageProviderCost;
+
+    return {
+      tool: toolLabel(toolType),
+      generations: row?._count.id ?? 0,
+      averageProviderCostUsd: formatUsd(row ? averageProviderCost : null),
+      averageCreditsCharged: row ? formatCredits(averageCreditsCharged) : 'Unknown',
+      estimatedMarginUsd: formatUsd(row && estimatedMargin !== null ? estimatedMargin : null),
+    };
+  });
+
+  const economicsSummary = [
+    ...revenuePerThousandCreditsByCurrency,
+    {
+      label: 'Provider cost / 1,000 credits',
+      value: formatUsd(providerCostPerThousandCreditsUsd),
+      detail: 'Based on successful usage logs with known OpenRouter cost',
+    },
+    {
+      label: 'Credits sold',
+      value: formatCredits(creditsSold),
+      detail: 'Paid plan credits granted',
+    },
+    {
+      label: 'Credits consumed',
+      value: formatCredits(creditsConsumed),
+      detail: 'Lifetime credits captured',
+    },
+    {
+      label: 'Outstanding credit liability',
+      value: formatCredits(outstandingCreditLiability),
+      detail: 'Current spendable wallet balance',
+    },
+  ];
 
   const paidUserIds = new Set(payingUserGroups.map((row) => row.userId));
   const firstPurchaseByUser = new Map<string, Date>();
@@ -883,6 +1015,9 @@ export default async function AiStudioAdminPage({
       transactions={transactionRows}
       usage={usageRows}
       costSummary={costSummary}
+      openRouterBalance={openRouterBalanceSummary}
+      economicsSummary={economicsSummary}
+      toolEconomics={toolEconomics}
       modelCosts={modelCostRows}
       revenueAnalytics={revenueAnalytics}
       initialSearch={query}
