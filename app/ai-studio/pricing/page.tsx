@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ChevronRight, History, Sparkles, WalletCards } from 'lucide-react';
+import { ChevronRight, History, Sparkles } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { AI_STUDIO_PLANS } from '@/lib/ai-studio/plans';
 import { getAiStudioRequestRegion } from '@/lib/ai-studio/region';
@@ -41,16 +41,15 @@ export default async function AiStudioPricingPage() {
 
   const region = await getAiStudioRequestRegion();
   const plans = AI_STUDIO_PLANS.filter((plan) => plan.region === region);
-  const regionLabel = region === 'india' ? 'India plans - INR via Razorpay' : 'Global plans - USD via Stripe';
 
   return (
     <>
       <HomeHeader />
       <main className="min-h-screen bg-[#080a12] text-white">
-        <section className="relative overflow-hidden px-4 pt-8 pb-10 sm:px-6 lg:px-8">
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,#080a12_0%,#111827_35%,#12343b_70%,#312e81_100%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(103,232,249,0.22),rgba(8,10,18,0)_44%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_42%,rgba(255,255,255,0.06)_100%)]" />
+        <section className="relative overflow-hidden px-4 pt-8 pb-14 sm:px-6 lg:px-8">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,#080a12_0%,#0f172a_42%,#083344_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(103,232,249,0.22),rgba(8,10,18,0)_46%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_48%,rgba(255,255,255,0.04)_100%)]" />
 
           <div className="relative z-10 mx-auto max-w-7xl">
             <nav className="mb-8 flex items-center gap-2 text-sm text-white/70" aria-label="Breadcrumb">
@@ -77,14 +76,9 @@ export default async function AiStudioPricingPage() {
                 Buy AI Studio Credits
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                Choose a one-time credit pack for professional AI presentations, smart visual layouts,
-                and editable PPTX export.
+                Create polished presentations, documents, and spreadsheets with professional AI tools and export-ready files.
               </p>
-              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-cyan-50">
-                <WalletCards size={16} />
-                {regionLabel}
-              </div>
-              <div className="mt-5">
+              <div className="mt-7">
                 <Link
                   href="/ai-studio/billing"
                   className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
@@ -97,13 +91,12 @@ export default async function AiStudioPricingPage() {
           </div>
         </section>
 
-        <section className="bg-[#f7f8fb] px-4 py-10 text-slate-950 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[980px]">
+        <section className="bg-[#f7f8fb] px-4 py-14 text-slate-950 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl">
             <AiStudioPricingClient plans={plans} />
 
-            <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-600 shadow-sm">
-              Razorpay checkout is used for INR plans. Stripe Checkout is used for global USD plans.
-              Credits are used only for AI Studio premium tools and are not a cash balance.
+            <div className="mt-8 rounded-lg border border-slate-200 bg-white p-5 text-center text-sm leading-6 text-slate-600 shadow-sm">
+              Secure checkout is provided by trusted payment partners. Available payment methods are shown automatically based on your region.
             </div>
           </div>
         </section>

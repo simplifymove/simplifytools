@@ -188,7 +188,7 @@ export function HomeHeader() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="inline text-lg sm:text-2xl">SimplifyConvert</span>
+            <span className="hidden text-lg min-[430px]:inline sm:text-2xl">SimplifyConvert</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -276,11 +276,11 @@ export function HomeHeader() {
 
             <Link
               href="/ai-studio"
-              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-slate-950 via-blue-700 to-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-to-r from-slate-950 via-blue-700 to-cyan-600 px-3 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/30 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm"
             >
-              <Sparkles size={15} />
+              <Sparkles size={15} className="shrink-0" />
               AI Studio
-              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+              <span className="hidden rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white min-[390px]:inline">
                 Premium
               </span>
             </Link>
@@ -385,18 +385,6 @@ export function HomeHeader() {
               </Link>
               <Link href="/all-tools/ai-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 AI Writing
-              </Link>
-              <Link
-                href="/ai-studio"
-                className="flex items-center justify-between gap-3 rounded-lg bg-gradient-to-r from-slate-950 via-blue-700 to-cyan-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-blue-500/20"
-              >
-                <span className="flex items-center gap-2">
-                  <Sparkles size={16} />
-                  AI Studio
-                </span>
-                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-                  Premium
-                </span>
               </Link>
               <Link href="/all-tools/data" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Data Tools

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, CreditCard } from 'lucide-react';
+import { CheckCircle, Sparkles } from 'lucide-react';
 import type { AiStudioPlanConfig } from '@/lib/ai-studio/plans';
 
 interface AiStudioPricingClientProps {
@@ -27,7 +27,7 @@ function formatPlanPrice(plan: AiStudioPlanConfig) {
   const majorAmount = plan.grossAmountMinor / 100;
 
   if (plan.currency === 'INR') {
-    return `₹${majorAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+    return `\u20B9${majorAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
   }
 
   return `$${majorAmount.toFixed(2)}`;
@@ -35,10 +35,10 @@ function formatPlanPrice(plan: AiStudioPlanConfig) {
 
 function getPlanDescription(plan: AiStudioPlanConfig) {
   if (plan.name.toLowerCase().includes('pro')) {
-    return 'Best value for frequent AI content creation.';
+    return 'Best for professionals and frequent AI content creation.';
   }
 
-  return 'Perfect for occasional AI content creation.';
+  return 'Ideal for individuals and occasional AI content creation.';
 }
 
 function loadRazorpayScript() {
@@ -52,7 +52,7 @@ function loadRazorpayScript() {
 
     if (existingScript) {
       existingScript.addEventListener('load', () => resolve(), { once: true });
-      existingScript.addEventListener('error', () => reject(new Error('Unable to load Razorpay Checkout')), {
+      existingScript.addEventListener('error', () => reject(new Error('Unable to load checkout')), {
         once: true,
       });
       return;
@@ -63,7 +63,7 @@ function loadRazorpayScript() {
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Unable to load Razorpay Checkout'));
+    script.onerror = () => reject(new Error('Unable to load checkout'));
     document.body.appendChild(script);
   });
 }
@@ -80,7 +80,7 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
     if (stripeStatus === 'success') {
       setCheckoutState({
         status: 'success',
-        message: 'Payment received. AI Credits will appear in your wallet after Stripe confirms the payment.',
+        message: 'Payment received. AI Credits will appear in your wallet after checkout is confirmed.',
       });
       router.refresh();
     }
@@ -88,7 +88,7 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
     if (stripeStatus === 'cancelled') {
       setCheckoutState({
         status: 'error',
-        message: 'Stripe Checkout was cancelled. No payment was taken.',
+        message: 'Checkout was cancelled. No payment was taken.',
       });
     }
   }, [router]);
@@ -134,7 +134,7 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
       await loadRazorpayScript();
 
       if (!window.Razorpay) {
-        throw new Error('Razorpay Checkout is unavailable');
+        throw new Error('Checkout is unavailable');
       }
 
       const checkout = new window.Razorpay({
@@ -228,14 +228,14 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
       };
 
       if (!checkoutResponse.ok || !checkoutData.url) {
-        throw new Error(checkoutData.error || 'Unable to start Stripe Checkout');
+        throw new Error(checkoutData.error || 'Unable to start checkout');
       }
 
       window.location.assign(checkoutData.url);
     } catch (error) {
       setCheckoutState({
         status: 'error',
-        message: error instanceof Error ? error.message : 'Unable to start Stripe Checkout',
+        message: error instanceof Error ? error.message : 'Unable to start checkout',
       });
       setLoadingPlanId(null);
     }
@@ -255,62 +255,53 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
         </div>
       )}
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {plans.map((plan) => {
           const isRazorpayPlan = plan.provider === 'razorpay' && plan.currency === 'INR';
           const isStripePlan = plan.provider === 'stripe' && plan.currency === 'USD';
           const canBuyPlan = isRazorpayPlan || isStripePlan;
           const isLoading = loadingPlanId === plan.id;
+          const displayName = plan.name.replace('India ', '').replace('Global ', '');
+          const isPro = displayName.toLowerCase().includes('pro');
 
           return (
-            <article key={plan.id} className="rounded-lg border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/70">
-              <div className="mb-6 flex items-start justify-between gap-4">
+            <article
+              key={plan.id}
+              className={`relative rounded-lg border bg-white p-8 shadow-xl shadow-slate-200/70 ${
+                isPro ? 'border-cyan-300 ring-2 ring-cyan-100' : 'border-slate-200'
+              }`}
+            >
+              {isPro && (
+                <div className="absolute right-6 top-6 rounded-full bg-cyan-950 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                  Popular
+                </div>
+              )}
+
+              <div className="mb-7 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-cyan-800">
-                    {plan.region === 'india' ? 'India' : 'Global'}
-                  </p>
-                  <h2 className="mt-2 text-2xl font-bold text-slate-950">
-                    {plan.name.replace('India ', '').replace('Global ', '')}
-                  </h2>
+                  <h2 className="text-2xl font-bold text-slate-950">{displayName}</h2>
+                  <p className="mt-3 max-w-sm text-sm leading-6 text-slate-600">{getPlanDescription(plan)}</p>
                 </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-950 text-cyan-100">
-                  <CreditCard size={22} />
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-cyan-50 text-cyan-800">
+                  <Sparkles size={21} />
                 </div>
               </div>
 
-              <div className="flex items-end gap-2">
-                <span className="text-4xl font-bold text-slate-950">{formatPlanPrice(plan)}</span>
-                <span className="pb-2 text-sm font-semibold text-slate-500">one-time purchase</span>
+              <div>
+                <span className="text-5xl font-bold tracking-tight text-slate-950">{formatPlanPrice(plan)}</span>
               </div>
 
-              <div className="mt-6 rounded-lg border border-cyan-100 bg-cyan-50 p-4">
+              <div className="mt-7 rounded-lg border border-cyan-100 bg-cyan-50 px-5 py-4">
                 <p className="text-2xl font-bold text-cyan-950">{plan.creditsGranted.toLocaleString()} AI Credits</p>
-                <p className="mt-1 text-sm leading-6 text-cyan-900">{getPlanDescription(plan)}</p>
-                <p className="mt-1 text-sm leading-6 text-cyan-900">
-                  Use credits across all AI Studio premium tools.
-                </p>
               </div>
 
-              <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Payment</p>
-                  <p className="mt-1 font-semibold text-slate-950">
-                    {isRazorpayPlan ? 'Razorpay - INR' : isStripePlan ? 'Stripe - USD' : 'Coming soon'}
-                  </p>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Use for</p>
-                  <p className="mt-1 font-semibold text-slate-950">AI Studio premium tools</p>
-                </div>
-              </div>
-
-              <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
+              <ul className="mt-7 space-y-3.5 text-sm leading-6 text-slate-700">
                 {[
                   'AI Presentation Maker',
                   'AI Document Maker',
                   'AI Spreadsheet Maker',
-                  'PPTX, DOCX & XLSX exports',
-                  'Professional AI generation',
+                  'PPTX, DOCX & XLSX Export',
+                  'Professional AI Generation',
                 ].map((feature) => (
                   <li key={feature} className="flex gap-2">
                     <CheckCircle size={17} className="mt-0.5 shrink-0 text-cyan-700" />
@@ -323,7 +314,7 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
                 type="button"
                 onClick={() => handleBuyPlan(plan)}
                 disabled={!canBuyPlan || Boolean(loadingPlanId)}
-                className={`mt-7 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold shadow-lg transition ${
+                className={`mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold shadow-lg transition ${
                   canBuyPlan
                     ? 'bg-slate-950 text-white shadow-slate-950/20 hover:bg-slate-800 disabled:cursor-wait disabled:opacity-70'
                     : 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none'
@@ -331,11 +322,9 @@ export function AiStudioPricingClient({ plans }: AiStudioPricingClientProps) {
               >
                 {isLoading
                   ? 'Opening checkout...'
-                  : isRazorpayPlan
-                    ? 'Buy with Razorpay'
-                    : isStripePlan
-                      ? 'Buy with Stripe'
-                      : 'Payment coming next'}
+                  : canBuyPlan
+                    ? 'Buy Now'
+                    : 'Unavailable'}
               </button>
             </article>
           );

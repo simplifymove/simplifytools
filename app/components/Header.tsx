@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
-import { ChevronDown, Search, Menu, X, FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2, LogOut, Settings, LayoutDashboard } from 'lucide-react';
+import { ChevronDown, Search, Menu, X, FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2, LogOut, Settings, Sparkles } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -245,13 +245,28 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden flex items-center text-gray-700"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <Link
+              href="/ai-studio"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-slate-950 px-3 text-xs font-semibold text-white shadow-sm shadow-slate-950/20"
+              aria-label="Open AI Studio"
+            >
+              <Sparkles size={14} />
+              <span>AI Studio</span>
+              <span className="hidden min-[390px]:inline rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide">
+                Premium
+              </span>
+            </Link>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -336,4 +351,3 @@ export function Header() {
     </header>
   );
 }
-
