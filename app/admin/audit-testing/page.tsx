@@ -19,9 +19,14 @@ const AUDIT_CATEGORIES = [
   { id: 'pdf-tools', name: 'PDF Tools', toolsCount: 15, estimatedTests: 15 },
   { id: 'image-tools', name: 'Image Tools', toolsCount: 12, estimatedTests: 12 },
   { id: 'video-tools', name: 'Video Tools', toolsCount: 8, estimatedTests: 8 },
-  { id: 'data-conversion-tools', name: 'Data Conversion Tools', toolsCount: 18, estimatedTests: 18 },
-  { id: 'data-tools', name: 'Data Tools', toolsCount: 14, estimatedTests: 14 },
-  { id: 'code-tools', name: 'Code Tools', toolsCount: 9, estimatedTests: 9 },
+  { id: 'ai-writing-tools', name: 'AI Writing Tools', toolsCount: 10, estimatedTests: 3 },
+  { id: 'data-conversion-tools', name: 'Data Conversion Tools', toolsCount: 18, estimatedTests: 3 },
+  { id: 'data-tools', name: 'Data Tools', toolsCount: 14, estimatedTests: 3 },
+  { id: 'code-tools', name: 'Code Tools', toolsCount: 9, estimatedTests: 3 },
+  { id: 'financial-calculators', name: 'Financial Calculators', toolsCount: 4, estimatedTests: 2 },
+  { id: 'resume-maker', name: 'Resume Maker', toolsCount: 2, estimatedTests: 2 },
+  { id: 'save-from-online', name: 'Save From Online', toolsCount: 2, estimatedTests: 2 },
+  { id: 'text-to-speech', name: 'Text to Speech', toolsCount: 1, estimatedTests: 1 },
 ];
 
 interface AuditRun {

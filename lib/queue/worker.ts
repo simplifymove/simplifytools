@@ -132,6 +132,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
                 errorMessage: failureMessage,
                 outputGenerated: false,
                 logs: JSON.stringify({
+                  command: result.command || result.logs?.[0]?.command || '',
                   stdout: result.stdout?.substring(0, 2000) || '',
                   stderr: result.stderr?.substring(0, 2000) || '',
                 }),
@@ -354,7 +355,10 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
     // Validate that test results were actually produced
     if (totalTests === 0) {
       const categoryReasons = allLogs
-        .map((log) => `${log.category}: ${log.error || log.stderr || 'No test output was parsed'}`)
+        .map((log) => {
+          const command = log.command ? ` (${log.command})` : '';
+          return `${log.category}${command}: ${log.error || log.stderr || 'No test output was parsed'}`;
+        })
         .filter(Boolean)
         .join('\n');
       const errorMsg = `No test results were produced. ${categoryReasons || 'Check test command or report parser.'}`.substring(0, 2000);

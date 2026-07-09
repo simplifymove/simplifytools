@@ -8,7 +8,7 @@ const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000'
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: '**/pdf-tools.spec.ts',
+  testMatch: '**/*.spec.ts',
   
   // Test configuration
   fullyParallel: true,

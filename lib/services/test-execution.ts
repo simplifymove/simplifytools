@@ -16,6 +16,7 @@ export interface TestResult {
   error?: string;
   stdout?: string;
   stderr?: string;
+  command?: string;
 }
 
 export interface IndividualTestResult {
@@ -97,11 +98,14 @@ const CATEGORY_TEST_COMMANDS = {
   'pdf-tools': 'test:pdf-tools',
   'image-tools': 'test:image-tools',
   'video-tools': 'test:video-tools',
+  'ai-writing-tools': 'test:ai-writing-tools',
   'data-conversion-tools': 'test:converter-tools',
   'data-tools': 'test:document-tools',  // Use document-tools as data-tools substitute
   'code-tools': 'test:validation',      // Use validation as code-tools substitute
-  // Note: ai-writing-tools, save-from-online, financial-calculators, resume-maker, text-to-speech
-  // don't have test scripts yet, so they won't be available in audit
+  'financial-calculators': 'test:financial-calculators',
+  'resume-maker': 'test:resume-maker',
+  'save-from-online': 'test:save-from-online',
+  'text-to-speech': 'test:text-to-speech',
 };
 
 const ALLOWED_COMMANDS = Object.keys(CATEGORY_TEST_COMMANDS) as (keyof typeof CATEGORY_TEST_COMMANDS)[];
@@ -225,7 +229,7 @@ export async function runTestCommand(
       console.log(`[Test] ${commandLabel} completed with code ${code} (${durationMs}ms)`);
 
       // Parse Playwright output and JSON report
-      parsePlaywrightResults(stdout, stderr, code ?? 1, category, durationMs)
+      parsePlaywrightResults(stdout, stderr, code ?? 1, category, durationMs, commandLabel)
         .then(result => {
           if (auditRunId) {
             processRegistry.delete(auditRunId);
@@ -363,6 +367,7 @@ async function parsePlaywrightResults(
   exitCode: number,
   category: string,
   durationMs: number,
+  commandLabel: string,
 ): Promise<TestResult> {
   const logs = [];
   let totalTests = 0;
@@ -449,6 +454,7 @@ async function parsePlaywrightResults(
 
   logs.push({
     category,
+    command: commandLabel,
     totalTests,
     passedTests,
     failedTests,
@@ -475,6 +481,7 @@ async function parsePlaywrightResults(
     error: failureReason,
     stdout,
     stderr,
+    command: commandLabel,
   };
 }
 

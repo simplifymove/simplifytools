@@ -9,17 +9,17 @@ import os from 'os';
 
 // Map of tool categories to their test commands
 const CATEGORY_TEST_COMMANDS: Record<string, string> = {
-  'pdf': 'npm run test:pdf-tools',
-  'image': 'npm run test:image-tools',
-  'video': 'npm run test:video-tools',
-  'ai-writing': 'npm run test:ai-writing',
-  'document': 'npm run test:document-tools',
-  'converter': 'npm run test:converter-tools',
-  'compression': 'npm run test:compression',
-  'extraction': 'npm run test:extraction',
-  'validation': 'npm run test:validation',
-  'formatting': 'npm run test:formatting',
-  'optimization': 'npm run test:optimization',
+  'pdf-tools': 'test:pdf-tools',
+  'image-tools': 'test:image-tools',
+  'video-tools': 'test:video-tools',
+  'ai-writing-tools': 'test:ai-writing-tools',
+  'data-tools': 'test:document-tools',
+  'data-conversion-tools': 'test:converter-tools',
+  'code-tools': 'test:validation',
+  'financial-calculators': 'test:financial-calculators',
+  'resume-maker': 'test:resume-maker',
+  'save-from-online': 'test:save-from-online',
+  'text-to-speech': 'test:text-to-speech',
 };
 
 const ALLOWED_COMMANDS = Object.values(CATEGORY_TEST_COMMANDS);
@@ -153,10 +153,10 @@ async function runTestsAsync(
 
         // Aggregate stats
         totalTests += testResults.length;
-        passedTests += testResults.filter((r) => r.status === 'pass').length;
-        failedTests += testResults.filter((r) => r.status === 'fail').length;
-        errorTests += testResults.filter((r) => r.status === 'error').length;
-        skippedTests += testResults.filter((r) => r.status === 'skipped').length;
+        passedTests += testResults.filter((r) => r.status === 'PASS').length;
+        failedTests += testResults.filter((r) => r.status === 'FAIL').length;
+        errorTests += testResults.filter((r) => r.status === 'ERROR').length;
+        skippedTests += testResults.filter((r) => r.status === 'SKIPPED').length;
       } catch (categoryError) {
         console.error(
           `[Audit] Error running tests for ${category}:`,
@@ -200,17 +200,19 @@ async function runTestsAsync(
 }
 
 async function runTestCommand(
-  command: string,
+  scriptName: string,
   projectRoot: string
 ): Promise<any[]> {
   return new Promise((resolve, reject) => {
-    const [cmd, ...args] = command.split(' ');
+    const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const args = ['run', scriptName];
+    const commandLabel = `${cmd} ${args.join(' ')}`;
     let stdout = '';
     let stderr = '';
 
     const child = spawn(cmd, args, {
       cwd: projectRoot,
-      shell: process.platform === 'win32',
+      shell: false,
       timeout: 600000, // 10 minutes
     });
 
@@ -229,11 +231,11 @@ async function runTestCommand(
     child.on('close', (code) => {
       // Parse results from command output
       // This is a simplified version; actual parsing depends on your test format
-      const results = parseTestOutput(stdout, stderr, code ?? 0);
+      const results = parseTestOutput(stdout, stderr, code ?? 0, commandLabel);
       if (code === 0 || results.length > 0) {
         resolve(results);
       } else {
-        reject(new Error(`Tests failed with code ${code}`));
+        reject(new Error(`${commandLabel} failed with code ${code}: ${stderr.slice(0, 500) || stdout.slice(0, 500)}`));
       }
     });
   });
@@ -242,7 +244,8 @@ async function runTestCommand(
 function parseTestOutput(
   stdout: string,
   stderr: string,
-  code: number
+  code: number,
+  commandLabel: string
 ): any[] {
   // Handle error cases first
   if (
@@ -259,6 +262,7 @@ function parseTestOutput(
         errorMessage:
           'Test command not available. Ensure Playwright is installed.',
         durationMs: 0,
+        logs: JSON.stringify({ command: commandLabel, stderr: stderr.slice(0, 1000), stdout: stdout.slice(0, 1000) }),
       },
     ];
   }
@@ -289,6 +293,7 @@ function parseTestOutput(
           outputGenerated: json.stats?.expected > 0,
           outputType: 'json',
           durationMs: json.stats?.duration || 0,
+          logs: JSON.stringify({ command: commandLabel, stderr: stderr.slice(0, 1000), stdout: stdout.slice(0, 1000) }),
         });
 
         return results;
@@ -308,6 +313,7 @@ function parseTestOutput(
         testCase: 'Batch execution',
         status: 'PASS',
         durationMs: 0,
+        logs: JSON.stringify({ command: commandLabel, stdout: stdout.slice(0, 1000), stderr: stderr.slice(0, 1000) }),
       },
     ];
   } else {
@@ -319,8 +325,9 @@ function parseTestOutput(
         testCase: 'Batch execution',
         status: 'ERROR',
         errorMessage:
-          stderr.slice(0, 500) || 'Test execution failed with code ' + code,
+          stderr.slice(0, 500) || stdout.slice(0, 500) || 'Test execution failed with code ' + code,
         durationMs: 0,
+        logs: JSON.stringify({ command: commandLabel, exitCode: code, stdout: stdout.slice(0, 1000), stderr: stderr.slice(0, 1000) }),
       },
     ];
   }

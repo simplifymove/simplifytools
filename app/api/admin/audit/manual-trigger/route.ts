@@ -13,9 +13,14 @@ const VALID_CATEGORIES = [
   'pdf-tools',
   'image-tools',
   'video-tools',
+  'ai-writing-tools',
   'data-conversion-tools',
   'data-tools',
   'code-tools',
+  'financial-calculators',
+  'resume-maker',
+  'save-from-online',
+  'text-to-speech',
 ];
 
 function parseCategories(categoriesJson: string, auditRunId: string): string[] {
