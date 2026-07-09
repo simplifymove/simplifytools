@@ -11,6 +11,7 @@ export interface AuditJobData {
   auditJobId: string;
   userId: string;
   categories: string[];
+  workerCount?: '1' | '2' | '4' | 'auto';
 }
 
 export interface AuditJobResult {
@@ -114,6 +115,7 @@ export async function enqueueAuditJob(
   auditJobId: string,
   userId: string,
   categories: string[],
+  workerCount?: AuditJobData['workerCount'],
 ): Promise<string> {
   const queue = getAuditQueue();
 
@@ -122,6 +124,7 @@ export async function enqueueAuditJob(
     auditJobId,
     userId,
     categories,
+    workerCount,
   });
 
   queueLogger.info({ jobId: job.id, auditRunId, auditJobId, categories }, 'Audit job enqueued');

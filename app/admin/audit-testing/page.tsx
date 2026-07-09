@@ -12,22 +12,12 @@ import { CategorySelectionTable } from './components/CategorySelectionTable';
 import { ExecutionSettingsCard } from './components/ExecutionSettingsCard';
 import { ActiveRunsTable } from './components/ActiveRunsTable';
 import { AuditHistoryTable } from './components/AuditHistoryTable';
+import { AuditDetailsPanel } from './components/AuditDetailsPanel';
 import { DeleteAuditModal } from './components/DeleteAuditModal';
 import { BulkCleanupPanel } from './components/BulkCleanupPanel';
+import { AUDIT_CATEGORY_SUMMARIES } from '@/app/lib/audit-category-tools';
 
-const AUDIT_CATEGORIES = [
-  { id: 'pdf-tools', name: 'PDF Tools', toolsCount: 15, estimatedTests: 15 },
-  { id: 'image-tools', name: 'Image Tools', toolsCount: 12, estimatedTests: 12 },
-  { id: 'video-tools', name: 'Video Tools', toolsCount: 8, estimatedTests: 8 },
-  { id: 'ai-writing-tools', name: 'AI Writing Tools', toolsCount: 10, estimatedTests: 3 },
-  { id: 'data-conversion-tools', name: 'Data Conversion Tools', toolsCount: 18, estimatedTests: 3 },
-  { id: 'data-tools', name: 'Data Tools', toolsCount: 14, estimatedTests: 3 },
-  { id: 'code-tools', name: 'Code Tools', toolsCount: 9, estimatedTests: 3 },
-  { id: 'financial-calculators', name: 'Financial Calculators', toolsCount: 4, estimatedTests: 2 },
-  { id: 'resume-maker', name: 'Resume Maker', toolsCount: 2, estimatedTests: 2 },
-  { id: 'save-from-online', name: 'Save From Online', toolsCount: 2, estimatedTests: 2 },
-  { id: 'text-to-speech', name: 'Text to Speech', toolsCount: 1, estimatedTests: 1 },
-];
+const AUDIT_CATEGORIES = AUDIT_CATEGORY_SUMMARIES;
 
 interface AuditRun {
   auditRunId: string;
@@ -44,11 +34,13 @@ interface AuditRun {
   livePassedTests?: number;
   liveFailedTests?: number;
   liveTotalTests?: number;
+  progress?: any;
 }
 
 interface ExecutionSettings {
   sequential: boolean;
   maxConcurrency: number;
+  workerCount: '1' | '2' | '4' | 'auto';
   timeoutProfile: 'safe' | 'fast' | 'extended';
   storeArtifacts: boolean;
   captureScreenshots: boolean;
@@ -60,6 +52,7 @@ export default function AuditTestingPage() {
   const [executionSettings, setExecutionSettings] = useState<ExecutionSettings>({
     sequential: true,
     maxConcurrency: 1,
+    workerCount: '1',
     timeoutProfile: 'safe',
     storeArtifacts: true,
     captureScreenshots: true,
@@ -74,6 +67,8 @@ export default function AuditTestingPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [bulkCleanupLoading, setBulkCleanupLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedAuditDetails, setSelectedAuditDetails] = useState<any>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   // Load audit runs from database
   const loadAuditRuns = async () => {
@@ -129,6 +124,7 @@ export default function AuditTestingPage() {
         body: JSON.stringify({
           categories: selectedCategories,
           sequential: executionSettings.sequential,
+          workerCount: executionSettings.workerCount,
         }),
       });
 
@@ -204,6 +200,7 @@ export default function AuditTestingPage() {
         body: JSON.stringify({
           categories: audit.categories,
           sequential: executionSettings.sequential,
+          workerCount: executionSettings.workerCount,
         }),
       });
 
@@ -254,11 +251,33 @@ export default function AuditTestingPage() {
     setRefreshing(false);
   };
 
+  const viewAuditDetails = async (auditRunId: string) => {
+    setDetailsLoading(true);
+    setSelectedAuditDetails(null);
+
+    try {
+      const response = await fetch(`/api/admin/audit/results/${auditRunId}`);
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(err.error || 'Failed to load audit details');
+      }
+
+      setSelectedAuditDetails(await response.json());
+    } catch (err) {
+      setError(`Failed to load audit details: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
   const categoryData = AUDIT_CATEGORIES.map((cat) => ({
     ...cat,
     lastRun: undefined,
     lastStatus: undefined,
   }));
+  const configuredCategoryIds: string[] = AUDIT_CATEGORIES
+    .filter((category) => category.configured !== false)
+    .map((category) => category.id);
 
   const totalTests = selectedCategories.reduce((total, catId) => {
     const cat = AUDIT_CATEGORIES.find((c) => c.id === catId);
@@ -327,13 +346,14 @@ export default function AuditTestingPage() {
                   categories={categoryData}
                   selectedCategories={selectedCategories}
                   onToggle={(catId) => {
+                    if (!configuredCategoryIds.includes(catId as any)) return;
                     setSelectedCategories((prev) =>
                       prev.includes(catId)
                         ? prev.filter((id) => id !== catId)
                         : [...prev, catId]
                     );
                   }}
-                  onSelectAll={() => setSelectedCategories(AUDIT_CATEGORIES.map((c) => c.id))}
+                  onSelectAll={() => setSelectedCategories(configuredCategoryIds)}
                   onClearAll={() => setSelectedCategories([])}
                 />
 
@@ -399,21 +419,23 @@ export default function AuditTestingPage() {
                 <ActiveRunsTable
                   runs={activeRuns}
                   onStop={stopAudit}
-                  onView={(auditRunId) => {
-                    // TODO: Implement view details drawer
-                  }}
+                  onView={viewAuditDetails}
                 />
               </div>
             )}
+
+            <AuditDetailsPanel
+              details={selectedAuditDetails}
+              loading={detailsLoading}
+              onClose={() => setSelectedAuditDetails(null)}
+            />
 
             {/* Completed Audits */}
             {completedRuns.length > 0 && (
               <div className="mb-8">
                 <AuditHistoryTable
                   audits={completedRuns}
-                  onView={(auditRunId) => {
-                    // TODO: Implement view details drawer
-                  }}
+                  onView={viewAuditDetails}
                   onRetry={retryAudit}
                   onDelete={(auditRunId) => {
                     setAuditToDelete(auditRunId);

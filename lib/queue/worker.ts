@@ -4,7 +4,7 @@
 import { Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
 import { prisma } from '@/lib/prisma';
-import { runTestCommand } from '@/lib/services/test-execution';
+import { mapAuditFailureToFailureType, runTestCommand } from '@/lib/services/test-execution';
 import { createNotification } from '@/lib/services/notification';
 import { getCategoryReliability } from '@/lib/services/reliability';
 import { generateHealthReport } from '@/lib/services/health-score';
@@ -27,7 +27,7 @@ const auditDebugError = (...args: unknown[]) => {
 
 // Worker processor function
 async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> {
-  const { auditJobId, userId, categories, auditRunId } = job.data;
+  const { auditJobId, userId, categories, auditRunId, workerCount } = job.data;
   
   auditDebugLog('[WORKER] ▶ Processing audit job:', {
     jobId: job.id,
@@ -79,7 +79,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
       try {
         // Pass auditRunId so worker can track process PID and check cancellation
         auditDebugLog('[WORKER] Running test command for:', category);
-        const result = await runTestCommand(category, auditRunId);
+        const result = await runTestCommand(category, auditRunId, workerCount || '1');
         auditDebugLog('[WORKER] Test command completed with result:', {
           totalTests: result.totalTests,
           passedTests: result.passedTests,
@@ -177,7 +177,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
                 auditRunId,
                 category,
                 toolName: testResult.toolName || category,
-                toolSlug: (testResult.toolName || category).toLowerCase().replace(/\s+/g, '-'),
+                toolSlug: testResult.toolSlug || (testResult.toolName || category).toLowerCase().replace(/\s+/g, '-'),
                 url: testResult.url || `http://localhost:3000/${category}`,
                 testCase: testResult.testName || testResult.testCase || 'Smoke test',
                 status: testStatus as any,
@@ -190,6 +190,8 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
                   stdout: testResult.output || '',
                   stderr: testResult.error?.message || '',
                   duration: durationMs,
+                  failureClass: testResult.failureClass,
+                  consoleErrors: testResult.consoleErrors || [],
                 }),
                 durationMs,
                 timestamp: new Date(),
@@ -213,7 +215,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
                     toolName: testResult.toolName || category,
                     category,
                     testName: testResult.testName || testResult.testCase,
-                    failureType: 'UNKNOWN',
+                    failureType: mapAuditFailureToFailureType(testResult.failureClass) as any,
                     failureReason: testResult.error?.message || 'Test failed',
                     stackTrace: testResult.error?.stack,
                     errorOutput: testResult.output || '',
@@ -409,6 +411,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
         skippedTests,
         successPercentage,
         completedAt: new Date(),
+        errorMessage: null,
       },
     });
     auditDebugLog('[WORKER] ✅ AuditRun updated:', auditRun.id);

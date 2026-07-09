@@ -6,6 +6,7 @@ import { isAdminUser } from '@/lib/auth/admin';
 import { spawn } from 'child_process';
 import path from 'path';
 import os from 'os';
+import { getValidAuditCategoryIds } from '@/app/lib/audit-category-tools';
 
 // Map of tool categories to their test commands
 const CATEGORY_TEST_COMMANDS: Record<string, string> = {
@@ -23,6 +24,7 @@ const CATEGORY_TEST_COMMANDS: Record<string, string> = {
 };
 
 const ALLOWED_COMMANDS = Object.values(CATEGORY_TEST_COMMANDS);
+const VALID_CATEGORIES: string[] = getValidAuditCategoryIds();
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Validate categories
     const invalidCategories = categories.filter(
-      (cat) => !Object.keys(CATEGORY_TEST_COMMANDS).includes(cat)
+      (cat) => !VALID_CATEGORIES.includes(cat as any) || !Object.keys(CATEGORY_TEST_COMMANDS).includes(cat)
     );
 
     if (invalidCategories.length > 0) {

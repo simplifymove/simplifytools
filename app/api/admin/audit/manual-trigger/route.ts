@@ -3,25 +3,15 @@ import { getAdminSession } from '@/lib/auth/admin';
 import { getAuditQueue } from '@/lib/queue/client';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
+import { getValidAuditCategoryIds } from '@/app/lib/audit-category-tools';
 
 interface ManualAuditRequest {
   categories: string[];
   sequential?: boolean;
+  workerCount?: '1' | '2' | '4' | 'auto';
 }
 
-const VALID_CATEGORIES = [
-  'pdf-tools',
-  'image-tools',
-  'video-tools',
-  'ai-writing-tools',
-  'data-conversion-tools',
-  'data-tools',
-  'code-tools',
-  'financial-calculators',
-  'resume-maker',
-  'save-from-online',
-  'text-to-speech',
-];
+const VALID_CATEGORIES: string[] = getValidAuditCategoryIds();
 
 function parseCategories(categoriesJson: string, auditRunId: string): string[] {
   try {
@@ -30,6 +20,17 @@ function parseCategories(categoriesJson: string, auditRunId: string): string[] {
   } catch {
     logger.warn({ auditRunId }, 'Audit run has invalid categories JSON');
     return [];
+  }
+}
+
+function parseProgress(errorMessage: string | null) {
+  if (!errorMessage) return null;
+
+  try {
+    const parsed = JSON.parse(errorMessage);
+    return parsed?.type === 'audit-progress' ? parsed : null;
+  } catch {
+    return null;
   }
 }
 
@@ -50,7 +51,11 @@ function validateManualAuditRequest(body: Partial<ManualAuditRequest>) {
     }
   }
 
-  return { categories };
+  const workerCount = body.sequential
+    ? '1'
+    : (['1', '2', '4', 'auto'].includes(String(body.workerCount)) ? body.workerCount : '2');
+
+  return { categories, workerCount: workerCount as '1' | '2' | '4' | 'auto' };
 }
 
 export async function POST(req: NextRequest) {
@@ -184,6 +189,7 @@ export async function POST(req: NextRequest) {
           auditJobId: auditJob.id,
           userId,
           categories,
+          workerCount: validation.workerCount,
         },
         {
           attempts: 1,
@@ -330,6 +336,7 @@ export async function GET() {
         skipped: run.testResults.filter((result) => result.status === 'SKIPPED').length,
         error: run.testResults.filter((result) => result.status === 'ERROR').length,
       };
+      const progress = parseProgress(run.errorMessage);
 
       return {
         auditRunId: run.id,
@@ -346,6 +353,8 @@ export async function GET() {
         livePassedTests: testCounts.passed,
         liveFailedTests: testCounts.failed,
         liveTotalTests: testCounts.total,
+        liveSkippedTests: testCounts.skipped,
+        progress,
       };
     });
 

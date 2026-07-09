@@ -8,6 +8,7 @@ interface Category {
   name: string;
   toolsCount: number;
   estimatedTests: number;
+  configured?: boolean;
   lastRun?: string;
   lastStatus?: string;
 }
@@ -66,7 +67,7 @@ export function CategorySelectionTable({
               <th className="px-6 py-3 text-left">
                 <input
                   type="checkbox"
-                  checked={selectedCategories.length === categories.length}
+                  checked={selectedCategories.length === categories.filter((category) => category.configured !== false).length}
                   onChange={(e) => (e.target.checked ? onSelectAll() : onClearAll())}
                   className="w-4 h-4 text-blue-600 rounded"
                 />
@@ -95,22 +96,26 @@ export function CategorySelectionTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {sortedCategories.map((category) => (
+            {sortedCategories.map((category) => {
+              const configured = category.configured !== false;
+              return (
               <tr
                 key={category.id}
-                className="hover:bg-gray-50 transition cursor-pointer"
-                onClick={() => onToggle(category.id)}
+                className={`transition ${configured ? 'hover:bg-gray-50 cursor-pointer' : 'bg-gray-50 opacity-70 cursor-not-allowed'}`}
+                onClick={() => configured && onToggle(category.id)}
               >
                 <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={selectedCategories.includes(category.id)}
-                    onChange={() => onToggle(category.id)}
+                    disabled={!configured}
+                    onChange={() => configured && onToggle(category.id)}
                     className="w-4 h-4 text-blue-600 rounded"
                   />
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                  {!configured && <div className="text-xs text-red-600 mt-1">Not configured</div>}
                 </td>
                 <td className="px-6 py-4">
                   <span className="text-sm text-gray-600">{category.toolsCount}</span>
@@ -141,7 +146,8 @@ export function CategorySelectionTable({
                   )}
                 </td>
               </tr>
-            ))}
+            );
+            })}
           </tbody>
         </table>
       </div>

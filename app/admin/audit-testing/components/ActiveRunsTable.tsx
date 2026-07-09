@@ -15,6 +15,17 @@ interface AuditRun {
   skippedTests?: number;
   liveTotalTests?: number;
   totalTests?: number;
+  progress?: {
+    currentTool?: string;
+    currentToolSlug?: string;
+    currentUrl?: string;
+    currentCategory?: string;
+    completedTools?: number;
+    totalTools?: number;
+    elapsedMs?: number;
+    estimatedRemainingMs?: number | null;
+    workerCount?: string;
+  } | null;
 }
 
 interface Props {
@@ -61,6 +72,14 @@ export function ActiveRunsTable({ runs, onStop, onView, loading }: Props) {
     }
   };
 
+  const formatDuration = (ms?: number | null) => {
+    if (!ms || ms < 0) return '-';
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+    return `${seconds}s`;
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       {/* Header */}
@@ -77,6 +96,7 @@ export function ActiveRunsTable({ runs, onStop, onView, loading }: Props) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Categories</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Progress</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Current Tool</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-700">Started</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-700">Actions</th>
             </tr>
@@ -86,7 +106,10 @@ export function ActiveRunsTable({ runs, onStop, onView, loading }: Props) {
               const total = run.liveTotalTests || run.totalTests || 0;
               const passed = run.livePassedTests || run.passedTests || 0;
               const failed = run.liveFailedTests || run.failedTests || 0;
-              const progressPercent = total > 0 ? (passed / total) * 100 : 0;
+              const skipped = run.liveSkippedTests || run.skippedTests || 0;
+              const completed = run.progress?.completedTools ?? (passed + failed + skipped);
+              const expectedTotal = run.progress?.totalTools || total;
+              const progressPercent = expectedTotal > 0 ? (completed / expectedTotal) * 100 : 0;
 
               return (
                 <tr key={run.auditRunId} className="hover:bg-gray-50 transition">
@@ -116,11 +139,24 @@ export function ActiveRunsTable({ runs, onStop, onView, loading }: Props) {
                           />
                         </div>
                         <span className="text-xs font-medium text-gray-600 min-w-fit">
-                          {passed}/{total}
+                          {completed}/{expectedTotal || total}
                         </span>
                       </div>
                       <div className="text-xs text-gray-500">
-                        {passed} passed • {failed} failed
+                        {passed} passed | {failed} failed
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="max-w-xs">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {run.progress?.currentTool || '-'}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate">
+                        {run.progress?.currentCategory || run.categories.join(', ')}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Elapsed {formatDuration(run.progress?.elapsedMs)} | ETA {formatDuration(run.progress?.estimatedRemainingMs)}
                       </div>
                     </div>
                   </td>

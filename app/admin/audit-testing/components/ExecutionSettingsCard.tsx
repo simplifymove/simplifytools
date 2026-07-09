@@ -3,6 +3,7 @@
 interface ExecutionSettings {
   sequential: boolean;
   maxConcurrency: number;
+  workerCount: '1' | '2' | '4' | 'auto';
   timeoutProfile: 'safe' | 'fast' | 'extended';
   storeArtifacts: boolean;
   captureScreenshots: boolean;
@@ -27,7 +28,7 @@ export function ExecutionSettingsCard({ settings, onSettingsChange }: Props) {
               <input
                 type="radio"
                 checked={settings.sequential}
-                onChange={() => onSettingsChange({ ...settings, sequential: true })}
+                onChange={() => onSettingsChange({ ...settings, sequential: true, maxConcurrency: 1, workerCount: '1' })}
                 className="w-4 h-4 text-blue-600"
               />
               <span className="text-sm text-gray-700">Sequential (safer, less resource usage)</span>
@@ -36,7 +37,7 @@ export function ExecutionSettingsCard({ settings, onSettingsChange }: Props) {
               <input
                 type="radio"
                 checked={!settings.sequential}
-                onChange={() => onSettingsChange({ ...settings, sequential: false })}
+                onChange={() => onSettingsChange({ ...settings, sequential: false, maxConcurrency: 2, workerCount: '2' })}
                 className="w-4 h-4 text-blue-600"
               />
               <span className="text-sm text-gray-700">Concurrent (faster, higher resource usage)</span>
@@ -47,22 +48,23 @@ export function ExecutionSettingsCard({ settings, onSettingsChange }: Props) {
         {/* Max Concurrency */}
         {!settings.sequential && (
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-3">Max Concurrency</label>
+            <label className="block text-sm font-medium text-gray-900 mb-3">Audit Workers</label>
             <div className="flex gap-2">
-              {[1, 2, 3].map((value) => (
+              {(['2', '4', 'auto'] as const).map((value) => (
                 <button
                   key={value}
-                  onClick={() => onSettingsChange({ ...settings, maxConcurrency: value })}
+                  onClick={() => onSettingsChange({ ...settings, maxConcurrency: value === 'auto' ? 4 : Number(value), workerCount: value })}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    settings.maxConcurrency === value
+                    settings.workerCount === value
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {value}
+                  {value === 'auto' ? 'Auto' : `${value} workers`}
                 </button>
               ))}
             </div>
+            <p className="text-xs text-gray-500 mt-2">Controls Playwright workers for registry smoke tests.</p>
           </div>
         )}
 

@@ -1,86 +1,214 @@
 import { expect, test } from '@playwright/test';
-
-type CategoryAuditConfig = {
-  name: string;
-  urls: string[];
-};
-
-const CATEGORY_AUDITS: Record<string, CategoryAuditConfig> = {
-  'ai-writing-tools': {
-    name: 'AI Writing Tools',
-    urls: ['/all-tools/ai-tools', '/all-tools/ai-write', '/all-tools/ai-tools/paragraph-writer'],
-  },
-  'image-tools': {
-    name: 'Image Tools',
-    urls: ['/all-tools/image-tools', '/all-tools/compress-image', '/all-tools/resize-image'],
-  },
-  'video-tools': {
-    name: 'Video Tools',
-    urls: ['/all-tools/video-tools', '/all-tools/video/trim-video', '/all-tools/video-tools/text-to-video'],
-  },
-  'code-tools': {
-    name: 'Code Tools',
-    urls: ['/all-tools/code-tools', '/all-tools/code-tools/json-formatter', '/all-tools/code-tools/code-minifier'],
-  },
-  'data-tools': {
-    name: 'Data Tools',
-    urls: ['/all-tools/data', '/all-tools/data/csv-to-json', '/all-tools/data/json-to-xml'],
-  },
-  'data-conversion-tools': {
-    name: 'Data Conversion Tools',
-    urls: ['/all-tools/data-converter', '/all-tools/data/csv-to-json', '/all-tools/data/excel-to-csv'],
-  },
-  'financial-calculators': {
-    name: 'Financial Calculators',
-    urls: ['/all-tools/financial-calculators', '/all-tools/financial-calculators/startup-runway'],
-  },
-  'resume-maker': {
-    name: 'Resume Maker',
-    urls: ['/all-tools/resume-maker', '/all-tools/resume-maker/job-match'],
-  },
-  'save-from-online': {
-    name: 'Save From Online',
-    urls: ['/all-tools/save-from-online', '/all-tools/video-tools/universal-downloader'],
-  },
-  'text-to-speech': {
-    name: 'Text to Speech',
-    urls: ['/all-tools/text-to-speech'],
-  },
-};
+import { getAuditCategoryDefinition, type AuditToolTarget } from '../app/lib/audit-category-tools';
 
 const categoryId = process.env.AUDIT_CATEGORY || '';
-const categoryConfig = CATEGORY_AUDITS[categoryId];
+const categoryConfig = getAuditCategoryDefinition(categoryId);
+const startedAt = Date.now();
+const auditResults: Array<{
+  slug: string;
+  title: string;
+  url?: string;
+  status: 'passed' | 'failed';
+  durationMs?: number;
+  failureClass?: FailureClass;
+  reason?: string;
+  consoleErrors?: string[];
+  screenshotPath?: string;
+}> = [];
 
-test.describe('Generic category audit', () => {
-  test.skip(!categoryConfig, `No generic audit configured for category: ${categoryId || '(missing)'}`);
+type FailureClass =
+  | 'Route not found (404)'
+  | 'Server error (500)'
+  | 'Missing H1'
+  | 'Hydration error'
+  | 'JavaScript exception'
+  | 'Console error'
+  | 'Infinite loading'
+  | 'Missing main UI'
+  | 'Timeout'
+  | 'Network failure'
+  | 'Playwright failure'
+  | 'Unknown';
 
-  for (const url of categoryConfig?.urls || []) {
-    test(`${categoryConfig?.name} loads ${url}`, async ({ page, request }) => {
-      const response = await request.get(url);
-      expect(response.status(), `${url} should return a successful response`).toBeLessThan(400);
+function emitAuditEvent(eventName: 'AUDIT_TOOL_PROGRESS' | 'AUDIT_TOOL_RESULT', payload: Record<string, unknown>) {
+  console.log(`${eventName} ${JSON.stringify(payload)}`);
+}
 
-      const consoleErrors: string[] = [];
-      page.on('console', (message) => {
-        if (message.type() !== 'error') return;
+function isFatalConsoleMessage(text: string) {
+  if (/favicon|manifest|ResizeObserver|Failed to load resource/i.test(text)) {
+    return false;
+  }
 
-        const text = message.text();
-        if (/favicon|manifest|ResizeObserver|Failed to load resource: the server responded with a status of 404/i.test(text)) {
-          return;
-        }
+  return /Application error|Hydration failed|Minified React error|Unhandled Runtime Error|TypeError|ReferenceError|SyntaxError|next-dev|next\/static/i.test(text);
+}
 
-        consoleErrors.push(text);
+function bodyLooksLikeErrorPage(text: string) {
+  return /404\s*not\s*found|page\s*not\s*found|500\s*internal\s*server\s*error|application\s*error|this page could not be found/i.test(text);
+}
+
+function classifyFailure(message?: string): FailureClass {
+  const text = message || '';
+
+  if (/404|not found|could not be found/i.test(text)) return 'Route not found (404)';
+  if (/500|internal server error|server error/i.test(text)) return 'Server error (500)';
+  if (/primary heading|visible h1|Missing H1/i.test(text)) return 'Missing H1';
+  if (/hydration/i.test(text)) return 'Hydration error';
+  if (/TypeError|ReferenceError|SyntaxError|pageerror|exception|Unhandled/i.test(text)) return 'JavaScript exception';
+  if (/fatal client errors|console/i.test(text)) return 'Console error';
+  if (/infinite loading|Loading|Processing/i.test(text)) return 'Infinite loading';
+  if (/interactive UI|main UI/i.test(text)) return 'Missing main UI';
+  if (/timeout|timed out/i.test(text)) return 'Timeout';
+  if (/ECONN|ENOTFOUND|net::|network/i.test(text)) return 'Network failure';
+  if (/browserType\.launch|playwright|locator|expect\(/i.test(text)) return 'Playwright failure';
+
+  return 'Unknown';
+}
+
+async function auditToolPage(page: any, request: any, target: AuditToolTarget) {
+  if (!target.route) {
+    throw new Error(`Registry item has no route: ${target.slug}`);
+  }
+
+  const response = await request.get(target.route);
+  const status = response.status();
+  if (status === 404) {
+    throw new Error(`Route not found (404): ${target.route}`);
+  }
+  if (status >= 500) {
+    throw new Error(`Server error (${status}): ${target.route}`);
+  }
+  expect(status, `${target.route} should return a valid response`).toBeLessThan(400);
+
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+
+  page.on('console', (message: any) => {
+    if (message.type() !== 'error') return;
+
+    const text = message.text();
+    if (isFatalConsoleMessage(text)) {
+      consoleErrors.push(text);
+    }
+  });
+
+  page.on('pageerror', (error: Error) => {
+    pageErrors.push(error.message);
+  });
+
+  await page.goto(target.route, { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('body')).toBeVisible();
+
+  const heading = page.locator('h1, [role="heading"][aria-level="1"]').first();
+  await expect(heading, `${target.route} should render a visible primary heading`).toBeVisible({ timeout: 10000 });
+
+  const bodyText = await page.locator('body').innerText({ timeout: 5000 });
+  expect(bodyLooksLikeErrorPage(bodyText), `${target.route} should not render 404/500 content`).toBe(false);
+
+  const interactiveElements = page.locator('main a[href], main button, main input, main textarea, main select, main [role="button"], form button, form input, form textarea, form select');
+  expect(await interactiveElements.count(), `${target.route} should expose main interactive UI`).toBeGreaterThan(0);
+
+  await page.waitForTimeout(750);
+  const persistentLoading = page.locator('main :visible').filter({ hasText: /^(Loading|Loading\.\.\.|Processing\.\.\.)$/i });
+  expect(await persistentLoading.count(), `${target.route} should not remain in an infinite loading state`).toBe(0);
+
+  expect([...consoleErrors, ...pageErrors], `${target.route} should not log fatal client errors`).toEqual([]);
+
+  return { consoleErrors: [...consoleErrors, ...pageErrors] };
+}
+
+test.describe('Registry-driven category audit', () => {
+  test.skip(!categoryConfig, `No audit category configured for: ${categoryId || '(missing)'}`);
+
+  test.afterEach(async ({}, testInfo) => {
+    const slug = testInfo.title.split(' :: ')[0];
+    const target = categoryConfig?.tools.find((tool) => tool.slug === slug);
+    if (!target) return;
+
+    const resultIndex = auditResults.length + 1;
+    const total = categoryConfig?.tools.length || 0;
+    const failed = testInfo.status !== 'passed';
+    const reason = testInfo.error?.message;
+    const failureClass = failed ? classifyFailure(reason) : undefined;
+    const screenshotAttachment = testInfo.attachments.find((attachment) =>
+      attachment.contentType === 'image/png' || attachment.contentType === 'image/jpeg'
+    );
+    let screenshotPath = screenshotAttachment?.path;
+    const consoleErrors = testInfo.errors
+      .map((error) => error.message)
+      .filter((message): message is string => Boolean(message));
+
+    const resultPayload = {
+      categoryId,
+      categoryName: categoryConfig?.name,
+      slug: target.slug,
+      title: target.title,
+      url: target.route,
+      status: testInfo.status === 'passed' ? 'passed' : 'failed',
+      durationMs: testInfo.duration,
+      failureClass,
+      reason,
+      consoleErrors,
+      screenshotPath,
+      index: resultIndex,
+      total,
+      elapsedMs: Date.now() - startedAt,
+    };
+
+    auditResults.push({
+      slug: target.slug,
+      title: target.title,
+      url: target.route,
+      status: testInfo.status === 'passed' ? 'passed' : 'failed',
+      durationMs: testInfo.duration,
+      failureClass,
+      reason,
+      consoleErrors,
+      screenshotPath,
+    });
+
+    emitAuditEvent('AUDIT_TOOL_RESULT', resultPayload);
+  });
+
+  test.afterAll(async () => {
+    if (!categoryConfig) return;
+
+    const failed = auditResults.filter((result) => result.status === 'failed');
+    const summary = {
+      category: categoryConfig.name,
+      totalToolsTested: categoryConfig.tools.length,
+      passedCount: auditResults.filter((result) => result.status === 'passed').length,
+      failedCount: failed.length,
+      failures: failed.map((failure) => ({
+        title: failure.title,
+        slug: failure.slug,
+        url: failure.url,
+        durationMs: failure.durationMs,
+        failureClass: failure.failureClass,
+        reason: failure.reason,
+        screenshotPath: failure.screenshotPath,
+        consoleErrors: failure.consoleErrors || [],
+      })),
+    };
+
+    console.log(`CATEGORY_AUDIT_SUMMARY ${JSON.stringify(summary)}`);
+  });
+
+  for (const target of categoryConfig?.tools || []) {
+    test(`${target.slug} :: ${target.title}`, async ({ page, request }) => {
+      const index = (categoryConfig?.tools.findIndex((tool) => tool.slug === target.slug) || 0) + 1;
+      const total = categoryConfig?.tools.length || 0;
+      emitAuditEvent('AUDIT_TOOL_PROGRESS', {
+        categoryId,
+        categoryName: categoryConfig?.name,
+        slug: target.slug,
+        title: target.title,
+        url: target.route,
+        index,
+        total,
+        elapsedMs: Date.now() - startedAt,
       });
 
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
-      await expect(page.locator('body')).toBeVisible();
-      const heading = page.locator('h1, [role="heading"][aria-level="1"]').first();
-      await expect(heading, `${url} should render a visible primary heading`).toBeVisible({ timeout: 10000 });
-
-      const interactiveElements = page.locator('a[href], button, input, textarea, select, [role="button"]');
-      expect(await interactiveElements.count(), `${url} should expose interactive UI`).toBeGreaterThan(0);
-
-      await page.waitForTimeout(500);
-      expect(consoleErrors, `${url} should not log major client console errors`).toEqual([]);
+      await auditToolPage(page, request, target);
     });
   }
 });

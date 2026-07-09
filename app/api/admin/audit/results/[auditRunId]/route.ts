@@ -92,6 +92,47 @@ export async function GET(
         : null,
     };
 
+    const previousRun = await prisma.auditRun.findFirst({
+      where: {
+        id: { not: auditRunId },
+        status: { in: ['COMPLETED', 'FAILED'] },
+        categories: auditRun.categories,
+        completedAt: { lt: auditRun.completedAt || new Date() },
+      },
+      orderBy: { completedAt: 'desc' },
+      include: {
+        testResults: {
+          select: {
+            toolSlug: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    const currentFailed = new Set(
+      auditRun.testResults
+        .filter((result) => result.status === 'FAIL' || result.status === 'ERROR')
+        .map((result) => result.toolSlug)
+    );
+    const previousFailed = new Set(
+      previousRun?.testResults
+        .filter((result) => result.status === 'FAIL' || result.status === 'ERROR')
+        .map((result) => result.toolSlug) || []
+    );
+
+    const comparison = {
+      previousAuditRunId: previousRun?.id || null,
+      newFailures: Array.from(currentFailed).filter((slug) => !previousFailed.has(slug)),
+      fixedFailures: Array.from(previousFailed).filter((slug) => !currentFailed.has(slug)),
+      previousPassRate: previousRun?.successPercentage ?? null,
+      currentPassRate: auditRun.successPercentage,
+      healthPercent: auditRun.successPercentage,
+      passRateTrend: previousRun
+        ? parseFloat((auditRun.successPercentage - previousRun.successPercentage).toFixed(2))
+        : null,
+    };
+
     return NextResponse.json({
       auditRun: {
         id: auditRun.id,
@@ -104,6 +145,7 @@ export async function GET(
       testResults: auditRun.testResults,
       resultsByCategory,
       failures,
+      comparison,
     });
   } catch (error) {
     logger.error(error, 'Get audit results error');
