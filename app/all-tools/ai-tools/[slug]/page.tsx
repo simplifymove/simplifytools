@@ -380,7 +380,8 @@ export default function AIWriteToolPage() {
             Back to AI Write Tools
           </Link>
           <div className="text-center py-12">
-            <p className="text-lg text-gray-600">Tool not found</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">AI Writing Tool Not Found</h1>
+            <p className="text-lg text-gray-600">The requested AI writing tool could not be found.</p>
           </div>
         </div>
       </main>

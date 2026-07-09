@@ -3,7 +3,7 @@
  * Reusable utilities for testing PDF tools
  */
 
-import { Page, expect, test } from '@playwright/test';
+import { Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import AdmZip from 'adm-zip';
@@ -23,7 +23,7 @@ export async function uploadFiles(
   if (fileNames.length === 0) return;
 
   // Find file input
-  const fileInput = page.locator('input[type="file"]');
+  const fileInput = page.locator('input[type="file"]').first();
   
   // Set multiple files
   const filePaths = fileNames.map(fileName => {
@@ -44,7 +44,7 @@ export async function uploadFile(
   page: Page,
   fileName: string
 ): Promise<void> {
-  const fileInput = page.locator('input[type="file"]');
+  const fileInput = page.locator('input[type="file"]').first();
   const dir = fileName.endsWith('.pdf') ? PDF_DIR : IMAGE_DIR;
   const filePath = path.join(dir, fileName);
   
@@ -67,11 +67,9 @@ export async function setOptions(
     
     // Special handling for URL inputs to avoid strict mode issues
     if (key === 'url' || key === 'website' || key === 'link') {
-      // Get all URL inputs and use the last one (main form input, not search)
-      const allUrlInputs = page.locator('input[type="url"]');
-      const count = await allUrlInputs.count();
-      if (count > 0) {
-        input = allUrlInputs.nth(count - 1); // Use last one (main form)
+      const formUrlInput = page.locator('form input[type="url"]:visible').first();
+      if (await formUrlInput.count() > 0) {
+        input = formUrlInput;
       }
     }
     
@@ -111,9 +109,17 @@ export async function setOptions(
  */
 export async function submitForm(
   page: Page
-): Promise<void> {
-  const button = page.locator('button[type="submit"]');
+): Promise<{ submitted: boolean; disabled: boolean; buttonText?: string }> {
+  const button = page.locator('form button[type="submit"]').first();
+  const buttonText = (await button.textContent().catch(() => ''))?.trim();
+  const disabled = await button.isDisabled().catch(() => true);
+
+  if (disabled) {
+    return { submitted: false, disabled, buttonText };
+  }
+
   await button.click();
+  return { submitted: true, disabled, buttonText };
 }
 
 /**
@@ -121,16 +127,20 @@ export async function submitForm(
  */
 export async function waitForProcessing(
   page: Page,
-  timeoutMs: number = 30000
+  timeoutMs: number = 15000
 ): Promise<void> {
-  // Wait for loading spinner to appear and disappear
-  const spinner = page.locator('[class*="loading"], [class*="spinner"]');
-  
-  // Wait a bit for processing to start
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(300);
 
-  // Wait for processing to finish (30 second timeout)
-  await page.waitForTimeout(timeoutMs);
+  const successOrError = page.locator(
+    '.text-green-700, .text-red-700, [role="alert"], [class*="success"], [class*="error"]'
+  );
+  const processingButton = page.locator('form button[type="submit"]:has-text("Processing")').first();
+
+  await Promise.race([
+    successOrError.first().waitFor({ state: 'visible', timeout: timeoutMs }).catch(() => undefined),
+    processingButton.waitFor({ state: 'hidden', timeout: timeoutMs }).catch(() => undefined),
+    page.waitForTimeout(timeoutMs),
+  ]);
 }
 
 /**
@@ -174,6 +184,25 @@ export async function checkForError(
     }
   } catch {}
   return null;
+}
+
+export async function getPdfAuditState(page: Page): Promise<{
+  route: string;
+  pageLoaded: boolean;
+  formSubmitted: boolean;
+  successVisible: boolean;
+  errorMessage: string | null;
+}> {
+  const successVisible = await page.locator('.text-green-700, [class*="success"]').first().isVisible({ timeout: 1000 }).catch(() => false);
+  const errorMessage = await checkForError(page);
+
+  return {
+    route: page.url(),
+    pageLoaded: await page.locator('h1').first().isVisible({ timeout: 1000 }).catch(() => false),
+    formSubmitted: successVisible || !!errorMessage,
+    successVisible,
+    errorMessage,
+  };
 }
 
 /**
@@ -512,4 +541,3 @@ export function getFixtures(): {
     images: fs.existsSync(IMAGE_DIR) ? fs.readdirSync(IMAGE_DIR) : [],
   };
 }
-

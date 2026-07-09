@@ -11,6 +11,11 @@ const FIXTURES_DIR = path.join(__dirname);
 const PDF_DIR = path.join(FIXTURES_DIR, 'pdf');
 const IMAGE_DIR = path.join(FIXTURES_DIR, 'images');
 
+function padFixture(buffer, minSize = 256) {
+  if (buffer.length >= minSize) return buffer;
+  return Buffer.concat([buffer, Buffer.alloc(minSize - buffer.length, 0)]);
+}
+
 // Ensure directories exist
 [PDF_DIR, IMAGE_DIR].forEach(dir => {
   if (!fs.existsSync(dir)) {
@@ -166,7 +171,7 @@ function createJpgImage() {
     0xFF, 0xD9, // EOI (End of Image)
   ]);
   
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.jpg'), jpgBuffer);
+  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.jpg'), padFixture(jpgBuffer));
   console.log('✓ Created sample.jpg');
 }
 
@@ -193,7 +198,7 @@ function createPngImage() {
     0xAE, 0x42, 0x60, 0x82, // CRC
   ]);
   
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.png'), pngBuffer);
+  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.png'), padFixture(pngBuffer));
   console.log('✓ Created sample.png');
 }
 
@@ -231,7 +236,7 @@ function createTiffImage() {
     0xFF, // Single pixel (white)
   ]);
   
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.tiff'), tiffBuffer);
+  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.tiff'), padFixture(tiffBuffer));
   console.log('✓ Created sample.tiff');
 }
 
@@ -252,7 +257,7 @@ function createWebpImage() {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   ]);
   
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.webp'), webpBuffer);
+  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.webp'), padFixture(webpBuffer));
   console.log('✓ Created sample.webp');
 }
 
@@ -271,7 +276,7 @@ function createGifImage() {
     0x02, 0x02, 0x44, 0x01, 0x00, 0x3B, // Image data + trailer
   ]);
   
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.gif'), gifBuffer);
+  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.gif'), padFixture(gifBuffer));
   console.log('✓ Created sample.gif');
 }
 

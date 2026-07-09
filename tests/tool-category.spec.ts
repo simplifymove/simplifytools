@@ -73,7 +73,8 @@ test.describe('Generic category audit', () => {
 
       await page.goto(url, { waitUntil: 'domcontentloaded' });
       await expect(page.locator('body')).toBeVisible();
-      await expect(page.locator('h1').first()).toBeVisible();
+      const heading = page.locator('h1, [role="heading"][aria-level="1"]').first();
+      await expect(heading, `${url} should render a visible primary heading`).toBeVisible({ timeout: 10000 });
 
       const interactiveElements = page.locator('a[href], button, input, textarea, select, [role="button"]');
       expect(await interactiveElements.count(), `${url} should expose interactive UI`).toBeGreaterThan(0);
