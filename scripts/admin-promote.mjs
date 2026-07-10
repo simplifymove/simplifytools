@@ -7,9 +7,44 @@
  *   npm run admin:promote -- --email=owner@example.com
  */
 
-import { prisma } from '@/lib/prisma';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { PrismaClient } from '@prisma/client';
 
-function parseEmailArg(argv: string[]) {
+function loadEnvFile(fileName) {
+  const filePath = resolve(process.cwd(), fileName);
+  if (!existsSync(filePath)) return;
+
+  const lines = readFileSync(filePath, 'utf8').split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const equalsIndex = trimmed.indexOf('=');
+    if (equalsIndex === -1) continue;
+
+    const key = trimmed.slice(0, equalsIndex).trim();
+    let value = trimmed.slice(equalsIndex + 1).trim();
+
+    if (!key || process.env[key] !== undefined) continue;
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    process.env[key] = value;
+  }
+}
+
+loadEnvFile('.env.local');
+loadEnvFile('.env');
+
+const prisma = new PrismaClient();
+
+function parseEmailArg(argv) {
   const emailArg = argv.find((arg) => arg.startsWith('--email='));
   const email = emailArg?.slice('--email='.length).trim().toLowerCase();
 
@@ -60,7 +95,12 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error(`[AdminPromote] ${error instanceof Error ? error.message : 'Failed to promote user.'}`);
+    const message = error instanceof Error ? error.message : '';
+    if (error?.code === 'P1001' || message.includes("Can't reach database server")) {
+      console.error('[AdminPromote] Cannot reach the database. Check DATABASE_URL and make sure the database is running.');
+    } else {
+      console.error(`[AdminPromote] ${message || 'Failed to promote user.'}`);
+    }
     process.exitCode = 1;
   })
   .finally(async () => {

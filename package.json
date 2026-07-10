@@ -37,7 +37,7 @@
     "phase8:stress-test": "npx ts-node scripts/stress-test.ts",
     "phase8:monitor": "npx ts-node scripts/phase8-monitoring.ts",
     "ai-studio:quality-eval": "tsx scripts/ai-studio-quality-eval.ts",
-    "admin:promote": "npx ts-node scripts/admin-promote.ts",
+    "admin:promote": "node scripts/admin-promote.mjs",
     "worker": "tsx worker.ts"
   },
   "dependencies": {
