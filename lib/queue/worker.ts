@@ -5,6 +5,7 @@ import { Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
 import { prisma } from '@/lib/prisma';
 import { mapAuditFailureToFailureType, runTestCommand } from '@/lib/services/test-execution';
+import { getAuditCategoryDefinition } from '@/app/lib/audit-category-tools';
 import { createNotification } from '@/lib/services/notification';
 import { getCategoryReliability } from '@/lib/services/reliability';
 import { generateHealthReport } from '@/lib/services/health-score';
@@ -45,6 +46,9 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
   let skippedTests = 0;
   const allLogs: any[] = [];
   const allTestResults: any[] = [];
+  const totalToolsForRun = categories.reduce((total, category) => {
+    return total + (getAuditCategoryDefinition(category)?.tools.length || 0);
+  }, 0);
 
   try {
     auditDebugLog('[WORKER] Updating AuditRun status to RUNNING...');
@@ -53,7 +57,35 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
     // Update AuditRun status to RUNNING
     await prisma.auditRun.update({
       where: { id: auditRunId },
-      data: { status: 'RUNNING', startedAt: new Date() },
+      data: {
+        status: 'RUNNING',
+        startedAt: new Date(),
+        totalTests: totalToolsForRun,
+        passedTests: 0,
+        failedTests: 0,
+        errorTests: 0,
+        skippedTests: 0,
+        successPercentage: 0,
+        errorMessage: JSON.stringify({
+          type: 'audit-progress',
+          currentTool: '',
+          currentToolSlug: '',
+          currentToolTitle: '',
+          currentUrl: '',
+          currentCategory: categories[0] || '',
+          completedTools: 0,
+          totalTools: totalToolsForRun,
+          passedTools: 0,
+          failedTools: 0,
+          skippedTools: 0,
+          errorTools: 0,
+          elapsedMs: 0,
+          elapsedTime: 0,
+          estimatedRemainingMs: null,
+          estimatedRemainingTime: null,
+          workerCount: workerCount || '1',
+        }).substring(0, 2000),
+      },
     });
     auditDebugLog('[WORKER] ✅ AuditRun status updated to RUNNING');
 
@@ -79,7 +111,20 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
       try {
         // Pass auditRunId so worker can track process PID and check cancellation
         auditDebugLog('[WORKER] Running test command for:', category);
-        const result = await runTestCommand(category, auditRunId, workerCount || '1');
+        const completedToolsOffset = categories
+          .slice(0, categories.indexOf(category))
+          .reduce((total, previousCategory) => {
+            return total + (getAuditCategoryDefinition(previousCategory)?.tools.length || 0);
+          }, 0);
+
+        const result = await runTestCommand(category, auditRunId, workerCount || '1', {
+          completedToolsOffset,
+          totalTools: totalToolsForRun,
+          passedToolsOffset: passedTests,
+          failedToolsOffset: failedTests,
+          skippedToolsOffset: skippedTests,
+          errorToolsOffset: errorTests,
+        });
         auditDebugLog('[WORKER] Test command completed with result:', {
           totalTests: result.totalTests,
           passedTests: result.passedTests,

@@ -342,18 +342,18 @@ export async function GET() {
         auditRunId: run.id,
         categories,
         status: run.status,
-        totalTests: run.totalTests || testCounts.total,
-        passedTests: run.passedTests || testCounts.passed,
-        failedTests: run.failedTests || testCounts.failed,
-        skippedTests: run.skippedTests || testCounts.skipped,
-        errorTests: run.errorTests || testCounts.error,
+        totalTests: run.totalTests ?? testCounts.total,
+        passedTests: run.passedTests ?? testCounts.passed,
+        failedTests: run.failedTests ?? testCounts.failed,
+        skippedTests: run.skippedTests ?? testCounts.skipped,
+        errorTests: run.errorTests ?? testCounts.error,
         successPercentage: run.successPercentage,
         startedAt: run.startedAt,
         completedAt: run.completedAt,
-        livePassedTests: testCounts.passed,
-        liveFailedTests: testCounts.failed,
-        liveTotalTests: testCounts.total,
-        liveSkippedTests: testCounts.skipped,
+        livePassedTests: run.passedTests ?? testCounts.passed,
+        liveFailedTests: run.failedTests ?? testCounts.failed,
+        liveTotalTests: progress?.totalTools ?? run.totalTests ?? testCounts.total,
+        liveSkippedTests: run.skippedTests ?? testCounts.skipped,
         progress,
       };
     });
@@ -387,6 +387,10 @@ export async function GET() {
         runningCount: runningRuns.length,
         activeCount: activeJobs.length,
         recentRunsCount: recentRuns.length,
+      },
+    }, {
+      headers: {
+        'Cache-Control': 'no-store',
       },
     });
   } catch (error) {

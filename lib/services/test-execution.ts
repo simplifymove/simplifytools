@@ -45,6 +45,15 @@ export interface IndividualTestResult {
   tracePath?: string;
 }
 
+export interface AuditProgressContext {
+  completedToolsOffset?: number;
+  totalTools?: number;
+  passedToolsOffset?: number;
+  failedToolsOffset?: number;
+  skippedToolsOffset?: number;
+  errorToolsOffset?: number;
+}
+
 // Global map to track spawned processes by auditRunId
 const processRegistry = new Map<string, { process: ChildProcess; pid: number; category: string; startTime: number }>();
 
@@ -121,13 +130,20 @@ async function prismaSafeProgressUpdate(
   progress: {
     currentTool: string;
     currentToolSlug: string;
+    currentToolTitle: string;
     currentUrl: string;
     currentCategory: string;
     completedTools: number;
     totalTools: number;
+    passedTools: number;
+    failedTools: number;
+    skippedTools: number;
+    errorTools: number;
     startedAt: number;
     elapsedMs: number;
+    elapsedTime: number;
     estimatedRemainingMs: number | null;
+    estimatedRemainingTime: number | null;
     workerCount: string;
   }
 ) {
@@ -137,6 +153,13 @@ async function prismaSafeProgressUpdate(
     where: { id: auditRunId },
     data: {
       totalTests: progress.totalTools,
+      passedTests: progress.passedTools,
+      failedTests: progress.failedTools,
+      skippedTests: progress.skippedTools,
+      errorTests: progress.errorTools,
+      successPercentage: progress.completedTools > 0
+        ? parseFloat(((progress.passedTools / progress.completedTools) * 100).toFixed(2))
+        : 0,
       updatedAt: new Date(),
       errorMessage: JSON.stringify({
         type: 'audit-progress',
@@ -164,6 +187,7 @@ export async function runTestCommand(
   category: string,
   auditRunId?: string,
   workerCount: '1' | '2' | '4' | 'auto' = '1',
+  progressContext: AuditProgressContext = {},
 ): Promise<TestResult> {
   // Validate category
   if (!CONFIGURED_CATEGORIES.includes(category as any) || !ALLOWED_COMMANDS.includes(category as any)) {
@@ -191,38 +215,61 @@ export async function runTestCommand(
     let stderr = '';
     let isCancelled = false;
     let stdoutLineBuffer = '';
+    let progressUpdateChain = Promise.resolve();
     const progressState = {
       currentTool: '',
       currentToolSlug: '',
+      currentToolTitle: '',
       currentUrl: '',
       currentCategory: categoryDefinition?.name || category,
-      completedTools: 0,
-      totalTools: categoryDefinition?.tools.length || 0,
+      completedTools: progressContext.completedToolsOffset || 0,
+      totalTools: progressContext.totalTools || categoryDefinition?.tools.length || 0,
+      passedTools: progressContext.passedToolsOffset || 0,
+      failedTools: progressContext.failedToolsOffset || 0,
+      skippedTools: progressContext.skippedToolsOffset || 0,
+      errorTools: progressContext.errorToolsOffset || 0,
       startedAt: startTime,
       elapsedMs: 0,
+      elapsedTime: 0,
       estimatedRemainingMs: null as number | null,
+      estimatedRemainingTime: null as number | null,
       workerCount,
     };
 
     const updateAuditProgress = async (event: any, completed: boolean) => {
       if (!auditRunId) return;
 
-      const index = Number(event.index || progressState.completedTools + (completed ? 0 : 1));
-      const total = Number(event.total || progressState.totalTools || 0);
+      const offset = progressContext.completedToolsOffset || 0;
+      const index = Number(event.index || Math.max(progressState.completedTools - offset, 0) + (completed ? 1 : 0));
+      const total = Number(progressContext.totalTools || event.total || progressState.totalTools || 0);
       const elapsedMs = Date.now() - startTime;
-      const completedTools = completed ? Math.max(progressState.completedTools, index) : progressState.completedTools;
+      const completedTools = completed ? Math.max(progressState.completedTools, offset + index) : progressState.completedTools;
       const estimatedRemainingMs = completedTools > 0 && total > completedTools
         ? Math.round((elapsedMs / completedTools) * (total - completedTools))
         : null;
+      const status = String(event.status || '').toLowerCase();
 
       progressState.currentTool = String(event.title || progressState.currentTool || '');
       progressState.currentToolSlug = String(event.slug || progressState.currentToolSlug || '');
+      progressState.currentToolTitle = String(event.title || progressState.currentToolTitle || progressState.currentTool || '');
       progressState.currentUrl = String(event.url || progressState.currentUrl || '');
       progressState.currentCategory = String(event.categoryName || progressState.currentCategory || category);
       progressState.completedTools = completedTools;
       progressState.totalTools = total;
       progressState.elapsedMs = elapsedMs;
+      progressState.elapsedTime = elapsedMs;
       progressState.estimatedRemainingMs = estimatedRemainingMs;
+      progressState.estimatedRemainingTime = estimatedRemainingMs;
+
+      if (completed) {
+        if (status === 'passed') {
+          progressState.passedTools += 1;
+        } else if (status === 'skipped') {
+          progressState.skippedTools += 1;
+        } else {
+          progressState.failedTools += 1;
+        }
+      }
 
       try {
         await prismaSafeProgressUpdate(auditRunId, progressState);
@@ -233,14 +280,18 @@ export async function runTestCommand(
 
     const handleStdoutLine = (line: string) => {
       const trimmed = line.trim();
-      if (!trimmed.startsWith('AUDIT_TOOL_PROGRESS ') && !trimmed.startsWith('AUDIT_TOOL_RESULT ')) return;
+      const progressIndex = trimmed.indexOf('AUDIT_TOOL_PROGRESS ');
+      const resultIndex = trimmed.indexOf('AUDIT_TOOL_RESULT ');
+      if (progressIndex === -1 && resultIndex === -1) return;
 
-      const isResult = trimmed.startsWith('AUDIT_TOOL_RESULT ');
-      const payloadText = trimmed.replace(isResult ? 'AUDIT_TOOL_RESULT ' : 'AUDIT_TOOL_PROGRESS ', '');
+      const isResult = resultIndex !== -1 && (progressIndex === -1 || resultIndex < progressIndex);
+      const marker = isResult ? 'AUDIT_TOOL_RESULT ' : 'AUDIT_TOOL_PROGRESS ';
+      const markerIndex = isResult ? resultIndex : progressIndex;
+      const payloadText = trimmed.slice(markerIndex + marker.length);
 
       try {
         const event = JSON.parse(payloadText);
-        void updateAuditProgress(event, isResult);
+        progressUpdateChain = progressUpdateChain.then(() => updateAuditProgress(event, isResult));
       } catch {
         // Ignore malformed progress markers; the final Playwright report is still authoritative.
       }
@@ -336,7 +387,8 @@ export async function runTestCommand(
         handleStdoutLine(stdoutLineBuffer);
       }
 
-      parsePlaywrightResults(stdout, stderr, code ?? 1, category, durationMs, commandLabel)
+      progressUpdateChain
+        .then(() => parsePlaywrightResults(stdout, stderr, code ?? 1, category, durationMs, commandLabel))
         .then(result => {
           if (auditRunId) {
             processRegistry.delete(auditRunId);

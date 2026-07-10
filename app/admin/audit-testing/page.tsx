@@ -73,7 +73,7 @@ export default function AuditTestingPage() {
   // Load audit runs from database
   const loadAuditRuns = async () => {
     try {
-      const response = await fetch('/api/admin/audit/manual-trigger');
+      const response = await fetch('/api/admin/audit/manual-trigger', { cache: 'no-store' });
       if (!response.ok) return;
       const data = await response.json();
 
