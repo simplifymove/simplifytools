@@ -2,9 +2,7 @@
 // Get and delete specific artifacts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
-import { isAdminUser } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { getArtifactById, deleteArtifact, downloadArtifact } from '@/lib/services/artifact';
 import { apiLogger } from '@/lib/logging/logger';
 
@@ -14,14 +12,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (!await isAdminUser()) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const artifact = await getArtifactById(id);
 
@@ -60,14 +52,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (!await isAdminUser()) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const success = await deleteArtifact(id);
 

@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { isAdminUser } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin access
-    const isAdmin = await isAdminUser();
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Admin access required' },
-        { status: 403 }
-      );
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1', 10);

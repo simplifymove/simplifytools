@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/prisma';
-import { isAdminUser } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { spawn } from 'child_process';
 import path from 'path';
 import os from 'os';
@@ -28,18 +26,9 @@ const VALID_CATEGORIES: string[] = getValidAuditCategoryIds();
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify admin access
-    const isAdmin = await isAdminUser();
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Admin access required' },
-        { status: 403 }
-      );
-    }
-
-    // Get session for user ID
-    const session = await getServerSession(authOptions);
-    const userId = session?.user?.id || 'unknown';
+    const { auth, response } = await requireAdminApi();
+    if (response) return response;
+    const userId = auth.user!.id;
 
     const body = await request.json();
     const { categories } = body as { categories: string[] };

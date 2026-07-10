@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminSession } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
 import { killAuditProcess } from '@/lib/services/test-execution';
@@ -13,10 +13,8 @@ export async function GET(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
-    const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { jobId } = await params;
 
@@ -106,10 +104,8 @@ export async function DELETE(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
-    const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { jobId } = await params;
 

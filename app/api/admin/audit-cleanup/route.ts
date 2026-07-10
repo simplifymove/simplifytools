@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminSession } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
 import { promises as fs } from 'fs';
@@ -31,10 +31,8 @@ async function deleteDirectory(dirPath: string): Promise<void> {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const body = await req.json();
     const { daysOld } = body;

@@ -2,9 +2,7 @@
 // Phase 6: Enqueue audit job instead of running synchronously
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
-import { isAdminUser } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { enqueueAuditJob } from '@/lib/queue/client';
 import { prisma } from '@/lib/prisma';
 
@@ -24,23 +22,9 @@ const ALLOWED_CATEGORIES = [
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Check admin authorization
-    const isAdmin = await isAdminUser();
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Admin access required' },
-        { status: 403 }
-      );
-    }
+    const { auth, response } = await requireAdminApi();
+    if (response) return response;
+    const adminUser = auth.user!;
 
     // Parse request body
     const { categories } = await request.json();
@@ -67,7 +51,7 @@ export async function POST(request: NextRequest) {
     // Create AuditRun first
     const auditRun = await prisma.auditRun.create({
       data: {
-        userId: session.user.id,
+        userId: adminUser.id,
         categories: JSON.stringify(categories),
         status: 'PENDING',
       },
@@ -77,7 +61,7 @@ export async function POST(request: NextRequest) {
     const auditJob = await prisma.auditJob.create({
       data: {
         auditRunId: auditRun.id,
-        userId: session.user.id,
+        userId: adminUser.id,
         categories,
         status: 'PENDING',
       },
@@ -88,7 +72,7 @@ export async function POST(request: NextRequest) {
       const queueJobId = await enqueueAuditJob(
         auditRun.id,
         auditJob.id,
-        session.user.id,
+        adminUser.id,
         categories
       );
 

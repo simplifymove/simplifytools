@@ -2,23 +2,15 @@
 // Get alerts and alert logs
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
-import { isAdminUser } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { getAlertHistory } from '@/lib/services/alerting';
 import { apiLogger } from '@/lib/logging/logger';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (!await isAdminUser()) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') || 'logs';

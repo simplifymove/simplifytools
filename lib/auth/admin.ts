@@ -1,47 +1,109 @@
 import { getServerSession } from 'next-auth/next';
+import type { Session } from 'next-auth';
+import { NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/prisma';
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'raghavaboyi@gmail.com';
+export type AdminAuthStatus = 'unauthenticated' | 'forbidden' | 'admin';
 
-export async function getSession() {
+export interface AdminAuthState {
+  status: AdminAuthStatus;
+  session: Session | null;
+  user: {
+    id: string;
+    email: string | null;
+    role: string | null;
+  } | null;
+}
+
+export function isAdminRole(role?: string | null) {
+  return role?.toLowerCase() === 'admin';
+}
+
+export async function getSession(): Promise<Session | null> {
   return getServerSession(authOptions);
 }
 
-export async function getAdminSession() {
+export async function getAdminAuthState(): Promise<AdminAuthState> {
   const session = await getSession();
 
-  if (!session?.user?.email) {
-    return null;
+  if (!session?.user?.email && !session?.user?.id) {
+    return {
+      status: 'unauthenticated',
+      session: null,
+      user: null,
+    };
   }
 
-  if (session.user.email === ADMIN_EMAIL) {
-    return session;
-  }
-
-  const adminUser = await prisma.user.findFirst({
-    where: {
-      email: session.user.email,
-      role: 'admin',
+  const user = await prisma.user.findFirst({
+    where: session.user.id
+      ? { id: session.user.id }
+      : { email: session.user.email || undefined },
+    select: {
+      id: true,
+      email: true,
+      role: true,
     },
-    select: { id: true },
   });
 
-  return adminUser ? session : null;
+  if (!user) {
+    return {
+      status: 'forbidden',
+      session,
+      user: null,
+    };
+  }
+
+  return {
+    status: isAdminRole(user.role) ? 'admin' : 'forbidden',
+    session,
+    user,
+  };
+}
+
+export function adminAuthResponse(state: AdminAuthState) {
+  if (state.status === 'unauthenticated') {
+    return NextResponse.json(
+      { error: 'Unauthorized: Authentication required' },
+      { status: 401 },
+    );
+  }
+
+  if (state.status === 'forbidden') {
+    return NextResponse.json(
+      { error: 'Forbidden: Admin access required' },
+      { status: 403 },
+    );
+  }
+
+  return null;
+}
+
+export async function requireAdminApi() {
+  const auth = await getAdminAuthState();
+  const response = adminAuthResponse(auth);
+
+  return { auth, response };
+}
+
+export async function getAdminSession() {
+  const auth = await getAdminAuthState();
+  return auth.status === 'admin' ? auth.session : null;
 }
 
 export async function isAdminUser(): Promise<boolean> {
-  return (await getAdminSession()) !== null;
+  const auth = await getAdminAuthState();
+  return auth.status === 'admin';
 }
 
 export async function requireAdmin(): Promise<void> {
-  const isAdmin = await isAdminUser();
+  const auth = await getAdminAuthState();
 
-  if (!isAdmin) {
+  if (auth.status !== 'admin') {
     throw new Error('Unauthorized: Admin access required');
   }
 }
 
 export function checkAdminSync(email?: string | null): boolean {
-  return email === ADMIN_EMAIL;
+  return false;
 }

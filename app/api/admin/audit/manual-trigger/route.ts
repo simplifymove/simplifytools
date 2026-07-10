@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminSession } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { getAuditQueue } from '@/lib/queue/client';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
@@ -60,11 +60,8 @@ function validateManualAuditRequest(body: Partial<ManualAuditRequest>) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getAdminSession();
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { auth, response } = await requireAdminApi();
+    if (response) return response;
 
     let body: Partial<ManualAuditRequest>;
     try {
@@ -79,7 +76,7 @@ export async function POST(req: NextRequest) {
     }
 
     const categories = validation.categories;
-    const userId = session.user.id || 'admin-user';
+    const userId = auth.user!.id;
 
     // Clean up stale PENDING jobs (older than 10 minutes) so they do not block new runs.
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
@@ -244,11 +241,8 @@ export async function POST(req: NextRequest) {
 // GET recent audit runs and active jobs
 export async function GET() {
   try {
-    const session = await getAdminSession();
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     // 1. Clean up old PENDING jobs (older than 10 minutes)
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);

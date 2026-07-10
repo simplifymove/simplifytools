@@ -1,23 +1,51 @@
 import { ReactNode } from 'react';
-import { getAdminSession, getSession } from '@/lib/auth/admin';
+import { headers } from 'next/headers';
+import { getAdminAuthState } from '@/lib/auth/admin';
 import { redirect } from 'next/navigation';
+import { AdminShell } from './components/AdminShell';
+
+function getEnvironmentLabel() {
+  if (process.env.VERCEL_ENV === 'production') return 'Production';
+  if (process.env.VERCEL_ENV === 'preview') return 'Staging';
+  if (process.env.NODE_ENV === 'production') return 'Production';
+  return 'Development';
+}
+
+function getAppVersion() {
+  return process.env.npm_package_version || '0.1.0';
+}
 
 export default async function AdminLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const session = await getSession();
+  const pathname = (await headers()).get('x-pathname') || '';
+  const isPublicAdminPage =
+    pathname === '/admin/login' || pathname === '/admin/access-denied';
 
-  if (!session?.user?.email) {
-    redirect('/auth/signin');
+  if (isPublicAdminPage) {
+    return <>{children}</>;
   }
 
-  const adminSession = await getAdminSession();
+  const auth = await getAdminAuthState();
 
-  if (!adminSession) {
-    redirect('/');
+  if (auth.status === 'unauthenticated') {
+    redirect('/admin/login');
   }
 
-  return <>{children}</>;
+  if (auth.status === 'forbidden') {
+    redirect('/admin/access-denied');
+  }
+
+  return (
+    <AdminShell
+      adminName={auth.session?.user?.name}
+      adminEmail={auth.user?.email || auth.session?.user?.email}
+      environmentLabel={getEnvironmentLabel()}
+      appVersion={getAppVersion()}
+    >
+      {children}
+    </AdminShell>
+  );
 }

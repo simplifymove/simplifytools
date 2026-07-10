@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminSession } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { findAiStudioUserByEmail, normalizeAiStudioEmail } from '@/lib/ai-studio/user';
 import {
   AiStudioInsufficientCreditsError,
@@ -17,11 +17,9 @@ interface AdjustAiStudioCreditsRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const adminSession = await getAdminSession();
-
-    if (!adminSession?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 403 });
-    }
+    const { auth, response } = await requireAdminApi();
+    if (response) return response;
+    const adminUser = auth.user!;
 
     const body = (await request.json().catch(() => ({}))) as AdjustAiStudioCreditsRequest;
     const userEmail = normalizeAiStudioEmail(typeof body.userEmail === 'string' ? body.userEmail : null);
@@ -54,10 +52,10 @@ export async function POST(request: NextRequest) {
     const context = {
       transactionType: 'adjustment' as const,
       referenceType: action === 'add' ? 'admin_manual_credit_add' : 'admin_manual_credit_deduct',
-      referenceId: adminSession.user.id,
+      referenceId: adminUser.id,
       description: reason,
       metadata: {
-        adminEmail: adminSession.user.email,
+        adminEmail: adminUser.email,
         userEmail,
         action,
         reason,

@@ -1,12 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { AlertCircle, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 
 // Import components
-import { AdminSidebar } from './components/AdminSidebar';
-import { PageHeader } from './components/PageHeader';
 import { AuditKpiCards } from './components/AuditKpiCards';
 import { CategorySelectionTable } from './components/CategorySelectionTable';
 import { ExecutionSettingsCard } from './components/ExecutionSettingsCard';
@@ -47,7 +44,6 @@ interface ExecutionSettings {
 }
 
 export default function AuditTestingPage() {
-  const { data: session } = useSession();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [executionSettings, setExecutionSettings] = useState<ExecutionSettings>({
     sequential: true,
@@ -296,24 +292,23 @@ export default function AuditTestingPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <AdminSidebar />
+    <main className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Audit Testing</h1>
+            <p className="text-gray-600 mt-2">Run and monitor automated tool audits across all categories.</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+        </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col ml-64 overflow-hidden">
-        {/* Header */}
-        <PageHeader
-          title="Audit Testing"
-          subtitle="Run and monitor automated tool audits across all categories"
-          userEmail={session?.user?.email}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
-        />
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-8 py-6">
             {/* Error Alert */}
             {error && (
               <div className={`mb-6 rounded-lg p-4 flex gap-3 ${
@@ -338,9 +333,9 @@ export default function AuditTestingPage() {
             <AuditKpiCards data={kpiData} />
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 gap-6 mb-8 xl:grid-cols-3">
               {/* Left Column: Categories & Settings */}
-              <div className="col-span-2 space-y-6">
+              <div className="space-y-6 xl:col-span-2">
                 {/* Category Selection */}
                 <CategorySelectionTable
                   categories={categoryData}
@@ -366,7 +361,7 @@ export default function AuditTestingPage() {
 
               {/* Right Column: Start & Summary */}
               <div className="space-y-4">
-                <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 xl:sticky xl:top-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Run Summary</h3>
 
                   <div className="space-y-4 mb-6">
@@ -460,8 +455,6 @@ export default function AuditTestingPage() {
                 </p>
               </div>
             )}
-          </div>
-        </div>
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -475,6 +468,6 @@ export default function AuditTestingPage() {
         }}
         loading={deleteLoading}
       />
-    </div>
+    </main>
   );
 }

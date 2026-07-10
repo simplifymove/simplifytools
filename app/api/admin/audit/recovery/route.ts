@@ -2,9 +2,7 @@
 // Get recovery status and manage recovery operations
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
-import { isAdminUser } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import {
   getRecoveryStats,
   runFullRecoveryCycle,
@@ -14,14 +12,8 @@ import { apiLogger } from '@/lib/logging/logger';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (!await isAdminUser()) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const stats = await getRecoveryStats();
     return NextResponse.json(stats);
@@ -36,14 +28,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (!await isAdminUser()) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const body = await request.json();
     const action = body.action || 'full';

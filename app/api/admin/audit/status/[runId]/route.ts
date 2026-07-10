@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { isAdminUser } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ runId: string }> }
 ) {
   try {
-    // Verify admin access
-    const isAdmin = await isAdminUser();
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Admin access required' },
-        { status: 403 }
-      );
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { runId } = await params;
 

@@ -17,9 +17,16 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(signInUrl)
   }
 
-  return NextResponse.next()
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set('x-pathname', req.nextUrl.pathname)
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
 }
 
 export const config = {
-  matcher: ['/account', '/account/:path*'],
+  matcher: ['/account', '/account/:path*', '/admin', '/admin/:path*'],
 }

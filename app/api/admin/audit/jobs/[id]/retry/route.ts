@@ -2,9 +2,7 @@
 // Retry a failed audit job
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
-import { isAdminUser } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin';
 import { retryJob, enqueueAuditJob } from '@/lib/queue/client';
 import { prisma } from '@/lib/prisma';
 
@@ -13,23 +11,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Check admin authorization
-    const isAdmin = await isAdminUser();
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Admin access required' },
-        { status: 403 }
-      );
-    }
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await params;
 
