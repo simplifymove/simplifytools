@@ -408,7 +408,8 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
         })
         .filter(Boolean)
         .join('\n');
-      const errorMsg = `No test results were produced. ${categoryReasons || 'Check test command or report parser.'}`.substring(0, 2000);
+      const commandError = `Audit command failed before completing tool checks. ${categoryReasons || 'Check test command or report parser.'}`;
+      const errorMsg = commandError.substring(0, 2000);
       
       workerLogger.error({ categories, errorMsg }, 'Job failed: No test results produced');
 
@@ -417,7 +418,22 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
         where: { id: auditRunId },
         data: {
           status: 'FAILED',
-          errorMessage: errorMsg,
+          totalTests,
+          passedTests,
+          failedTests,
+          errorTests,
+          skippedTests,
+          successPercentage: 0,
+          errorMessage: JSON.stringify({
+            type: 'audit-command-error',
+            message: errorMsg,
+            expectedTools: totalToolsForRun,
+            completedTools: totalTests,
+            passedTools: passedTests,
+            failedTools: failedTests,
+            skippedTools: skippedTests,
+            errorTools: errorTests,
+          }).substring(0, 2000),
           completedAt: new Date(),
         },
       });
@@ -432,6 +448,25 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
           durationMs: Date.now() - new Date(job.timestamp).getTime(),
         },
       });
+
+      try {
+        await createNotification(auditJobId, userId, {
+          type: 'email',
+          success: false,
+          commandError: errorMsg,
+          results: {
+            total: totalTests,
+            passed: passedTests,
+            failed: failedTests,
+            errors: errorTests,
+            success: 0,
+            expectedTools: totalToolsForRun,
+            completedTools: totalTests,
+          },
+        });
+      } catch (notificationError) {
+        workerLogger.warn({ error: notificationError }, 'Command failure notification failed');
+      }
 
       throw new Error(errorMsg);
     }
@@ -505,6 +540,8 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
           failed: failedTests,
           errors: errorTests,
           success: successPercentage,
+          expectedTools: totalToolsForRun,
+          completedTools: totalTests,
         },
       });
     } catch (notificationError) {

@@ -7,6 +7,21 @@ interface RouteParams {
   auditRunId: string;
 }
 
+function parseAuditRunMessage(errorMessage: string | null) {
+  if (!errorMessage) return null;
+
+  try {
+    const parsed = JSON.parse(errorMessage);
+    if (parsed?.type === 'audit-command-error') {
+      return parsed;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<RouteParams> }
@@ -89,6 +104,7 @@ export async function GET(
         ? Math.round((auditRun.completedAt.getTime() - auditRun.startedAt.getTime()) / 1000)
         : null,
     };
+    const commandError = parseAuditRunMessage(auditRun.errorMessage);
 
     const previousRun = await prisma.auditRun.findFirst({
       where: {
@@ -138,6 +154,8 @@ export async function GET(
         status: auditRun.status,
         startedAt: auditRun.startedAt,
         completedAt: auditRun.completedAt,
+        errorMessage: auditRun.errorMessage,
+        commandError,
       },
       stats,
       testResults: auditRun.testResults,

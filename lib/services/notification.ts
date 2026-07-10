@@ -10,12 +10,15 @@ export interface NotificationPayload {
   subject?: string;
   message?: string;
   severity?: 'INFO' | 'WARNING' | 'CRITICAL';
+  commandError?: string;
   results: {
     total: number;
     passed: number;
     failed: number;
     errors: number;
     success: number | string;
+    expectedTools?: number;
+    completedTools?: number;
   };
 }
 
@@ -51,6 +54,27 @@ export async function sendEmailNotification(
 
     const statusColor = payload.success ? '#22c55e' : '#ef4444';
     const statusText = payload.success ? 'PASSED ✓' : 'FAILED ✗';
+    const commandErrorHtml = payload.commandError
+      ? `
+          <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="font-weight: bold; margin-bottom: 6px;">Audit command failed before completing tool checks</div>
+            <div style="font-size: 13px; line-height: 1.5;">${payload.commandError}</div>
+          </div>
+        `
+      : '';
+    const expectedToolsHtml = typeof payload.results.expectedTools === 'number'
+      ? `
+            <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #6366f1;">
+              <div style="color: #6b7280; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Expected Tools</div>
+              <div style="font-size: 24px; font-weight: bold; color: #1f2937;">${payload.results.expectedTools}</div>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+              <div style="color: #6b7280; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Completed Tools</div>
+              <div style="font-size: 24px; font-weight: bold; color: #1f2937;">${payload.results.completedTools ?? payload.results.total}</div>
+            </div>
+        `
+      : '';
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -63,8 +87,11 @@ export async function sendEmailNotification(
           <div style="background: ${statusColor}; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 18px; font-weight: bold;">
             Status: ${statusText}
           </div>
+
+          ${commandErrorHtml}
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+            ${expectedToolsHtml}
             <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
               <div style="color: #6b7280; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Total Tests</div>
               <div style="font-size: 24px; font-weight: bold; color: #1f2937;">${payload.results.total}</div>
@@ -377,4 +404,3 @@ export default {
   sendDiscordNotification,
   createNotification,
 };
-

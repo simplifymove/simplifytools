@@ -22,6 +22,8 @@ export default function AccountPage() {
   const [saveMessage, setSaveMessage] = useState('')
   const [passwordStatusLoading, setPasswordStatusLoading] = useState(true)
   const [hasPassword, setHasPassword] = useState<boolean | null>(null)
+  const [canCreatePassword, setCanCreatePassword] = useState(false)
+  const [usesGoogleSignIn, setUsesGoogleSignIn] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
@@ -54,13 +56,25 @@ export default function AccountPage() {
     fetch('/api/user/change-password')
       .then(async (response) => {
         if (!response.ok) throw new Error('Unable to load account security status')
-        return response.json() as Promise<{ hasPassword?: boolean }>
+        return response.json() as Promise<{
+          hasPassword?: boolean
+          usesGoogleSignIn?: boolean
+          canCreatePassword?: boolean
+        }>
       })
       .then((data) => {
-        if (!cancelled) setHasPassword(Boolean(data.hasPassword))
+        if (!cancelled) {
+          setHasPassword(Boolean(data.hasPassword))
+          setUsesGoogleSignIn(Boolean(data.usesGoogleSignIn))
+          setCanCreatePassword(Boolean(data.canCreatePassword))
+        }
       })
       .catch(() => {
-        if (!cancelled) setHasPassword(null)
+        if (!cancelled) {
+          setHasPassword(null)
+          setUsesGoogleSignIn(false)
+          setCanCreatePassword(false)
+        }
       })
       .finally(() => {
         if (!cancelled) setPasswordStatusLoading(false)
@@ -126,7 +140,9 @@ export default function AccountPage() {
     setPasswordMessage('')
     setPasswordError('')
 
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
+    const isCreatingPassword = canCreatePassword && hasPassword === false
+
+    if ((!isCreatingPassword && !currentPassword) || !newPassword || !confirmNewPassword) {
       setPasswordError('All password fields are required.')
       return
     }
@@ -141,7 +157,7 @@ export default function AccountPage() {
       return
     }
 
-    if (currentPassword === newPassword) {
+    if (!isCreatingPassword && currentPassword === newPassword) {
       setPasswordError('New password must be different from your current password.')
       return
     }
@@ -165,7 +181,9 @@ export default function AccountPage() {
         return
       }
 
-      setPasswordMessage('Password changed successfully.')
+      setPasswordMessage(isCreatingPassword ? 'Password created successfully.' : 'Password changed successfully.')
+      setHasPassword(true)
+      setCanCreatePassword(false)
       setCurrentPassword('')
       setNewPassword('')
       setConfirmNewPassword('')
@@ -194,22 +212,29 @@ export default function AccountPage() {
     { id: 'account', label: 'Account', icon: Mail },
   ]
 
-  const renderPasswordSection = (isMobile = false) => (
-    <div className={`${isMobile ? 'pb-4' : 'pb-6'} border-b border-gray-200`}>
+  const renderPasswordSection = (isMobile = false) => {
+    const isCreatingPassword = canCreatePassword && hasPassword === false
+    const canManagePassword = hasPassword === true || isCreatingPassword
+    const passwordSubmitLabel = isChangingPassword
+      ? isCreatingPassword ? 'Creating...' : 'Changing...'
+      : isCreatingPassword ? 'Create Password' : 'Change Password'
+
+    return (
+      <div className={`${isMobile ? 'pb-4' : 'pb-6'} border-b border-gray-200`}>
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
           <h3 className={`${isMobile ? 'font-semibold' : 'text-lg font-semibold'} text-gray-900`}>
-            Change Password
+            {isCreatingPassword ? 'Create Password' : 'Change Password'}
           </h3>
-          {hasPassword === false && (
+          {usesGoogleSignIn && (
             <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
               Google Sign-In
             </span>
           )}
         </div>
         <p className="text-gray-600 text-sm">
-          {hasPassword === false
-            ? 'This account uses Google Sign-In and does not currently have a password.'
+          {isCreatingPassword
+            ? 'Create a password to sign in with either Google or email and password.'
             : 'Change your password to keep your account secure.'}
         </p>
       </div>
@@ -218,18 +243,20 @@ export default function AccountPage() {
         <p className="text-sm text-gray-500">Loading password settings...</p>
       )}
 
-      {!passwordStatusLoading && hasPassword === true && (
+      {!passwordStatusLoading && canManagePassword && (
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              autoComplete="current-password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
-          </div>
+          {!isCreatingPassword && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                autoComplete="current-password"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
             <input
@@ -268,8 +295,14 @@ export default function AccountPage() {
             disabled={isChangingPassword}
             className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium disabled:opacity-50"
           >
-            {isChangingPassword ? 'Changing...' : 'Change Password'}
+            {passwordSubmitLabel}
           </button>
+        </div>
+      )}
+
+      {!passwordStatusLoading && hasPassword === false && !canCreatePassword && (
+        <div className="p-4 rounded-lg text-sm font-medium bg-gray-50 text-gray-700 border border-gray-200">
+          Password management is not available for this account.
         </div>
       )}
 
@@ -278,8 +311,9 @@ export default function AccountPage() {
           Unable to load password settings right now.
         </div>
       )}
-    </div>
-  )
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">

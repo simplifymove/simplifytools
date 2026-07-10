@@ -18,6 +18,11 @@ export interface TestResult {
   stdout?: string;
   stderr?: string;
   command?: string;
+  exitCode?: number;
+  markerCount?: number;
+  commandError?: string;
+  expectedTools?: number;
+  completedTools?: number;
 }
 
 export interface IndividualTestResult {
@@ -124,6 +129,170 @@ const CATEGORY_TEST_COMMANDS = {
 
 const ALLOWED_COMMANDS = Object.keys(CATEGORY_TEST_COMMANDS) as (keyof typeof CATEGORY_TEST_COMMANDS)[];
 const CONFIGURED_CATEGORIES = getValidAuditCategoryIds();
+const AUDIT_MARKERS = [
+  'AUDIT_TOOL_PROGRESS:',
+  'AUDIT_TOOL_RESULT:',
+  'AUDIT_TOOL_PROGRESS ',
+  'AUDIT_TOOL_RESULT ',
+] as const;
+
+function stripAnsi(value: string) {
+  return value.replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '');
+}
+
+function safeAuditDebug(message: string, details?: Record<string, unknown>) {
+  if (process.env.AUDIT_DEBUG === 'true') {
+    console.log(`[AuditDebug] ${message}`, details || '');
+  }
+}
+
+function summarizeEnvForAudit() {
+  return {
+    NODE_ENV: process.env.NODE_ENV || '',
+    BASE_URL: process.env.BASE_URL || '',
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || '',
+    PLAYWRIGHT_TEST_BASE_URL: process.env.PLAYWRIGHT_TEST_BASE_URL || '',
+    AUDIT_WORKERS: process.env.AUDIT_WORKERS || '',
+    CI: process.env.CI || '',
+    PDF_AUDIT_DEEP: process.env.PDF_AUDIT_DEEP || '',
+  };
+}
+
+function tryParseMarkerPayload(text: string, markerIndex: number, marker: typeof AUDIT_MARKERS[number]) {
+  const jsonStart = markerIndex + marker.length;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  let started = false;
+
+  for (let index = jsonStart; index < text.length; index++) {
+    const char = text[index];
+
+    if (!started) {
+      if (/\s/.test(char)) continue;
+      if (char !== '{') return null;
+      started = true;
+      depth = 1;
+      continue;
+    }
+
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      escaped = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (char === '{') {
+      depth++;
+    } else if (char === '}') {
+      depth--;
+      if (depth === 0) {
+        const payloadText = text.slice(jsonStart, index + 1).trim();
+        const removeUntil = index + 1;
+
+        try {
+          return {
+            event: JSON.parse(payloadText),
+            removeUntil,
+          };
+        } catch {
+          return {
+            event: null,
+            removeUntil,
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractAuditMarkers(text: string) {
+  const markers: Array<{ type: 'progress' | 'result'; event: any }> = [];
+  let buffer = stripAnsi(text);
+
+  while (buffer.length > 0) {
+    const positions = AUDIT_MARKERS
+      .map((marker) => ({ marker, index: buffer.indexOf(marker) }))
+      .filter((item) => item.index !== -1)
+      .sort((a, b) => a.index - b.index);
+
+    const next = positions[0];
+    if (!next) break;
+
+    const parsed = tryParseMarkerPayload(buffer, next.index, next.marker);
+    if (!parsed) break;
+
+    if (parsed.event) {
+      markers.push({
+        type: next.marker.includes('RESULT') ? 'result' : 'progress',
+        event: parsed.event,
+      });
+    }
+
+    buffer = buffer.slice(parsed.removeUntil);
+  }
+
+  return markers;
+}
+
+class AuditMarkerStreamParser {
+  private buffer = '';
+
+  push(text: string) {
+    this.buffer += stripAnsi(text);
+    const markers: Array<{ type: 'progress' | 'result'; event: any }> = [];
+
+    while (this.buffer.length > 0) {
+      const positions = AUDIT_MARKERS
+        .map((marker) => ({ marker, index: this.buffer.indexOf(marker) }))
+        .filter((item) => item.index !== -1)
+        .sort((a, b) => a.index - b.index);
+
+      const next = positions[0];
+      if (!next) {
+        this.buffer = this.buffer.slice(Math.max(0, this.buffer.length - 512));
+        break;
+      }
+
+      if (next.index > 0) {
+        this.buffer = this.buffer.slice(next.index);
+      }
+
+      const parsed = tryParseMarkerPayload(this.buffer, 0, next.marker);
+      if (!parsed) break;
+
+      if (parsed.event) {
+        markers.push({
+          type: next.marker.includes('RESULT') ? 'result' : 'progress',
+          event: parsed.event,
+        });
+      }
+
+      this.buffer = this.buffer.slice(parsed.removeUntil);
+    }
+
+    return markers;
+  }
+
+  flush() {
+    const markers = this.push('\n');
+    this.buffer = '';
+    return markers;
+  }
+}
 
 async function prismaSafeProgressUpdate(
   auditRunId: string,
@@ -214,7 +383,8 @@ export async function runTestCommand(
     let stdout = '';
     let stderr = '';
     let isCancelled = false;
-    let stdoutLineBuffer = '';
+    let markersParsed = 0;
+    const markerParser = new AuditMarkerStreamParser();
     let progressUpdateChain = Promise.resolve();
     const progressState = {
       currentTool: '',
@@ -248,12 +418,15 @@ export async function runTestCommand(
         ? Math.round((elapsedMs / completedTools) * (total - completedTools))
         : null;
       const status = String(event.status || '').toLowerCase();
+      const toolTitle = String(event.toolTitle || event.title || progressState.currentToolTitle || progressState.currentTool || '');
+      const toolSlug = String(event.toolSlug || event.slug || progressState.currentToolSlug || '');
+      const categoryName = String(event.categoryName || event.category || progressState.currentCategory || category);
 
-      progressState.currentTool = String(event.title || progressState.currentTool || '');
-      progressState.currentToolSlug = String(event.slug || progressState.currentToolSlug || '');
-      progressState.currentToolTitle = String(event.title || progressState.currentToolTitle || progressState.currentTool || '');
+      progressState.currentTool = toolTitle;
+      progressState.currentToolSlug = toolSlug;
+      progressState.currentToolTitle = toolTitle;
       progressState.currentUrl = String(event.url || progressState.currentUrl || '');
-      progressState.currentCategory = String(event.categoryName || progressState.currentCategory || category);
+      progressState.currentCategory = categoryName;
       progressState.completedTools = completedTools;
       progressState.totalTools = total;
       progressState.elapsedMs = elapsedMs;
@@ -278,26 +451,33 @@ export async function runTestCommand(
       }
     };
 
-    const handleStdoutLine = (line: string) => {
-      const trimmed = line.trim();
-      const progressIndex = trimmed.indexOf('AUDIT_TOOL_PROGRESS ');
-      const resultIndex = trimmed.indexOf('AUDIT_TOOL_RESULT ');
-      if (progressIndex === -1 && resultIndex === -1) return;
-
-      const isResult = resultIndex !== -1 && (progressIndex === -1 || resultIndex < progressIndex);
-      const marker = isResult ? 'AUDIT_TOOL_RESULT ' : 'AUDIT_TOOL_PROGRESS ';
-      const markerIndex = isResult ? resultIndex : progressIndex;
-      const payloadText = trimmed.slice(markerIndex + marker.length);
-
-      try {
-        const event = JSON.parse(payloadText);
-        progressUpdateChain = progressUpdateChain.then(() => updateAuditProgress(event, isResult));
-      } catch {
-        // Ignore malformed progress markers; the final Playwright report is still authoritative.
+    const handleAuditMarkers = (markers: Array<{ type: 'progress' | 'result'; event: any }>) => {
+      for (const marker of markers) {
+        markersParsed++;
+        progressUpdateChain = progressUpdateChain.then(() => updateAuditProgress(marker.event, marker.type === 'result'));
+        safeAuditDebug('marker parsed', {
+          auditRunId,
+          category,
+          type: marker.type,
+          slug: marker.event?.slug,
+          title: marker.event?.title,
+          status: marker.event?.status,
+          index: marker.event?.index,
+          total: marker.event?.total,
+        });
       }
     };
 
     console.log(`[Test] Running: ${commandLabel}`);
+    safeAuditDebug('command starting', {
+      auditRunId,
+      scriptName,
+      command,
+      args: commandArgs,
+      cwd: projectRoot,
+      env: summarizeEnvForAudit(),
+      playwrightConfig: path.join(projectRoot, 'playwright.config.ts'),
+    });
 
     const child = spawn(command, commandArgs, {
       cwd: projectRoot,
@@ -306,6 +486,7 @@ export async function runTestCommand(
       env: {
         ...process.env,
         AUDIT_WORKERS: workerCount,
+        PDF_AUDIT_DEEP: 'false',
       },
     });
 
@@ -313,6 +494,7 @@ export async function runTestCommand(
     if (auditRunId && pid) {
       processRegistry.set(auditRunId, { process: child, pid, category, startTime });
       console.log(`[Audit:${auditRunId}] Started Playwright PID ${pid} for category: ${category}`);
+      safeAuditDebug('child process started', { auditRunId, pid, category, scriptName, cwd: projectRoot });
     }
 
     // Setup cancellation check interval (check every 2 seconds)
@@ -336,12 +518,7 @@ export async function runTestCommand(
     child.stdout?.on('data', (data) => {
       const text = data.toString();
       stdout += text;
-      stdoutLineBuffer += text;
-      const lines = stdoutLineBuffer.split(/\r?\n/);
-      stdoutLineBuffer = lines.pop() || '';
-      for (const line of lines) {
-        handleStdoutLine(line);
-      }
+      handleAuditMarkers(markerParser.push(text));
       console.log(`[Test:${category}] ${text.trim()}`);
     });
 
@@ -381,11 +558,20 @@ export async function runTestCommand(
       }
 
       console.log(`[Test] ${commandLabel} completed with code ${code} (${durationMs}ms)`);
+      safeAuditDebug('child process exited', {
+        auditRunId,
+        pid,
+        category,
+        scriptName,
+        exitCode: code,
+        durationMs,
+        markersParsed,
+        stdoutHead: stdout.split(/\r?\n/).filter(Boolean).slice(0, 8),
+        stderrHead: stderr.split(/\r?\n/).filter(Boolean).slice(0, 8),
+      });
 
       // Parse Playwright output and JSON report
-      if (stdoutLineBuffer) {
-        handleStdoutLine(stdoutLineBuffer);
-      }
+      handleAuditMarkers(markerParser.flush());
 
       progressUpdateChain
         .then(() => parsePlaywrightResults(stdout, stderr, code ?? 1, category, durationMs, commandLabel))
@@ -525,21 +711,45 @@ function walkPlaywrightReport(node: any, results: IndividualTestResult[], catego
 function parseAuditToolMarkers(stdout: string): Map<string, any> {
   const markers = new Map<string, any>();
 
-  for (const line of stdout.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith('AUDIT_TOOL_RESULT ')) continue;
+  for (const marker of extractAuditMarkers(stdout)) {
+    if (marker.type !== 'result') continue;
 
-    try {
-      const payload = JSON.parse(trimmed.replace('AUDIT_TOOL_RESULT ', ''));
-      if (payload?.slug) {
-        markers.set(String(payload.slug), payload);
-      }
-    } catch {
-      // Ignore malformed marker lines; Playwright JSON remains the fallback.
+    const payload = marker.event;
+    const slug = payload?.toolSlug || payload?.slug;
+    if (slug) {
+      markers.set(String(slug), payload);
     }
   }
 
   return markers;
+}
+
+function markerToIndividualTestResult(marker: any, category: string): IndividualTestResult {
+  const passed = String(marker.status || '').toLowerCase() === 'passed';
+  const skipped = String(marker.status || '').toLowerCase() === 'skipped';
+  const message = typeof marker.reason === 'string' ? marker.reason : undefined;
+  const toolSlug = marker.toolSlug || marker.slug;
+  const toolTitle = marker.toolTitle || marker.title || toolSlug || category;
+
+  return {
+    testName: toolTitle,
+    testCase: toolTitle || 'Tool audit',
+    toolName: toolTitle,
+    toolSlug,
+    url: marker.url,
+    passed,
+    skipped,
+    duration: typeof marker.durationMs === 'number' ? marker.durationMs / 1000 : undefined,
+    failureClass: marker.failureClass || (!passed && !skipped ? classifyAuditFailure(message) : undefined),
+    consoleErrors: Array.isArray(marker.consoleErrors) ? marker.consoleErrors : [],
+    error: !passed && !skipped
+      ? {
+          message: message || 'Tool audit failed',
+        }
+      : undefined,
+    output: message,
+    screenshotPath: marker.screenshotPath,
+  };
 }
 
 function classifyAuditFailure(message?: string): string {
@@ -600,6 +810,7 @@ async function parsePlaywrightResults(
   let skippedTests = 0;
   const results: IndividualTestResult[] = [];
   const auditMarkers = parseAuditToolMarkers(stdout);
+  const expectedTools = getAuditCategoryDefinition(category)?.tools.length || 0;
 
   // Try to read and parse the JSON report file
   const reportPath = path.join(process.cwd(), 'playwright-report', 'report.json');
@@ -677,12 +888,29 @@ async function parsePlaywrightResults(
     }
 
     // Fall back to parsing stdout if report not found
-    console.log(`[Test] Falling back to stdout parsing for ${category}`);
-    const { passedMatch, failedMatch, skippedMatch } = parsePlaywrightSummary(stdout);
-    passedTests = passedMatch;
-    failedTests = failedMatch;
-    skippedTests = skippedMatch;
-    totalTests = passedTests + failedTests + skippedTests;
+    if (auditMarkers.size > 0) {
+      console.log(`[Test] Falling back to ${auditMarkers.size} AUDIT_TOOL_RESULT markers for ${category}`);
+
+      for (const marker of auditMarkers.values()) {
+        const result = markerToIndividualTestResult(marker, category);
+        results.push(result);
+        totalTests++;
+        if (result.passed) {
+          passedTests++;
+        } else if (result.skipped) {
+          skippedTests++;
+        } else {
+          failedTests++;
+        }
+      }
+    } else {
+      console.log(`[Test] Falling back to stdout summary parsing for ${category}`);
+      const { passedMatch, failedMatch, skippedMatch } = parsePlaywrightSummary(stdout);
+      passedTests = passedMatch;
+      failedTests = failedMatch;
+      skippedTests = skippedMatch;
+      totalTests = passedTests + failedTests + skippedTests;
+    }
     
     console.log(`[Test] From stdout: ${passedTests} passed, ${failedTests} failed, ${skippedTests} skipped`);
   }
@@ -699,6 +927,8 @@ async function parsePlaywrightResults(
   logs.push({
     category,
     command: commandLabel,
+    expectedTools,
+    completedTools: totalTests,
     totalTests,
     passedTests,
     failedTests,
@@ -713,6 +943,22 @@ async function parsePlaywrightResults(
   });
 
   const errorTests = exitCode !== 0 ? (failedTests > 0 ? 0 : 1) : 0;
+  const commandError = totalTests === 0 && exitCode !== 0
+    ? failureReason || summarizeCommandFailure(stdout, stderr, category)
+    : undefined;
+
+  safeAuditDebug('final counters', {
+    category,
+    expectedTools,
+    completedTools: totalTests,
+    passedTests,
+    failedTests,
+    skippedTests,
+    errorTests,
+    markerCount: auditMarkers.size,
+    exitCode,
+    commandError,
+  });
 
   return {
     totalTests,
@@ -726,6 +972,11 @@ async function parsePlaywrightResults(
     stdout,
     stderr,
     command: commandLabel,
+    exitCode,
+    markerCount: auditMarkers.size,
+    commandError,
+    expectedTools,
+    completedTools: totalTests,
   };
 }
 

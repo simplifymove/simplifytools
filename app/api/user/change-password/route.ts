@@ -28,12 +28,22 @@ async function getAuthenticatedUser() {
     where: { email: session.user.email },
     select: {
       id: true,
+      provider: true,
       hashedPassword: true,
       accounts: {
         select: { provider: true },
       },
     },
   });
+}
+
+function usesGoogleSignIn(user: Awaited<ReturnType<typeof getAuthenticatedUser>>) {
+  if (!user) return false;
+
+  return (
+    user.provider?.toLowerCase() === 'google' ||
+    user.accounts.some((account) => account.provider.toLowerCase() === 'google')
+  );
 }
 
 export async function GET() {
@@ -44,9 +54,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const isGoogleLinked = usesGoogleSignIn(user);
+
     return NextResponse.json({
       hasPassword: Boolean(user.hashedPassword),
-      usesGoogleSignIn: user.accounts.some((account) => account.provider === 'google'),
+      usesGoogleSignIn: isGoogleLinked,
+      canCreatePassword: isGoogleLinked && !user.hashedPassword,
     });
   } catch (error) {
     console.error('[change-password] Unable to load password status:', error);
@@ -62,16 +75,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!user.hashedPassword) {
-      return NextResponse.json({ error: googleOnlyPasswordMessage }, { status: 400 });
-    }
-
     const body = (await request.json()) as ChangePasswordRequest;
     const currentPassword = readPassword(body.currentPassword);
     const newPassword = readPassword(body.newPassword);
     const confirmNewPassword = readPassword(body.confirmNewPassword);
+    const isCreatingPassword = !user.hashedPassword && usesGoogleSignIn(user);
 
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
+    if (!user.hashedPassword && !isCreatingPassword) {
+      return NextResponse.json({ error: googleOnlyPasswordMessage }, { status: 400 });
+    }
+
+    if ((!isCreatingPassword && !currentPassword) || !newPassword || !confirmNewPassword) {
       return NextResponse.json({ error: 'All password fields are required.' }, { status: 400 });
     }
 
@@ -81,6 +95,21 @@ export async function POST(request: NextRequest) {
 
     if (newPassword !== confirmNewPassword) {
       return NextResponse.json({ error: 'Confirm new password must match.' }, { status: 400 });
+    }
+
+    if (isCreatingPassword) {
+      const hashedPassword = await bcrypt.hash(newPassword, passwordSaltRounds);
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { hashedPassword },
+      });
+
+      return NextResponse.json({ success: true, hasPassword: true });
+    }
+
+    if (!user.hashedPassword) {
+      return NextResponse.json({ error: googleOnlyPasswordMessage }, { status: 400 });
     }
 
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.hashedPassword);

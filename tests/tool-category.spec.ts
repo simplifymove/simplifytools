@@ -31,7 +31,7 @@ type FailureClass =
   | 'Unknown';
 
 function emitAuditEvent(eventName: 'AUDIT_TOOL_PROGRESS' | 'AUDIT_TOOL_RESULT', payload: Record<string, unknown>) {
-  console.log(`${eventName} ${JSON.stringify(payload)}`);
+  console.log(`${eventName}:${JSON.stringify(payload)}`);
 }
 
 function isFatalConsoleMessage(text: string) {
@@ -138,8 +138,11 @@ test.describe('Registry-driven category audit', () => {
       .filter((message): message is string => Boolean(message));
 
     const resultPayload = {
+      category: categoryId,
       categoryId,
       categoryName: categoryConfig?.name,
+      toolSlug: target.slug,
+      toolTitle: target.title,
       slug: target.slug,
       title: target.title,
       url: target.route,
@@ -198,8 +201,11 @@ test.describe('Registry-driven category audit', () => {
       const index = (categoryConfig?.tools.findIndex((tool) => tool.slug === target.slug) || 0) + 1;
       const total = categoryConfig?.tools.length || 0;
       emitAuditEvent('AUDIT_TOOL_PROGRESS', {
+        category: categoryId,
         categoryId,
         categoryName: categoryConfig?.name,
+        toolSlug: target.slug,
+        toolTitle: target.title,
         slug: target.slug,
         title: target.title,
         url: target.route,

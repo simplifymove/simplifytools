@@ -21,6 +21,15 @@ interface AuditDetails {
     id: string;
     categories: string[];
     status: string;
+    errorMessage?: string | null;
+    commandError?: {
+      message?: string;
+      expectedTools?: number;
+      completedTools?: number;
+      passedTools?: number;
+      failedTools?: number;
+      errorTools?: number;
+    } | null;
   };
   stats: {
     totalTests: number;
@@ -129,6 +138,16 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
 
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-3">Category Summary</h4>
+            {details.auditRun.commandError && (
+              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                <div className="font-semibold">Audit command failed before completing tool checks</div>
+                <div className="mt-1">{details.auditRun.commandError.message || details.auditRun.errorMessage}</div>
+                <div className="mt-2 text-xs">
+                  Expected {details.auditRun.commandError.expectedTools ?? details.stats.totalTests} tools,
+                  completed {details.auditRun.commandError.completedTools ?? details.stats.totalTests}.
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(categorySummaries).map(([category, summary]) => (
                 <div key={category} className="rounded-lg border border-gray-200 p-3">
@@ -140,6 +159,11 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
                   </div>
                 </div>
               ))}
+              {Object.keys(categorySummaries).length === 0 && (
+                <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-600">
+                  No per-tool results were recorded for this run.
+                </div>
+              )}
             </div>
           </div>
 

@@ -34,6 +34,17 @@ function parseProgress(errorMessage: string | null) {
   }
 }
 
+function parseCommandError(errorMessage: string | null) {
+  if (!errorMessage) return null;
+
+  try {
+    const parsed = JSON.parse(errorMessage);
+    return parsed?.type === 'audit-command-error' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function validateManualAuditRequest(body: Partial<ManualAuditRequest>) {
   if (!Array.isArray(body.categories) || body.categories.length === 0) {
     return { error: 'categories must be a non-empty array' };
@@ -331,6 +342,7 @@ export async function GET() {
         error: run.testResults.filter((result) => result.status === 'ERROR').length,
       };
       const progress = parseProgress(run.errorMessage);
+      const commandError = parseCommandError(run.errorMessage);
 
       return {
         auditRunId: run.id,
@@ -349,6 +361,7 @@ export async function GET() {
         liveTotalTests: progress?.totalTools ?? run.totalTests ?? testCounts.total,
         liveSkippedTests: run.skippedTests ?? testCounts.skipped,
         progress,
+        commandError,
       };
     });
 
@@ -362,6 +375,7 @@ export async function GET() {
         auditRunId: job.auditRunId,
       })),
       recentRuns: recentRuns.map((run) => ({
+        commandError: parseCommandError(run.errorMessage),
         auditRunId: run.id,
         categories: parseCategories(run.categories, run.id),
         status: run.status,
