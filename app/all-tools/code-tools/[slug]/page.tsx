@@ -402,7 +402,7 @@ export default function CodeToolPage() {
     return (
       <>
         <HomeHeader />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
           <div className="flex-1 flex items-center justify-center w-full">
             <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -417,7 +417,7 @@ export default function CodeToolPage() {
               </Link>
             </div>
           </div>
-        </div>
+        </main>
         <Footer />
       </>
     );
