@@ -1,10 +1,11 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, unlink, mkdir } from 'fs/promises';
+import { copyFile, writeFile, unlink, mkdir } from 'fs/promises';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { randomUUID } from 'crypto';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
 import { validatePdfInput, validatePageRange, validatePageList, validatePassword } from '@/app/lib/pdf-validation';
 import {
@@ -18,6 +19,10 @@ import {
   validatePdfStructure,
 } from '@/app/lib/file-security';
 import { spawn } from 'child_process';
+import {
+  createDownloadResult,
+  getAllowedDownloadDirectories,
+} from '@/lib/services/download-result';
 
 /**
  * Server-side validation for tool-specific requirements
@@ -86,6 +91,7 @@ export async function POST(request: NextRequest) {
   let outputFile = '';
   let optionsFile = ''; // For large options that need file-based passing
   let toolId = ''; // Move to outer scope so catch block can access it
+  let pendingDownloadResultFile = '';
 
   try {
     const formData = await request.formData();
@@ -491,9 +497,55 @@ export async function POST(request: NextRequest) {
       throw new Error(JSON.stringify(response));
     }
 
+    const processedOutputPath = result.output || outputFile;
+
+    // Phase 2 pilot: only Compress PDF uses the dedicated download-result flow.
+    if (toolId === 'compress-pdf') {
+      const downloadDirectory = getAllowedDownloadDirectories()[0];
+      await mkdir(downloadDirectory, { recursive: true });
+
+      const originalName = files[0]?.name || 'document.pdf';
+      const originalBaseName = path.parse(path.basename(originalName)).name
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .slice(0, 120) || 'document';
+      const outputName = `${originalBaseName}_compressed.pdf`;
+      pendingDownloadResultFile = path.join(
+        downloadDirectory,
+        `compress-pdf-${randomUUID()}.pdf`,
+      );
+
+      // Copy only after the processor reports success. createDownloadResult revalidates
+      // the completed file and never exposes this physical path to the client.
+      await copyFile(processedOutputPath, pendingDownloadResultFile);
+      const downloadResult = await createDownloadResult({
+        toolSlug: 'compress-pdf',
+        originalName,
+        outputName,
+        outputPath: pendingDownloadResultFile,
+        mimeType: 'application/pdf',
+      });
+      pendingDownloadResultFile = '';
+
+      await Promise.allSettled([
+        ...inputFiles.map((file) => unlink(file)),
+        unlink(processedOutputPath),
+        ...(optionsFile ? [unlink(optionsFile)] : []),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        resultId: downloadResult.id,
+        downloadPageUrl: downloadResult.downloadPageUrl,
+        outputName: downloadResult.outputName,
+        mimeType: downloadResult.mimeType,
+        fileSize: downloadResult.fileSize,
+        expiresAt: downloadResult.expiresAt,
+      });
+    }
+
     // Read output file
     const { readFile } = await import('fs/promises');
-    const fileBuffer = await readFile(result.output || outputFile);
+    const fileBuffer = await readFile(processedOutputPath);
     const fileName = `${toolId}_output${tool.output}`;
 
     // Determine content type
@@ -538,6 +590,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (pendingDownloadResultFile) {
+      await unlink(pendingDownloadResultFile).catch(() => undefined);
+    }
+
     // Clean up on error
     try {
       for (const file of inputFiles) {
@@ -609,4 +665,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

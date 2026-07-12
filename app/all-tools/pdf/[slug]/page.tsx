@@ -3,6 +3,7 @@
 import React, { useState, useRef, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
 import { validatePdfInput } from '@/app/lib/pdf-validation';
@@ -35,6 +36,7 @@ interface PageProps {
 }
 
 export default function PdfToolPage({ params }: PageProps) {
+  const router = useRouter();
   // Unwrap params promise
   const resolvedParams = React.use(params);
   const tool = getPdfToolById(resolvedParams.slug);
@@ -164,6 +166,20 @@ export default function PdfToolPage({ params }: PageProps) {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Processing failed');
+      }
+
+      if (tool.id === 'compress-pdf') {
+        const downloadResult = await response.json() as {
+          success?: boolean;
+          downloadPageUrl?: string;
+        };
+        if (!downloadResult.success || !downloadResult.downloadPageUrl) {
+          throw new Error('Compression completed but the download result could not be created');
+        }
+
+        setResult({ type: 'file', message: 'File processed successfully!' });
+        router.push(downloadResult.downloadPageUrl);
+        return;
       }
 
       // Get the output file
