@@ -1,8 +1,7 @@
 import { aiWriteTools } from '@/app/lib/ai-tools';
-import { financialTools, resumeTools, downloaderTools } from '@/app/data/tools';
+import { allTools, financialTools, resumeTools, downloaderTools } from '@/app/data/tools';
 import { getAllTools as getAllCodeTools } from '@/app/lib/code-tools';
 import { dataTools } from '@/app/lib/data-tools';
-import { getAllImageTools } from '@/app/lib/image-tools-registry';
 import { getAllPdfTools } from '@/app/lib/pdf-tools';
 import { getAllTools as getAllVideoTools } from '@/app/lib/video-tools';
 
@@ -43,6 +42,21 @@ function mapDataTools(): AuditToolTarget[] {
   return Object.values(dataTools).map((tool) => withRoute(tool, `/all-tools/data/${tool.id}`));
 }
 
+function mapImageTools(): AuditToolTarget[] {
+  return allTools
+    .filter(
+      (tool): tool is typeof tool & { route: string } =>
+        tool.category === 'Image' &&
+        typeof tool.route === 'string' &&
+        tool.route.length > 0,
+    )
+    .map((tool) => ({
+      slug: tool.id,
+      title: tool.title,
+      route: tool.route,
+    }));
+}
+
 export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
   {
     id: 'ai-writing-tools',
@@ -57,7 +71,7 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
   {
     id: 'image-tools',
     name: 'Image Tools',
-    tools: getAllImageTools().map((tool) => withRoute(tool, `/all-tools/${tool.slug}`)),
+    tools: mapImageTools(),
   },
   {
     id: 'video-tools',
