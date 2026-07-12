@@ -471,6 +471,7 @@ export default function MakeBackgroundTransparentPage() {
     <div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
       <HomeHeader />
 
+      <main>
       {/* Hero Section with Breadcrumb */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -841,6 +842,7 @@ export default function MakeBackgroundTransparentPage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
+      </main>
 
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-12 mt-20">
@@ -853,7 +855,6 @@ export default function MakeBackgroundTransparentPage() {
     </div>
   );
 }
-
 
 
 

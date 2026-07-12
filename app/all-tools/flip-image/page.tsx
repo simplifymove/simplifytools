@@ -231,6 +231,7 @@ export default function FlipImagePage() {
     <div className="min-h-screen bg-gray-50">
       <HomeHeader />
 
+      <main>
       {/* Hero Header */}
       <div className="bg-orange-500 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
@@ -506,12 +507,12 @@ export default function FlipImagePage() {
           </div>
         </div>
       </div>
+      </main>
 
       <Footer />
     </div>
   );
 }
-
 
 
 
