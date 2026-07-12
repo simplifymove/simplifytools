@@ -9,6 +9,7 @@ import { generateHealthReport } from './lib/services/health-score';
 import { evaluateAllAlertingRules } from './lib/services/alerting';
 import { runFullRecoveryCycle } from './lib/services/auto-recovery';
 import { cleanupOldArtifacts } from './lib/services/artifact';
+import { cleanupExpiredDownloadResults } from './lib/services/download-result';
 import { workerLogger } from './lib/logging/logger';
 
 // Number of concurrent jobs to process
@@ -19,6 +20,7 @@ const TASKS: Record<string, ReturnType<typeof setInterval> | null> = {
   healthReport: null,
   autoRecovery: null,
   artifactCleanup: null,
+  downloadResultCleanup: null,
 };
 
 // Start the worker
@@ -91,6 +93,17 @@ async function startWorker() {
         workerLogger.error({ error }, 'Failed to cleanup artifacts');
       }
     }, 24 * 60 * 60 * 1000); // 24 hours
+
+    // 4. Temporary download-result cleanup every 5 minutes
+    TASKS.downloadResultCleanup = setInterval(async () => {
+      try {
+        workerLogger.info('Running download-result cleanup...');
+        const summary = await cleanupExpiredDownloadResults();
+        workerLogger.info(summary, 'Download-result cleanup complete');
+      } catch (error) {
+        workerLogger.error({ error }, 'Failed to cleanup download results');
+      }
+    }, 5 * 60 * 1000); // 5 minutes
 
     // Evaluate alert rules every 5 minutes
     setInterval(async () => {

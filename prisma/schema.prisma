@@ -666,3 +666,30 @@ model PlaywrightArtifact {
   @@index([type])
   @@index([createdAt])
 }
+
+enum ToolDownloadResultStatus {
+  READY
+  EXPIRED
+  DELETED
+  FAILED
+}
+
+model ToolDownloadResult {
+  id            String                   @id @default(cuid())
+  toolSlug      String
+  originalName  String?
+  outputName    String
+  outputPath    String
+  mimeType      String
+  fileSize      BigInt?
+  status        ToolDownloadResultStatus @default(READY)
+  downloadCount Int                      @default(0)
+  createdAt     DateTime                 @default(now())
+  expiresAt     DateTime
+  downloadedAt  DateTime?
+
+  @@index([expiresAt])
+  @@index([toolSlug])
+  @@index([status])
+}
+
