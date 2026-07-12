@@ -205,6 +205,7 @@ export default function MakeRoundImagePage() {
       </div>
 
       {/* Main Content */}
+      <main>
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Upload */}
@@ -503,12 +504,12 @@ export default function MakeRoundImagePage() {
         </div>
       </div>
 
+      </main>
+
       <Footer />
     </div>
   );
 }
-
-
 
 
 

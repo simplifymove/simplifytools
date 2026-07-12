@@ -153,6 +153,7 @@ export default function ReverseImagePage() {
       </div>
 
       {/* Main Content */}
+      <main>
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Section - Upload */}
@@ -293,6 +294,8 @@ export default function ReverseImagePage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
+      </main>
+
       <Footer />
     </div>
   );
