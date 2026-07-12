@@ -93,7 +93,9 @@ def _ensure_site_packages():
     
     for path in common_paths:
         if os.path.exists(path) and path not in sys.path:
-            sys.path.insert(0, path)
+            # Keep the virtual environment ahead of Ubuntu system packages.
+            # Adding system paths at index 0 caused cffi/_cffi_backend mismatches.
+            sys.path.append(path)
             added_paths.append(path)
     
     return added_paths
