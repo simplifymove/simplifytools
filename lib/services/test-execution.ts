@@ -652,9 +652,26 @@ function walkPlaywrightReport(node: any, results: IndividualTestResult[], catego
     for (const spec of node.specs) {
       if (spec.tests && Array.isArray(spec.tests)) {
         for (const test of spec.tests) {
-          const testStatus = test.status || 'unknown';
+          const execution =
+            Array.isArray(test.results) && test.results.length > 0
+              ? test.results[test.results.length - 1]
+              : undefined;
+          const testStatus = execution?.status || test.status || 'unknown';
           const testPassed = testStatus === 'passed';
           const testSkipped = testStatus === 'skipped';
+          const executionError = execution?.errors?.[0] || execution?.error || test.error;
+          const stdoutEntries = execution?.stdout || test.stdout;
+          const stderrEntries = execution?.stderr || test.stderr;
+          const attachments = Array.isArray(execution?.attachments)
+            ? execution.attachments
+            : test.attachments;
+          const formatOutput = (entries: any): string =>
+            Array.isArray(entries)
+              ? entries
+                  .map((entry) => typeof entry === 'string' ? entry : entry?.text)
+                  .filter((text): text is string => typeof text === 'string')
+                  .join('\n')
+              : '';
 
           const testTitle = test.title || spec.title || 'Unknown test';
           const toolName = typeof testTitle === 'string' && testTitle.includes(' :: ')
@@ -667,19 +684,19 @@ function walkPlaywrightReport(node: any, results: IndividualTestResult[], catego
             toolName,
             passed: testPassed,
             skipped: testSkipped,
-            duration: test.duration ? test.duration / 1000 : 0, // Convert ms to seconds
-            output: test.error?.message || '',
-            stdout: test.stdout?.join('\n') || '',
-            stderr: test.stderr?.join('\n') || '',
-            error: test.error ? {
-              message: test.error.message || 'Test failed',
-              stack: test.error.stack,
+            duration: (execution?.duration ?? test.duration ?? 0) / 1000, // Convert ms to seconds
+            output: executionError?.message || '',
+            stdout: formatOutput(stdoutEntries),
+            stderr: formatOutput(stderrEntries),
+            error: executionError ? {
+              message: executionError.message || 'Test failed',
+              stack: executionError.stack,
             } : undefined,
           };
 
           // Add attachment info (screenshots, traces, videos)
-          if (test.attachments && Array.isArray(test.attachments)) {
-            for (const attachment of test.attachments) {
+          if (Array.isArray(attachments)) {
+            for (const attachment of attachments) {
               if (
                 attachment.contentType === 'image/png' ||
                 attachment.contentType === 'image/jpeg'
