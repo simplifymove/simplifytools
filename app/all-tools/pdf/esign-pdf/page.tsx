@@ -512,7 +512,8 @@ export default function EsignPdfPage() {
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <HomeHeader />
-        
+
+        <main className="flex-1 flex flex-col">
         {/* Premium Hero Section */}
         <div className="relative bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 py-16 px-4 md:px-8 overflow-hidden">
           {/* Animated background shapes */}
@@ -566,6 +567,7 @@ export default function EsignPdfPage() {
             </label>
           </div>
         </div>
+        </main>
 
         <Footer />
       </div>
@@ -589,7 +591,7 @@ export default function EsignPdfPage() {
         </div>
       </div>
       
-      <div className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col">
         <div className="flex h-[calc(100vh-180px)] gap-4 p-4">
           <div className="flex-1 bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
             {totalPages > 0 && (
@@ -911,7 +913,7 @@ export default function EsignPdfPage() {
           </div>
         </div>
       )}
-      </div>
+      </main>
 
       <Footer />
     </div>
