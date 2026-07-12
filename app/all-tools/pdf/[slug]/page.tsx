@@ -35,6 +35,15 @@ interface PageProps {
   }>;
 }
 
+const RESULT_PAGE_PDF_TOOLS = new Set([
+  'compress-pdf',
+  'merge-pdf',
+  'split-pdf',
+  'rotate-pdf',
+  'protect-pdf',
+  'unlock-pdf',
+]);
+
 export default function PdfToolPage({ params }: PageProps) {
   const router = useRouter();
   // Unwrap params promise
@@ -168,13 +177,13 @@ export default function PdfToolPage({ params }: PageProps) {
         throw new Error(errorData.error || 'Processing failed');
       }
 
-      if (tool.id === 'compress-pdf') {
+      if (RESULT_PAGE_PDF_TOOLS.has(tool.id)) {
         const downloadResult = await response.json() as {
           success?: boolean;
           downloadPageUrl?: string;
         };
         if (!downloadResult.success || !downloadResult.downloadPageUrl) {
-          throw new Error('Compression completed but the download result could not be created');
+          throw new Error('Processing completed but the download result could not be created');
         }
 
         setResult({ type: 'file', message: 'File processed successfully!' });

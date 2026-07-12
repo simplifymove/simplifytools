@@ -33,6 +33,82 @@ interface ValidationResult {
   error?: string;
 }
 
+const RESULT_PAGE_PDF_TOOL_SUFFIXES: Record<string, string> = {
+  'compress-pdf': 'compressed',
+  'merge-pdf': 'merged',
+  'split-pdf': 'split',
+  'rotate-pdf': 'rotated',
+  'protect-pdf': 'protected',
+  'unlock-pdf': 'unlocked',
+};
+
+function isResultPagePdfTool(toolId: string): boolean {
+  return Object.hasOwn(RESULT_PAGE_PDF_TOOL_SUFFIXES, toolId);
+}
+
+async function createPdfToolDownloadResult({
+  toolId,
+  files,
+  processedOutputPath,
+  setPendingFile,
+}: {
+  toolId: string;
+  files: File[];
+  processedOutputPath: string;
+  setPendingFile: (filePath: string) => void;
+}) {
+  const suffix = RESULT_PAGE_PDF_TOOL_SUFFIXES[toolId];
+  if (!suffix) {
+    throw new Error(`Download-result flow is not enabled for ${toolId}`);
+  }
+
+  const actualExtension = path.extname(processedOutputPath).toLowerCase();
+  const mimeTypeByExtension: Record<string, string> = {
+    '.pdf': 'application/pdf',
+    '.zip': 'application/zip',
+  };
+  const mimeType = mimeTypeByExtension[actualExtension];
+  if (!mimeType) {
+    throw new Error(
+      `Unexpected processed output type for ${toolId}: ${actualExtension || 'missing extension'}`,
+    );
+  }
+  const outputExtension = actualExtension;
+  const originalName = files[0]?.name || 'document.pdf';
+  const originalBaseName = path.parse(path.basename(originalName)).name
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .slice(0, 120) || 'document';
+  const outputName = `${originalBaseName}_${suffix}${outputExtension}`;
+  const downloadDirectory = getAllowedDownloadDirectories()[0];
+  await mkdir(downloadDirectory, { recursive: true });
+
+  const storedOutputPath = path.join(
+    downloadDirectory,
+    `${toolId}-${randomUUID()}${outputExtension}`,
+  );
+  setPendingFile(storedOutputPath);
+  await copyFile(processedOutputPath, storedOutputPath);
+
+  const downloadResult = await createDownloadResult({
+    toolSlug: toolId,
+    originalName,
+    outputName,
+    outputPath: storedOutputPath,
+    mimeType,
+  });
+  setPendingFile('');
+
+  return {
+    success: true,
+    resultId: downloadResult.id,
+    downloadPageUrl: downloadResult.downloadPageUrl,
+    outputName: downloadResult.outputName,
+    mimeType: downloadResult.mimeType,
+    fileSize: downloadResult.fileSize,
+    expiresAt: downloadResult.expiresAt,
+  };
+}
+
 function validateToolServerSide(
   tool: any,
   files: File[],
@@ -92,6 +168,7 @@ export async function POST(request: NextRequest) {
   let optionsFile = ''; // For large options that need file-based passing
   let toolId = ''; // Move to outer scope so catch block can access it
   let pendingDownloadResultFile = '';
+  let processedOutputPath = '';
 
   try {
     const formData = await request.formData();
@@ -497,34 +574,18 @@ export async function POST(request: NextRequest) {
       throw new Error(JSON.stringify(response));
     }
 
-    const processedOutputPath = result.output || outputFile;
+    processedOutputPath = result.output || outputFile;
 
-    // Phase 2 pilot: only Compress PDF uses the dedicated download-result flow.
-    if (toolId === 'compress-pdf') {
-      const downloadDirectory = getAllowedDownloadDirectories()[0];
-      await mkdir(downloadDirectory, { recursive: true });
-
-      const originalName = files[0]?.name || 'document.pdf';
-      const originalBaseName = path.parse(path.basename(originalName)).name
-        .replace(/[^a-zA-Z0-9._-]/g, '_')
-        .slice(0, 120) || 'document';
-      const outputName = `${originalBaseName}_compressed.pdf`;
-      pendingDownloadResultFile = path.join(
-        downloadDirectory,
-        `compress-pdf-${randomUUID()}.pdf`,
-      );
-
-      // Copy only after the processor reports success. createDownloadResult revalidates
-      // the completed file and never exposes this physical path to the client.
-      await copyFile(processedOutputPath, pendingDownloadResultFile);
-      const downloadResult = await createDownloadResult({
-        toolSlug: 'compress-pdf',
-        originalName,
-        outputName,
-        outputPath: pendingDownloadResultFile,
-        mimeType: 'application/pdf',
+    // Phase 2 result-page flow is intentionally limited to this explicit allowlist.
+    if (isResultPagePdfTool(toolId)) {
+      const downloadResult = await createPdfToolDownloadResult({
+        toolId,
+        files,
+        processedOutputPath,
+        setPendingFile: (filePath) => {
+          pendingDownloadResultFile = filePath;
+        },
       });
-      pendingDownloadResultFile = '';
 
       await Promise.allSettled([
         ...inputFiles.map((file) => unlink(file)),
@@ -532,15 +593,7 @@ export async function POST(request: NextRequest) {
         ...(optionsFile ? [unlink(optionsFile)] : []),
       ]);
 
-      return NextResponse.json({
-        success: true,
-        resultId: downloadResult.id,
-        downloadPageUrl: downloadResult.downloadPageUrl,
-        outputName: downloadResult.outputName,
-        mimeType: downloadResult.mimeType,
-        fileSize: downloadResult.fileSize,
-        expiresAt: downloadResult.expiresAt,
-      });
+      return NextResponse.json(downloadResult);
     }
 
     // Read output file
@@ -590,23 +643,30 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    if (pendingDownloadResultFile) {
-      await unlink(pendingDownloadResultFile).catch(() => undefined);
-    }
-
-    // Clean up on error
-    try {
-      for (const file of inputFiles) {
-        await unlink(file);
+    if (isResultPagePdfTool(toolId)) {
+      const filesToDelete = [...new Set([
+        ...inputFiles,
+        processedOutputPath,
+        outputFile,
+        optionsFile,
+        pendingDownloadResultFile,
+      ].filter(Boolean))];
+      await Promise.allSettled(filesToDelete.map((file) => unlink(file)));
+    } else {
+      // Preserve the existing cleanup path for all non-migrated PDF tools.
+      try {
+        for (const file of inputFiles) {
+          await unlink(file);
+        }
+        if (outputFile) {
+          await unlink(outputFile);
+        }
+        if (optionsFile) {
+          await unlink(optionsFile);
+        }
+      } catch {
+        // Ignore cleanup errors
       }
-      if (outputFile) {
-        await unlink(outputFile);
-      }
-      if (optionsFile) {
-        await unlink(optionsFile);
-      }
-    } catch {
-      // Ignore cleanup errors
     }
 
     const message = error instanceof Error ? error.message : 'Unknown error';
