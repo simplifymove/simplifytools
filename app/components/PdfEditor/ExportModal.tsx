@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { Download, AlertCircle } from 'lucide-react';
 import { PdfEdit } from '@/app/types/pdf-editor';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserPdfResult } from '@/app/lib/download-result-client';
 
 interface Props {
   file: File;
@@ -12,6 +14,7 @@ interface Props {
 }
 
 export default function ExportModal({ file, edits, isOpen, onClose }: Props) {
+  const router = useRouter();
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState(file.name.replace('.pdf', '-edited.pdf'));
@@ -24,13 +27,15 @@ export default function ExportModal({ file, edits, isOpen, onClose }: Props) {
       // Dynamic import - only load when needed
       const { exportPdfWithEdits } = await import('@/app/lib/pdf-editor/pdfExport');
       
-      await exportPdfWithEdits(file, edits, fileName);
-      
-      // Success - close modal
-      setTimeout(() => {
-        setIsExporting(false);
-        onClose();
-      }, 1000);
+      const blob = await exportPdfWithEdits(file, edits);
+      const result = await uploadBrowserPdfResult({
+        blob,
+        toolSlug: 'edit-pdf',
+        originalName: file.name,
+        outputName: fileName,
+      });
+      onClose();
+      router.push(result.downloadPageUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Export failed');
       setIsExporting(false);

@@ -1,7 +1,7 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { copyFile, writeFile, unlink, mkdir } from 'fs/promises';
+import { writeFile, unlink, mkdir, rm } from 'fs/promises';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -20,9 +20,9 @@ import {
 } from '@/app/lib/file-security';
 import { spawn } from 'child_process';
 import {
-  createDownloadResult,
-  getAllowedDownloadDirectories,
-} from '@/lib/services/download-result';
+  getRequestedPdfOutputExtension,
+  retainPdfDownloadResult,
+} from '@/lib/services/pdf-download-result';
 
 /**
  * Server-side validation for tool-specific requirements
@@ -31,82 +31,6 @@ import {
 interface ValidationResult {
   valid: boolean;
   error?: string;
-}
-
-const RESULT_PAGE_PDF_TOOL_SUFFIXES: Record<string, string> = {
-  'compress-pdf': 'compressed',
-  'merge-pdf': 'merged',
-  'split-pdf': 'split',
-  'rotate-pdf': 'rotated',
-  'protect-pdf': 'protected',
-  'unlock-pdf': 'unlocked',
-};
-
-function isResultPagePdfTool(toolId: string): boolean {
-  return Object.hasOwn(RESULT_PAGE_PDF_TOOL_SUFFIXES, toolId);
-}
-
-async function createPdfToolDownloadResult({
-  toolId,
-  files,
-  processedOutputPath,
-  setPendingFile,
-}: {
-  toolId: string;
-  files: File[];
-  processedOutputPath: string;
-  setPendingFile: (filePath: string) => void;
-}) {
-  const suffix = RESULT_PAGE_PDF_TOOL_SUFFIXES[toolId];
-  if (!suffix) {
-    throw new Error(`Download-result flow is not enabled for ${toolId}`);
-  }
-
-  const actualExtension = path.extname(processedOutputPath).toLowerCase();
-  const mimeTypeByExtension: Record<string, string> = {
-    '.pdf': 'application/pdf',
-    '.zip': 'application/zip',
-  };
-  const mimeType = mimeTypeByExtension[actualExtension];
-  if (!mimeType) {
-    throw new Error(
-      `Unexpected processed output type for ${toolId}: ${actualExtension || 'missing extension'}`,
-    );
-  }
-  const outputExtension = actualExtension;
-  const originalName = files[0]?.name || 'document.pdf';
-  const originalBaseName = path.parse(path.basename(originalName)).name
-    .replace(/[^a-zA-Z0-9._-]/g, '_')
-    .slice(0, 120) || 'document';
-  const outputName = `${originalBaseName}_${suffix}${outputExtension}`;
-  const downloadDirectory = getAllowedDownloadDirectories()[0];
-  await mkdir(downloadDirectory, { recursive: true });
-
-  const storedOutputPath = path.join(
-    downloadDirectory,
-    `${toolId}-${randomUUID()}${outputExtension}`,
-  );
-  setPendingFile(storedOutputPath);
-  await copyFile(processedOutputPath, storedOutputPath);
-
-  const downloadResult = await createDownloadResult({
-    toolSlug: toolId,
-    originalName,
-    outputName,
-    outputPath: storedOutputPath,
-    mimeType,
-  });
-  setPendingFile('');
-
-  return {
-    success: true,
-    resultId: downloadResult.id,
-    downloadPageUrl: downloadResult.downloadPageUrl,
-    outputName: downloadResult.outputName,
-    mimeType: downloadResult.mimeType,
-    fileSize: downloadResult.fileSize,
-    expiresAt: downloadResult.expiresAt,
-  };
 }
 
 function validateToolServerSide(
@@ -161,13 +85,12 @@ function validateToolServerSide(
 }
 
 export async function POST(request: NextRequest) {
-  const tempDir = path.join(os.tmpdir(), 'pdf-tools');
+  const tempDir = path.join(os.tmpdir(), 'pdf-tools', randomUUID());
   const timestamp = Date.now();
   const inputFiles: string[] = [];
   let outputFile = '';
   let optionsFile = ''; // For large options that need file-based passing
   let toolId = ''; // Move to outer scope so catch block can access it
-  let pendingDownloadResultFile = '';
   let processedOutputPath = '';
 
   try {
@@ -327,23 +250,22 @@ export async function POST(request: NextRequest) {
     // Save uploaded files
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const inputPath = path.join(tempDir, `input_${timestamp}_${i}_${file.name}`);
+      const inputExtension = path.extname(path.basename(file.name)).toLowerCase();
+      const inputPath = path.join(tempDir, `input_${timestamp}_${i}_${randomUUID()}${inputExtension}`);
       const buffer = await file.arrayBuffer();
       await writeFile(inputPath, Buffer.from(buffer));
       inputFiles.push(inputPath);
     }
 
     // Generate output path
-    outputFile = path.join(
-      tempDir,
-      `output_${timestamp}.${tool.output.replace('.', '')}`
-    );
-
     // Parse options
     const options = optionsJson ? JSON.parse(optionsJson) : {};
     if (url) {
       options.url = url;
     }
+
+    const requestedOutputExtension = getRequestedPdfOutputExtension(tool, options);
+    outputFile = path.join(tempDir, `output_${timestamp}_${randomUUID()}${requestedOutputExtension}`);
 
     // Call Python backend
     const pythonScript = path.join(process.cwd(), 'python', 'pdf_router.py');
@@ -390,7 +312,7 @@ export async function POST(request: NextRequest) {
     
     // For tools with large options (like esign-pdf with base64 signatures), write options to a file
     if (toolId === 'esign-pdf' || JSON.stringify(options).length > 5000) {
-      optionsFile = path.join(tempDir, `options_${timestamp}.json`);
+      optionsFile = path.join(tempDir, `options_${timestamp}_${randomUUID()}.json`);
       await writeFile(optionsFile, JSON.stringify(options));
       pythonArgs.push(optionsFile);
       console.log(`[PDF API] Wrote options to file: ${optionsFile}`);
@@ -575,99 +497,35 @@ export async function POST(request: NextRequest) {
     }
 
     processedOutputPath = result.output || outputFile;
-
-    // Phase 2 result-page flow is intentionally limited to this explicit allowlist.
-    if (isResultPagePdfTool(toolId)) {
-      const downloadResult = await createPdfToolDownloadResult({
-        toolId,
-        files,
+    const { result: downloadResult } = await retainPdfDownloadResult({
+        tool,
+        originalName: files[0]?.name || (url ? 'webpage.html' : 'document.pdf'),
         processedOutputPath,
-        setPendingFile: (filePath) => {
-          pendingDownloadResultFile = filePath;
-        },
       });
+    const completedCleanupPaths = [...new Set([
+      ...inputFiles,
+      processedOutputPath,
+      outputFile,
+      optionsFile,
+    ].filter(Boolean))];
+    await Promise.allSettled(completedCleanupPaths.map((file) => unlink(file)));
+    await Promise.allSettled([rm(tempDir, { recursive: true, force: true })]);
 
-      await Promise.allSettled([
-        ...inputFiles.map((file) => unlink(file)),
-        unlink(processedOutputPath),
-        ...(optionsFile ? [unlink(optionsFile)] : []),
-      ]);
-
-      return NextResponse.json(downloadResult);
-    }
-
-    // Read output file
-    const { readFile } = await import('fs/promises');
-    const fileBuffer = await readFile(processedOutputPath);
-    const fileName = `${toolId}_output${tool.output}`;
-
-    // Determine content type
-    let contentType = 'application/octet-stream';
-    if (tool.output === '.pdf') {
-      contentType = 'application/pdf';
-    } else if (tool.output === '.txt') {
-      contentType = 'text/plain';
-    } else if (tool.output === '.csv') {
-      contentType = 'text/csv';
-    } else if (tool.output === '.xlsx') {
-      contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    } else if (tool.output === '.docx') {
-      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    } else if (tool.output === '.zip') {
-      contentType = 'application/zip';
-    } else if (['.jpg', '.jpeg'].includes(tool.output)) {
-      contentType = 'image/jpeg';
-    } else if (tool.output === '.png') {
-      contentType = 'image/png';
-    }
-
-    // Clean up temp files
-    setTimeout(async () => {
-      try {
-        for (const file of inputFiles) {
-          await unlink(file);
-        }
-        await unlink(result.output || outputFile);
-        if (optionsFile) {
-          await unlink(optionsFile);
-        }
-      } catch {
-        // Ignore cleanup errors
-      }
-    }, 5000);
-
-    return new NextResponse(fileBuffer, {
+    return NextResponse.json(downloadResult, {
       headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error) {
-    if (isResultPagePdfTool(toolId)) {
-      const filesToDelete = [...new Set([
-        ...inputFiles,
-        processedOutputPath,
-        outputFile,
-        optionsFile,
-        pendingDownloadResultFile,
-      ].filter(Boolean))];
-      await Promise.allSettled(filesToDelete.map((file) => unlink(file)));
-    } else {
-      // Preserve the existing cleanup path for all non-migrated PDF tools.
-      try {
-        for (const file of inputFiles) {
-          await unlink(file);
-        }
-        if (outputFile) {
-          await unlink(outputFile);
-        }
-        if (optionsFile) {
-          await unlink(optionsFile);
-        }
-      } catch {
-        // Ignore cleanup errors
-      }
-    }
+    const filesToDelete = [...new Set([
+      ...inputFiles,
+      processedOutputPath,
+      outputFile,
+      optionsFile,
+    ].filter(Boolean))];
+    await Promise.allSettled(filesToDelete.map((file) => unlink(file)));
+    await Promise.allSettled([rm(tempDir, { recursive: true, force: true })]);
 
     const message = error instanceof Error ? error.message : 'Unknown error';
     const fullError = error instanceof Error ? error.toString() : JSON.stringify(error);

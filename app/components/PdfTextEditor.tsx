@@ -2,6 +2,8 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { readDownloadResultResponse } from '@/app/lib/download-result-client';
 
 // Type definitions
 type PDFLib = any;
@@ -106,7 +108,7 @@ const loadPdfJs = async (): Promise<PDFLib> => {
         
         // Set worker to use CDN from the same source (avoids import.meta issues in local files)
         // Try minified version first, fall back to regular version
-        let workerUrl = url.replace('pdf.min.js', 'pdf.worker.min.js');
+        const workerUrl = url.replace('pdf.min.js', 'pdf.worker.min.js');
         console.log(`🔧 Setting worker URL (minified): ${workerUrl}`);
         
         if (pdfjs.GlobalWorkerOptions) {
@@ -156,6 +158,7 @@ interface Props {
 }
 
 export default function PdfTextEditor({ file, onChanges }: Props) {
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pdfDocRef = useRef<any>(null);
@@ -345,13 +348,8 @@ export default function PdfTextEditor({ file, onChanges }: Props) {
         throw new Error(error || 'Failed to save changes');
       }
 
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `edited-${file.name}`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const result = await readDownloadResultResponse(response);
+      router.push(result.downloadPageUrl);
     } catch (err) {
       setError(`Failed to save: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }

@@ -7,6 +7,8 @@ import { Footer } from '@/app/components/Footer';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
+import { useRouter } from 'next/navigation';
+import { readDownloadResultResponse } from '@/app/lib/download-result-client';
 
 interface SignatureData {
   type: 'image';
@@ -23,6 +25,7 @@ export const dynamic = 'force-dynamic';
 let pdfjsLib: any;
 
 export default function EsignPdfPage() {
+  const router = useRouter();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
@@ -475,32 +478,8 @@ export default function EsignPdfPage() {
         throw new Error(errorText || 'Failed to sign PDF');
       }
 
-      const contentType = response.headers.get('content-type');
-
-      if (contentType?.includes('application/pdf') || contentType?.includes('octet-stream')) {
-        const blob = await response.blob();
-        console.log('[ESIGN] Received PDF blob:', { size: blob.size });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `signed-${pdfFile.name}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        alert('PDF signed successfully!');
-      } else {
-        const result = await response.json();
-        if (result.output) {
-          const a = document.createElement('a');
-          a.href = result.output;
-          a.download = `signed-${pdfFile.name}`;
-          a.click();
-          alert('PDF signed successfully!');
-        } else {
-          throw new Error(result.error || 'Failed to sign PDF');
-        }
-      }
+      const downloadResult = await readDownloadResultResponse(response);
+      router.push(downloadResult.downloadPageUrl);
     } catch (error) {
       alert('Error signing PDF: ' + (error as Error).message);
     } finally {

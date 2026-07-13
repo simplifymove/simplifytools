@@ -12,6 +12,7 @@ import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, 
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { FAQSection } from '@/app/components/FAQSection';
+import { readDownloadResultResponse } from '@/app/lib/download-result-client';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -34,15 +35,6 @@ interface PageProps {
     slug: string;
   }>;
 }
-
-const RESULT_PAGE_PDF_TOOLS = new Set([
-  'compress-pdf',
-  'merge-pdf',
-  'split-pdf',
-  'rotate-pdf',
-  'protect-pdf',
-  'unlock-pdf',
-]);
 
 export default function PdfToolPage({ params }: PageProps) {
   const router = useRouter();
@@ -177,32 +169,9 @@ export default function PdfToolPage({ params }: PageProps) {
         throw new Error(errorData.error || 'Processing failed');
       }
 
-      if (RESULT_PAGE_PDF_TOOLS.has(tool.id)) {
-        const downloadResult = await response.json() as {
-          success?: boolean;
-          downloadPageUrl?: string;
-        };
-        if (!downloadResult.success || !downloadResult.downloadPageUrl) {
-          throw new Error('Processing completed but the download result could not be created');
-        }
-
-        setResult({ type: 'file', message: 'File processed successfully!' });
-        router.push(downloadResult.downloadPageUrl);
-        return;
-      }
-
-      // Get the output file
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = `${tool.id}_output${tool.output}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(downloadUrl);
-      document.body.removeChild(a);
-
+      const downloadResult = await readDownloadResultResponse(response);
       setResult({ type: 'file', message: 'File processed successfully!' });
+      router.push(downloadResult.downloadPageUrl);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred';
       
@@ -6042,6 +6011,7 @@ export default function PdfToolPage({ params }: PageProps) {
 
 // Special component for Annotate PDF tool
 function AnnotatePdfPage({ tool }: { tool: PdfToolConfig }) {
+  const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [annotations, setAnnotations] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
@@ -6090,18 +6060,9 @@ function AnnotatePdfPage({ tool }: { tool: PdfToolConfig }) {
         throw new Error(errorData.error || 'Failed to save annotations');
       }
 
-      // Download the annotated PDF
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = `annotated_${files[0].name}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(downloadUrl);
-      document.body.removeChild(a);
-
-      setSaveSuccess('PDF with annotations downloaded successfully!');
+      const downloadResult = await readDownloadResultResponse(response);
+      setSaveSuccess('PDF with annotations saved successfully!');
+      router.push(downloadResult.downloadPageUrl);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred';
       setSaveError(errorMsg);

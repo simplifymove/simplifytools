@@ -9,8 +9,7 @@ import { PdfEdit } from '@/app/types/pdf-editor';
 export async function exportPdfWithEdits(
   pdfFile: File,
   edits: PdfEdit[],
-  fileName: string = 'edited.pdf'
-): Promise<void> {
+): Promise<Blob> {
   try {
     console.log('[PDF Export] Starting export...');
     
@@ -110,15 +109,7 @@ export async function exportPdfWithEdits(
 
     // Save the PDF
     const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    return new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
   } catch (err) {
     console.error('PDF export failed:', err);
     throw new Error(`Failed to export PDF: ${err instanceof Error ? err.message : 'Unknown error'}`);
