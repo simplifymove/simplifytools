@@ -1,10 +1,12 @@
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
-import type { APIRequestContext, Download, Page, TestInfo } from '@playwright/test';
+import type { APIRequestContext, Download, Locator, Page, TestInfo } from '@playwright/test';
+import { PDFDocument } from 'pdf-lib';
 import type { AuditToolTarget, FunctionalAuditContract } from '../../app/lib/audit-category-tools';
 import { prisma } from '../../lib/prisma';
 import { resolveAllowedDownloadPath } from '../../lib/services/download-result';
+import { decideSemanticInput, type FilledInputSource, type SemanticInputDescriptor } from './input-classifier';
 import { validateOutputBuffer, type ValidatedOutputEvidence } from './output-validator';
 
 const ACTION_PATTERN = /convert|process|generate|create|compress|merge|split|rotate|protect|unlock|extract|download|calculate|format|validate|minify|beautify|encode|decode|translate|summarize|write|fix|submit|export|save|apply|remove|resize|crop|sign/i;
@@ -23,6 +25,7 @@ export interface FunctionalAuditEvidence {
   fixtureEvidence: Array<{ path: string; sizeBytes: number; sha256: string }>;
   inputEvidence?: { mode: 'text' | 'url' | 'form'; length: number; sha256: string };
   configuredOptions: Record<string, string | number | boolean>;
+  filledInputs: Array<{ semanticField: string; value: string | number | boolean; source: FilledInputSource }>;
   action: string;
   resultFlow: string;
   apiResponses: Array<{ method: string; url: string; status: number; contentType?: string; errorBody?: string }>;
@@ -55,50 +58,65 @@ async function fixtureEvidence(fixtures: string[]) {
   }));
 }
 
-async function setControl(page: Page, key: string, value: string | number | boolean): Promise<boolean> {
-  const escaped = key.replace(/([:#.\[\],=@])/g, '\\$1');
-  const candidates = page.locator(`[name="${key}"], #${escaped}`).filter({ visible: true });
-  const control = (await candidates.count()) ? candidates.first() : page.getByLabel(new RegExp(key, 'i')).first();
-  if (!(await control.count()) || !(await control.isVisible().catch(() => false))) return false;
-  const type = await control.getAttribute('type');
-  const tagName = await control.evaluate((element) => element.tagName.toLowerCase());
-  if (!['input', 'select', 'textarea'].includes(tagName)) return false;
-  if (type === 'checkbox') {
-    if (Boolean(value)) await control.check(); else await control.uncheck();
-  } else if (tagName === 'select') {
-    await control.selectOption(String(value)).catch(async () => control.selectOption({ index: 1 }));
-  } else {
-    await control.fill(String(value));
+async function fixturePdfPageCount(fixtures: string[]): Promise<number> {
+  const pdfFixture = fixtures.find((fixture) => path.extname(fixture).toLowerCase() === '.pdf');
+  if (!pdfFixture) return 1;
+  try {
+    const document = await PDFDocument.load(await fs.readFile(path.resolve(pdfFixture)), { ignoreEncryption: true });
+    return document.getPageCount();
+  } catch {
+    return 1;
   }
-  return true;
 }
 
-async function fillGenericInputs(page: Page, contract: FunctionalAuditContract): Promise<void> {
-  const text = contract.textInput || 'SimplifyConvert predictable functional audit input.';
-  for (const textarea of await page.locator('main textarea:visible').all()) {
-    if (!(await textarea.inputValue()).trim()) await textarea.fill(text);
-  }
-  for (const input of await page.locator('main input:visible').all()) {
-    const type = (await input.getAttribute('type') || 'text').toLowerCase();
-    if (['file', 'hidden', 'submit', 'button', 'reset', 'color', 'range'].includes(type)) continue;
-    if (type === 'checkbox' || type === 'radio') {
-      if (await input.getAttribute('required')) await input.check();
-      continue;
+async function fillSemanticInputs(
+  page: Page,
+  contract: FunctionalAuditContract,
+  fixtures: string[],
+): Promise<FunctionalAuditEvidence['filledInputs']> {
+  const pageCount = await fixturePdfPageCount(fixtures);
+  const filledInputs: FunctionalAuditEvidence['filledInputs'] = [];
+  const controls = await page.locator('main input:visible, main textarea:visible, main select:visible').all();
+  for (const control of controls) {
+    const descriptor = await control.evaluate((element): SemanticInputDescriptor => {
+      const input = element as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+      const tagName = element.tagName.toLowerCase();
+      const labels = 'labels' in input && input.labels
+        ? Array.from(input.labels).map((label) => label.textContent || '').join(' ')
+        : '';
+      const nearbyLabel = element.parentElement?.querySelector('label')?.textContent || '';
+      return {
+        type: tagName === 'textarea' ? 'textarea' : tagName === 'select' ? 'select' : (element.getAttribute('type') || 'text').toLowerCase(),
+        name: element.getAttribute('name') || undefined,
+        id: element.id || undefined,
+        label: labels || nearbyLabel || undefined,
+        placeholder: element.getAttribute('placeholder') || undefined,
+        ariaLabel: element.getAttribute('aria-label') || undefined,
+        required: input.required,
+        min: element.getAttribute('min') || undefined,
+        max: element.getAttribute('max') || undefined,
+        currentValue: input.value,
+      };
+    });
+    if (['file', 'hidden', 'submit', 'button', 'reset', 'color', 'range'].includes(descriptor.type)) continue;
+    const decision = decideSemanticInput(descriptor, contract, pageCount);
+    if (decision.value === undefined || !decision.source) continue;
+    const currentValue = descriptor.currentValue || '';
+    if (decision.source === 'inferred' && currentValue.trim()) continue;
+    if (descriptor.type === 'checkbox' || descriptor.type === 'radio') {
+      if (Boolean(decision.value)) await control.check(); else await control.uncheck();
+    } else if (descriptor.type === 'select') {
+      await control.selectOption(String(decision.value));
+    } else {
+      await control.fill(String(decision.value));
     }
-    if ((await input.inputValue()).trim()) continue;
-    const placeholder = (await input.getAttribute('placeholder') || '').toLowerCase();
-    const value = type === 'url' ? contract.urlInput || 'https://example.com/'
-      : type === 'number' ? await input.getAttribute('min') || '1'
-      : type === 'time' || /start|end.*time/.test(placeholder) ? '00:01'
-      : type === 'email' ? 'audit@example.invalid'
-      : /password/.test(placeholder) ? 'Audit123!'
-      : text;
-    await input.fill(value);
+    filledInputs.push({
+      semanticField: decision.semanticField,
+      value: decision.sensitive ? '[REDACTED]' : decision.value,
+      source: decision.source,
+    });
   }
-  for (const select of await page.locator('main select:visible').all()) {
-    if (await select.inputValue()) continue;
-    await select.selectOption({ index: 1 }).catch(() => undefined);
-  }
+  return filledInputs;
 }
 
 async function uploadFixtures(page: Page, contract: FunctionalAuditContract): Promise<string[]> {
@@ -110,8 +128,25 @@ async function uploadFixtures(page: Page, contract: FunctionalAuditContract): Pr
   if (!fixtures.length) throw new Error(`No fixture is configured for accept=${await inputs[0].getAttribute('accept')}`);
   for (const fixture of fixtures) await fs.access(path.resolve(fixture));
   const multiple = await inputs[0].getAttribute('multiple');
+  await waitForReactFileInputHandler(page, inputs[0]);
   await inputs[0].setInputFiles((multiple !== null || fixtures.length === 1) ? fixtures.map((fixture) => path.resolve(fixture)) : path.resolve(fixtures[0]));
   return multiple !== null ? fixtures : [fixtures[0]];
+}
+
+async function waitForReactFileInputHandler(page: Page, input: Locator): Promise<void> {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    const handlerAttached = await input.evaluate((element) => {
+      const reactElement = element as HTMLInputElement & Record<string, unknown>;
+      return Object.keys(reactElement).some((key) => {
+        if (!key.startsWith('__reactProps$')) return false;
+        const props = reactElement[key] as { onChange?: unknown } | undefined;
+        return typeof props?.onChange === 'function';
+      });
+    }).catch(() => false);
+    if (handlerAttached) return;
+    await page.waitForTimeout(250);
+  }
+  throw new Error('Fixture upload failed: React file-input change handler did not attach');
 }
 
 async function waitForEnabledFileInput(page: Page): Promise<void> {
@@ -159,6 +194,18 @@ async function prepareSpecialWorkflow(page: Page, contract: FunctionalAuditContr
     await modal.getByPlaceholder('Enter annotation text...').fill('Functional audit annotation');
     await modal.getByRole('button', { name: /^Add$/i }).click();
     await page.getByRole('button', { name: /Download Annotated PDF/i }).waitFor({ state: 'visible' });
+  }
+  if (contract.strategy === 'pdf-rearrange') {
+    await page.getByRole('img', { name: /^Page 1$/i }).waitFor({ state: 'visible', timeout: 30_000 });
+    const moveDown = page.getByTitle('Move down').filter({ visible: true }).first();
+    await moveDown.waitFor({ state: 'visible', timeout: 10_000 });
+    if (!(await moveDown.isEnabled())) throw new Error('Rearrange PDF preview did not expose an enabled page-order control');
+    await moveDown.click();
+    await page.getByText(/^Page 2$/i).locator('..').getByText(/^Position 1$/i).waitFor({
+      state: 'visible',
+      timeout: 10_000,
+    });
+    await page.waitForTimeout(500);
   }
   if (contract.strategy === 'pdf-esign') {
     const pdfCanvas = page.locator('main canvas').first();
@@ -280,7 +327,7 @@ export async function executeFunctionalAudit(
   const contract = target.functionalAudit;
   if (!contract) throw new Error('Missing functional audit contract');
   if (contract.strategy === 'inactive') {
-    return { fixtureEvidence: [], configuredOptions: {}, action: 'inactive', resultFlow: 'none', apiResponses: [], finalUrl: page.url(), durationMs: Date.now() - startedAt,
+    return { fixtureEvidence: [], configuredOptions: {}, filledInputs: [], action: 'inactive', resultFlow: 'none', apiResponses: [], finalUrl: page.url(), durationMs: Date.now() - startedAt,
       stages: { pageHealth: 'NOT_RUN', fixtureUpload: 'NOT_APPLICABLE', functionalProcessing: 'NOT_RUN', outputValidation: 'NOT_RUN', cleanup: 'NOT_APPLICABLE' } };
   }
 
@@ -304,6 +351,7 @@ export async function executeFunctionalAudit(
 
   let fixtures: string[] = [];
   let uploadedFixtureEvidence: FunctionalAuditEvidence['fixtureEvidence'] = [];
+  let filledInputs: FunctionalAuditEvidence['filledInputs'] = [];
   let actionText = 'not reached';
   let output: ValidatedOutputEvidence | undefined;
   let renderedOutput: FunctionalAuditEvidence['renderedOutput'];
@@ -314,7 +362,7 @@ export async function executeFunctionalAudit(
   };
   const attachEvidence = async (failure?: string) => {
     const evidence: FunctionalAuditEvidence = {
-      fixtureEvidence: uploadedFixtureEvidence, inputEvidence, configuredOptions: contract.optionValues || {}, action: actionText,
+      fixtureEvidence: uploadedFixtureEvidence, inputEvidence, configuredOptions: contract.optionValues || {}, filledInputs, action: actionText,
       resultFlow: contract.resultFlow, apiResponses, output, renderedOutput, dialogs, failure, failureStage: failure ? failureStage : undefined, stages,
       finalUrl: page.url(), durationMs: Date.now() - startedAt,
     };
@@ -335,7 +383,7 @@ export async function executeFunctionalAudit(
       stages.fixtureUpload = 'PASS';
       failureStage = 'preview-render';
       await waitForPdfPreviewUi(page, dialogs);
-    } else if (['file', 'adaptive', 'pdf-editor', 'pdf-annotate'].includes(contract.strategy) && await page.locator('input[type="file"]').count()) {
+    } else if (['file', 'adaptive', 'pdf-editor', 'pdf-annotate', 'pdf-rearrange'].includes(contract.strategy) && await page.locator('input[type="file"]').count()) {
       fixtures = await uploadFixtures(page, contract);
       uploadedFixtureEvidence = await fixtureEvidence(fixtures);
       stages.fixtureUpload = 'PASS';
@@ -343,10 +391,9 @@ export async function executeFunctionalAudit(
       stages.fixtureUpload = 'NOT_APPLICABLE';
     }
     failureStage = 'configuration';
-    for (const [key, value] of Object.entries(contract.optionValues || {})) await setControl(page, key, value);
-    await fillGenericInputs(page, contract);
+    filledInputs = await fillSemanticInputs(page, contract, fixtures);
     const primaryTextInput = page.locator('main textarea:visible, main input[type="text"]:visible, main input[type="url"]:visible').first();
-    if (await primaryTextInput.count()) {
+    if (['text', 'url', 'form'].includes(contract.strategy) && await primaryTextInput.count()) {
       const value = await primaryTextInput.inputValue();
       if (['text', 'url'].includes(contract.strategy) && !value.trim()) throw new Error('Configured text input did not reach the executable control');
       inputEvidence = { mode: contract.strategy === 'url' ? 'url' : contract.strategy === 'form' ? 'form' : 'text', length: value.length, sha256: crypto.createHash('sha256').update(value).digest('hex') };
