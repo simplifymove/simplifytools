@@ -41,6 +41,7 @@ type FailureClass =
   | 'Console error'
   | 'Infinite loading'
   | 'Missing main UI'
+  | 'Preview Render failure'
   | 'Timeout'
   | 'Network failure'
   | 'Missing functional audit contract'
@@ -70,13 +71,14 @@ function bodyLooksLikeErrorPage(text: string) {
 function classifyFailure(message?: string): FailureClass {
   const text = message || '';
 
+  if (/Preview Render failure|PDF preview (?:failed|did not)/i.test(text)) return 'Preview Render failure';
   if (/404|not found|could not be found/i.test(text)) return 'Route not found (404)';
   if (/500|internal server error|server error/i.test(text)) return 'Server error (500)';
   if (/primary heading|visible h1|Missing H1/i.test(text)) return 'Missing H1';
   if (/hydration/i.test(text)) return 'Hydration error';
   if (/TypeError|ReferenceError|SyntaxError|pageerror|exception|Unhandled/i.test(text)) return 'JavaScript exception';
   if (/fatal client errors|console/i.test(text)) return 'Console error';
-  if (/PDF preview failed|fake worker|WorkerMessageHandler|PDF worker/i.test(text)) return 'Processing failed';
+  if (/fake worker|WorkerMessageHandler|PDF worker/i.test(text)) return 'Processing failed';
   if (/interactive UI|main UI/i.test(text)) return 'Missing main UI';
   if (/timeout|timed out/i.test(text)) return 'Timeout';
   if (/ECONN|ENOTFOUND|net::|network/i.test(text)) return 'Network failure';

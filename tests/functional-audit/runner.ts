@@ -30,7 +30,7 @@ export interface FunctionalAuditEvidence {
   renderedOutput?: { selector: string; length: number; sha256: string };
   dialogs?: string[];
   failure?: string;
-  failureStage?: 'fixture-upload' | 'configuration' | 'processing' | 'result-flow' | 'output-validation' | 'cleanup';
+  failureStage?: 'fixture-upload' | 'preview-render' | 'configuration' | 'processing' | 'result-flow' | 'output-validation' | 'cleanup';
   stages: {
     pageHealth: 'PASS' | 'FAIL' | 'NOT_RUN';
     fixtureUpload: 'PASS' | 'FAIL' | 'NOT_APPLICABLE' | 'NOT_RUN';
@@ -114,6 +114,32 @@ async function uploadFixtures(page: Page, contract: FunctionalAuditContract): Pr
   return multiple !== null ? fixtures : [fixtures[0]];
 }
 
+async function waitForEnabledFileInput(page: Page): Promise<void> {
+  const fileInput = page.locator('input[type="file"]').first();
+  await fileInput.waitFor({ state: 'attached', timeout: 15_000 });
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    if (await fileInput.isEnabled().catch(() => false)) return;
+    await page.waitForTimeout(250);
+  }
+  throw new Error('Fixture upload failed: file input did not become enabled');
+}
+
+async function waitForPdfPreviewUi(page: Page, dialogs: string[]): Promise<void> {
+  const previewCanvas = page.locator('main canvas:visible').first();
+  const pageContainer = page.locator('main [data-testid="pdf-page"]:visible, main .pdf-page:visible, main [class*="pdf-page"]:visible').first();
+  const pageCountText = page.getByText(/(?:All Pages\s*\(\d+\)|Page\s+\d+(?:\s+of\s+\d+)?)/i).first();
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    if (
+      await previewCanvas.isVisible().catch(() => false) ||
+      await pageContainer.isVisible().catch(() => false) ||
+      await pageCountText.isVisible().catch(() => false)
+    ) return;
+    await page.waitForTimeout(500);
+  }
+  const detail = dialogs.length ? `: ${dialogs.at(-1)}` : '';
+  throw new Error(`Preview Render failure: PDF preview did not appear after fixture upload${detail}`);
+}
+
 async function prepareSpecialWorkflow(page: Page, contract: FunctionalAuditContract, dialogs: string[]): Promise<void> {
   if (contract.strategy === 'pdf-editor') {
     await page.locator('canvas').first().waitFor({ state: 'visible', timeout: 30_000 });
@@ -140,7 +166,7 @@ async function prepareSpecialWorkflow(page: Page, contract: FunctionalAuditContr
       if (dialogs.length) throw new Error(`PDF preview failed before signing: ${dialogs.at(-1)}`);
       await page.waitForTimeout(500);
     }
-    if (!(await pdfCanvas.isVisible().catch(() => false))) throw new Error('PDF preview did not render after uploading the valid fixture');
+    if (!(await pdfCanvas.isVisible().catch(() => false))) throw new Error('Preview Render failure: PDF preview canvas did not render after fixture upload');
     await pdfCanvas.click({ position: { x: 100, y: 100 } });
 
     const dialog = page.locator('.fixed.inset-0').filter({ hasText: 'Add Signature' });
@@ -277,6 +303,7 @@ export async function executeFunctionalAudit(
   });
 
   let fixtures: string[] = [];
+  let uploadedFixtureEvidence: FunctionalAuditEvidence['fixtureEvidence'] = [];
   let actionText = 'not reached';
   let output: ValidatedOutputEvidence | undefined;
   let renderedOutput: FunctionalAuditEvidence['renderedOutput'];
@@ -287,7 +314,7 @@ export async function executeFunctionalAudit(
   };
   const attachEvidence = async (failure?: string) => {
     const evidence: FunctionalAuditEvidence = {
-      fixtureEvidence: await fixtureEvidence(fixtures), inputEvidence, configuredOptions: contract.optionValues || {}, action: actionText,
+      fixtureEvidence: uploadedFixtureEvidence, inputEvidence, configuredOptions: contract.optionValues || {}, action: actionText,
       resultFlow: contract.resultFlow, apiResponses, output, renderedOutput, dialogs, failure, failureStage: failure ? failureStage : undefined, stages,
       finalUrl: page.url(), durationMs: Date.now() - startedAt,
     };
@@ -297,14 +324,20 @@ export async function executeFunctionalAudit(
   };
 
   try {
-    if (['file', 'adaptive', 'pdf-editor', 'pdf-annotate', 'pdf-esign'].includes(contract.strategy) && await page.locator('input[type="file"]').count()) {
-      if (contract.strategy === 'pdf-esign') {
-        // The page loads PDF.js through a client-side dynamic import. Automation can
-        // otherwise select the fixture before the upload handler is ready.
-        await page.waitForFunction(() => performance.getEntriesByType('resource').some((entry) => /pdfjs|pdf_mjs/i.test(entry.name)), undefined, { timeout: 15_000 });
-        await page.waitForTimeout(250);
-      }
+    if (contract.strategy === 'pdf-esign') {
+      await waitForEnabledFileInput(page);
       fixtures = await uploadFixtures(page, contract);
+      uploadedFixtureEvidence = await fixtureEvidence(fixtures);
+      await testInfo.attach('fixture-evidence.json', {
+        body: Buffer.from(JSON.stringify(uploadedFixtureEvidence, null, 2)),
+        contentType: 'application/json',
+      });
+      stages.fixtureUpload = 'PASS';
+      failureStage = 'preview-render';
+      await waitForPdfPreviewUi(page, dialogs);
+    } else if (['file', 'adaptive', 'pdf-editor', 'pdf-annotate'].includes(contract.strategy) && await page.locator('input[type="file"]').count()) {
+      fixtures = await uploadFixtures(page, contract);
+      uploadedFixtureEvidence = await fixtureEvidence(fixtures);
       stages.fixtureUpload = 'PASS';
     } else {
       stages.fixtureUpload = 'NOT_APPLICABLE';
@@ -429,7 +462,7 @@ export async function executeFunctionalAudit(
     return await attachEvidence();
   } catch (error) {
     if (failureStage === 'fixture-upload') stages.fixtureUpload = 'FAIL';
-    else if (failureStage === 'configuration' || failureStage === 'processing' || failureStage === 'result-flow') stages.functionalProcessing = 'FAIL';
+    else if (failureStage === 'preview-render' || failureStage === 'configuration' || failureStage === 'processing' || failureStage === 'result-flow') stages.functionalProcessing = 'FAIL';
     else if (failureStage === 'output-validation') stages.outputValidation = 'FAIL';
     const message = error instanceof Error ? error.message : String(error);
     await attachEvidence(message);

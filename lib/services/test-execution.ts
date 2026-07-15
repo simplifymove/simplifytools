@@ -795,6 +795,7 @@ function markerToIndividualTestResult(marker: any, category: string): Individual
 function classifyAuditFailure(message?: string): string {
   const text = message || '';
 
+  if (/Preview Render failure|PDF preview (?:failed|did not)/i.test(text)) return 'Preview Render failure';
   if (/404|not found|could not be found/i.test(text)) return 'Route not found (404)';
   if (/500|internal server error|server error/i.test(text)) return 'Server error (500)';
   if (/primary heading|visible h1|Missing H1/i.test(text)) return 'Missing H1';
@@ -822,6 +823,7 @@ export function mapAuditFailureToFailureType(failureClass?: string): string {
       return 'BACKEND_CRASH';
     case 'Missing H1':
     case 'Missing main UI':
+    case 'Preview Render failure':
     case 'Infinite loading':
     case 'Playwright failure':
       return 'PLAYWRIGHT_SELECTOR';
