@@ -88,6 +88,8 @@ export default function PdfToolPage({ params }: PageProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     setFiles(selectedFiles);
+    setPageOrder([]);
+    setTotalPages(0);
     setError('');
   };
 
@@ -105,8 +107,14 @@ export default function PdfToolPage({ params }: PageProps) {
     setError('');
     setResult(null);
 
+    // pageOrder is owned by the visual reorderer, but validation and submission
+    // must read the same canonical value.
+    const submissionOptions = tool.id === 'rearrange-pdf'
+      ? { ...options, pageOrder }
+      : { ...options };
+
     // Validate input (includes tool-specific options validation)
-    const validation = validatePdfInput(tool, files, url, options);
+    const validation = validatePdfInput(tool, files, url, submissionOptions);
     if (!validation.valid) {
       setError(validation.error || 'Validation failed');
       return;
@@ -141,12 +149,6 @@ export default function PdfToolPage({ params }: PageProps) {
     try {
       const formData = new FormData();
       formData.append('tool', tool.id);
-      
-      // Include pageOrder for rearrange-pdf
-      const submissionOptions = { ...options };
-      if (tool.id === 'rearrange-pdf' && pageOrder.length > 0) {
-        submissionOptions.pageOrder = pageOrder;
-      }
       
       formData.append('options', JSON.stringify(submissionOptions));
 
