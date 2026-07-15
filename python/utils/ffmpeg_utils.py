@@ -17,6 +17,14 @@ def _get_ffmpeg_executable() -> str:
     Get the full path to FFmpeg executable
     Handles Windows CapCut installation specially
     """
+    configured_path = os.environ.get('FFMPEG_PATH')
+    if configured_path and os.path.isfile(configured_path):
+        return configured_path
+
+    project_binary = Path(__file__).resolve().parents[2] / 'node_modules' / 'ffmpeg-static' / ('ffmpeg.exe' if sys.platform == 'win32' else 'ffmpeg')
+    if project_binary.is_file():
+        return str(project_binary)
+
     # Windows: try CapCut location first
     if sys.platform == 'win32':
         capcut_path = r'I:\CapCut\5.3.0.1964\ffmpeg.exe'
@@ -60,6 +68,17 @@ def _get_ffprobe_executable() -> str:
     Get the full path to FFprobe executable
     Handles Windows CapCut installation specially
     """
+    configured_path = os.environ.get('FFPROBE_PATH')
+    if configured_path and os.path.isfile(configured_path):
+        return configured_path
+
+    platform_name = 'win32' if sys.platform == 'win32' else ('darwin' if sys.platform == 'darwin' else 'linux')
+    architecture = 'x64' if sys.maxsize > 2**32 else 'ia32'
+    executable = 'ffprobe.exe' if sys.platform == 'win32' else 'ffprobe'
+    project_binary = Path(__file__).resolve().parents[2] / 'node_modules' / 'ffprobe-static' / 'bin' / platform_name / architecture / executable
+    if project_binary.is_file():
+        return str(project_binary)
+
     # Windows: try CapCut location first
     if sys.platform == 'win32':
         capcut_path = r'I:\CapCut\5.3.0.1964\ffprobe.exe'

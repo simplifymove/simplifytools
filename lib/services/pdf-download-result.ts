@@ -70,7 +70,7 @@ const OUTPUT_SUFFIXES: Record<string, string> = {
 
 export const BROWSER_PDF_RESULT_TOOLS = new Set(['edit-pdf']);
 
-export interface SafePdfDownloadResult extends PublicDownloadResult {
+export interface SafePdfDownloadResult extends Omit<PublicDownloadResult, 'id'> {
   success: true;
   resultId: string;
 }
@@ -172,7 +172,11 @@ export async function retainPdfDownloadResult({
       result: {
         success: true,
         resultId: downloadResult.id,
-        ...downloadResult,
+        downloadPageUrl: downloadResult.downloadPageUrl,
+        outputName: downloadResult.outputName,
+        mimeType: downloadResult.mimeType,
+        fileSize: downloadResult.fileSize,
+        expiresAt: downloadResult.expiresAt,
       },
       retainedPath,
     };

@@ -41,26 +41,8 @@ export const PdfPageReorderer: React.FC<PdfPageReordererProps> = ({
       setLoading(true);
       setError('');
       try {
-        // Dynamically load pdfjs from CDN
-        const pdfjsScript = document.createElement('script');
-        pdfjsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        pdfjsScript.async = true;
-        
-        await new Promise<void>((resolve, reject) => {
-          pdfjsScript.onload = () => resolve();
-          pdfjsScript.onerror = () => reject(new Error('Failed to load PDF.js from CDN'));
-          document.head.appendChild(pdfjsScript);
-        });
-
-        // Get pdfjs from window
-        const pdfjsLib = (window as any).pdfjsLib || (window as any).pdfjs;
-        if (!pdfjsLib) {
-          throw new Error('PDF.js library is not available');
-        }
-
-        // Set the worker path
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
         const arrayBuffer = await pdfFile.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);

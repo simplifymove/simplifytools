@@ -1,0 +1,2496 @@
+{
+  "generatedAt": "2026-07-15T10:11:46.077Z",
+  "total": 355,
+  "counts": {
+    "EXTERNAL_CONFIGURED": 52,
+    "LOCAL_DETERMINISTIC": 298,
+    "EXTERNAL_NOT_CONFIGURED": 5
+  },
+  "tools": [
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "paragraph-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "content-improver",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "content-summarizer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "grammar-fixer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "translate",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "blog-post-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "faq-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "word-counter",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "sentence-rewriter",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "paragraph-rewriter",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "title-rewriter",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "essay-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "story-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "article-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "instagram-caption-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "twitter-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "linkedin-post-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "cold-email-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "business-name-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "product-description-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "press-release-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "job-description-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "cover-letter-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "proposal-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "contract-summary",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "research-paper-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "poem-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "song-lyric-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "movie-script-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "tiktok-caption-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "facebook-post-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "youtube-description-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "youtube-title-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "article-rewriter",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "blog-post-rewriter",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "tone-of-voice",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "ai-humanizer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "explain-it",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "keyword-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "outline-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "question-generator",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "brainstorm-ideas",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "text-expander",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "fiction-writer",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "content-paraphraser",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "ai-writing-tools",
+      "toolSlug": "ai-detector",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "merge-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "split-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "rotate-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "rearrange-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "crop-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-page-deleter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "create-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "protect-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "unlock-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-watermark-remover",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-tiff",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "jpg-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "png-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "tiff-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "webp-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "gif-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "heic-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "eps-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "images-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-word",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "word-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-powerpoint",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "powerpoint-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-excel",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-csv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-text",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-epub",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-mobi",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-azw3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "epub-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "mobi-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "azw3-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "url-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "ms-outlook-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "edit-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "add-watermark",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "add-numbers-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "annotate-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "esign-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "extract-text-from-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "extract-images-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "extract-tables-from-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-docx",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-pptx",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-xlsx",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-html",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-to-rtf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "compress-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-translator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-ocr",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-deskew",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "pdf-tools",
+      "toolSlug": "pdf-enhance-scan",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "ai-image-gen",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "OpenRouter",
+      "rateSensitive": true
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "remove-bg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "upscale",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "remove-watermark",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "remove-objects",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "profile-photo",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "blur-bg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "unblur",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "cleanup",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "colorize",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "combine",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "transparent-bg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "crop",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "round-image",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "add-text",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "bw",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "splitter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "add-images",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "add-border",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "translate-img",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "reverse-img",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "collage",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "flip",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "metadata",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "chart-maker",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "font-awesome",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "rotate",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "resize",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "grayscale",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "blur-image",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "sharpen-image",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "watermark-image",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "image-enhancer",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vintage-filter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "color-grader",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "posterize",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "sepia-filter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vignette-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "pdf-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "image-to-text",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "pdf-to-text",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "compress",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "heic-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "webp-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "png-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "webp-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "jpg-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "png-webp",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "jpg-webp",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "png-svg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "jpg-svg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "heic-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "edit-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "gif-mp4",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "mp4-gif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "jpg-gif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "tiff-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "webp-gif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "png-eps",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "jpg-tif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "psd-ai",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "psd-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "psd-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "gif-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "tiff-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "gif-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "png-tiff",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "eps-svg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "tiff-text",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "eps-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "jpg-avif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vsd-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "png-avif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "psd-svg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "tiff-svg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vsdx-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vsdx-pptx",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vsdx-docx",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vsd-docx",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "webp-avif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vsdx-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "heic-avif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "tiff-avif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vsd-pptx",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "bmp-jpg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "bmp-png",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "pixelate-image",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "invert-colors",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "hue-saturation",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "cartoon-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "sketch-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "add-opacity",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "glow-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "mirror-image",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "oil-paint-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "emboss-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "duotone-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "neon-glow",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "motion-blur",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "glitch-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "lens-flare",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "tilt-shift",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "chromatic-aberration",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "kaleidoscope",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "dream-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "film-noir",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "sunburst",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "blur-zoom",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "vhs-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "swirl-distortion",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "thermal-vision",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "mosaic-tile",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "brightness-contrast",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "solarize-effect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "color-balance",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "edge-detect",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "histogram-equalize",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "image-tools",
+      "toolSlug": "white-balance",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mp4-to-mp3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mov-to-mp4",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mp4-to-wav",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mute-video",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "extract-audio-from-video",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "trim-video",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "resize-video",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "video-to-gif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "compress-video",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "compress-mov",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "compress-avi",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "compress-mkv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "video-to-webp",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mp4-to-webm",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "audio-to-text",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "Groq",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "video-to-text",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "Groq",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "youtube-to-text",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "Groq",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "youtube-transcript",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "Groq",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "transcribe-podcast",
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "Groq",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "instagram-download",
+      "classification": "EXTERNAL_NOT_CONFIGURED",
+      "provider": "Downloader provider",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "tiktok-video-download",
+      "classification": "EXTERNAL_NOT_CONFIGURED",
+      "provider": "Downloader provider",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "twitter-download",
+      "classification": "EXTERNAL_NOT_CONFIGURED",
+      "provider": "Downloader provider",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "facebook-download",
+      "classification": "EXTERNAL_NOT_CONFIGURED",
+      "provider": "Downloader provider",
+      "rateSensitive": true
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "summarize-podcast",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "add-subtitles",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mp4-to-avi",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "avi-to-mp4",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mov-to-mp3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "aac-to-mp3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "webm-to-mp3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "ogg-to-wav",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "avi-to-mov",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mkv-to-gif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "avi-to-mkv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "aac-to-m4r",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mp4-to-mov",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mkv-to-mp3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mov-to-avi",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "avi-to-gif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "aac-to-wav",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "aac-to-flac",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mkv-to-mp4",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mov-to-gif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "gif-to-mov",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "m4a-to-mp4",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mkv-to-avi",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "avi-to-mp3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "m4a-to-mp3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mp4-to-gif",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "ogg-to-mp3",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "m4a-to-wav",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "gif-to-webp",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "webm-to-mov",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mkv-to-mov",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "aac-to-mp4",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "webm-to-mp4",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "video-tools",
+      "toolSlug": "mp4-to-ogg",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "code-minifier",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "code-beautifier",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "json-formatter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "html-formatter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "html-minifier",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "css-formatter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "css-minifier",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "xml-formatter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "xml-minifier",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "sql-formatter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "base64-encode",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "base64-decode",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "url-encode",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "url-decode",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "case-converter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "json-to-csv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "csv-to-json",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "json-to-xml",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "xml-to-json",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "json-to-yaml",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "yaml-to-json",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "html-encode",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "html-decode",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "slug-generator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "json-validator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "html-validator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "xml-validator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "yaml-validator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "markdown-validator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "jwt-decoder",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "regex-tester",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "text-diff",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "uuid-generator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "hash-generator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "password-generator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "lorem-ipsum-generator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "random-string-generator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "color-converter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "base32-encode",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "base32-decode",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "markdown-to-html",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "escape-unescape",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "number-base-converter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "temperature-converter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "cron-expression-generator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "unix-timestamp-converter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "qr-code-generator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "json-schema-validator",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "code-tools",
+      "toolSlug": "csv-json-converter",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "csv-to-excel",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "excel-to-csv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "xml-to-excel",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "xml-to-csv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "excel-to-xml",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "excel-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "csv-to-json",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "json-to-xml",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "xml-to-json",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "csv-to-xml",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "split-csv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-tools",
+      "toolSlug": "split-excel",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "csv-to-excel",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "excel-to-csv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "xml-to-excel",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "xml-to-csv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "excel-to-xml",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "excel-to-pdf",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "csv-to-json",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "json-to-xml",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "xml-to-json",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "csv-to-xml",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "split-csv",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "data-conversion-tools",
+      "toolSlug": "split-excel",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "financial-calculators",
+      "toolSlug": "startup-runway",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "financial-calculators",
+      "toolSlug": "saas-profit",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "financial-calculators",
+      "toolSlug": "loan-optimizer",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "financial-calculators",
+      "toolSlug": "india-tax",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "resume-maker",
+      "toolSlug": "resume-job-match",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    },
+    {
+      "category": "save-from-online",
+      "toolSlug": "save-from-online",
+      "classification": "EXTERNAL_NOT_CONFIGURED",
+      "provider": "Downloader provider",
+      "rateSensitive": true
+    },
+    {
+      "category": "text-to-speech",
+      "toolSlug": "text-to-speech",
+      "classification": "LOCAL_DETERMINISTIC",
+      "provider": null,
+      "rateSensitive": false
+    }
+  ]
+}

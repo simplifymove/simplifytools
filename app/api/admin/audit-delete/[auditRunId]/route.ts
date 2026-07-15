@@ -2,36 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { deleteArtifactsForAuditRuns } from '@/lib/services/artifact';
 
 interface RouteParams {
   auditRunId: string;
-}
-
-/**
- * Recursively delete directory and all contents
- */
-async function deleteDirectory(dirPath: string): Promise<void> {
-  try {
-    const files = await fs.readdir(dirPath, { withFileTypes: true });
-    
-    for (const file of files) {
-      const fullPath = path.join(dirPath, file.name);
-      if (file.isDirectory()) {
-        await deleteDirectory(fullPath);
-      } else {
-        await fs.unlink(fullPath);
-      }
-    }
-    
-    await fs.rmdir(dirPath);
-  } catch (err: any) {
-    // Directory might not exist, which is fine
-    if (err.code !== 'ENOENT') {
-      logger.warn({ error: err, dirPath }, 'Failed to delete directory');
-    }
-  }
 }
 
 export async function DELETE(
@@ -55,10 +29,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Audit not found' }, { status: 404 });
     }
 
-    // Delete artifacts from filesystem
-    const artifactsDir = path.join(process.cwd(), 'public', 'audit-artifacts', auditRunId);
-    logger.info({ auditRunId, artifactsDir }, 'Deleting artifact directory');
-    await deleteDirectory(artifactsDir);
+    // Delete managed artifact files and their metadata records.
+    const artifactsDeleted = await deleteArtifactsForAuditRuns([auditRunId]);
 
     // Use transaction to delete all related DB records
     logger.info({ auditRunId }, 'Starting database transaction for deletion');
@@ -78,7 +50,7 @@ export async function DELETE(
         });
 
         // 3. Delete Playwright artifacts
-        const artifactsDeleted = await tx.playwrightArtifact.deleteMany({
+        await tx.playwrightArtifact.deleteMany({
           where: { auditRunId },
         });
 
@@ -95,7 +67,7 @@ export async function DELETE(
         return {
           testResults: testResultsDeleted.count,
           failures: failuresDeleted.count,
-          artifacts: artifactsDeleted.count,
+          artifacts: artifactsDeleted,
           jobs: jobsDeleted.count,
           runs: runDeleted.count,
         };

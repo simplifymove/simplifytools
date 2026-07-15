@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { Upload, AlertCircle, Shield } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import Script from 'next/script';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { motion } from 'framer-motion';
@@ -25,27 +24,6 @@ export default function EditPdfPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
-
-  // Load PDF.js library
-  useEffect(() => {
-    const loadPdfJs = async () => {
-      if (typeof window !== 'undefined' && !(window as any).pdfjsLib) {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        script.async = true;
-        script.onload = () => {
-          const pdfjs = (window as any).pdfjsLib;
-          if (pdfjs) {
-            pdfjs.GlobalWorkerOptions.workerSrc = 
-              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-          }
-        };
-        document.head.appendChild(script);
-      }
-    };
-
-    loadPdfJs();
-  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];

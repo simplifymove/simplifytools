@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 
 const category = process.argv[2];
@@ -14,6 +14,9 @@ const specFile = category === 'pdf-tools' && process.env.PDF_AUDIT_DEEP === 'tru
   ? 'tests/pdf-tools.spec.ts'
   : 'tests/tool-category.spec.ts';
 const args = [require.resolve('@playwright/test/cli'), 'test', specFile];
+if (process.env.AUDIT_GREP) {
+  args.push('--grep', process.env.AUDIT_GREP);
+}
 
 if (specFile === 'tests/tool-category.spec.ts') {
   const requestedWorkers = process.env.AUDIT_WORKERS || '1';
@@ -32,11 +35,77 @@ const child = spawn(command, args, {
     ...process.env,
     AUDIT_CATEGORY: category,
   },
-  stdio: 'inherit',
+  stdio: ['inherit', 'pipe', 'pipe'],
   shell: false,
+  windowsHide: true,
 });
 
+let settledFromSummary = false;
+let summaryExitCode = 1;
+let lineBuffer = '';
+let observedFailure = false;
+let observedResultCount = 0;
+let expectedResultCount = 0;
+
+function stopOwnedProcessTree() {
+  if (!child.pid) return;
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true });
+  } else if (!child.killed) {
+    child.kill('SIGTERM');
+  }
+}
+
+function inspectOutput(chunk) {
+  lineBuffer += chunk;
+  const lines = lineBuffer.split(/\r?\n/);
+  lineBuffer = lines.pop() || '';
+  for (const line of lines) {
+    const runningMatch = /Running\s+(\d+)\s+tests?/.exec(line);
+    if (runningMatch) expectedResultCount = Number(runningMatch[1]);
+    const resultMarker = line.indexOf('AUDIT_TOOL_RESULT:');
+    if (resultMarker >= 0) {
+      try {
+        const result = JSON.parse(line.slice(resultMarker + 'AUDIT_TOOL_RESULT:'.length));
+        observedResultCount += 1;
+        observedFailure ||= result.status === 'failed';
+      } catch {
+        // The Playwright exit code remains authoritative for malformed markers.
+      }
+    }
+    const categorySummaryIndex = line.indexOf('CATEGORY_AUDIT_SUMMARY ');
+    const finalPlaywrightSummary = /^\s*\d+\s+(?:failed|passed|skipped)(?:\s|,|\()/.test(line);
+    const completeCategorySummary = categorySummaryIndex >= 0 && expectedResultCount > 0 && observedResultCount >= expectedResultCount;
+    if ((!completeCategorySummary && !finalPlaywrightSummary) || settledFromSummary) continue;
+    try {
+      settledFromSummary = true;
+      if (completeCategorySummary) {
+        const summary = JSON.parse(line.slice(categorySummaryIndex + 'CATEGORY_AUDIT_SUMMARY '.length));
+        summaryExitCode = observedFailure || Number(summary.failedCount || 0) > 0 ? 1 : 0;
+      } else {
+        summaryExitCode = observedFailure || /\bfailed\b/.test(line) ? 1 : 0;
+      }
+      setTimeout(() => {
+        stopOwnedProcessTree();
+        setTimeout(() => process.exit(summaryExitCode), 250);
+      }, 750);
+    } catch {
+      // The normal exit handler remains authoritative.
+    }
+  }
+}
+
+child.stdout.on('data', (chunk) => {
+  const text = chunk.toString();
+  process.stdout.write(text);
+  inspectOutput(text);
+});
+child.stderr.on('data', (chunk) => process.stderr.write(chunk));
+
 child.on('exit', (code, signal) => {
+  if (settledFromSummary) {
+    process.exit(summaryExitCode);
+  }
   if (signal) {
     console.error(`Category audit for ${category} stopped by signal ${signal}`);
     process.exit(1);

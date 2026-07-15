@@ -22,6 +22,10 @@ function parseAuditRunMessage(errorMessage: string | null) {
   return null;
 }
 
+function parseResultLogs(logs: string | null) {
+  try { return logs ? JSON.parse(logs) : {}; } catch { return {}; }
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<RouteParams> }
@@ -117,23 +121,62 @@ export async function GET(
       include: {
         testResults: {
           select: {
+            category: true,
             toolSlug: true,
             status: true,
+            durationMs: true,
+            outputType: true,
+            logs: true,
           },
         },
       },
     });
 
+    const targetKey = (result: { category: string; toolSlug: string }) => `${result.category}/${result.toolSlug}`;
     const currentFailed = new Set(
       auditRun.testResults
         .filter((result) => result.status === 'FAIL' || result.status === 'ERROR')
-        .map((result) => result.toolSlug)
+        .map(targetKey)
     );
     const previousFailed = new Set(
       previousRun?.testResults
         .filter((result) => result.status === 'FAIL' || result.status === 'ERROR')
-        .map((result) => result.toolSlug) || []
+        .map(targetKey) || []
     );
+    const previousByTarget = new Map(previousRun?.testResults.map((result) => [targetKey(result), result]) || []);
+    const statusChanges: Array<{ category: string; toolSlug: string; previous: string; current: string }> = [];
+    const durationRegressions: Array<{ category: string; toolSlug: string; previousMs: number; currentMs: number; percentSlower: number }> = [];
+    const outputSizeRegressions: Array<{ category: string; toolSlug: string; previousBytes: number; currentBytes: number; percentChange: number }> = [];
+    const mimeOrExtensionChanges: Array<{ category: string; toolSlug: string; previous: string; current: string }> = [];
+    const newConsoleErrors: Array<{ category: string; toolSlug: string; errors: string[] }> = [];
+    const newApiErrors: Array<{ category: string; toolSlug: string; errors: string[] }> = [];
+
+    for (const current of auditRun.testResults) {
+      const previous = previousByTarget.get(targetKey(current));
+      if (!previous) continue;
+      if (previous.status !== current.status) statusChanges.push({ category: current.category, toolSlug: current.toolSlug, previous: previous.status, current: current.status });
+      if (current.durationMs > previous.durationMs * 1.5 && current.durationMs - previous.durationMs >= 2_000) {
+        durationRegressions.push({ category: current.category, toolSlug: current.toolSlug, previousMs: previous.durationMs, currentMs: current.durationMs,
+          percentSlower: Number((((current.durationMs - previous.durationMs) / Math.max(previous.durationMs, 1)) * 100).toFixed(1)) });
+      }
+      const currentLogs = parseResultLogs(current.logs);
+      const previousLogs = parseResultLogs(previous.logs);
+      const currentOutput = currentLogs.functionalEvidence?.output;
+      const previousOutput = previousLogs.functionalEvidence?.output;
+      if (currentOutput?.sizeBytes && previousOutput?.sizeBytes) {
+        const change = ((currentOutput.sizeBytes - previousOutput.sizeBytes) / previousOutput.sizeBytes) * 100;
+        if (Math.abs(change) > 40) outputSizeRegressions.push({ category: current.category, toolSlug: current.toolSlug, previousBytes: previousOutput.sizeBytes, currentBytes: currentOutput.sizeBytes, percentChange: Number(change.toFixed(1)) });
+      }
+      const currentType = `${currentOutput?.mimeType || current.outputType || ''}|${currentOutput?.extension || ''}`;
+      const previousType = `${previousOutput?.mimeType || previous.outputType || ''}|${previousOutput?.extension || ''}`;
+      if (currentType !== previousType) mimeOrExtensionChanges.push({ category: current.category, toolSlug: current.toolSlug, previous: previousType, current: currentType });
+      const addedConsole = (currentLogs.consoleErrors || []).filter((error: string) => !(previousLogs.consoleErrors || []).includes(error));
+      if (addedConsole.length) newConsoleErrors.push({ category: current.category, toolSlug: current.toolSlug, errors: addedConsole });
+      const apiErrors = (logs: any) => (logs.functionalEvidence?.apiResponses || []).filter((response: any) => response.status >= 400).map((response: any) => `${response.method} ${response.url} ${response.status}`);
+      const previousApiErrors = apiErrors(previousLogs);
+      const addedApi = apiErrors(currentLogs).filter((error: string) => !previousApiErrors.includes(error));
+      if (addedApi.length) newApiErrors.push({ category: current.category, toolSlug: current.toolSlug, errors: addedApi });
+    }
 
     const comparison = {
       previousAuditRunId: previousRun?.id || null,
@@ -145,6 +188,12 @@ export async function GET(
       passRateTrend: previousRun
         ? parseFloat((auditRun.successPercentage - previousRun.successPercentage).toFixed(2))
         : null,
+      statusChanges,
+      durationRegressions,
+      outputSizeRegressions,
+      mimeOrExtensionChanges,
+      newConsoleErrors,
+      newApiErrors,
     };
 
     return NextResponse.json({

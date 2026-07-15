@@ -140,7 +140,16 @@ export async function validateVideoMagicBytes(
           detectedType = 'mkv/webm';
           isValid = true;
         } else if (bytes.slice(0, 4).every((v, i) => v === signatures.avi[i])) {
-          detectedType = 'avi';
+          detectedType = bytes.slice(8, 12).every((v, i) => v === new Uint8Array([0x57, 0x41, 0x56, 0x45])[i]) ? 'wav' : 'avi';
+          isValid = true;
+        } else if (bytes.slice(0, 4).every((v, i) => v === new Uint8Array([0x4f, 0x67, 0x67, 0x53])[i])) {
+          detectedType = 'ogg';
+          isValid = true;
+        } else if (bytes.slice(0, 4).every((v, i) => v === new Uint8Array([0x66, 0x4c, 0x61, 0x43])[i])) {
+          detectedType = 'flac';
+          isValid = true;
+        } else if (bytes.slice(0, 3).every((v, i) => v === new Uint8Array([0x49, 0x44, 0x33])[i]) || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)) {
+          detectedType = file.name.toLowerCase().endsWith('.aac') ? 'aac' : 'mp3';
           isValid = true;
         } else if (bytes.slice(0, 4).every((v, i) => v === signatures.mov[i])) {
           detectedType = 'mov';

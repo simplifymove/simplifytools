@@ -9,7 +9,7 @@ const initPdfJs = async () => {
   if (!pdfjsLib && typeof window !== 'undefined') {
     try {
       pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
     } catch (error) {
       console.error('Failed to load pdfjs-dist:', error);
     }

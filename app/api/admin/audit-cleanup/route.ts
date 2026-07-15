@@ -2,32 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
-import { promises as fs } from 'fs';
-import path from 'path';
-
-/**
- * Recursively delete directory and all contents
- */
-async function deleteDirectory(dirPath: string): Promise<void> {
-  try {
-    const files = await fs.readdir(dirPath, { withFileTypes: true });
-    
-    for (const file of files) {
-      const fullPath = path.join(dirPath, file.name);
-      if (file.isDirectory()) {
-        await deleteDirectory(fullPath);
-      } else {
-        await fs.unlink(fullPath);
-      }
-    }
-    
-    await fs.rmdir(dirPath);
-  } catch (err: any) {
-    if (err.code !== 'ENOENT') {
-      logger.warn({ error: err, dirPath }, 'Failed to delete directory');
-    }
-  }
-}
+import { deleteArtifactsForAuditRuns } from '@/lib/services/artifact';
 
 export async function POST(req: NextRequest) {
   try {
@@ -78,14 +53,9 @@ export async function POST(req: NextRequest) {
 
     const auditIds = auditsToDelete.map(a => a.id);
 
-    // Delete artifacts from filesystem
-    logger.info({ count: auditIds.length }, 'Deleting artifact directories');
-    const artifactsBaseDir = path.join(process.cwd(), 'public', 'audit-artifacts');
-    
-    for (const auditId of auditIds) {
-      const auditDir = path.join(artifactsBaseDir, auditId);
-      await deleteDirectory(auditDir);
-    }
+    // Delete managed artifact files and their metadata records.
+    logger.info({ count: auditIds.length }, 'Deleting managed audit artifacts');
+    const artifactsDeleted = await deleteArtifactsForAuditRuns(auditIds);
 
     // Delete from database using transaction
     const deletionResult = await prisma.$transaction(
@@ -103,7 +73,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Delete Playwright artifacts
-        const artifactsDeleted = await tx.playwrightArtifact.deleteMany({
+        await tx.playwrightArtifact.deleteMany({
           where: { auditRunId: { in: auditIds } },
         });
 
@@ -121,7 +91,7 @@ export async function POST(req: NextRequest) {
           audits: runsDeleted.count,
           testResults: testResultsDeleted.count,
           failures: failuresDeleted.count,
-          artifacts: artifactsDeleted.count,
+          artifacts: artifactsDeleted,
           jobs: jobsDeleted.count,
         };
       }

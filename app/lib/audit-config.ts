@@ -7,6 +7,14 @@ export const CATEGORY_TEST_COMMANDS = {
   'pdf-tools': 'npm run test:pdf-tools',
   'image-tools': 'npm run test:image-tools',
   'video-tools': 'npm run test:video-tools',
+  'ai-writing-tools': 'npm run test:ai-writing-tools',
+  'code-tools': 'npm run test:code-tools',
+  'data-tools': 'npm run test:data-tools',
+  'data-conversion-tools': 'npm run test:data-conversion-tools',
+  'financial-calculators': 'npm run test:financial-calculators',
+  'resume-maker': 'npm run test:resume-maker',
+  'save-from-online': 'npm run test:save-from-online',
+  'text-to-speech': 'npm run test:text-to-speech',
 } as const;
 
 export type AuditCategory = keyof typeof CATEGORY_TEST_COMMANDS;

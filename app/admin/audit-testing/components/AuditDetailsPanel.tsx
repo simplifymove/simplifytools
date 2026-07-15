@@ -47,6 +47,12 @@ interface AuditDetails {
     currentPassRate: number;
     healthPercent: number;
     passRateTrend?: number | null;
+    statusChanges?: Array<{ category: string; toolSlug: string; previous: string; current: string }>;
+    durationRegressions?: Array<{ category: string; toolSlug: string; previousMs: number; currentMs: number; percentSlower: number }>;
+    outputSizeRegressions?: Array<{ category: string; toolSlug: string; previousBytes: number; currentBytes: number; percentChange: number }>;
+    mimeOrExtensionChanges?: Array<{ category: string; toolSlug: string; previous: string; current: string }>;
+    newConsoleErrors?: Array<{ category: string; toolSlug: string; errors: string[] }>;
+    newApiErrors?: Array<{ category: string; toolSlug: string; errors: string[] }>;
   };
 }
 
@@ -83,6 +89,21 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
     acc[result.category] = current;
     return acc;
   }, {} as Record<string, { total: number; passed: number; failed: number; skipped: number }> ) || {};
+  const verificationSummary = details?.testResults.reduce((summary, result) => {
+    const logs = parseLogs(result.logs) as Record<string, any>;
+    if (logs.pageHealth === 'PASS') summary.pageHealthPassed += 1;
+    if (logs.functionalProcessing === 'PASS') summary.functionalProcessingPassed += 1;
+    if (logs.outputValidation === 'PASS') summary.outputValidationPassed += 1;
+    const outcome = logs.auditOutcome;
+    if (outcome === 'FULLY_VERIFIED') summary.fullyVerified += 1;
+    else if (outcome === 'SKIPPED_EXTERNAL') summary.skippedExternal += 1;
+    else if (outcome === 'NOT_CONFIGURED') summary.notConfigured += 1;
+    else if (outcome === 'RATE_LIMITED') summary.rateLimited += 1;
+    else if (outcome === 'PAID_PROVIDER_DISABLED') summary.paidProviderDisabled += 1;
+    else if (outcome === 'FAILED' || result.status === 'FAIL' || result.status === 'ERROR') summary.failed += 1;
+    return summary;
+  }, { pageHealthPassed: 0, functionalProcessingPassed: 0, outputValidationPassed: 0, fullyVerified: 0, skippedExternal: 0, notConfigured: 0, rateLimited: 0, paidProviderDisabled: 0, failed: 0 }) ||
+    { pageHealthPassed: 0, functionalProcessingPassed: 0, outputValidationPassed: 0, fullyVerified: 0, skippedExternal: 0, notConfigured: 0, rateLimited: 0, paidProviderDisabled: 0, failed: 0 };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8">
@@ -102,24 +123,36 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
 
       {details && !loading && (
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-4 gap-4">
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="text-xs text-gray-500">Overall Health</div>
-              <div className="text-2xl font-bold text-gray-900">{details.comparison?.healthPercent?.toFixed(1) ?? details.stats.successPercentage.toFixed(1)}%</div>
-            </div>
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="text-xs text-gray-500">New Failures</div>
-              <div className="text-2xl font-bold text-red-600">{details.comparison?.newFailures.length || 0}</div>
-            </div>
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="text-xs text-gray-500">Fixed Failures</div>
-              <div className="text-2xl font-bold text-green-600">{details.comparison?.fixedFailures.length || 0}</div>
-            </div>
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="text-xs text-gray-500">Pass Rate Trend</div>
-              <div className="text-2xl font-bold text-gray-900">
-                {details.comparison?.passRateTrend == null ? '-' : `${details.comparison.passRateTrend > 0 ? '+' : ''}${details.comparison.passRateTrend.toFixed(1)}%`}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              ['Page Health Passed', verificationSummary.pageHealthPassed, 'text-blue-700'],
+              ['Functional Processing Passed', verificationSummary.functionalProcessingPassed, 'text-blue-700'],
+              ['Output Validation Passed', verificationSummary.outputValidationPassed, 'text-blue-700'],
+              ['Fully Verified', verificationSummary.fullyVerified, 'text-green-700'],
+              ['Skipped External', verificationSummary.skippedExternal, 'text-gray-700'],
+              ['Not Configured', verificationSummary.notConfigured, 'text-amber-700'],
+              ['Rate Limited', verificationSummary.rateLimited, 'text-amber-700'],
+              ['Paid Provider Disabled', verificationSummary.paidProviderDisabled, 'text-amber-700'],
+              ['Failed', verificationSummary.failed, 'text-red-700'],
+            ].map(([label, value, color]) => (
+              <div key={String(label)} className="rounded-lg border border-gray-200 p-4">
+                <div className="text-xs text-gray-500">{label}</div>
+                <div className={`text-2xl font-bold ${color}`}>{value}</div>
               </div>
+            ))}
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4 text-sm text-gray-700">
+            <div className="font-semibold text-gray-900">Regression comparison</div>
+            <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              <div>New failures: {details.comparison?.newFailures.length || 0}</div>
+              <div>Fixed tools: {details.comparison?.fixedFailures.length || 0}</div>
+              <div>Status changes: {details.comparison?.statusChanges?.length || 0}</div>
+              <div>Duration warnings: {details.comparison?.durationRegressions?.length || 0}</div>
+              <div>Output-size warnings: {details.comparison?.outputSizeRegressions?.length || 0}</div>
+              <div>MIME/extension changes: {details.comparison?.mimeOrExtensionChanges?.length || 0}</div>
+              <div>New console errors: {details.comparison?.newConsoleErrors?.length || 0}</div>
+              <div>New API errors: {details.comparison?.newApiErrors?.length || 0}</div>
             </div>
           </div>
 
@@ -176,6 +209,7 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Status</th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Duration</th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Failure</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Functional evidence</th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Screenshot</th>
                 </tr>
               </thead>
@@ -183,6 +217,9 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
                 {details.testResults.map((result) => {
                   const logs = parseLogs(result.logs);
                   const consoleErrors = Array.isArray(logs.consoleErrors) ? logs.consoleErrors : [];
+                  const evidence = logs.functionalEvidence && typeof logs.functionalEvidence === 'object'
+                    ? logs.functionalEvidence as Record<string, any>
+                    : null;
 
                   return (
                     <tr key={result.id}>
@@ -203,6 +240,17 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
                         {consoleErrors.length > 0 && (
                           <div className="mt-1 text-red-600">{consoleErrors.length} console error(s)</div>
                         )}
+                      </td>
+                      <td className="px-3 py-3 text-xs text-gray-600 max-w-sm">
+                        {evidence ? (
+                          <div className="space-y-1">
+                            <div>{evidence.fixtureEvidence?.length || 0} fixture(s) · {evidence.resultFlow || '-'}</div>
+                            {evidence.output && <div>{evidence.output.filename} · {evidence.output.sizeBytes} B</div>}
+                            {evidence.output?.sha256 && <div className="font-mono text-[10px]" title={evidence.output.sha256}>{evidence.output.sha256.slice(0, 16)}…</div>}
+                            {evidence.renderedOutput && <div>Rendered {evidence.renderedOutput.length} characters</div>}
+                            <div>Processing: {evidence.stages?.functionalProcessing || 'NOT_RUN'} · Output: {evidence.stages?.outputValidation || 'NOT_RUN'}</div>
+                          </div>
+                        ) : <span className="text-gray-400">No execution evidence</span>}
                       </td>
                       <td className="px-3 py-3 text-xs">
                         {result.screenshotPath ? (

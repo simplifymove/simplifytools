@@ -1,7 +1,7 @@
 // lib/services/test-execution.ts
 // Test execution logic - runs Playwright tests for categories and parses JSON reports
 
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, execSync } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { getAuditCategoryDefinition, getValidAuditCategoryIds } from '@/app/lib/audit-category-tools';
@@ -48,6 +48,17 @@ export interface IndividualTestResult {
   outputPath?: string;
   screenshotPath?: string;
   tracePath?: string;
+  videoPath?: string;
+  consoleLogPath?: string;
+  networkLogPath?: string;
+  failedOutputPath?: string;
+  auditOutcome?: string;
+  failureStage?: string;
+  pageHealth?: string;
+  functionalProcessing?: string;
+  outputValidation?: string;
+  cleanup?: string;
+  functionalEvidence?: Record<string, unknown>;
 }
 
 export interface AuditProgressContext {
@@ -80,7 +91,6 @@ export function killAuditProcess(auditRunId: string): boolean {
     if (isWindows) {
       // Windows: Kill process tree with taskkill
       try {
-        const { execSync } = require('child_process');
         execSync(`taskkill /PID ${pid} /T /F`, { stdio: 'ignore' });
         console.log(`[Audit:${auditRunId}] Successfully killed process PID ${pid} on Windows`);
       } catch (e) {
@@ -92,7 +102,6 @@ export function killAuditProcess(auditRunId: string): boolean {
     } else {
       // Unix/Linux: Kill process and process group
       try {
-        const { execSync } = require('child_process');
         // Try to kill the process group (negative PID)
         execSync(`kill -9 -${pid}`, { stdio: 'ignore' });
         console.log(`[Audit:${auditRunId}] Successfully killed process group PID ${pid} on Unix`);
@@ -702,11 +711,16 @@ function walkPlaywrightReport(node: any, results: IndividualTestResult[], catego
                 attachment.contentType === 'image/jpeg'
               ) {
                 testResult.screenshotPath = attachment.path;
-              } else if (
-                attachment.contentType === 'application/zip' ||
-                attachment.contentType === 'video/webm'
-              ) {
+              } else if (attachment.contentType === 'application/zip' && attachment.name === 'trace') {
                 testResult.tracePath = attachment.path;
+              } else if (attachment.contentType === 'video/webm') {
+                testResult.videoPath = attachment.path;
+              } else if (attachment.name === 'browser-console.log') {
+                testResult.consoleLogPath = attachment.path;
+              } else if (attachment.name === 'network-failures.json') {
+                testResult.networkLogPath = attachment.path;
+              } else if (typeof attachment.name === 'string' && attachment.name.startsWith('failed-output-')) {
+                testResult.failedOutputPath = attachment.path;
               }
             }
           }
@@ -743,7 +757,7 @@ function parseAuditToolMarkers(stdout: string): Map<string, any> {
 
 function markerToIndividualTestResult(marker: any, category: string): IndividualTestResult {
   const passed = String(marker.status || '').toLowerCase() === 'passed';
-  const skipped = String(marker.status || '').toLowerCase() === 'skipped';
+  const skipped = String(marker.status || '').toLowerCase() === 'skipped' || ['SKIPPED_EXTERNAL', 'NOT_CONFIGURED', 'RATE_LIMITED', 'PAID_PROVIDER_DISABLED'].includes(marker.auditOutcome);
   const message = typeof marker.reason === 'string' ? marker.reason : undefined;
   const toolSlug = marker.toolSlug || marker.slug;
   const toolTitle = marker.toolTitle || marker.title || toolSlug || category;
@@ -765,7 +779,16 @@ function markerToIndividualTestResult(marker: any, category: string): Individual
         }
       : undefined,
     output: message,
+    outputGenerated: Boolean(marker.outputGenerated),
+    outputType: typeof marker.outputType === 'string' ? marker.outputType : undefined,
     screenshotPath: marker.screenshotPath,
+    functionalEvidence: marker.functionalEvidence && typeof marker.functionalEvidence === 'object' ? marker.functionalEvidence : undefined,
+    auditOutcome: marker.auditOutcome,
+    failureStage: marker.failureStage,
+    pageHealth: marker.pageHealth,
+    functionalProcessing: marker.functionalProcessing,
+    outputValidation: marker.outputValidation,
+    cleanup: marker.cleanup,
   };
 }
 
@@ -876,6 +899,15 @@ async function parsePlaywrightResults(
         result.duration = typeof marker.durationMs === 'number' ? marker.durationMs / 1000 : result.duration;
         result.failureClass = marker.failureClass || (result.passed ? undefined : classifyAuditFailure(message));
         result.consoleErrors = Array.isArray(marker.consoleErrors) ? marker.consoleErrors : result.consoleErrors;
+        result.functionalEvidence = marker.functionalEvidence && typeof marker.functionalEvidence === 'object' ? marker.functionalEvidence : result.functionalEvidence;
+        result.outputGenerated = Boolean(marker.outputGenerated);
+        result.outputType = typeof marker.outputType === 'string' ? marker.outputType : result.outputType;
+        result.auditOutcome = marker.auditOutcome;
+        result.failureStage = marker.failureStage;
+        result.pageHealth = marker.pageHealth;
+        result.functionalProcessing = marker.functionalProcessing;
+        result.outputValidation = marker.outputValidation;
+        result.cleanup = marker.cleanup;
         if (marker.screenshotPath) {
           result.screenshotPath = marker.screenshotPath;
         }

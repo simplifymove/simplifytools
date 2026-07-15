@@ -9,13 +9,14 @@ const RUN_PROCESSOR_TESTS = process.env.PDF_RESULT_FLOW_TEST === 'true';
 
 interface ResultMetadata {
   success: true;
-  id: string;
+  resultId: string;
   downloadPageUrl: string;
   outputName: string;
   mimeType: string;
   fileSize: string;
   expiresAt: string;
   outputPath?: string;
+  id?: string;
 }
 
 async function fixture(name: string): Promise<Buffer> {
@@ -46,8 +47,9 @@ async function processPdf(
   expect(response.ok(), await response.text()).toBe(true);
   const result = await response.json() as ResultMetadata;
   expect(result.success).toBe(true);
-  expect(result.downloadPageUrl).toBe(`/download/${result.id}`);
+  expect(result.downloadPageUrl).toBe(`/download/${result.resultId}`);
   expect(result.outputPath).toBeUndefined();
+  expect(result.id).toBeUndefined();
   expect(Number(result.fileSize)).toBeGreaterThan(0);
   return result;
 }
@@ -60,7 +62,7 @@ async function verifyManualDownload(
   const resultPage = await request.get(`${BASE_URL}${result.downloadPageUrl}`);
   expect(resultPage.ok()).toBe(true);
   expect(await resultPage.text()).toContain('Download File');
-  const download = await request.get(`${BASE_URL}/api/download-result/${result.id}`);
+  const download = await request.get(`${BASE_URL}/api/download-result/${result.resultId}`);
   expect(download.ok()).toBe(true);
   expect(download.headers()['content-type']).toContain(expectedMimeType);
   expect((await download.body()).length).toBeGreaterThan(0);
@@ -106,7 +108,7 @@ test.describe('PDF dedicated download-result flow', () => {
         expect(result.outputName.endsWith(item.suffix)).toBe(true);
         await verifyManualDownload(request, result, item.mime);
       } finally {
-        await cleanResult(result.id);
+        await cleanResult(result.resultId);
       }
     }
   });
@@ -126,11 +128,12 @@ test.describe('PDF dedicated download-result flow', () => {
     const result = await response.json() as ResultMetadata;
     try {
       expect(result.outputPath).toBeUndefined();
+      expect(result.id).toBeUndefined();
       expect(result.outputName).toBe('source-edited.pdf');
       expect(result.mimeType).toBe('application/pdf');
       await verifyManualDownload(request, result, 'application/pdf');
     } finally {
-      await cleanResult(result.id);
+      await cleanResult(result.resultId);
     }
   });
 
@@ -147,14 +150,14 @@ test.describe('PDF dedicated download-result flow', () => {
     });
     const result = await ready.json() as ResultMetadata;
     await prisma.toolDownloadResult.update({
-      where: { id: result.id },
+      where: { id: result.resultId },
       data: { expiresAt: new Date(Date.now() - 1_000) },
     });
     try {
-      const expired = await request.get(`${BASE_URL}/api/download-result/${result.id}`);
+      const expired = await request.get(`${BASE_URL}/api/download-result/${result.resultId}`);
       expect(expired.status()).toBe(410);
     } finally {
-      await cleanResult(result.id);
+      await cleanResult(result.resultId);
     }
   });
 });

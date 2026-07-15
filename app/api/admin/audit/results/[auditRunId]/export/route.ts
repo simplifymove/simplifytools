@@ -29,6 +29,13 @@ function escapeHtml(value: unknown) {
     .replace(/'/g, '&#39;');
 }
 
+function redactReportText(value: unknown) {
+  return String(value ?? '')
+    .replace(/[A-Za-z]:\\[^\r\n"']+/g, '[REDACTED_PATH]')
+    .replace(/(authorization|api[_-]?key|token|secret|password)\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]')
+    .replace(/\bsk-[A-Za-z0-9_-]{12,}\b/g, '[REDACTED_TOKEN]');
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<RouteParams> }
@@ -60,11 +67,18 @@ export async function GET(
       toolSlug: result.toolSlug,
       url: result.url,
       status: result.status,
+      auditOutcome: logs.auditOutcome || (result.status === 'PASS' ? 'LEGACY_PASS_NOT_FULLY_VERIFIED' : result.status),
+      pageHealth: logs.pageHealth || 'NOT_RECORDED',
+      functionalProcessing: logs.functionalProcessing || 'NOT_RECORDED',
+      outputValidation: logs.outputValidation || 'NOT_RECORDED',
+      cleanup: logs.cleanup || 'NOT_RECORDED',
+      failureStage: logs.failureStage || '',
       durationMs: result.durationMs,
       failureClass: logs.failureClass || '',
-      failureReason: result.errorMessage || '',
-      screenshot: result.screenshotPath || '',
-      consoleErrors: Array.isArray(logs.consoleErrors) ? logs.consoleErrors.join('\n') : '',
+      failureReason: redactReportText(result.errorMessage),
+      screenshot: result.screenshotPath?.startsWith('/api/') ? result.screenshotPath : '',
+      consoleErrors: Array.isArray(logs.consoleErrors) ? redactReportText(logs.consoleErrors.join('\n')) : '',
+      functionalEvidence: logs.functionalEvidence ? redactReportText(JSON.stringify(logs.functionalEvidence)) : '',
     };
   });
 
@@ -77,12 +91,16 @@ export async function GET(
     failed: auditRun.failedTests,
     skipped: auditRun.skippedTests,
     passRate: auditRun.successPercentage,
+    fullyVerified: rows.filter((row) => row.auditOutcome === 'FULLY_VERIFIED').length,
+    skippedExternal: rows.filter((row) => row.auditOutcome === 'SKIPPED_EXTERNAL').length,
+    notConfigured: rows.filter((row) => row.auditOutcome === 'NOT_CONFIGURED').length,
+    rateLimited: rows.filter((row) => row.auditOutcome === 'RATE_LIMITED').length,
     startedAt: auditRun.startedAt,
     completedAt: auditRun.completedAt,
   };
 
   if (format === 'csv') {
-    const headers = ['category', 'toolTitle', 'toolSlug', 'url', 'status', 'durationMs', 'failureClass', 'failureReason', 'screenshot', 'consoleErrors'];
+    const headers = ['category', 'toolTitle', 'toolSlug', 'url', 'status', 'auditOutcome', 'pageHealth', 'functionalProcessing', 'outputValidation', 'cleanup', 'failureStage', 'durationMs', 'failureClass', 'failureReason', 'screenshot', 'consoleErrors', 'functionalEvidence'];
     const csv = [
       headers.join(','),
       ...rows.map((row) => headers.map((header) => escapeCsv(row[header as keyof typeof row])).join(',')),
@@ -114,7 +132,7 @@ export async function GET(
   <h1>Audit Report</h1>
   <p><strong>Run:</strong> ${escapeHtml(auditRun.id)} | <strong>Pass rate:</strong> ${escapeHtml(auditRun.successPercentage)}%</p>
   <table>
-    <thead><tr><th>Category</th><th>Tool</th><th>Slug</th><th>URL</th><th>Status</th><th>Duration</th><th>Failure</th><th>Console Errors</th></tr></thead>
+    <thead><tr><th>Category</th><th>Tool</th><th>Slug</th><th>URL</th><th>Status</th><th>Verification</th><th>Page</th><th>Processing</th><th>Output</th><th>Cleanup</th><th>Duration</th><th>Failure</th><th>Console Errors</th><th>Functional Evidence</th></tr></thead>
     <tbody>
       ${rows.map((row) => `<tr>
         <td>${escapeHtml(row.category)}</td>
@@ -122,9 +140,15 @@ export async function GET(
         <td>${escapeHtml(row.toolSlug)}</td>
         <td>${escapeHtml(row.url)}</td>
         <td class="${row.status === 'PASS' ? 'pass' : 'fail'}">${escapeHtml(row.status)}</td>
+        <td>${escapeHtml(row.auditOutcome)}</td>
+        <td>${escapeHtml(row.pageHealth)}</td>
+        <td>${escapeHtml(row.functionalProcessing)}</td>
+        <td>${escapeHtml(row.outputValidation)}</td>
+        <td>${escapeHtml(row.cleanup)}</td>
         <td>${escapeHtml(row.durationMs)}ms</td>
         <td>${escapeHtml(row.failureClass || row.failureReason)}</td>
         <td>${escapeHtml(row.consoleErrors)}</td>
+        <td><pre>${escapeHtml(row.functionalEvidence)}</pre></td>
       </tr>`).join('')}
     </tbody>
   </table>

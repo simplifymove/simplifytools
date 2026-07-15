@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, unlink } from 'fs/promises';
 import path from 'path';
 import { spawn, exec as execCallback } from 'child_process';
+import { createRequire } from 'module';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getToolById } from '@/app/lib/video-tools';
@@ -10,6 +11,9 @@ import { sendErrorEmail } from '@/app/utils/error-reporting/send-error-email';
 import { parsePythonError, sanitizeErrorMessage } from '@/app/utils/error-handling/error-handler';
 
 const exec = promisify(execCallback);
+const require = createRequire(import.meta.url);
+const bundledFfmpegPath = require('ffmpeg-static') as string;
+const bundledFfprobePath = (require('ffprobe-static') as { path: string }).path;
 
 // Temporary directory for processing
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
@@ -49,6 +53,8 @@ async function runPythonEngine(
       ...process.env,
       PYTHONUNBUFFERED: '1',
       PYTHONDONTWRITEBYTECODE: '1',
+      FFMPEG_PATH: bundledFfmpegPath,
+      FFPROBE_PATH: bundledFfprobePath,
       // Don't set PYTHONHOME for venv - it's self-contained and breaks module lookup
       // Only set it for system Python (which we don't use on VPS)
     } as any;
@@ -575,5 +581,4 @@ function getContentType(filePath: string): string {
   };
   return contentTypes[ext] || 'application/octet-stream';
 }
-
 

@@ -68,36 +68,13 @@ export default function PdfEditor({ file, onSave }: Props) {
   const pdfDocRef = useRef<any>(null);
   const historyRef = useRef<EditHistory>(new EditHistory());
 
-  // Load PDF.js
-  useEffect(() => {
-    const loadPdfJs = async () => {
-      if ((window as any).pdfjsLib) return;
-
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      script.async = true;
-
-      script.onload = () => {
-        const pdfjs = (window as any).pdfjsLib;
-        pdfjs.GlobalWorkerOptions.workerSrc =
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      };
-
-      document.head.appendChild(script);
-    };
-
-    loadPdfJs();
-  }, []);
-
   // Initialize PDF
   useEffect(() => {
     const initializePdf = async () => {
       try {
-        const pdfjs = (window as any).pdfjsLib;
-        if (!pdfjs) {
-          console.error('[PDF Init] PDF.js library not loaded yet');
-          return;
-        }
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+        (window as any).pdfjsLib = pdfjs;
 
         console.log('[PDF Init] Loading PDF file:', file.name, 'size:', file.size);
         const arrayBuffer = await file.arrayBuffer();

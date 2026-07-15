@@ -27,7 +27,7 @@ export async function storeArtifact(
   auditRunId: string,
   toolName: string,
   category: string,
-  type: 'screenshot' | 'video' | 'trace' | 'log' | 'network',
+  type: 'screenshot' | 'video' | 'trace' | 'log' | 'network' | 'output',
   filePath: string,
   testName?: string
 ): Promise<string | null> {
@@ -40,7 +40,8 @@ export async function storeArtifact(
 
     // Generate destination path
     const timestamp = Date.now();
-    const fileName = `${toolName}-${type}-${timestamp}${path.extname(filePath)}`;
+    const safeToolName = toolName.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'tool';
+    const fileName = `${safeToolName}-${type}-${timestamp}${path.extname(filePath).slice(0, 12)}`;
     const destinationPath = path.join(ARTIFACTS_DIR, fileName);
 
     // Copy file
@@ -50,9 +51,10 @@ export async function storeArtifact(
     const mimeTypeMap: Record<string, string> = {
       screenshot: 'image/png',
       video: 'video/webm',
-      trace: 'application/json',
+      trace: 'application/zip',
       log: 'text/plain',
       network: 'application/json',
+      output: 'application/octet-stream',
     };
 
     // Store metadata in database
@@ -80,6 +82,11 @@ export async function storeArtifact(
     logger.error({ error, toolName, type }, 'Failed to store artifact');
     return null;
   }
+}
+
+function isManagedArtifactPath(filePath: string): boolean {
+  const relative = path.relative(ARTIFACTS_DIR, path.resolve(filePath));
+  return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
 }
 
 /**
@@ -165,7 +172,23 @@ export async function getArtifactById(id: string): Promise<any> {
  * Generate download URL
  */
 export function generateDownloadUrl(artifactId: string): string {
-  return `/api/admin/audit/artifacts/${artifactId}/download`;
+  return `/api/admin/audit/artifacts/${artifactId}?download=true`;
+}
+
+export async function deleteArtifactsForAuditRuns(auditRunIds: string[]): Promise<number> {
+  if (auditRunIds.length === 0) return 0;
+  const artifacts = await prisma.playwrightArtifact.findMany({
+    where: { auditRunId: { in: auditRunIds } },
+    select: { id: true },
+  });
+  let deleted = 0;
+  for (const artifact of artifacts) {
+    if (!(await deleteArtifact(artifact.id))) {
+      throw new Error(`Failed to delete managed audit artifact ${artifact.id}`);
+    }
+    deleted += 1;
+  }
+  return deleted;
 }
 
 /**
@@ -181,6 +204,9 @@ export async function downloadArtifact(
       return null;
     }
 
+    if (!isManagedArtifactPath(artifact.filePath)) {
+      throw new Error('Artifact path is outside the managed artifact directory');
+    }
     const fileData = await fs.readFile(artifact.filePath);
     return fileData;
   } catch (error) {
@@ -204,9 +230,13 @@ export async function deleteArtifact(artifactId: string): Promise<boolean> {
 
     // Delete file
     try {
+      if (!isManagedArtifactPath(artifact.filePath)) throw new Error('Artifact path is outside the managed artifact directory');
       await fs.unlink(artifact.filePath);
     } catch (error) {
-      logger.warn({ error }, 'Failed to delete artifact file');
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        logger.warn({ error }, 'Failed to delete artifact file');
+        return false;
+      }
     }
 
     // Delete database record
@@ -243,9 +273,13 @@ export async function cleanupOldArtifacts(
 
     for (const artifact of oldArtifacts) {
       try {
+        if (!isManagedArtifactPath(artifact.filePath)) throw new Error('Artifact path is outside the managed artifact directory');
         await fs.unlink(artifact.filePath);
       } catch (error) {
-        logger.warn({ error }, 'Failed to delete artifact file');
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+          logger.warn({ error }, 'Failed to delete artifact file');
+          continue;
+        }
       }
 
       await prisma.playwrightArtifact.delete({

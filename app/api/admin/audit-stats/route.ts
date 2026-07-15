@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     const totalTestResults = await prisma.auditTestResult.count();
 
     // Calculate disk usage
-    const artifactsBaseDir = path.join(process.cwd(), 'public', 'audit-artifacts');
+    const artifactsBaseDir = path.join(process.cwd(), 'public', 'artifacts');
     const diskUsageBytes = await getDirectorySize(artifactsBaseDir);
 
     // Get oldest and newest audits

@@ -10,7 +10,7 @@ import { createNotification } from '@/lib/services/notification';
 import { getCategoryReliability } from '@/lib/services/reliability';
 import { generateHealthReport } from '@/lib/services/health-score';
 import { evaluateAllAlertingRules } from '@/lib/services/alerting';
-import { storeArtifact } from '@/lib/services/artifact';
+import { generateDownloadUrl, storeArtifact } from '@/lib/services/artifact';
 import { workerLogger } from '@/lib/logging/logger';
 import { AuditJobData, AuditJobResult } from './client';
 
@@ -216,6 +216,18 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
           const durationMs = testResult.duration ? Math.round(testResult.duration * 1000) : 0;
 
           try {
+            const storeFailureArtifact = async (type: 'screenshot' | 'video' | 'trace' | 'log' | 'network' | 'output', filePath?: string) => {
+              if (testResult.passed || !filePath) return undefined;
+              const artifactId = await storeArtifact(auditRunId, testResult.toolName || category, category, type, filePath, testResult.testName);
+              return artifactId ? generateDownloadUrl(artifactId) : undefined;
+            };
+            const screenshotUrl = await storeFailureArtifact('screenshot', testResult.screenshotPath);
+            await storeFailureArtifact('trace', testResult.tracePath);
+            await storeFailureArtifact('video', testResult.videoPath);
+            await storeFailureArtifact('log', testResult.consoleLogPath);
+            await storeFailureArtifact('network', testResult.networkLogPath);
+            await storeFailureArtifact('output', testResult.failedOutputPath);
+
             // Create AuditTestResult for each test
             await prisma.auditTestResult.create({
               data: {
@@ -230,13 +242,20 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
                 outputGenerated: testResult.outputGenerated || false,
                 outputType: testResult.outputType,
                 outputPath: testResult.outputPath,
-                screenshotPath: testResult.screenshotPath,
+                screenshotPath: screenshotUrl,
                 logs: JSON.stringify({
                   stdout: testResult.output || '',
                   stderr: testResult.error?.message || '',
                   duration: durationMs,
                   failureClass: testResult.failureClass,
                   consoleErrors: testResult.consoleErrors || [],
+                  functionalEvidence: testResult.functionalEvidence,
+                  auditOutcome: testResult.auditOutcome,
+                  failureStage: testResult.failureStage,
+                  pageHealth: testResult.pageHealth,
+                  functionalProcessing: testResult.functionalProcessing,
+                  outputValidation: testResult.outputValidation,
+                  cleanup: testResult.cleanup,
                 }),
                 durationMs,
                 timestamp: new Date(),
@@ -281,40 +300,6 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
               }
             }
 
-            // Store artifacts if available
-            if (testResult.screenshotPath) {
-              try {
-                await storeArtifact(
-                  auditRunId,
-                  testResult.toolName || category,
-                  category,
-                  'screenshot',
-                  testResult.screenshotPath
-                );
-              } catch (artifactError) {
-                workerLogger.warn(
-                  { error: artifactError },
-                  'Failed to store screenshot'
-                );
-              }
-            }
-
-            if (testResult.tracePath) {
-              try {
-                await storeArtifact(
-                  auditRunId,
-                  testResult.toolName || category,
-                  category,
-                  'trace',
-                  testResult.tracePath
-                );
-              } catch (artifactError) {
-                workerLogger.warn(
-                  { error: artifactError },
-                  'Failed to store trace'
-                );
-              }
-            }
           } catch (testPersistError) {
             auditDebugError('[WORKER] ❌ Error persisting test:', testPersistError);
             workerLogger.error(

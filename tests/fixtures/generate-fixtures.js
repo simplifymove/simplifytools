@@ -1,321 +1,199 @@
-/**
- * Generate test fixtures (PDF and image files)
- * Run this script before running tests: node tests/fixtures/generate-fixtures.js
- */
-
+/** Reproducibly generate the small, non-personal fixtures used by functional audits. */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
-const { PDFDocument } = require('pdf-lib');
+const { spawnSync } = require('child_process');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+const { Document, Packer, Paragraph, TextRun } = require('docx');
+const PptxGenJS = require('pptxgenjs');
+const AdmZip = require('adm-zip');
+const sharp = require('sharp');
+const ffmpegPath = require('ffmpeg-static');
 
-const FIXTURES_DIR = path.join(__dirname);
-const PDF_DIR = path.join(FIXTURES_DIR, 'pdf');
-const IMAGE_DIR = path.join(FIXTURES_DIR, 'images');
+const ROOT = __dirname;
+const dirs = Object.fromEntries(['pdf', 'images', 'documents', 'video', 'audio', 'data', 'code', 'archives'].map((name) => [name, path.join(ROOT, name)]));
+Object.values(dirs).forEach((directory) => fs.mkdirSync(directory, { recursive: true }));
 
-function padFixture(buffer, minSize = 256) {
-  if (buffer.length >= minSize) return buffer;
-  return Buffer.concat([buffer, Buffer.alloc(minSize - buffer.length, 0)]);
+function write(group, name, content) {
+  fs.writeFileSync(path.join(dirs[group], name), content);
 }
 
-// Ensure directories exist
-[PDF_DIR, IMAGE_DIR].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+function addZipText(zip, name, content) {
+  zip.addFile(name, Buffer.from(content, 'utf8'));
+}
+
+async function createPdfs() {
+  async function pdf(pageCount, label) {
+    const document = await PDFDocument.create();
+    const font = await document.embedFont(StandardFonts.Helvetica);
+    for (let index = 1; index <= pageCount; index += 1) {
+      const page = document.addPage([320, 240]);
+      page.drawText(`${label} - Page ${index}`, { x: 24, y: 190, size: 18, font, color: rgb(0.1, 0.2, 0.5) });
+      page.drawText('Predictable audit fixture content.', { x: 24, y: 160, size: 10, font });
+    }
+    return Buffer.from(await document.save());
   }
-});
-
-/**
- * Create a simple valid PDF with text
- */
-async function createValidPdf() {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([612, 792]); // Standard letter size
-  const { width, height } = page.getSize();
-  
-  page.drawText('Sample PDF for Testing', {
-    x: 50,
-    y: height - 50,
-    size: 24,
-  });
-  
-  page.drawText('This is a valid PDF file used for automated testing.', {
-    x: 50,
-    y: height - 100,
-    size: 12,
-  });
-  
-  const pdfBytes = await pdfDoc.save();
-  fs.writeFileSync(path.join(PDF_DIR, 'valid.pdf'), pdfBytes);
-  console.log('✓ Created valid.pdf');
+  const simple = await pdf(1, 'SimplifyConvert Test PDF');
+  const multi = await pdf(3, 'SimplifyConvert Multi-page PDF');
+  write('pdf', 'simple.pdf', simple);
+  write('pdf', 'valid.pdf', simple);
+  write('pdf', 'multi-page.pdf', multi);
+  write('pdf', 'multipage.pdf', multi);
+  write('pdf', 'corrupted.pdf', Buffer.from('%PDF-1.4\ninvalid audit fixture\n%%EOF\n'));
+  const pythonCandidates = process.platform === 'win32'
+    ? [path.join(process.cwd(), '.venv', 'Scripts', 'python.exe'), 'python']
+    : [path.join(process.cwd(), '.venv', 'bin', 'python'), 'python3'];
+  const python = pythonCandidates.find((candidate) => candidate === 'python' || candidate === 'python3' || fs.existsSync(candidate));
+  const encryptionScript = 'from PyPDF2 import PdfReader, PdfWriter\nimport sys\nr=PdfReader(sys.argv[1]); w=PdfWriter()\nfor p in r.pages: w.add_page(p)\nw.encrypt("Audit123!")\nwith open(sys.argv[2], "wb") as f: w.write(f)';
+  const encrypted = spawnSync(python, ['-c', encryptionScript, path.join(dirs.pdf, 'simple.pdf'), path.join(dirs.pdf, 'protected.pdf')], { encoding: 'utf8' });
+  if (encrypted.status !== 0) throw new Error(`Unable to generate encrypted PDF: ${encrypted.stderr}`);
 }
 
-/**
- * Create a multipage PDF
- */
-async function createMultipagePdf() {
-  const pdfDoc = await PDFDocument.create();
-  
-  for (let i = 1; i <= 5; i++) {
-    const page = pdfDoc.addPage([612, 792]);
-    const { width, height } = page.getSize();
-    
-    page.drawText(`Page ${i}`, {
-      x: 50,
-      y: height - 50,
-      size: 28,
-    });
-    
-    page.drawText(`This is page ${i} of a multipage PDF.`, {
-      x: 50,
-      y: height - 100,
-      size: 12,
-    });
+async function createImages() {
+  const pixels = Buffer.from([
+    30, 100, 220, 255, 240, 240, 240, 255,
+    240, 240, 240, 255, 30, 100, 220, 255,
+  ]);
+  const image = sharp(pixels, { raw: { width: 2, height: 2, channels: 4 } });
+  await Promise.all([
+    image.clone().jpeg({ quality: 80 }).toFile(path.join(dirs.images, 'sample.jpg')),
+    image.clone().jpeg({ quality: 80 }).toFile(path.join(dirs.images, 'sample.jpeg')),
+    image.clone().png().toFile(path.join(dirs.images, 'sample.png')),
+    image.clone().webp().toFile(path.join(dirs.images, 'sample.webp')),
+    image.clone().gif().toFile(path.join(dirs.images, 'sample.gif')),
+    image.clone().tiff().toFile(path.join(dirs.images, 'sample.tiff')),
+    image.clone().avif().toFile(path.join(dirs.images, 'sample.avif')),
+    image.clone().avif().toFile(path.join(dirs.images, 'sample.heic')),
+  ]);
+  write('images', 'sample.bmp', Buffer.from('424d3a0000000000000036000000280000000100000001000000010018000000000004000000000000000000000000000000000000001e64dc00', 'hex'));
+  write('images', 'sample.svg', '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="#1e64dc"/></svg>\n');
+  write('images', 'sample.eps', '%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 32 32\n0.12 0.39 0.86 setrgbcolor\n0 0 32 32 rectfill\nshowpage\n');
+  const psd = Buffer.alloc(43, 0);
+  psd.write('8BPS', 0, 'ascii'); psd.writeUInt16BE(1, 4); psd.writeUInt16BE(3, 12); psd.writeUInt32BE(1, 14); psd.writeUInt32BE(1, 18); psd.writeUInt16BE(8, 22); psd.writeUInt16BE(3, 24);
+  write('images', 'sample.psd', psd);
+
+  const imagePdf = await PDFDocument.create();
+  const embedded = await imagePdf.embedPng(fs.readFileSync(path.join(dirs.images, 'sample.png')));
+  for (let index = 0; index < 2; index += 1) {
+    const page = imagePdf.addPage([64, 64]);
+    page.drawImage(embedded, { x: 16, y: 16, width: 32, height: 32 });
   }
-  
-  const pdfBytes = await pdfDoc.save();
-  fs.writeFileSync(path.join(PDF_DIR, 'multipage.pdf'), pdfBytes);
-  console.log('✓ Created multipage.pdf');
+  const imageOnlyPdf = Buffer.from(await imagePdf.save());
+  write('pdf', 'images.pdf', imageOnlyPdf);
+  write('pdf', 'scanned.pdf', imageOnlyPdf);
 }
 
-/**
- * Create a protected PDF (encrypted with password)
- */
-async function createProtectedPdf() {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([612, 792]);
-  const { width, height } = page.getSize();
-  
-  page.drawText('This is a protected PDF', {
-    x: 50,
-    y: height - 50,
-    size: 24,
-  });
-  
-  // Note: pdf-lib doesn't support encryption, so we'll mark it as protected in filename
-  // In real scenario, this would be encrypted
-  const pdfBytes = await pdfDoc.save();
-  fs.writeFileSync(path.join(PDF_DIR, 'protected.pdf'), pdfBytes);
-  console.log('✓ Created protected.pdf (note: not actually encrypted with pdf-lib)');
+function createXlsx() {
+  const zip = new AdmZip();
+  addZipText(zip, '[Content_Types].xml', '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
+  addZipText(zip, '_rels/.rels', '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+  addZipText(zip, 'xl/workbook.xml', '<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Audit" sheetId="1" r:id="rId1"/></sheets></workbook>');
+  addZipText(zip, 'xl/_rels/workbook.xml.rels', '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>');
+  addZipText(zip, 'xl/worksheets/sheet1.xml', '<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>name</t></is></c><c r="B1" t="inlineStr"><is><t>value</t></is></c></row><row r="2"><c r="A2" t="inlineStr"><is><t>audit</t></is></c><c r="B2"><v>1</v></c></row></sheetData></worksheet>');
+  zip.writeZip(path.join(dirs.documents, 'sample.xlsx'));
 }
 
-/**
- * Create a corrupted PDF (invalid content after valid header)
- */
-function createCorruptedPdf() {
-  const corruptedContent = Buffer.concat([
-    Buffer.from('%PDF-1.4\n'), // Valid PDF header
-    Buffer.from('This is corrupted PDF content %%\n'.repeat(100)), // Invalid content
-  ]);
-  
-  fs.writeFileSync(path.join(PDF_DIR, 'corrupted.pdf'), corruptedContent);
-  console.log('✓ Created corrupted.pdf');
-}
-
-/**
- * Create a scanned PDF (simulated with image-like content)
- */
-async function createScannedPdf() {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([612, 792]);
-  const { width, height } = page.getSize();
-  
-  // Draw a pattern to simulate scanned document
-  for (let i = 0; i < height; i += 20) {
-    page.drawLine({
-      start: { x: 0, y: i },
-      end: { x: width, y: i },
-      thickness: 0.5,
-    });
+async function createDocuments() {
+  const doc = new Document({ sections: [{ children: [new Paragraph({ children: [new TextRun('SimplifyConvert predictable audit document.')] })] }] });
+  write('documents', 'sample.docx', await Packer.toBuffer(doc));
+  write('documents', 'sample.doc', '<html><body><p>SimplifyConvert predictable audit document.</p></body></html>');
+  write('documents', 'sample.txt', 'SimplifyConvert predictable audit text.\n');
+  write('documents', 'sample.rtf', '{\\rtf1\\ansi SimplifyConvert predictable audit document.}');
+  write('documents', 'sample.xls', '<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet Name="Audit"><Table><Row><Cell><Data Type="String">audit</Data></Cell></Row></Table></Worksheet></Workbook>');
+  write('documents', 'sample.msg', 'From: audit@example.invalid\r\nTo: audit@example.invalid\r\nSubject: Audit fixture\r\n\r\nPredictable audit message.');
+  // VSD/VSDX are parser-tested Apache Tika fixtures retained in version control;
+  // there is no standards-compliant Visio writer in this project's dependency set.
+  const vsdPath = path.join(dirs.documents, 'sample.vsd');
+  const vsdxPath = path.join(dirs.documents, 'sample.vsdx');
+  if (!fs.existsSync(vsdPath) || !fs.readFileSync(vsdPath).subarray(0, 8).equals(Buffer.from('d0cf11e0a1b11ae1', 'hex'))) {
+    throw new Error('Missing valid sample.vsd. Restore the Apache Tika fixture documented in tests/fixtures/README.md.');
   }
-  
-  page.drawText('SCANNED DOCUMENT - Page 1', {
-    x: 50,
-    y: height - 50,
-    size: 20,
-  });
-  
-  page.drawText('This simulates a scanned PDF document.', {
-    x: 50,
-    y: height - 100,
-    size: 12,
-  });
-  
-  const pdfBytes = await pdfDoc.save();
-  fs.writeFileSync(path.join(PDF_DIR, 'scanned.pdf'), pdfBytes);
-  console.log('✓ Created scanned.pdf');
+  if (!fs.existsSync(vsdxPath) || !fs.readFileSync(vsdxPath).subarray(0, 4).equals(Buffer.from('504b0304', 'hex'))) {
+    throw new Error('Missing valid sample.vsdx. Restore the Apache Tika fixture documented in tests/fixtures/README.md.');
+  }
+  createXlsx();
+
+  const pptx = new PptxGenJS();
+  const slide = pptx.addSlide();
+  slide.addText('SimplifyConvert Audit Slide', { x: 0.5, y: 0.5, w: 5, h: 0.5 });
+  await pptx.writeFile({ fileName: path.join(dirs.documents, 'sample.pptx') });
+  const legacyPptPath = path.join(dirs.documents, 'sample.ppt');
+  if (process.platform === 'win32') {
+    const legacyResult = spawnSync('cscript.exe', ['//nologo', path.join(process.cwd(), 'scripts', 'generate-legacy-ppt.vbs'), legacyPptPath], { encoding: 'utf8' });
+    const existingLegacyPpt = fs.existsSync(legacyPptPath) ? fs.readFileSync(legacyPptPath) : Buffer.alloc(0);
+    if (legacyResult.status !== 0 && !existingLegacyPpt.subarray(0, 8).equals(Buffer.from('d0cf11e0a1b11ae1', 'hex'))) {
+      throw new Error(`Unable to generate legacy PPT with installed PowerPoint: ${legacyResult.stderr}`);
+    }
+  }
+  const legacyPpt = fs.existsSync(legacyPptPath) ? fs.readFileSync(legacyPptPath) : Buffer.alloc(0);
+  if (!legacyPpt.subarray(0, 8).equals(Buffer.from('d0cf11e0a1b11ae1', 'hex'))) {
+    throw new Error('sample.ppt must be a committed OLE PowerPoint fixture; generation requires Microsoft PowerPoint on Windows.');
+  }
+
+  const epub = new AdmZip();
+  addZipText(epub, 'mimetype', 'application/epub+zip');
+  addZipText(epub, 'META-INF/container.xml', '<?xml version="1.0"?><container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+  addZipText(epub, 'OEBPS/content.opf', '<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Audit</dc:title><dc:identifier id="id">audit-fixture</dc:identifier></metadata><manifest><item id="page" href="page.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="page"/></spine></package>');
+  addZipText(epub, 'OEBPS/page.xhtml', '<html xmlns="http://www.w3.org/1999/xhtml"><body><p>Predictable audit ebook.</p></body></html>');
+  epub.writeZip(path.join(dirs.documents, 'sample.epub'));
+  const palm = Buffer.alloc(128, 0);
+  palm.write('Audit fixture', 0, 'ascii');
+  palm.write('BOOKMOBI', 60, 'ascii');
+  write('documents', 'sample.mobi', palm);
+  write('documents', 'sample.azw3', palm);
 }
 
-/**
- * Create sample JPG image
- */
-function createJpgImage() {
-  // Create a minimal valid JPEG file
-  // JPEG header (SOI marker) + EOI marker (simplified)
-  const jpgBuffer = Buffer.from([
-    0xFF, 0xD8, // SOI (Start of Image)
-    0xFF, 0xE0, // APP0 segment
-    0x00, 0x10, // Segment length
-    0x4A, 0x46, 0x49, 0x46, 0x00, // JFIF identifier
-    0x01, 0x01, // Version
-    0x00, // Aspect ratio units
-    0x00, 0x01, 0x00, 0x01, // X and Y density
-    0x00, 0x00, // Thumbnail dimensions
-    0xFF, 0xDB, // Define Quantization Table
-    0x00, 0x43, // Segment length
-    ...Array(64).fill(0x10), // Quantization table
-    0xFF, 0xC0, // SOF0 (Start of Frame)
-    0x00, 0x0B, // Segment length
-    0x08, // Precision
-    0x00, 0x01, 0x00, 0x01, // Height and width
-    0x01, // Number of components
-    0x01, 0x11, 0x00, // Component info
-    0xFF, 0xD9, // EOI (End of Image)
-  ]);
-  
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.jpg'), padFixture(jpgBuffer));
-  console.log('✓ Created sample.jpg');
+function createTextFixtures() {
+  write('data', 'sample.json', JSON.stringify({ name: 'SimplifyConvert', value: 1 }, null, 2));
+  write('data', 'sample.xml', '<?xml version="1.0"?><items><item><name>audit</name><value>1</value></item></items>\n');
+  write('data', 'sample.yaml', 'name: SimplifyConvert\nvalue: 1\n');
+  write('data', 'sample.yml', 'name: SimplifyConvert\nvalue: 1\n');
+  write('data', 'sample.csv', 'name,value\naudit,1\n');
+  write('data', 'sample.tsv', 'name\tvalue\naudit\t1\n');
+  const code = {
+    'sample.html': '<!doctype html><title>Audit</title><p>SimplifyConvert</p>\n',
+    'sample.css': 'body { color: #123456; }\n', 'sample.js': 'const audit = true;\n', 'sample.ts': 'const audit: boolean = true;\n',
+    'sample.sql': 'SELECT 1 AS audit;\n', 'sample.md': '# SimplifyConvert Audit\n',
+    'base64.txt': 'U2ltcGxpZnlDb252ZXJ0IGF1ZGl0', 'url-encoded.txt': 'SimplifyConvert%20audit',
+    'jwt.txt': 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhdWRpdCJ9.', 'regex.txt': '^[a-z]+$\n',
+  };
+  Object.entries(code).forEach(([name, value]) => write('code', name, value));
+  const archive = new AdmZip();
+  archive.addFile('audit.txt', Buffer.from('Predictable archive content.'));
+  archive.writeZip(path.join(dirs.archives, 'sample.zip'));
 }
 
-/**
- * Create sample PNG image
- */
-function createPngImage() {
-  // Minimal valid PNG file
-  const pngBuffer = Buffer.from([
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-    0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-    0x49, 0x48, 0x44, 0x52, // IHDR chunk type
-    0x00, 0x00, 0x00, 0x01, // Width: 1
-    0x00, 0x00, 0x00, 0x01, // Height: 1
-    0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-    0x90, 0x77, 0x53, 0xDE, // CRC
-    0x00, 0x00, 0x00, 0x0C, // IDAT chunk length
-    0x49, 0x44, 0x41, 0x54, // IDAT chunk type
-    0x08, 0x99, 0x01, 0x01, 0x00, 0x00, 0xFE, 0xFF,
-    0x00, 0x00, 0x00, 0x02, 0x00, 0x01, // Compressed data
-    0x49, 0xB4, 0xE8, 0xB7, // CRC
-    0x00, 0x00, 0x00, 0x00, // IEND chunk length
-    0x49, 0x45, 0x4E, 0x44, // IEND chunk type
-    0xAE, 0x42, 0x60, 0x82, // CRC
-  ]);
-  
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.png'), padFixture(pngBuffer));
-  console.log('✓ Created sample.png');
+function runFfmpeg(args, output) {
+  const result = spawnSync(ffmpegPath, ['-hide_banner', '-loglevel', 'error', '-y', ...args, output], { encoding: 'utf8' });
+  if (result.status !== 0) throw new Error(`ffmpeg failed for ${path.basename(output)}: ${result.stderr}`);
 }
 
-/**
- * Create sample TIFF image
- */
-function createTiffImage() {
-  // Minimal valid TIFF file (little-endian)
-  const tiffBuffer = Buffer.from([
-    0x49, 0x49, // Little-endian byte order
-    0x2A, 0x00, // TIFF version 42
-    0x08, 0x00, 0x00, 0x00, // Offset to first IFD
-    // IFD (Image File Directory)
-    0x09, 0x00, // Number of directory entries
-    // ImageWidth tag
-    0x00, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-    // ImageLength tag
-    0x01, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-    // BitsPerSample tag
-    0x02, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00,
-    // Compression tag (1=no compression)
-    0x03, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-    // PhotometricInterpretation tag
-    0x06, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-    // StripOffsets tag
-    0x11, 0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x50, 0x00, 0x00, 0x00,
-    // SamplesPerPixel tag
-    0x15, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-    // RowsPerStrip tag
-    0x16, 0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-    // StripByteCounts tag
-    0x17, 0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, // Next IFD offset (0 = no more)
-    // Image data
-    0xFF, // Single pixel (white)
-  ]);
-  
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.tiff'), padFixture(tiffBuffer));
-  console.log('✓ Created sample.tiff');
+function createMedia() {
+  const videoInput = ['-f', 'lavfi', '-i', 'color=c=blue:s=160x120:r=10', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=16000', '-t', '1'];
+  runFfmpeg([...videoInput, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest'], path.join(dirs.video, 'sample.mp4'));
+  runFfmpeg([...videoInput, '-c:v', 'mpeg4', '-c:a', 'aac', '-shortest'], path.join(dirs.video, 'sample.mov'));
+  runFfmpeg([...videoInput, '-c:v', 'mpeg4', '-c:a', 'mp3', '-shortest'], path.join(dirs.video, 'sample.avi'));
+  runFfmpeg([...videoInput, '-c:v', 'libvpx-vp9', '-c:a', 'libopus', '-shortest'], path.join(dirs.video, 'sample.webm'));
+  runFfmpeg([...videoInput, '-c:v', 'libx264', '-c:a', 'aac', '-shortest'], path.join(dirs.video, 'sample.mkv'));
+  runFfmpeg(['-i', path.join(dirs.video, 'sample.mp4'), '-an', '-c:v', 'flv'], path.join(dirs.video, 'sample.flv'));
+  runFfmpeg(['-i', path.join(dirs.video, 'sample.mp4'), '-an', '-c:v', 'copy'], path.join(dirs.video, 'sample.m4v'));
+  const audioInput = ['-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=16000', '-t', '1'];
+  runFfmpeg([...audioInput, '-c:a', 'libmp3lame'], path.join(dirs.audio, 'sample.mp3'));
+  runFfmpeg([...audioInput, '-c:a', 'pcm_s16le'], path.join(dirs.audio, 'sample.wav'));
+  runFfmpeg([...audioInput, '-c:a', 'aac'], path.join(dirs.audio, 'sample.m4a'));
+  runFfmpeg([...audioInput, '-c:a', 'aac', '-f', 'adts'], path.join(dirs.audio, 'sample.aac'));
+  runFfmpeg([...audioInput, '-c:a', 'flac'], path.join(dirs.audio, 'sample.flac'));
+  runFfmpeg([...audioInput, '-c:a', 'libvorbis'], path.join(dirs.audio, 'sample.ogg'));
 }
 
-/**
- * Create sample WebP image
- */
-function createWebpImage() {
-  // Minimal valid WebP file
-  const webpBuffer = Buffer.from([
-    0x52, 0x49, 0x46, 0x46, // "RIFF"
-    0x24, 0x00, 0x00, 0x00, // File size - 8
-    0x57, 0x45, 0x42, 0x50, // "WEBP"
-    0x56, 0x50, 0x38, 0x4C, // "VP8L"
-    0x18, 0x00, 0x00, 0x00, // Chunk size
-    0x2F, 0x00, 0x00, 0x00, // VP8L bitstream
-    0x88, 0x88, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  ]);
-  
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.webp'), padFixture(webpBuffer));
-  console.log('✓ Created sample.webp');
-}
-
-/**
- * Create sample GIF image
- */
-function createGifImage() {
-  // Minimal valid GIF87a file
-  const gifBuffer = Buffer.from([
-    0x47, 0x49, 0x46, 0x38, 0x37, 0x61, // "GIF87a"
-    0x01, 0x00, 0x01, 0x00, // Width: 1, Height: 1
-    0x80, 0x00, 0x00, // Packed fields (global color table)
-    0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, // Global color table (2 colors)
-    0x2C, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, // Image descriptor
-    0x00, // Local color table packed fields
-    0x02, 0x02, 0x44, 0x01, 0x00, 0x3B, // Image data + trailer
-  ]);
-  
-  fs.writeFileSync(path.join(IMAGE_DIR, 'sample.gif'), padFixture(gifBuffer));
-  console.log('✓ Created sample.gif');
-}
-
-/**
- * Main function to generate all fixtures
- */
 async function generateFixtures() {
-  try {
-    console.log('\n📁 Generating test fixtures...\n');
-    
-    // Generate PDF files
-    console.log('Creating PDF files...');
-    await createValidPdf();
-    await createMultipagePdf();
-    await createProtectedPdf();
-    createCorruptedPdf();
-    await createScannedPdf();
-    
-    console.log('\nCreating image files...');
-    // Generate image files
-    createJpgImage();
-    createPngImage();
-    createTiffImage();
-    createWebpImage();
-    createGifImage();
-    
-    console.log('\n✅ All test fixtures generated successfully!\n');
-  } catch (error) {
-    console.error('❌ Error generating fixtures:', error);
-    process.exit(1);
-  }
+  await createPdfs();
+  await createImages();
+  await createDocuments();
+  createTextFixtures();
+  createMedia();
+  console.log('Generated reproducible functional-audit fixtures.');
 }
 
-// Run if executed directly
-if (require.main === module) {
-  generateFixtures().catch(err => {
-    console.error(err);
-    process.exit(1);
-  });
-}
-
+if (require.main === module) generateFixtures().catch((error) => { console.error(error); process.exit(1); });
 module.exports = { generateFixtures };
