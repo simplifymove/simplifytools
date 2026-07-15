@@ -151,7 +151,12 @@ async function parseFixture(file: string, extension: string, bytes: Buffer): Pro
   if (extension === '.xls' && !/<Workbook[\s>]/.test(text)) throw new Error('SpreadsheetML workbook is invalid');
   if (extension === '.msg' && !/^From:.*\r?\nTo:.*\r?\nSubject:/m.test(text)) throw new Error('RFC822 message headers missing');
   if (extension === '.eps' && !text.startsWith('%!PS-Adobe') ) throw new Error('invalid EPS header');
-  if (['.mobi', '.azw3'].includes(extension) && bytes.subarray(60, 68).toString('ascii') !== 'BOOKMOBI') throw new Error('BOOKMOBI header missing');
+  if (['.mobi', '.azw3'].includes(extension)) {
+    if (bytes.subarray(60, 68).toString('ascii') !== 'BOOKMOBI') throw new Error('BOOKMOBI header missing');
+    const palmRecordCount = bytes.readUInt16BE(76);
+    if (palmRecordCount === 0) throw new Error('Palm database has no records');
+    return { detail: `BOOKMOBI, ${palmRecordCount} Palm record(s)` };
+  }
   if (extension === '.vsd' || extension === '.ppt') return { detail: validateOle(bytes) };
   if (!bytes.length) throw new Error('empty file');
   return { detail: 'text/structure parsed' };

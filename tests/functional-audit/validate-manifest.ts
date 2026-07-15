@@ -12,7 +12,7 @@ for (const { category, target } of activeTargets) {
   const contract = target.functionalAudit;
   if (!target.route) errors.push(`${category}/${target.slug}: route is missing`);
   if (!contract.resultFlow || contract.resultFlow === 'none') errors.push(`${category}/${target.slug}: active tool has no result flow`);
-  if (['file', 'pdf-editor', 'pdf-annotate', 'pdf-esign'].includes(contract.strategy) && !contract.fixtures?.length) {
+  if (['file', 'pdf-editor', 'pdf-annotate', 'pdf-esign', 'pdf-rearrange'].includes(contract.strategy) && !contract.fixtures?.length) {
     errors.push(`${category}/${target.slug}: file strategy has no fixture`);
   }
   for (const fixture of contract.fixtures || []) {

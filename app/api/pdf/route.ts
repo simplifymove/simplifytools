@@ -140,24 +140,28 @@ export async function POST(request: NextRequest) {
     console.log(`[PDF API SECURITY] Starting file validation for tool: ${toolId}, files: ${files.length}`);
     
     // Validate file count
-    const fileCountValidation = validateFileCount(files.length, 50);
-    if (!fileCountValidation.valid) {
-      console.warn(`[PDF API SECURITY] File count validation failed: ${fileCountValidation.error}`);
-      return NextResponse.json(
-        { success: false, error: fileCountValidation.error },
-        { status: 403 }
-      );
+    if (tool.inputMode !== 'url') {
+      const fileCountValidation = validateFileCount(files.length, 50);
+      if (!fileCountValidation.valid) {
+        console.warn(`[PDF API SECURITY] File count validation failed: ${fileCountValidation.error}`);
+        return NextResponse.json(
+          { success: false, error: fileCountValidation.error },
+          { status: 403 }
+        );
+      }
     }
 
     // Validate total file size
-    const totalSize = files.reduce((sum, f) => sum + f.size, 0);
-    const totalSizeValidation = validateTotalFileSize(totalSize, 500 * 1024 * 1024); // 500MB
-    if (!totalSizeValidation.valid) {
-      console.warn(`[PDF API SECURITY] Total file size validation failed: ${totalSizeValidation.error}`);
-      return NextResponse.json(
-        { success: false, error: totalSizeValidation.error },
-        { status: 403 }
-      );
+    if (tool.inputMode !== 'url') {
+      const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+      const totalSizeValidation = validateTotalFileSize(totalSize, 500 * 1024 * 1024); // 500MB
+      if (!totalSizeValidation.valid) {
+        console.warn(`[PDF API SECURITY] Total file size validation failed: ${totalSizeValidation.error}`);
+        return NextResponse.json(
+          { success: false, error: totalSizeValidation.error },
+          { status: 403 }
+        );
+      }
     }
 
     // Validate each file's actual signature (magic bytes)

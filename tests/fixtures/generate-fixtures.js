@@ -49,18 +49,33 @@ async function createPdfs() {
   if (encrypted.status !== 0) throw new Error(`Unable to generate encrypted PDF: ${encrypted.stderr}`);
 }
 
+function deterministicThresholdImage() {
+  const pixels = Buffer.alloc(32 * 32 * 4);
+  for (let y = 0; y < 32; y += 1) {
+    for (let x = 0; x < 32; x += 1) {
+      const offset = (y * 32 + x) * 4;
+      pixels[offset] = (x * 17 + y * 3) % 256;
+      pixels[offset + 1] = (x * 5 + y * 19) % 256;
+      pixels[offset + 2] = (x * 11 + y * 7) % 256;
+      pixels[offset + 3] = 255;
+    }
+  }
+  return sharp(pixels, { raw: { width: 32, height: 32, channels: 4 } });
+}
+
 async function createImages() {
   const pixels = Buffer.from([
     30, 100, 220, 255, 240, 240, 240, 255,
     240, 240, 240, 255, 30, 100, 220, 255,
   ]);
   const image = sharp(pixels, { raw: { width: 2, height: 2, channels: 4 } });
+  const thresholdImage = deterministicThresholdImage();
   await Promise.all([
     image.clone().jpeg({ quality: 80 }).toFile(path.join(dirs.images, 'sample.jpg')),
     image.clone().jpeg({ quality: 80 }).toFile(path.join(dirs.images, 'sample.jpeg')),
     image.clone().png().toFile(path.join(dirs.images, 'sample.png')),
-    image.clone().webp().toFile(path.join(dirs.images, 'sample.webp')),
-    image.clone().gif().toFile(path.join(dirs.images, 'sample.gif')),
+    thresholdImage.clone().webp({ quality: 80 }).toFile(path.join(dirs.images, 'sample.webp')),
+    thresholdImage.clone().gif().toFile(path.join(dirs.images, 'sample.gif')),
     image.clone().tiff().toFile(path.join(dirs.images, 'sample.tiff')),
     image.clone().avif().toFile(path.join(dirs.images, 'sample.avif')),
     image.clone().avif().toFile(path.join(dirs.images, 'sample.heic')),
@@ -81,6 +96,14 @@ async function createImages() {
   const imageOnlyPdf = Buffer.from(await imagePdf.save());
   write('pdf', 'images.pdf', imageOnlyPdf);
   write('pdf', 'scanned.pdf', imageOnlyPdf);
+}
+
+async function createThresholdImageFixtures() {
+  const image = deterministicThresholdImage();
+  await Promise.all([
+    image.clone().webp({ quality: 80 }).toFile(path.join(dirs.images, 'sample.webp')),
+    image.clone().gif().toFile(path.join(dirs.images, 'sample.gif')),
+  ]);
 }
 
 function createXlsx() {
@@ -136,11 +159,52 @@ async function createDocuments() {
   addZipText(epub, 'OEBPS/content.opf', '<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Audit</dc:title><dc:identifier id="id">audit-fixture</dc:identifier></metadata><manifest><item id="page" href="page.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="page"/></spine></package>');
   addZipText(epub, 'OEBPS/page.xhtml', '<html xmlns="http://www.w3.org/1999/xhtml"><body><p>Predictable audit ebook.</p></body></html>');
   epub.writeZip(path.join(dirs.documents, 'sample.epub'));
-  const palm = Buffer.alloc(128, 0);
-  palm.write('Audit fixture', 0, 'ascii');
-  palm.write('BOOKMOBI', 60, 'ascii');
-  write('documents', 'sample.mobi', palm);
-  write('documents', 'sample.azw3', palm);
+  createEbookFixtures();
+}
+
+function normalizeCalibreEbook(file) {
+  const bytes = fs.readFileSync(file);
+  if (bytes.length < 82 || bytes.subarray(60, 68).toString('ascii') !== 'BOOKMOBI') {
+    throw new Error(`Calibre did not create a valid BOOKMOBI file: ${file}`);
+  }
+
+  // Calibre writes the current Palm timestamps and a generated internal UUID.
+  // Normalize only those identity fields so the committed fixtures are byte-stable.
+  bytes.writeUInt32BE(0, 36);
+  bytes.writeUInt32BE(0, 40);
+  const firstRecordOffset = bytes.readUInt32BE(78);
+  bytes.writeUInt32BE(0x53434658, firstRecordOffset + 32);
+  const calibreUuid = /calibre:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
+  const latin1 = bytes.toString('latin1');
+  const matches = [...latin1.matchAll(calibreUuid)];
+  if (matches.length !== 1 || matches[0].index === undefined) {
+    throw new Error(`Expected one Calibre UUID in ${file}, found ${matches.length}`);
+  }
+  bytes.write('calibre:00000000-0000-4000-8000-000000000001', matches[0].index, 'ascii');
+  fs.writeFileSync(file, bytes);
+}
+
+function createEbookFixtures() {
+  const ebookConvert = process.env.CALIBRE_EBOOK_CONVERT || 'ebook-convert';
+  const input = path.join(dirs.documents, 'sample.epub');
+  const commonArgs = [
+    '--title', 'SimplifyConvert Audit Ebook',
+    '--authors', 'SimplifyConvert',
+    '--publisher', 'SimplifyConvert',
+    '--book-producer', 'SimplifyConvert Fixture Generator',
+    '--pubdate', '2000-01-01T00:00:00Z',
+    '--timestamp', '2000-01-01T00:00:00Z',
+    '--share-not-sync',
+  ];
+
+  for (const extension of ['mobi', 'azw3']) {
+    const output = path.join(dirs.documents, `sample.${extension}`);
+    const result = spawnSync(ebookConvert, [input, output, ...commonArgs], { encoding: 'utf8' });
+    if (result.status !== 0) {
+      throw new Error(`ebook-convert failed for sample.${extension}: ${result.stderr || result.error?.message || result.stdout}`);
+    }
+    normalizeCalibreEbook(output);
+  }
 }
 
 function createTextFixtures() {
@@ -195,5 +259,12 @@ async function generateFixtures() {
   console.log('Generated reproducible functional-audit fixtures.');
 }
 
-if (require.main === module) generateFixtures().catch((error) => { console.error(error); process.exit(1); });
+if (require.main === module) {
+  const generate = process.argv.includes('--threshold-images')
+    ? createThresholdImageFixtures
+    : process.argv.includes('--ebook-fixtures')
+      ? createEbookFixtures
+      : generateFixtures;
+  Promise.resolve(generate()).catch((error) => { console.error(error); process.exit(1); });
+}
 module.exports = { generateFixtures };

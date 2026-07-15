@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-15T10:28:29.435Z",
+  "generatedAt": "2026-07-15T14:34:31.449Z",
   "summary": {
     "fixtureCount": 64,
-    "totalBytes": 528750,
+    "totalBytes": 550414,
     "valid": 64,
     "failures": 0,
     "expectedNegative": 1,
@@ -330,15 +330,15 @@
     {
       "path": "tests/fixtures/documents/sample.azw3",
       "format": "AZW3",
-      "sizeBytes": 128,
+      "sizeBytes": 10515,
       "detectedMime": "application/vnd.amazon.ebook",
       "magicValid": true,
       "parserValid": true,
-      "parserDetail": "text/structure parsed",
+      "parserDetail": "BOOKMOBI, 11 Palm record(s)",
       "tools": [
         "pdf-tools/azw3-to-pdf"
       ],
-      "sha256": "84ad3f400d119fd3d7330e7567e40a12a51b591dfc397ae2d83317ab3d3bb9b4",
+      "sha256": "c6e9f691f0ef022dc128aadfeb6d5376fc615f46c7f5108aff13f6ca8a5ef2b3",
       "expectedNegative": false
     },
     {
@@ -384,15 +384,15 @@
     {
       "path": "tests/fixtures/documents/sample.mobi",
       "format": "MOBI",
-      "sizeBytes": 128,
+      "sizeBytes": 9100,
       "detectedMime": "application/x-mobipocket-ebook",
       "magicValid": true,
       "parserValid": true,
-      "parserDetail": "text/structure parsed",
+      "parserDetail": "BOOKMOBI, 5 Palm record(s)",
       "tools": [
         "pdf-tools/mobi-to-pdf"
       ],
-      "sha256": "84ad3f400d119fd3d7330e7567e40a12a51b591dfc397ae2d83317ab3d3bb9b4",
+      "sha256": "d4cb83bc74cf80a23e3efecda50bbbe4260f6f8c1265df876a33bc53cb8c4d0d",
       "expectedNegative": false
     },
     {
@@ -573,11 +573,11 @@
     {
       "path": "tests/fixtures/images/sample.gif",
       "format": "GIF",
-      "sizeBytes": 50,
+      "sizeBytes": 1795,
       "detectedMime": "image/gif",
       "magicValid": true,
       "parserValid": true,
-      "parserDetail": "gif 2x2",
+      "parserDetail": "gif 32x32",
       "tools": [
         "pdf-tools/gif-to-pdf",
         "image-tools/gif-mp4",
@@ -586,8 +586,8 @@
         "video-tools/gif-to-mov",
         "video-tools/gif-to-webp"
       ],
-      "sha256": "8b4ac5bfbd2d9d132d825baf9f1c46277baa56bd129d3d10e9344fbd73c1d4fb",
-      "dimensions": "2x2",
+      "sha256": "8f5a49a68d562b4378d433357edc425dd3c208a4918746b8fbd80554d5ea1b4f",
+      "dimensions": "32x32",
       "expectedNegative": false
     },
     {
@@ -789,11 +789,11 @@
     {
       "path": "tests/fixtures/images/sample.webp",
       "format": "WEBP",
-      "sizeBytes": 80,
+      "sizeBytes": 640,
       "detectedMime": "image/webp",
       "magicValid": true,
       "parserValid": true,
-      "parserDetail": "webp 2x2",
+      "parserDetail": "webp 32x32",
       "tools": [
         "pdf-tools/webp-to-pdf",
         "image-tools/webp-jpg",
@@ -801,8 +801,8 @@
         "image-tools/webp-gif",
         "image-tools/webp-avif"
       ],
-      "sha256": "57161ab3cd99fb50521681366fc37de0ffcf3c5b9a267493ca3cb9b85b06caad",
-      "dimensions": "2x2",
+      "sha256": "b34338d2bf71bff227d335b7bafbd9817c89ce356db5e97aa7a9d32182589f8e",
+      "dimensions": "32x32",
       "expectedNegative": false
     },
     {
@@ -842,6 +842,7 @@
       "tools": [
         "pdf-tools/merge-pdf",
         "pdf-tools/split-pdf",
+        "pdf-tools/rearrange-pdf",
         "pdf-tools/pdf-to-jpg",
         "pdf-tools/pdf-to-png",
         "pdf-tools/pdf-to-tiff"
@@ -898,7 +899,6 @@
       "tools": [
         "pdf-tools/merge-pdf",
         "pdf-tools/rotate-pdf",
-        "pdf-tools/rearrange-pdf",
         "pdf-tools/crop-pdf",
         "pdf-tools/pdf-page-deleter",
         "pdf-tools/protect-pdf",
