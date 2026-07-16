@@ -20,23 +20,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.units import inch
-
-
-def normalize_delimiter(value):
-    """Convert delimiter string representation to actual character"""
-    mapping = {
-        "comma": ",",
-        "tab": "\t",
-        "semicolon": ";",
-        "pipe": "|",
-        ",": ",",
-        "\t": "\t",
-        ";": ";",
-        "|": "|",
-    }
-    result = mapping.get(str(value).lower(), ",")
-    print(f"[DEBUG] normalize_delimiter({repr(value)}) -> {repr(result)}")
-    return result
+from .delimiter_utils import normalize_delimiter
 
 
 class TableData:
@@ -131,9 +115,7 @@ class SpreadsheetConvertEngine:
                 print(f"[DEBUG] Read {len(df)} rows, {len(df.columns)} columns", flush=True)
             
             # Write to CSV
-            delimiter = options.get('delimiter', ',')
-            if delimiter == 'tab':
-                delimiter = '\t'
+            delimiter = normalize_delimiter(options.get('delimiter', 'comma'))
             print(f"[DEBUG] Writing CSV with separator: {repr(delimiter)}", flush=True)
             
             df.to_csv(output_file, index=False, sep=delimiter, encoding="utf-8-sig")
@@ -230,9 +212,7 @@ class SpreadsheetConvertEngine:
             table_data = self._xml_to_table_data(input_file)
             rows = table_data.get_single_sheet_rows()
             
-            delimiter = options.get('delimiter', ',')
-            if delimiter == 'tab':
-                delimiter = '\t'
+            delimiter = normalize_delimiter(options.get('delimiter', 'comma'))
             
             if not rows:
                 raise ValueError("No data found in XML")

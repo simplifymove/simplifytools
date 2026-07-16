@@ -12,23 +12,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import pandas as pd
 from typing import Dict, List, Any, Union
-
-
-def normalize_delimiter(value):
-    """Convert delimiter string representation to actual character"""
-    mapping = {
-        "comma": ",",
-        "tab": "\t",
-        "semicolon": ";",
-        "pipe": "|",
-        ",": ",",
-        "\t": "\t",
-        ";": ";",
-        "|": "|",
-    }
-    result = mapping.get(str(value).lower(), ",")
-    print(f"[DEBUG] normalize_delimiter({repr(value)}) -> {repr(result)}")
-    return result
+from .delimiter_utils import normalize_delimiter
 
 
 class StructuredDataEngine:

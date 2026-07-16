@@ -15,23 +15,7 @@ import io
 from pathlib import Path
 from typing import Dict, List, Any, Tuple
 from io import StringIO
-
-
-def normalize_delimiter(value):
-    """Convert delimiter string representation to actual character"""
-    mapping = {
-        "comma": ",",
-        "tab": "\t",
-        "semicolon": ";",
-        "pipe": "|",
-        ",": ",",
-        "\t": "\t",
-        ";": ";",
-        "|": "|",
-    }
-    result = mapping.get(str(value).lower(), ",")
-    print(f"[DEBUG] normalize_delimiter({repr(value)}) -> {repr(result)}")
-    return result
+from .delimiter_utils import normalize_delimiter
 
 
 class SplitEngine:
