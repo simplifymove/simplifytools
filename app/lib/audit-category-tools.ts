@@ -273,7 +273,10 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
         strategy: tool.inputMethod === 'url' ? 'url' : tool.id === 'text-to-video' ? 'text' : 'file',
         fixtures: fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : undefined,
         textInput: 'A calm blue gradient with a centered title', urlInput: 'https://example.com/',
-        optionValues: Object.fromEntries(tool.options.map((option) => [option.id, option.default ?? (option.type === 'time' ? '00:01' : option.type === 'number' ? option.min ?? 1 : 'audit')])),
+        optionValues: Object.fromEntries(tool.options.map((option) => [option.id, option.default
+          ?? (tool.id === 'trim-video' ? (option.id === 'startTime' ? '00:00' : '00:01')
+            : option.type === 'time' ? '00:01'
+              : option.type === 'number' ? option.min ?? 1 : 'audit')])),
         resultFlow: tool.outputType === 'text' ? 'rendered-output' : 'download', expectedOutput: outputContract(tool.outputType),
         executionClass: tool.id === 'text-to-video' ? externalClass(['PIKA_API_KEY'], true)
           : /transcri|to-text|transcript/.test(tool.id) ? externalClass(['GROQ_API_KEY'])

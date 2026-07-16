@@ -381,7 +381,7 @@ export const videoTools: Record<string, VideoTool> = {
     id: 'mp4-to-webm',
     title: 'MP4 to WebM',
     description: 'Convert MP4 to WebM format',
-    engine: 'convert',
+    engine: 'edit',
     category: 'conversion',
     accepts: ['.mp4'],
     outputType: '.webm',
@@ -1214,4 +1214,3 @@ export function getToolsByEngine(engine: VideoToolEngine): VideoTool[] {
 export function getToolsByCategory(category: string): VideoTool[] {
   return Object.values(videoTools).filter((tool) => tool.category === category);
 }
-
