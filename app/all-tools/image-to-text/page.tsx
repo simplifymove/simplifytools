@@ -26,6 +26,7 @@ export default function ImageToTextPage() {
   const [outputFormat, setOutputFormat] = useState('txt');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [resultText, setResultText] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
   const { error, clearError, createError } = useImageToolErrors();
 
@@ -98,6 +99,7 @@ export default function ImageToTextPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
+    setResultText(null);
     clearError();
   };
 
@@ -115,32 +117,65 @@ export default function ImageToTextPage() {
     clearError();
     try {
       const formData = new FormData();
-      formData.append('tool', 'image-to-text');
-      formData.append('file', file);
-      formData.append('options', JSON.stringify({ 
-        language,
-        output_format: outputFormat 
+      const inputExtension = file.name.split('.').pop()?.toLowerCase();
+      const inputFormat = inputExtension === 'jpeg'
+        ? 'jpg'
+        : inputExtension === 'tif'
+          ? 'tiff'
+          : inputExtension;
+      if (!inputFormat) {
+        createError(ImageToolErrorType.UNSUPPORTED_FORMAT, TOOL_ID, TOOL_NAME, { file });
+        return;
+      }
+
+      formData.append('image', file);
+      formData.append('config', JSON.stringify({
+        from_format: inputFormat,
+        to_format: outputFormat,
+        options: { language },
       }));
 
-      const response = await fetch('/api/pdf', {
+      const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const failure = await response.json().catch(() => ({ error: response.statusText }));
+        createError(
+          ImageToolErrorType.OCR_FAILED,
+          TOOL_ID,
+          TOOL_NAME,
+          {
+            endpoint: '/api/convert',
+            apiStatus: response.status,
+            backendErrorCode: 'OCR_FAILED',
+            stderr: failure.stderr || failure.error,
+          },
+          { filename: file.name, size: file.size, mimeType: file.type },
+        );
+        return;
       }
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setResult(url);
+      setResultText(
+        outputFormat === 'txt'
+          ? (await blob.text()).trim() || 'No text was detected in this image.'
+          : 'Your searchable PDF is ready to download.',
+      );
       setResultFileName(`extracted-text.${outputFormat}`);
     } catch (error) {
       createError(
-        ImageToolErrorType.SHARP_FAILED,
+        ImageToolErrorType.OCR_FAILED,
         TOOL_ID,
         TOOL_NAME,
-        { file }
+        {
+          endpoint: '/api/convert',
+          error: error instanceof Error ? error.message : 'Text recognition failed',
+        },
+        { filename: file.name, size: file.size, mimeType: file.type },
       );
     } finally {
       setProcessing(false);
@@ -283,6 +318,22 @@ export default function ImageToTextPage() {
                     </button>
                   )}
 
+                  {resultText && (
+                    <div className="output-result bg-white rounded-lg border border-gray-200 p-4">
+                      <h3 className="font-semibold text-gray-900 mb-2">Extracted Text</h3>
+                      {outputFormat === 'txt' ? (
+                        <textarea
+                          readOnly
+                          value={resultText}
+                          className="w-full min-h-32 resize-y rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-800"
+                          aria-label="Extracted text result"
+                        />
+                      ) : (
+                        <p className="text-sm text-gray-700">{resultText}</p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Success Box */}
                   {result && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -311,8 +362,6 @@ export default function ImageToTextPage() {
     </>
   );
 }
-
-
 
 
 

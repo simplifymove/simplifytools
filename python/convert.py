@@ -76,6 +76,10 @@ CONVERSION_ROUTES = {
     ('pdf', 'txt'): ocr_convert,
     ('tiff', 'txt'): ocr_convert,
     ('webp', 'txt'): ocr_convert,
+    ('jpg', 'pdf'): ocr_convert,
+    ('png', 'pdf'): ocr_convert,
+    ('tiff', 'pdf'): ocr_convert,
+    ('webp', 'pdf'): ocr_convert,
     ('image', 'text'): ocr_convert,
     ('image', 'txt'): ocr_convert,  # Generic image to text (used by UI)
     ('pdf', 'pdf'): ocr_convert,  # Searchable PDF

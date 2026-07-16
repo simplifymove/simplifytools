@@ -8,7 +8,7 @@ import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
-import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { VideoToolErrorType } from '@/app/utils/types/errors';
 
 const TOOL_ID = 'gif-to-mp4';
 const TOOL_NAME = 'GIF to MP4';
@@ -20,7 +20,7 @@ export default function GifToMp4Page() {
   const [result, setResult] = useState<Blob | null>(null);
   const [fps, setFps] = useState(30);
   const [quality, setQuality] = useState(85);
-  const { error, clearError, createError } = useImageToolErrors();
+  const { error, clearError, setError } = useImageToolErrors();
 
 
   const handleFileSelect = (selectedFile: File) => {
@@ -47,36 +47,51 @@ export default function GifToMp4Page() {
     clearError();
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('fps', fps.toString());
-      formData.append('quality', quality.toString());
+      formData.append('image', file);
+      formData.append('config', JSON.stringify({
+        from_format: 'gif',
+        to_format: 'mp4',
+        options: { fps, quality },
+      }));
       
-      const response = await fetch('/api/media/convert', {
+      const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
       });
       
       if (!response.ok) {
-        createError(
-          ImageToolErrorType.SHARP_FAILED,
-          TOOL_ID,
-          TOOL_NAME,
-          { error: 'Conversion failed' },
-          { filename: file.name, size: file.size, mimeType: file.type }
-        );
+        const failure = await response.json().catch(() => ({ error: response.statusText }));
+        setError({
+          type: VideoToolErrorType.FFMPEG_FAILED,
+          toolId: TOOL_ID,
+          toolName: TOOL_NAME,
+          message: failure.error || 'GIF to MP4 conversion failed',
+          userFriendlyMessage: 'GIF to MP4 conversion failed. Please try with a different GIF.',
+          timestamp: new Date(),
+          details: {
+            endpoint: '/api/convert',
+            apiStatus: response.status,
+            backendErrorCode: 'FFMPEG_FAILED',
+            stderr: failure.stderr || failure.error,
+          },
+          fileMeta: { filename: file.name, size: file.size, mimeType: file.type },
+        });
         return;
       }
       
       const blob = await response.blob();
       setResult(blob);
     } catch (err) {
-      createError(
-        ImageToolErrorType.SHARP_FAILED,
-        TOOL_ID,
-        TOOL_NAME,
-        { error: err instanceof Error ? err.message : 'Error converting file' },
-        { filename: file?.name, size: file?.size, mimeType: file?.type }
-      );
+      setError({
+        type: VideoToolErrorType.FFMPEG_FAILED,
+        toolId: TOOL_ID,
+        toolName: TOOL_NAME,
+        message: err instanceof Error ? err.message : 'Error converting file',
+        userFriendlyMessage: 'GIF to MP4 conversion failed. Please try with a different GIF.',
+        timestamp: new Date(),
+        details: { endpoint: '/api/convert', error: err instanceof Error ? err.message : 'Error converting file' },
+        fileMeta: { filename: file.name, size: file.size, mimeType: file.type },
+      });
     } finally {
       setProcessing(false);
     }
@@ -233,8 +248,6 @@ export default function GifToMp4Page() {
     </>
   );
 }
-
-
 
 
 

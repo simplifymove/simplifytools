@@ -8,6 +8,18 @@ from .utils import validate_file_exists, safe_remove, log_execution
 
 logger = logging.getLogger(__name__)
 
+EASYOCR_LANGUAGE_MAP = {
+    'eng': 'en',
+    'spa': 'es',
+    'fra': 'fr',
+    'deu': 'de',
+    'chi_sim': 'ch_sim',
+    'jpn': 'ja',
+    'ita': 'it',
+    'por': 'pt',
+    'rus': 'ru',
+}
+
 def ocr_convert(input_file: str, output_file: str, from_format: str, to_format: str, options=None) -> bool:
     """
     Extract text from image/PDF/TIFF
@@ -62,6 +74,7 @@ def _extract_pdf_text(input_file: str, output_file: str, options: dict) -> bool:
 
 def _ocr_image(input_file: str, output_file: str, from_format: str, to_format: str, options: dict) -> bool:
     """Extract text from image using Tesseract OCR"""
+    temp_img = None
     try:
         lang = options.get('language', 'eng')
         
@@ -104,8 +117,54 @@ def _ocr_image(input_file: str, output_file: str, from_format: str, to_format: s
         return True
         
     except FileNotFoundError:
-        logger.error("Tesseract binary not found. Install with: 'winget install UB-Mannheim.TesseractOCR'")
-        raise RuntimeError("Tesseract OCR not installed")
+        logger.warning("Tesseract binary not found; using the configured EasyOCR fallback")
+        return _ocr_image_with_easyocr(input_file, output_file, to_format, options)
     except Exception as e:
         logger.error(f"Image OCR failed: {str(e)}")
         raise
+    finally:
+        if temp_img:
+            safe_remove(temp_img)
+
+
+def _ocr_image_with_easyocr(input_file: str, output_file: str, to_format: str, options: dict) -> bool:
+    """Use the declared EasyOCR dependency when the Tesseract executable is unavailable."""
+    try:
+        import easyocr
+
+        language = EASYOCR_LANGUAGE_MAP.get(options.get('language', 'eng'), 'en')
+        reader = easyocr.Reader([language], gpu=False, verbose=False)
+        lines = reader.readtext(input_file, detail=0, paragraph=True)
+        text = '\n'.join(str(line) for line in lines)
+
+        if to_format.lower() == 'pdf':
+            from reportlab.lib.pagesizes import A4
+            from reportlab.pdfgen import canvas
+
+            pdf = canvas.Canvas(output_file, pagesize=A4)
+            width, height = A4
+            text_object = pdf.beginText(40, height - 50)
+            text_object.setFont('Helvetica', 11)
+            for paragraph in text.splitlines() or ['']:
+                words = paragraph.split()
+                line = ''
+                for word in words:
+                    candidate = f'{line} {word}'.strip()
+                    if pdf.stringWidth(candidate, 'Helvetica', 11) > width - 80 and line:
+                        text_object.textLine(line)
+                        line = word
+                    else:
+                        line = candidate
+                text_object.textLine(line)
+            pdf.drawText(text_object)
+            pdf.save()
+        else:
+            with open(output_file, 'w', encoding='utf-8') as output:
+                output.write(text)
+
+        logger.info(f"EasyOCR fallback successful: {output_file}")
+        log_execution("EasyOCR", 'image', to_format, input_file, output_file, True)
+        return True
+    except Exception as error:
+        safe_remove(output_file)
+        raise RuntimeError(f"EasyOCR fallback failed: {str(error)}") from error
