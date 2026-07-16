@@ -139,9 +139,14 @@ function externalClass(requiredEnvironmentVariables: string[], paidProvider = fa
 
 function codeAuditInput(toolId: string): string {
   if (toolId === 'code-minifier' || toolId === 'code-beautifier') return 'const audit = { name: "SimplifyConvert", active: true }; console.log(audit.name);';
+  if (toolId === 'json-to-csv') return '[{"name":"SimplifyConvert","active":true}]';
+  if (toolId === 'json-to-xml') return '{"name":"SimplifyConvert","active":true}';
+  if (toolId === 'temperature-converter') return '25';
+  if (toolId === 'csv-json-converter') return 'name,active\nSimplifyConvert,true';
   if (toolId.includes('jwt')) return 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhdWRpdCJ9.';
   if (toolId.includes('base64')) return toolId.includes('decode') ? 'U2ltcGxpZnlDb252ZXJ0IGF1ZGl0=' : 'SimplifyConvert audit';
-  if (toolId.includes('url-') || toolId.includes('url-encoder') || toolId.includes('url-decoder')) return toolId.includes('decoder') ? 'SimplifyConvert%20audit' : 'SimplifyConvert audit';
+  if (toolId === 'url-decode') return 'SimplifyConvert%20audit';
+  if (toolId === 'url-encode') return 'SimplifyConvert audit';
   if (toolId.includes('xml')) return '<items><item><name>audit</name><value>1</value></item></items>';
   if (toolId.includes('html')) return '<!doctype html><html><body><p>Audit</p></body></html>';
   if (toolId.includes('css')) return 'body { color: #123456; margin: 0; }';
@@ -151,6 +156,16 @@ function codeAuditInput(toolId: string): string {
   if (toolId.includes('timestamp') || toolId.includes('epoch')) return '1704067200';
   if (toolId.includes('color')) return '#1e64dc';
   return '{"name":"SimplifyConvert","active":true}';
+}
+
+function codeAuditProcessButton(toolId: string): string | undefined {
+  const executableControls: Record<string, string> = {
+    'escape-unescape': '^Escape/Unescape$',
+    'text-diff': '^Find difference$',
+    'regex-tester': '^Test Regex$',
+  };
+
+  return executableControls[toolId];
 }
 
 function withRoute(
@@ -278,8 +293,16 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
     tools: getAllCodeTools().map((tool) => withRoute(tool, `/all-tools/code-tools/${tool.id}`, {
       strategy: tool.inputMode === 'none' ? 'form' : 'text',
       textInput: codeAuditInput(tool.id),
-      optionValues: Object.fromEntries(tool.options.filter((option) => option.default !== undefined).map((option) => [option.name, option.default!])),
+      urlInput: ['url-encode', 'url-decode'].includes(tool.id) ? codeAuditInput(tool.id) : undefined,
+      optionValues: {
+        ...Object.fromEntries(tool.options.filter((option) => option.default !== undefined).map((option) => [option.name, option.default!])),
+        ...(tool.id === 'text-diff' ? { changedText: '{"name":"SimplifyConvert","active":false}' } : {}),
+      },
+      processButtonText: codeAuditProcessButton(tool.id),
       resultFlow: 'rendered-output',
+      renderedResult: tool.id === 'text-diff'
+        ? { selector: 'main h3:text-is("Comparison Summary")', apiEndpoint: '/api/code' }
+        : undefined,
     })),
   },
   {

@@ -182,6 +182,15 @@ function handleConverterEngine(
     case 'csv-to-json':
       return ConverterEngine.csvToJSON(input);
 
+    case 'csv-json-converter':
+      if (options?.format === 'json-to-csv') {
+        return ConverterEngine.jsonToCSV(input);
+      }
+      if (!options?.format || options.format === 'csv-to-json') {
+        return ConverterEngine.csvToJSON(input);
+      }
+      throw new Error(`Unsupported CSV/JSON conversion format: ${options.format}`);
+
     case 'json-to-xml':
       return ConverterEngine.jsonToXML(input);
 
