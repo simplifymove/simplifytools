@@ -4,7 +4,8 @@
 import { Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
 import { prisma } from '@/lib/prisma';
-import { mapAuditFailureToFailureType, runTestCommand } from '@/lib/services/test-execution';
+import { mapAuditFailureToFailureType, runTestCommand, type IndividualTestResult } from '@/lib/services/test-execution';
+import { auditResultStatus, persistAuditToolResult } from '@/lib/services/audit-result-persistence';
 import { getAuditCategoryDefinition } from '@/app/lib/audit-category-tools';
 import { createNotification } from '@/lib/services/notification';
 import { getCategoryReliability } from '@/lib/services/reliability';
@@ -26,6 +27,53 @@ const auditDebugError = (...args: unknown[]) => {
   }
 };
 
+async function persistFailureResult(
+  auditJobId: string,
+  auditRunId: string,
+  category: string,
+  result: IndividualTestResult,
+) {
+  if (result.passed || result.skipped) return;
+  const toolName = result.toolName || category;
+  const existing = await prisma.failureRecord.findFirst({
+    where: { auditRunId, category, toolName },
+    select: { id: true },
+  });
+  const data = {
+    auditJobId,
+    auditRunId,
+    toolName,
+    category,
+    testName: result.testName || result.testCase,
+    failureType: mapAuditFailureToFailureType(result.failureClass) as any,
+    failureReason: result.error?.message || 'Test failed',
+    stackTrace: result.error?.stack,
+    errorOutput: result.output || result.stderr || '',
+    isFlaky: false,
+  };
+  if (existing) {
+    await prisma.failureRecord.update({ where: { id: existing.id }, data: { ...data, lastSeenAt: new Date() } });
+  } else {
+    await prisma.failureRecord.create({ data: { ...data, firstSeenAt: new Date() } });
+  }
+}
+
+async function getPersistedAuditCounts(auditRunId: string) {
+  const rows = await prisma.auditTestResult.groupBy({
+    by: ['status'],
+    where: { auditRunId },
+    _count: true,
+  });
+  const count = (status: string) => rows.find((row) => row.status === status)?._count || 0;
+  return {
+    total: rows.reduce((sum, row) => sum + row._count, 0),
+    passed: count('PASS'),
+    failed: count('FAIL'),
+    errors: count('ERROR'),
+    skipped: count('SKIPPED'),
+  };
+}
+
 // Worker processor function
 async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> {
   const { auditJobId, userId, categories, auditRunId, workerCount } = job.data;
@@ -44,6 +92,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
   let failedTests = 0;
   let errorTests = 0;
   let skippedTests = 0;
+  let terminationReason: string | null = null;
   const allLogs: any[] = [];
   const allTestResults: any[] = [];
   const totalToolsForRun = categories.reduce((total, category) => {
@@ -118,12 +167,22 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
           }, 0);
 
         const result = await runTestCommand(category, auditRunId, workerCount || '1', {
+          auditJobId,
           completedToolsOffset,
           totalTools: totalToolsForRun,
           passedToolsOffset: passedTests,
           failedToolsOffset: failedTests,
           skippedToolsOffset: skippedTests,
           errorToolsOffset: errorTests,
+          onResult: async (testResult) => {
+            try {
+              await persistAuditToolResult(prisma.auditTestResult, auditRunId, category, testResult);
+              await persistFailureResult(auditJobId, auditRunId, category, testResult);
+              workerLogger.debug({ category, toolSlug: testResult.toolSlug, status: auditResultStatus(testResult) }, 'Incremental audit result persisted');
+            } catch (error) {
+              workerLogger.error({ error, category, toolSlug: testResult.toolSlug }, 'Incremental audit result persistence failed');
+            }
+          },
         });
         auditDebugLog('[WORKER] Test command completed with result:', {
           totalTests: result.totalTests,
@@ -213,8 +272,6 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
         let batchTestCount = 0;
         for (const testResult of result.results || []) {
           const testStatus = testResult.passed ? 'PASS' : (testResult.skipped ? 'SKIPPED' : 'FAIL');
-          const durationMs = testResult.duration ? Math.round(testResult.duration * 1000) : 0;
-
           try {
             const storeFailureArtifact = async (type: 'screenshot' | 'video' | 'trace' | 'log' | 'network' | 'output', filePath?: string) => {
               if (testResult.passed || !filePath) return undefined;
@@ -228,38 +285,9 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
             await storeFailureArtifact('network', testResult.networkLogPath);
             await storeFailureArtifact('output', testResult.failedOutputPath);
 
-            // Create AuditTestResult for each test
-            await prisma.auditTestResult.create({
-              data: {
-                auditRunId,
-                category,
-                toolName: testResult.toolName || category,
-                toolSlug: testResult.toolSlug || (testResult.toolName || category).toLowerCase().replace(/\s+/g, '-'),
-                url: testResult.url || `http://localhost:3000/${category}`,
-                testCase: testResult.testName || testResult.testCase || 'Smoke test',
-                status: testStatus as any,
-                errorMessage: testResult.error?.message || (testResult.passed ? undefined : 'Test failed'),
-                outputGenerated: testResult.outputGenerated || false,
-                outputType: testResult.outputType,
-                outputPath: testResult.outputPath,
-                screenshotPath: screenshotUrl,
-                logs: JSON.stringify({
-                  stdout: testResult.output || '',
-                  stderr: testResult.error?.message || '',
-                  duration: durationMs,
-                  failureClass: testResult.failureClass,
-                  consoleErrors: testResult.consoleErrors || [],
-                  functionalEvidence: testResult.functionalEvidence,
-                  auditOutcome: testResult.auditOutcome,
-                  failureStage: testResult.failureStage,
-                  pageHealth: testResult.pageHealth,
-                  functionalProcessing: testResult.functionalProcessing,
-                  outputValidation: testResult.outputValidation,
-                  cleanup: testResult.cleanup,
-                }),
-                durationMs,
-                timestamp: new Date(),
-              },
+            await persistAuditToolResult(prisma.auditTestResult, auditRunId, category, {
+              ...testResult,
+              screenshotPath: screenshotUrl || testResult.screenshotPath,
             });
 
             batchTestCount++;
@@ -272,21 +300,7 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
             // Record failures
             if (!testResult.passed && testStatus !== 'SKIPPED') {
               try {
-                await prisma.failureRecord.create({
-                  data: {
-                    auditJobId,
-                    auditRunId,
-                    toolName: testResult.toolName || category,
-                    category,
-                    testName: testResult.testName || testResult.testCase,
-                    failureType: mapAuditFailureToFailureType(testResult.failureClass) as any,
-                    failureReason: testResult.error?.message || 'Test failed',
-                    stackTrace: testResult.error?.stack,
-                    errorOutput: testResult.output || '',
-                    isFlaky: false,
-                    firstSeenAt: new Date(),
-                  },
-                });
+                await persistFailureResult(auditJobId, auditRunId, category, testResult);
 
                 workerLogger.debug(
                   { toolName: testResult.toolName },
@@ -367,6 +381,12 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
           },
           `[DB Update] Category ${category} persisted - Total: ${totalTests}, Passed: ${passedTests}, Failed: ${failedTests}`
         );
+
+        if (result.terminationReason) {
+          terminationReason = result.terminationReason;
+          workerLogger.warn({ category, terminationReason, completedTools: result.completedTools, expectedTools: result.expectedTools }, 'Category audit terminated after partial completion');
+          break;
+        }
       } catch (error) {
         workerLogger.error({ error, category }, 'Error processing category');
         errorTests += 1;
@@ -378,6 +398,15 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
           timestamp: new Date(),
         });
       }
+    }
+
+    const persistedCounts = await getPersistedAuditCounts(auditRunId);
+    if (persistedCounts.total > 0) {
+      totalTests = persistedCounts.total;
+      passedTests = persistedCounts.passed;
+      failedTests = persistedCounts.failed;
+      errorTests = persistedCounts.errors;
+      skippedTests = persistedCounts.skipped;
     }
 
     const successPercentage = totalTests > 0 
@@ -454,6 +483,43 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
       }
 
       throw new Error(errorMsg);
+    }
+
+    if (terminationReason) {
+      const partialMessage = JSON.stringify({
+        type: 'audit-partial',
+        message: terminationReason,
+        expectedTools: totalToolsForRun,
+        completedTools: totalTests,
+        passedTools: passedTests,
+        failedTools: failedTests,
+        skippedTools: skippedTests,
+        errorTools: errorTests,
+      }).substring(0, 2000);
+      await prisma.auditRun.update({
+        where: { id: auditRunId },
+        data: {
+          status: 'PARTIAL',
+          totalTests,
+          passedTests,
+          failedTests,
+          errorTests,
+          skippedTests,
+          successPercentage,
+          errorMessage: partialMessage,
+          completedAt: new Date(),
+        },
+      });
+      await prisma.auditJob.update({
+        where: { id: auditJobId },
+        data: {
+          status: 'FAILED',
+          lastError: terminationReason,
+          completedAt: new Date(),
+          durationMs: Date.now() - new Date(job.timestamp).getTime(),
+        },
+      });
+      return { auditRunId, success: false, error: terminationReason };
     }
 
     // Update existing AuditRun with final statistics
@@ -560,13 +626,30 @@ async function processAuditJob(job: Job<AuditJobData>): Promise<AuditJobResult> 
     auditDebugError('[WORKER] Updating AuditRun and AuditJob with error status');
     workerLogger.error({ error, jobId: job.id, auditRunId }, 'Job failed');
 
-    // Update AuditRun with error status
+    // Update AuditRun with error/partial status while preserving incrementally persisted results.
     try {
+      const persisted = await getPersistedAuditCounts(auditRunId);
+      const partial = persisted.total > 0;
       await prisma.auditRun.update({
         where: { id: auditRunId },
         data: {
-          status: 'FAILED',
-          errorMessage: fullErrorMessage.substring(0, 2000),
+          status: partial ? 'PARTIAL' : 'FAILED',
+          totalTests: persisted.total,
+          passedTests: persisted.passed,
+          failedTests: persisted.failed,
+          errorTests: persisted.errors,
+          skippedTests: persisted.skipped,
+          successPercentage: persisted.total > 0 ? parseFloat(((persisted.passed / persisted.total) * 100).toFixed(2)) : 0,
+          errorMessage: partial ? JSON.stringify({
+            type: 'audit-partial',
+            message: errorMessage,
+            expectedTools: totalToolsForRun,
+            completedTools: persisted.total,
+            passedTools: persisted.passed,
+            failedTools: persisted.failed,
+            skippedTools: persisted.skipped,
+            errorTools: persisted.errors,
+          }).substring(0, 2000) : fullErrorMessage.substring(0, 2000),
           completedAt: new Date(),
         },
       });
@@ -607,18 +690,28 @@ async function recoverStaleJobs() {
     });
 
     if (staleRuns.length > 0) {
-      // Mark them as FAILED
-      await prisma.auditRun.updateMany({
-        where: {
-          status: 'RUNNING',
-          updatedAt: { lt: thirtyMinutesAgo },
-        },
-        data: {
-          status: 'FAILED',
-          errorMessage: 'Server restarted or worker stopped before completion',
-          completedAt: new Date(),
-        },
-      });
+      for (const run of staleRuns) {
+        const persisted = await getPersistedAuditCounts(run.id);
+        const message = 'Server restarted or worker stopped before completion';
+        await prisma.auditRun.update({
+          where: { id: run.id },
+          data: {
+            status: persisted.total > 0 ? 'PARTIAL' : 'FAILED',
+            totalTests: persisted.total,
+            passedTests: persisted.passed,
+            failedTests: persisted.failed,
+            errorTests: persisted.errors,
+            skippedTests: persisted.skipped,
+            successPercentage: persisted.total > 0 ? parseFloat(((persisted.passed / persisted.total) * 100).toFixed(2)) : 0,
+            errorMessage: persisted.total > 0 ? JSON.stringify({
+              type: 'audit-partial', message, completedTools: persisted.total,
+              passedTools: persisted.passed, failedTools: persisted.failed,
+              skippedTools: persisted.skipped, errorTools: persisted.errors,
+            }).substring(0, 2000) : message,
+            completedAt: new Date(),
+          },
+        });
+      }
 
       workerLogger.info(
         { count: staleRuns.length },

@@ -40,7 +40,7 @@ function parseCommandError(errorMessage: string | null) {
 
   try {
     const parsed = JSON.parse(errorMessage);
-    return parsed?.type === 'audit-command-error' ? parsed : null;
+    return parsed?.type === 'audit-command-error' || parsed?.type === 'audit-partial' ? parsed : null;
   } catch {
     return null;
   }
@@ -321,7 +321,7 @@ export async function GET() {
     // 4. Get recent completed runs (last 10)
     const recentRuns = await prisma.auditRun.findMany({
       where: {
-        status: { in: ['COMPLETED', 'FAILED'] },
+        status: { in: ['COMPLETED', 'PARTIAL', 'FAILED'] },
       },
       orderBy: { completedAt: 'desc' },
       take: 10,

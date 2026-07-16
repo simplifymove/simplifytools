@@ -32,6 +32,8 @@ export function AuditHistoryTable({ audits, onView, onRetry, onDelete, loading }
     const statusLower = status?.toLowerCase() || 'pending';
     if (statusLower === 'completed') {
       return <CheckCircle size={16} className="text-green-600" />;
+    } else if (statusLower === 'partial') {
+      return <AlertCircle size={16} className="text-amber-600" />;
     } else if (statusLower === 'failed') {
       return <AlertCircle size={16} className="text-red-600" />;
     }
@@ -42,6 +44,8 @@ export function AuditHistoryTable({ audits, onView, onRetry, onDelete, loading }
     const statusLower = status?.toLowerCase() || 'pending';
     if (statusLower === 'completed') {
       return 'bg-green-50 text-green-800';
+    } else if (statusLower === 'partial') {
+      return 'bg-amber-50 text-amber-800';
     } else if (statusLower === 'failed') {
       return 'bg-red-50 text-red-800';
     }

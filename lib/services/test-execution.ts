@@ -18,7 +18,10 @@ export interface TestResult {
   stdout?: string;
   stderr?: string;
   command?: string;
-  exitCode?: number;
+  exitCode?: number | null;
+  terminationSignal?: NodeJS.Signals | null;
+  terminationReason?: string;
+  partial?: boolean;
   markerCount?: number;
   commandError?: string;
   expectedTools?: number;
@@ -62,16 +65,26 @@ export interface IndividualTestResult {
 }
 
 export interface AuditProgressContext {
+  auditJobId?: string;
   completedToolsOffset?: number;
   totalTools?: number;
   passedToolsOffset?: number;
   failedToolsOffset?: number;
   skippedToolsOffset?: number;
   errorToolsOffset?: number;
+  onResult?: (result: IndividualTestResult, event: Record<string, unknown>) => Promise<void>;
 }
 
 // Global map to track spawned processes by auditRunId
 const processRegistry = new Map<string, { process: ChildProcess; pid: number; category: string; startTime: number }>();
+const MAX_CAPTURED_OUTPUT_BYTES = 5 * 1024 * 1024;
+
+function appendCapturedOutput(current: string, addition: string): string {
+  const combined = current + addition;
+  return combined.length <= MAX_CAPTURED_OUTPUT_BYTES
+    ? combined
+    : combined.slice(combined.length - MAX_CAPTURED_OUTPUT_BYTES);
+}
 
 export function getProcessPid(auditRunId: string): number | null {
   const entry = processRegistry.get(auditRunId);
@@ -103,7 +116,7 @@ export function killAuditProcess(auditRunId: string): boolean {
       // Unix/Linux: Kill process and process group
       try {
         // Try to kill the process group (negative PID)
-        execSync(`kill -9 -${pid}`, { stdio: 'ignore' });
+        process.kill(-pid, 'SIGKILL');
         console.log(`[Audit:${auditRunId}] Successfully killed process group PID ${pid} on Unix`);
       } catch (e) {
         console.warn(`[Audit:${auditRunId}] kill -9 failed, trying childProcess.kill()`, e);
@@ -323,7 +336,8 @@ async function prismaSafeProgressUpdate(
     estimatedRemainingMs: number | null;
     estimatedRemainingTime: number | null;
     workerCount: string;
-  }
+  },
+  auditJobId?: string,
 ) {
   const { prisma } = await import('@/lib/prisma');
 
@@ -345,6 +359,12 @@ async function prismaSafeProgressUpdate(
       }).substring(0, 2000),
     },
   });
+  if (auditJobId) {
+    await prisma.auditJob.update({
+      where: { id: auditJobId },
+      data: { updatedAt: new Date() },
+    });
+  }
 }
 
 // Function to check if audit is cancelled
@@ -381,9 +401,12 @@ export async function runTestCommand(
   }
 
   const scriptName = CATEGORY_TEST_COMMANDS[category as keyof typeof CATEGORY_TEST_COMMANDS];
-  const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const commandArgs = ['run', scriptName];
-  const commandLabel = `${command} ${commandArgs.join(' ')}`;
+  const isWindows = process.platform === 'win32';
+  const command = isWindows ? (process.env.ComSpec || 'cmd.exe') : 'npm';
+  const commandArgs = isWindows
+    ? ['/d', '/s', '/c', 'npm.cmd', 'run', scriptName]
+    : ['run', scriptName];
+  const commandLabel = `npm run ${scriptName}`;
   const projectRoot = process.cwd();
   const categoryDefinition = getAuditCategoryDefinition(category);
 
@@ -393,6 +416,8 @@ export async function runTestCommand(
     let stderr = '';
     let isCancelled = false;
     let markersParsed = 0;
+    const streamedResultMarkers = new Map<string, any>();
+    let timedOut = false;
     const markerParser = new AuditMarkerStreamParser();
     let progressUpdateChain = Promise.resolve();
     const progressState = {
@@ -454,7 +479,7 @@ export async function runTestCommand(
       }
 
       try {
-        await prismaSafeProgressUpdate(auditRunId, progressState);
+        await prismaSafeProgressUpdate(auditRunId, progressState, progressContext.auditJobId);
       } catch {
         // Progress updates are best-effort and should never fail the audit run.
       }
@@ -463,7 +488,17 @@ export async function runTestCommand(
     const handleAuditMarkers = (markers: Array<{ type: 'progress' | 'result'; event: any }>) => {
       for (const marker of markers) {
         markersParsed++;
-        progressUpdateChain = progressUpdateChain.then(() => updateAuditProgress(marker.event, marker.type === 'result'));
+        progressUpdateChain = progressUpdateChain.then(async () => {
+          await updateAuditProgress(marker.event, marker.type === 'result');
+          if (marker.type === 'result' && progressContext.onResult) {
+            const markerSlug = String(marker.event?.toolSlug || marker.event?.slug || marker.event?.title || markersParsed);
+            streamedResultMarkers.set(markerSlug, marker.event);
+            await progressContext.onResult(markerToIndividualTestResult(marker.event, category), marker.event);
+          } else if (marker.type === 'result') {
+            const markerSlug = String(marker.event?.toolSlug || marker.event?.slug || marker.event?.title || markersParsed);
+            streamedResultMarkers.set(markerSlug, marker.event);
+          }
+        });
         safeAuditDebug('marker parsed', {
           auditRunId,
           category,
@@ -488,10 +523,14 @@ export async function runTestCommand(
       playwrightConfig: path.join(projectRoot, 'playwright.config.ts'),
     });
 
+    const configuredTimeout = Number.parseInt(process.env.AUDIT_COMMAND_TIMEOUT_MS || '', 10);
+    const commandTimeoutMs = Number.isFinite(configuredTimeout) && configuredTimeout >= 60_000
+      ? configuredTimeout
+      : 60 * 60 * 1000;
     const child = spawn(command, commandArgs, {
       cwd: projectRoot,
       shell: false,
-      timeout: 600000, // 10 minutes
+      detached: process.platform !== 'win32',
       env: {
         ...process.env,
         AUDIT_WORKERS: workerCount,
@@ -508,6 +547,7 @@ export async function runTestCommand(
 
     // Setup cancellation check interval (check every 2 seconds)
     let cancellationCheckInterval: NodeJS.Timeout | null = null;
+    let heartbeatInterval: NodeJS.Timeout | null = null;
     if (auditRunId) {
       cancellationCheckInterval = setInterval(async () => {
         if (isCancelled) return;
@@ -522,25 +562,54 @@ export async function runTestCommand(
           }
         }
       }, 2000);
+      heartbeatInterval = setInterval(() => {
+        progressUpdateChain = progressUpdateChain.then(async () => {
+          try {
+            await prismaSafeProgressUpdate(auditRunId, {
+              ...progressState,
+              elapsedMs: Date.now() - startTime,
+              elapsedTime: Date.now() - startTime,
+            }, progressContext.auditJobId);
+          } catch {
+            // The next marker/heartbeat will retry without stopping Playwright.
+          }
+        });
+      }, 60_000);
     }
 
     child.stdout?.on('data', (data) => {
       const text = data.toString();
-      stdout += text;
+      stdout = appendCapturedOutput(stdout, text);
       handleAuditMarkers(markerParser.push(text));
       console.log(`[Test:${category}] ${text.trim()}`);
     });
 
     child.stderr?.on('data', (data) => {
       const text = data.toString();
-      stderr += text;
+      stderr = appendCapturedOutput(stderr, text);
       console.error(`[Test:${category}] Error: ${text.trim()}`);
     });
 
-    child.on('close', (code) => {
+    const timeoutHandle = setTimeout(() => {
+      if (child.exitCode === null && child.signalCode === null) {
+        timedOut = true;
+        console.error(`[Test] ${commandLabel} exceeded ${commandTimeoutMs}ms; terminating owned process tree`);
+        if (auditRunId) {
+          killAuditProcess(auditRunId);
+        } else if (process.platform === 'win32' && child.pid) {
+          try { execSync(`taskkill /PID ${child.pid} /T /F`, { stdio: 'ignore' }); } catch { child.kill('SIGKILL'); }
+        } else if (child.pid) {
+          try { process.kill(-child.pid, 'SIGKILL'); } catch { child.kill('SIGKILL'); }
+        }
+      }
+    }, commandTimeoutMs);
+
+    child.on('close', (code, signal) => {
+      clearTimeout(timeoutHandle);
       if (cancellationCheckInterval) {
         clearInterval(cancellationCheckInterval);
       }
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
 
       const durationMs = Date.now() - startTime;
 
@@ -573,6 +642,8 @@ export async function runTestCommand(
         category,
         scriptName,
         exitCode: code,
+        signal,
+        timedOut,
         durationMs,
         markersParsed,
         stdoutHead: stdout.split(/\r?\n/).filter(Boolean).slice(0, 8),
@@ -583,12 +654,24 @@ export async function runTestCommand(
       handleAuditMarkers(markerParser.flush());
 
       progressUpdateChain
-        .then(() => parsePlaywrightResults(stdout, stderr, code ?? 1, category, durationMs, commandLabel))
+        .then(() => parsePlaywrightResults(stdout, stderr, code ?? 1, category, durationMs, commandLabel, streamedResultMarkers))
         .then(result => {
           if (auditRunId) {
             processRegistry.delete(auditRunId);
           }
-          resolve(result);
+          const terminationReason = timedOut
+            ? `Audit command exceeded ${commandTimeoutMs}ms and was terminated`
+            : signal
+              ? `Audit command terminated by signal ${signal}`
+              : undefined;
+          resolve({
+            ...result,
+            exitCode: code,
+            terminationSignal: signal,
+            terminationReason,
+            partial: Boolean(terminationReason && result.totalTests > 0),
+            error: result.error || terminationReason,
+          });
         })
         .catch(error => {
           console.error(`[Test] Failed to parse results for ${category}:`, error);
@@ -620,6 +703,7 @@ export async function runTestCommand(
       if (cancellationCheckInterval) {
         clearInterval(cancellationCheckInterval);
       }
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
 
       console.error(`[Test] Failed to run ${commandLabel}:`, error);
       if (auditRunId) {
@@ -641,12 +725,6 @@ export async function runTestCommand(
       });
     });
 
-    // Timeout after 10 minutes
-    setTimeout(() => {
-      if (!child.killed) {
-        child.kill('SIGTERM');
-      }
-    }, 600000);
   });
 }
 
@@ -755,7 +833,7 @@ function parseAuditToolMarkers(stdout: string): Map<string, any> {
   return markers;
 }
 
-function markerToIndividualTestResult(marker: any, category: string): IndividualTestResult {
+export function markerToIndividualTestResult(marker: any, category: string): IndividualTestResult {
   const passed = String(marker.status || '').toLowerCase() === 'passed';
   const skipped = String(marker.status || '').toLowerCase() === 'skipped' || ['SKIPPED_EXTERNAL', 'NOT_CONFIGURED', 'RATE_LIMITED', 'PROVIDER_UNAVAILABLE', 'PAID_PROVIDER_DISABLED'].includes(marker.auditOutcome);
   const message = typeof marker.reason === 'string' ? marker.reason : undefined;
@@ -844,6 +922,7 @@ async function parsePlaywrightResults(
   category: string,
   durationMs: number,
   commandLabel: string,
+  streamedMarkers: Map<string, any> = new Map(),
 ): Promise<TestResult> {
   const logs = [];
   let totalTests = 0;
@@ -852,6 +931,7 @@ async function parsePlaywrightResults(
   let skippedTests = 0;
   const results: IndividualTestResult[] = [];
   const auditMarkers = parseAuditToolMarkers(stdout);
+  for (const [slug, marker] of streamedMarkers) auditMarkers.set(slug, marker);
   const expectedTools = getAuditCategoryDefinition(category)?.tools.length || 0;
 
   // Try to read and parse the JSON report file
@@ -964,6 +1044,23 @@ async function parsePlaywrightResults(
     }
     
     console.log(`[Test] From stdout: ${passedTests} passed, ${failedTests} failed, ${skippedTests} skipped`);
+  }
+
+  // A truncated/empty report must never erase result markers already emitted by completed tools.
+  if (results.length === 0 && auditMarkers.size > 0) {
+    totalTests = 0;
+    passedTests = 0;
+    failedTests = 0;
+    skippedTests = 0;
+    console.log(`[Test] Empty JSON report; recovering ${auditMarkers.size} emitted AUDIT_TOOL_RESULT markers for ${category}`);
+    for (const marker of auditMarkers.values()) {
+      const result = markerToIndividualTestResult(marker, category);
+      results.push(result);
+      totalTests++;
+      if (result.passed) passedTests++;
+      else if (result.skipped) skippedTests++;
+      else failedTests++;
+    }
   }
 
   // Extract error messages from stdout

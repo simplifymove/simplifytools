@@ -127,6 +127,17 @@ export function useImageToolErrors(): UseImageToolErrorsReturn {
  */
 async function reportErrorToServer(error: ToolError): Promise<void> {
   try {
+    const details = error.details || {};
+    const latestApiResource = typeof performance !== 'undefined'
+      ? (performance.getEntriesByType('resource') as PerformanceResourceTiming[])
+          .slice()
+          .reverse()
+          .find((entry) => entry.name.includes('/api/') && !entry.name.includes('/api/image-tools/report-error'))
+      : undefined;
+    const observedStatus = Number((latestApiResource as PerformanceResourceTiming & { responseStatus?: number } | undefined)?.responseStatus);
+    const observedEndpoint = latestApiResource
+      ? (() => { try { return new URL(latestApiResource.name).pathname; } catch { return undefined; } })()
+      : undefined;
     const response = await fetch('/api/image-tools/report-error', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -136,6 +147,12 @@ async function reportErrorToServer(error: ToolError): Promise<void> {
         errorType: error.type,
         errorMessage: error.message,
         userMessage: error.userFriendlyMessage,
+        details: {
+          endpoint: typeof details.endpoint === 'string' ? details.endpoint : observedEndpoint,
+          apiStatus: typeof details.apiStatus === 'number' ? details.apiStatus : typeof details.status === 'number' ? details.status : Number.isInteger(observedStatus) && observedStatus > 0 ? observedStatus : undefined,
+          backendErrorCode: typeof details.backendErrorCode === 'string' ? details.backendErrorCode : typeof details.code === 'string' ? details.code : undefined,
+          stderr: typeof details.stderr === 'string' ? details.stderr : typeof details.error === 'string' ? details.error : undefined,
+        },
         url: typeof window !== 'undefined' ? window.location.href : '',
         timestamp: error.timestamp.toISOString(),
         fileMeta: error.fileMeta ? {

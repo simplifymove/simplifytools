@@ -13,7 +13,7 @@ function parseAuditRunMessage(errorMessage: string | null) {
 
   try {
     const parsed = JSON.parse(errorMessage);
-    if (parsed?.type === 'audit-command-error') {
+    if (parsed?.type === 'audit-command-error' || parsed?.type === 'audit-partial') {
       return parsed;
     }
   } catch {
@@ -125,7 +125,7 @@ export async function GET(
     const previousRun = await prisma.auditRun.findFirst({
       where: {
         id: { not: auditRunId },
-        status: { in: ['COMPLETED', 'FAILED'] },
+        status: { in: ['COMPLETED', 'PARTIAL', 'FAILED'] },
         categories: auditRun.categories,
         completedAt: { lt: auditRun.completedAt || new Date() },
       },

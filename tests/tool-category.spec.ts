@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { getAuditCategoryDefinition, type AuditToolTarget } from '../app/lib/audit-category-tools';
 import { executeFunctionalAudit, type FunctionalAuditEvidence } from './functional-audit/runner';
+import { AUDIT_REQUEST_HEADER, createAuditRequestToken } from '../lib/security/audit-request';
 
 const categoryId = process.env.AUDIT_CATEGORY || '';
 const categoryConfig = getAuditCategoryDefinition(categoryId);
@@ -98,7 +99,10 @@ async function auditToolPage(page: any, request: any, target: AuditToolTarget, t
     throw new Error(`Registry item has no route: ${target.slug}`);
   }
 
-  const response = await request.get(target.route);
+  const auditToken = createAuditRequestToken();
+  const auditHeaders = { [AUDIT_REQUEST_HEADER]: auditToken };
+  await page.context().setExtraHTTPHeaders(auditHeaders);
+  const response = await request.get(target.route, { headers: auditHeaders });
   const status = response.status();
   if (status === 404) {
     throw new Error(`Route not found (404): ${target.route}`);

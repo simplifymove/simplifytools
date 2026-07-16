@@ -73,7 +73,7 @@ export interface ToolError {
 export interface EmailErrorReport {
   toolId: string;
   toolName: string;
-  errorType: VideoToolErrorType | ImageToolErrorType;
+  errorType: VideoToolErrorType | ImageToolErrorType | ErrorReportSource;
   errorMessage: string;
   userMessage: string;
   url: string;
@@ -92,6 +92,24 @@ export interface EmailErrorReport {
     isLoggedIn?: boolean;
   };
   stackTrace?: string;
+  diagnostics?: ErrorReportDiagnostics;
+}
+
+export enum ErrorReportSource {
+  API_ROUTE_ERROR = 'API_ROUTE_ERROR',
+  FFMPEG_FAILED = 'FFMPEG_FAILED',
+  OCR_FAILED = 'OCR_FAILED',
+  SHARP_FAILED = 'SHARP_FAILED',
+  CONVERSION_FAILED = 'CONVERSION_FAILED',
+  VALIDATION_FAILED = 'VALIDATION_FAILED',
+  PROVIDER_FAILED = 'PROVIDER_FAILED',
+}
+
+export interface ErrorReportDiagnostics {
+  apiStatus?: number;
+  endpoint?: string;
+  backendErrorCode?: string;
+  stderrSummary?: string;
 }
 
 export const ERROR_MESSAGES: Record<VideoToolErrorType, string> = {

@@ -28,7 +28,7 @@ export default async function AdminSystemHealthPage() {
       select: { id: true, status: true, categories: true, startedAt: true, errorMessage: true },
     }),
     prisma.auditRun.findMany({
-      where: { status: { in: ['COMPLETED', 'FAILED', 'CANCELLED'] } },
+      where: { status: { in: ['COMPLETED', 'PARTIAL', 'FAILED', 'CANCELLED'] } },
       orderBy: { completedAt: 'desc' },
       take: 20,
       select: { id: true, status: true, categories: true, successPercentage: true, completedAt: true, errorMessage: true },

@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     // Get recent completed runs (last 20)
     const recentCompleted = await prisma.auditRun.findMany({
       where: {
-        status: { in: ['COMPLETED', 'FAILED'] },
+        status: { in: ['COMPLETED', 'PARTIAL', 'FAILED'] },
       },
       select: {
         id: true,

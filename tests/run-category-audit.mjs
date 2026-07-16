@@ -46,6 +46,7 @@ let lineBuffer = '';
 let observedFailure = false;
 let observedResultCount = 0;
 let expectedResultCount = 0;
+let postSummaryWatchdog;
 
 function stopOwnedProcessTree() {
   if (!child.pid) return;
@@ -85,10 +86,11 @@ function inspectOutput(chunk) {
       } else {
         summaryExitCode = observedFailure || /\bfailed\b/.test(line) ? 1 : 0;
       }
-      setTimeout(() => {
+      postSummaryWatchdog = setTimeout(() => {
+        console.error(`Category audit for ${category} did not exit within 15 seconds after its final summary; terminating owned process tree`);
         stopOwnedProcessTree();
         setTimeout(() => process.exit(summaryExitCode), 250);
-      }, 750);
+      }, 15_000);
     } catch {
       // The normal exit handler remains authoritative.
     }
@@ -103,6 +105,7 @@ child.stdout.on('data', (chunk) => {
 child.stderr.on('data', (chunk) => process.stderr.write(chunk));
 
 child.on('exit', (code, signal) => {
+  if (postSummaryWatchdog) clearTimeout(postSummaryWatchdog);
   if (settledFromSummary) {
     process.exit(summaryExitCode);
   }

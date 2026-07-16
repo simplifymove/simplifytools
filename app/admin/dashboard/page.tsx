@@ -166,7 +166,7 @@ export default async function AdminDashboardPage() {
     }),
     prisma.auditRun.count({ where: { status: 'RUNNING' } }),
     prisma.auditRun.findFirst({
-      where: { status: { in: ['COMPLETED', 'FAILED'] } },
+      where: { status: { in: ['COMPLETED', 'PARTIAL', 'FAILED'] } },
       orderBy: { completedAt: 'desc' },
       select: {
         id: true,

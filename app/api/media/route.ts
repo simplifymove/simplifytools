@@ -9,6 +9,7 @@ import { getToolById } from '@/app/lib/video-tools';
 import { VideoToolErrorType, EmailErrorReport } from '@/app/utils/types/errors';
 import { sendErrorEmail } from '@/app/utils/error-reporting/send-error-email';
 import { parsePythonError, sanitizeErrorMessage } from '@/app/utils/error-handling/error-handler';
+import { isVerifiedAuditRequest } from '@/lib/security/audit-request';
 
 const exec = promisify(execCallback);
 const require = createRequire(import.meta.url);
@@ -140,6 +141,7 @@ function validateProductionEnv() {
 let envValidated = false;
 
 export async function POST(request: NextRequest) {
+  const suppressUserNotification = isVerifiedAuditRequest(request.headers);
   if (!envValidated) {
     validateProductionEnv();
     envValidated = true;
@@ -329,10 +331,10 @@ export async function POST(request: NextRequest) {
         errorType = parsed.type;
       }
 
-      // Send error email
-      console.log(`[API] Sending error email for: ${toolId} - ${errorType}`);
-      
-      try {
+      // Audit failures remain in API logs/evidence but must not notify as user traffic.
+      if (suppressUserNotification) {
+        console.warn('[API] Audit media failure recorded without user notification', { toolId, errorType });
+      } else try {
         await sendErrorEmail({
           toolId,
           toolName: toolName || 'Unknown',
@@ -353,6 +355,12 @@ export async function POST(request: NextRequest) {
             platform: 'server',
           },
           stackTrace: errorMsg,
+          diagnostics: {
+            apiStatus: 500,
+            endpoint: '/api/media',
+            backendErrorCode: String(errorType),
+            stderrSummary: sanitizeErrorMessage(errorMsg).slice(0, 500),
+          },
         });
         
         console.log(`[API] Error email sent successfully`);
@@ -452,10 +460,10 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
 
-    // Send error email for unexpected errors
-    console.log(`[API] Sending error email for unexpected error`);
-    
-    try {
+    // Send genuine user errors only; audit failures remain visible in audit evidence.
+    if (suppressUserNotification) {
+      console.warn('[API] Unexpected audit media failure recorded without user notification', { toolId: toolId || 'unknown' });
+    } else try {
       await sendErrorEmail({
         toolId: toolId || 'unknown',
         toolName: toolName || 'Unknown Tool',
@@ -469,6 +477,12 @@ export async function POST(request: NextRequest) {
           platform: 'server',
         },
         stackTrace: stackTrace,
+        diagnostics: {
+          apiStatus: 500,
+          endpoint: '/api/media',
+          backendErrorCode: 'UNEXPECTED_ERROR',
+          stderrSummary: sanitizeErrorMessage(errorMsg).slice(0, 500),
+        },
       });
       
       console.log(`[API] Error email sent successfully for unexpected error`);
@@ -581,4 +595,3 @@ function getContentType(filePath: string): string {
   };
   return contentTypes[ext] || 'application/octet-stream';
 }
-

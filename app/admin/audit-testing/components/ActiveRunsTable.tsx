@@ -52,6 +52,8 @@ export function ActiveRunsTable({ runs, onStop, onView, loading }: Props) {
         return <Clock size={16} className="text-yellow-600" />;
       case 'completed':
         return <CheckCircle size={16} className="text-green-600" />;
+      case 'partial':
+        return <AlertCircle size={16} className="text-amber-600" />;
       case 'failed':
         return <AlertCircle size={16} className="text-red-600" />;
       default:
@@ -68,6 +70,8 @@ export function ActiveRunsTable({ runs, onStop, onView, loading }: Props) {
         return 'bg-yellow-50 text-yellow-800';
       case 'completed':
         return 'bg-green-50 text-green-800';
+      case 'partial':
+        return 'bg-amber-50 text-amber-800';
       case 'failed':
         return 'bg-red-50 text-red-800';
       default:

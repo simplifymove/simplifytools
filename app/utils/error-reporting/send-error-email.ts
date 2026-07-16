@@ -12,7 +12,6 @@ import {
   ImageToolErrorType,
   ERROR_REPORTING_CONFIG,
   IMAGE_ERROR_REPORTING_EXCLUSIONS,
-  ToolErrorType,
 } from '@/app/utils/types/errors';
 
 // In-memory store for debouncing (in production, use Redis or database)
@@ -39,14 +38,14 @@ function getTransporter() {
 /**
  * Generate a debounce key for error deduplication
  */
-function getDebounceKey(toolId: string, errorType: ToolErrorType): string {
+function getDebounceKey(toolId: string, errorType: string): string {
   return `${DEBOUNCE_KEY_PREFIX}${toolId}-${errorType}`;
 }
 
 /**
  * Check if error should be debounced
  */
-function shouldDebounceError(toolId: string, errorType: ToolErrorType): boolean {
+function shouldDebounceError(toolId: string, errorType: string): boolean {
   // Check if this is a video tool validation error
   const isVideoValidationError = Object.values(VideoToolErrorType).includes(
     errorType as VideoToolErrorType
@@ -225,6 +224,16 @@ export async function sendErrorEmail(errorReport: EmailErrorReport): Promise<boo
                   <div class="field-value">${escapeHtml(errorReport.timestamp)}</div>
                 </div>
               </div>
+
+              ${errorReport.diagnostics ? `
+                <div class="section">
+                  <div class="section-title">Backend Diagnostics</div>
+                  <div class="field-value">Endpoint: ${escapeHtml(errorReport.diagnostics.endpoint || 'unknown')}</div>
+                  <div class="field-value">HTTP Status: ${escapeHtml(String(errorReport.diagnostics.apiStatus || 'unknown'))}</div>
+                  <div class="field-value">Backend Code: ${escapeHtml(errorReport.diagnostics.backendErrorCode || 'unknown')}</div>
+                  <div class="field-value">stderr: ${escapeHtml(errorReport.diagnostics.stderrSummary || 'not provided')}</div>
+                </div>
+              ` : ''}
 
               ${errorReport.stackTrace ? `
                 <div class="section">

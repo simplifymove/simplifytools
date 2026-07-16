@@ -1,12 +1,19 @@
 import { expect, test } from '@playwright/test';
+import { NextRequest } from 'next/server';
 import { createConvertedFilename, generateOutputFilename, normalizeFileExtension } from '../app/lib/data-validation';
 import { getAuditCategoryTargets } from '../app/lib/audit-category-tools';
+import { handleImageToolErrorReport } from '../app/utils/error-reporting/handle-image-error-report';
+import { classifyErrorReport } from '../app/utils/error-reporting/classify-error';
+import { ErrorReportSource } from '../app/utils/types/errors';
 import {
   sanitizeAuditValue,
   serializeAuditArtifact,
   serializeAuditRun,
   serializeAuditTestResult,
 } from '../lib/services/audit-response';
+import { persistAuditToolResult, type AuditTestResultStore } from '../lib/services/audit-result-persistence';
+import { markerToIndividualTestResult } from '../lib/services/test-execution';
+import { AUDIT_REQUEST_HEADER, createAuditRequestToken } from '../lib/security/audit-request';
 
 const PRIVATE_PATHS = ['C:\\simplifytools\\test-results\\output.pdf', '/var/www/simplifyconvertapp/output.pdf', '/tmp/audit/output.pdf'];
 
@@ -67,4 +74,56 @@ test('Text-to-Speech is classified as a Bing external dependency', () => {
   expect(target.functionalAudit.executionClass).toBe('EXTERNAL_CONFIGURED');
   expect(target.functionalAudit.externalProvider).toBe('Bing Speech');
   expect(target.functionalAudit.rateSensitive).toBe(true);
+});
+
+test('audit image errors are recorded without sending user email while genuine browser errors still send', async () => {
+  process.env.AUDIT_REQUEST_SECRET = 'functional-audit-regression-secret';
+  const payload = JSON.stringify({
+    toolId: 'gif-to-mp4', toolName: 'GIF to MP4', errorType: 'SHARP_FAILED', errorMessage: 'Conversion failed',
+  });
+  let emailCalls = 0;
+  const sendEmail = async () => { emailCalls++; return true; };
+  const auditResponse = await handleImageToolErrorReport(new NextRequest('http://localhost/api/image-tools/report-error', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', [AUDIT_REQUEST_HEADER]: createAuditRequestToken() },
+    body: payload,
+  }), sendEmail);
+  expect(auditResponse.status).toBe(202);
+  expect(emailCalls).toBe(0);
+
+  const browserResponse = await handleImageToolErrorReport(new NextRequest('http://localhost/api/image-tools/report-error', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: payload,
+  }), sendEmail);
+  expect(browserResponse.status).toBe(200);
+  expect(emailCalls).toBe(1);
+});
+
+test('image error classification rejects unsupported SHARP_FAILED claims', () => {
+  expect(classifyErrorReport({ toolId: 'gif-to-mp4', reportedType: 'SHARP_FAILED', errorMessage: 'Conversion failed' }).source)
+    .toBe(ErrorReportSource.FFMPEG_FAILED);
+  expect(classifyErrorReport({ toolId: 'image-to-text', reportedType: 'SHARP_FAILED', errorMessage: 'Image processing failed' }).source)
+    .toBe(ErrorReportSource.API_ROUTE_ERROR);
+  expect(classifyErrorReport({ toolId: 'blur-background', reportedType: 'SHARP_FAILED', errorMessage: 'Processing failed' }).source)
+    .toBe(ErrorReportSource.CONVERSION_FAILED);
+  expect(classifyErrorReport({ toolId: 'resize-image', reportedType: 'SHARP_FAILED', errorMessage: 'sharp: invalid image' }).source)
+    .toBe(ErrorReportSource.SHARP_FAILED);
+});
+
+test('emitted audit tool results survive interruption and cannot collapse to zero', async () => {
+  const rows: Array<Record<string, any> & { id: string }> = [];
+  const store: AuditTestResultStore = {
+    findFirst: async ({ where }) => rows.find((row) => row.auditRunId === where.auditRunId && row.category === where.category && row.toolSlug === where.toolSlug) || null,
+    create: async ({ data }) => { rows.push({ id: `row-${rows.length + 1}`, ...data }); },
+    update: async ({ where, data }) => { Object.assign(rows.find((row) => row.id === where.id)!, data); },
+  };
+  const markers = [
+    { toolSlug: 'completed-tool', toolTitle: 'Completed Tool', status: 'passed', durationMs: 120, index: 1, total: 3 },
+    { toolSlug: 'failed-tool', toolTitle: 'Failed Tool', status: 'failed', reason: 'Backend failed', durationMs: 200, index: 2, total: 3 },
+  ];
+  for (const marker of markers) {
+    await persistAuditToolResult(store, 'run-partial', 'image-tools', markerToIndividualTestResult(marker, 'image-tools'));
+  }
+  expect(rows).toHaveLength(2);
+  expect(rows.map((row) => row.status)).toEqual(['PASS', 'FAIL']);
+  expect(rows.length).toBeGreaterThan(0);
 });

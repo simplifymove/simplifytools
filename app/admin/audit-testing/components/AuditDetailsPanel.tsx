@@ -23,6 +23,7 @@ interface AuditDetails {
     status: string;
     errorMessage?: string | null;
     commandError?: {
+      type?: 'audit-command-error' | 'audit-partial';
       message?: string;
       expectedTools?: number;
       completedTools?: number;
@@ -175,7 +176,11 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
             <h4 className="text-sm font-semibold text-gray-900 mb-3">Category Summary</h4>
             {details.auditRun.commandError && (
               <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-                <div className="font-semibold">Audit command failed before completing tool checks</div>
+                <div className="font-semibold">
+                  {details.auditRun.commandError.type === 'audit-partial'
+                    ? 'Audit ended after partial completion'
+                    : 'Audit command failed before completing tool checks'}
+                </div>
                 <div className="mt-1">{details.auditRun.commandError.message || details.auditRun.errorMessage}</div>
                 <div className="mt-2 text-xs">
                   Expected {details.auditRun.commandError.expectedTools ?? details.stats.totalTests} tools,

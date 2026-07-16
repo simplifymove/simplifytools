@@ -343,6 +343,7 @@ enum AuditRunStatus {
   PENDING
   RUNNING
   COMPLETED
+  PARTIAL
   FAILED
   CANCELLED
 }
@@ -692,4 +693,3 @@ model ToolDownloadResult {
   @@index([toolSlug])
   @@index([status])
 }
-
