@@ -1121,7 +1121,7 @@ export const videoTools: Record<string, VideoTool> = {
     id: 'gif-to-webp',
     title: 'GIF to WebP',
     description: 'Convert animated GIF to WebP',
-    engine: 'convert',
+    engine: 'edit',
     category: 'conversion',
     accepts: ['.gif'],
     outputType: '.webp',

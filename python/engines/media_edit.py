@@ -70,6 +70,9 @@ class MediaEditEngine:
         'video-to-webp': {
             'handler': 'video_to_webp_op'
         },
+        'gif-to-webp': {
+            'handler': 'video_to_webp_op'
+        },
         'mp4-to-webm': {
             'handler': 'video_transcode_op'
         },
@@ -222,7 +225,7 @@ class MediaEditEngine:
         # Determine output format
         if tool_id in ['video-to-gif', 'mgv-to-gif', 'avi-to-gif', 'mov-to-gif', 'mp4-to-gif', 'mkv-to-gif']:
             output_format = '.gif'
-        elif tool_id == 'video-to-webp':
+        elif tool_id in ['video-to-webp', 'gif-to-webp']:
             output_format = '.webp'
         elif tool_id == 'mp4-to-webm':
             output_format = '.webm'

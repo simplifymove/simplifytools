@@ -585,6 +585,7 @@ function getContentType(filePath: string): string {
     '.mp3': 'audio/mpeg',
     '.wav': 'audio/wav',
     '.aac': 'audio/aac',
+    '.m4r': 'audio/mp4',
     '.flac': 'audio/flac',
     '.gif': 'image/gif',
     '.webp': 'image/webp',

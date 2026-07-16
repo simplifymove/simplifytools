@@ -149,9 +149,15 @@ def convert_audio_format(
     """
     args = ['-i', input_path]
     
+    normalized_output_format = output_format.lstrip('.').lower()
+
     # Add quality settings
-    if output_format == 'mp3' and quality:
+    if normalized_output_format == 'mp3' and quality:
         args.extend(['-q:a', quality])
+
+    # FFmpeg does not infer the MP4/iPod muxer from the ringtone-specific .m4r extension.
+    if normalized_output_format == 'm4r':
+        args.extend(['-c:a', 'aac', '-f', 'ipod'])
     
     # Add sample rate if specified
     if sample_rate:

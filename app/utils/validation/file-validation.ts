@@ -148,6 +148,9 @@ export async function validateVideoMagicBytes(
         } else if (bytes.slice(0, 4).every((v, i) => v === new Uint8Array([0x66, 0x4c, 0x61, 0x43])[i])) {
           detectedType = 'flac';
           isValid = true;
+        } else if (bytes.slice(0, 4).every((v, i) => v === new Uint8Array([0x47, 0x49, 0x46, 0x38])[i])) {
+          detectedType = 'gif';
+          isValid = true;
         } else if (bytes.slice(0, 3).every((v, i) => v === new Uint8Array([0x49, 0x44, 0x33])[i]) || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)) {
           detectedType = file.name.toLowerCase().endsWith('.aac') ? 'aac' : 'mp3';
           isValid = true;

@@ -13,7 +13,7 @@ from typing import Dict, Any, List
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from transcription import TranscriptionEngine
+from engines.transcription import TranscriptionEngine
 
 
 class SummarizationEngine:
@@ -255,7 +255,7 @@ Return as JSON with: summary, bullet_points (array), action_items (array), topic
         
         return {
             'outputPath': output_path,
-            'outputType': '.txt',
+            'outputType': 'text',
             'content': full_output
         }
 

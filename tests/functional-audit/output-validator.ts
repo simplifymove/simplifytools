@@ -41,7 +41,7 @@ function detectedMimeType(signature: string, extension: string): string | undefi
     '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    '.mp4': 'video/mp4', '.mov': 'video/quicktime', '.m4a': 'audio/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav',
+    '.mp4': 'video/mp4', '.mov': 'video/quicktime', '.m4a': 'audio/mp4', '.m4r': 'audio/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav',
     '.avi': 'video/x-msvideo', '.webm': 'video/webm', '.mkv': 'video/x-matroska', '.csv': 'text/csv', '.txt': 'text/plain',
     '.json': 'application/json', '.xml': 'application/xml', '.yaml': 'application/yaml', '.yml': 'application/yaml',
     '.html': 'text/html', '.rtf': 'application/rtf', '.tsv': 'text/tab-separated-values',
