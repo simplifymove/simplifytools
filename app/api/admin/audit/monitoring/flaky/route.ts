@@ -9,6 +9,7 @@ import {
   detectRandomFailures,
 } from '@/lib/services/flaky-detection';
 import { apiLogger } from '@/lib/logging/logger';
+import { sanitizeAuditValue } from '@/lib/services/audit-response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
       data = await getFlakyTests(threshold);
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(sanitizeAuditValue(data));
   } catch (error) {
     apiLogger.error({ error }, 'GET /api/admin/audit/monitoring/flaky');
     return NextResponse.json(

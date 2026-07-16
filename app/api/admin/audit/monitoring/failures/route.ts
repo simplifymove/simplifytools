@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { getFailureStats, getMostCommonFailures } from '@/lib/services/failure-classifier';
 import { apiLogger } from '@/lib/logging/logger';
+import { sanitizeAuditValue } from '@/lib/services/audit-response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
       data = await getFailureStats();
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(sanitizeAuditValue(data));
   } catch (error) {
     apiLogger.error({ error }, 'GET /api/admin/audit/monitoring/failures');
     return NextResponse.json(

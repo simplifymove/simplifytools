@@ -8,6 +8,7 @@ import { Download, AlertCircle, CheckCircle, Loader2, Upload, ChevronRight, Zap,
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import { createConvertedFilename } from '@/app/lib/data-validation';
 
 interface FormData {
   [key: string]: string | number | boolean;
@@ -312,7 +313,7 @@ export default function DataToolPage() {
       // Auto-download
       const a = document.createElement('a');
       a.href = url;
-      a.download = `converted.${tool.output}`;
+      a.download = createConvertedFilename(tool.output);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -578,7 +579,7 @@ export default function DataToolPage() {
                       if (downloadUrl) {
                         const a = document.createElement('a');
                         a.href = downloadUrl;
-                        a.download = `converted.${tool.output}`;
+                        a.download = createConvertedFilename(tool.output);
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);

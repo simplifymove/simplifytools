@@ -3,6 +3,7 @@ import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
 import { killAuditProcess } from '@/lib/services/test-execution';
+import { redactAuditText } from '@/lib/services/audit-response';
 
 interface RouteParams {
   jobId: string;
@@ -86,8 +87,11 @@ export async function GET(
       startedAt: auditRun.startedAt,
       completedAt: auditRun.completedAt,
       duration,
-      errorMessage: auditRun.errorMessage,
-      testResults: auditRun.testResults,
+      errorMessage: auditRun.errorMessage ? redactAuditText(auditRun.errorMessage) : null,
+      testResults: auditRun.testResults.map((result) => ({
+        ...result,
+        errorMessage: result.errorMessage ? redactAuditText(result.errorMessage) : null,
+      })),
     });
   } catch (error) {
     logger.error(error, 'Get audit details error');

@@ -202,7 +202,7 @@ export default function ResumeBuilderPage() {
         </div>
 
         {/* Main Content */}
-        <div className="px-4 sm:px-6 lg:px-8 py-12 flex-1">
+        <main className="px-4 sm:px-6 lg:px-8 py-12 flex-1">
           <div className="max-w-7xl mx-auto">
             {/* Helper Text */}
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-gray-700">
@@ -644,7 +644,7 @@ export default function ResumeBuilderPage() {
               </motion.div>
             </div>
           </div>
-        </div>
+        </main>
 
         {/* SEO Content Section */}
         <div className="py-16 px-4 md:px-8 bg-white border-t border-gray-200">
@@ -868,4 +868,3 @@ export default function ResumeBuilderPage() {
     </>
   );
 }
-

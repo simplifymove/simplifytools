@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminApi } from '@/lib/auth/admin';
+import { redactAuditText } from '@/lib/services/audit-response';
 
 export async function GET(
   request: NextRequest,
@@ -44,6 +45,7 @@ export async function GET(
 
     return NextResponse.json({
       ...auditRun,
+      errorMessage: auditRun.errorMessage ? redactAuditText(auditRun.errorMessage) : null,
       resultsProcessed: resultsCount,
     });
   } catch (error) {

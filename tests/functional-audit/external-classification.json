@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-15T10:11:46.077Z",
+  "generatedAt": "2026-07-16T07:04:17.739Z",
   "total": 355,
   "counts": {
-    "EXTERNAL_CONFIGURED": 52,
-    "LOCAL_DETERMINISTIC": 298,
+    "EXTERNAL_CONFIGURED": 53,
+    "LOCAL_DETERMINISTIC": 297,
     "EXTERNAL_NOT_CONFIGURED": 5
   },
   "tools": [
@@ -2488,9 +2488,9 @@
     {
       "category": "text-to-speech",
       "toolSlug": "text-to-speech",
-      "classification": "LOCAL_DETERMINISTIC",
-      "provider": null,
-      "rateSensitive": false
+      "classification": "EXTERNAL_CONFIGURED",
+      "provider": "Bing Speech",
+      "rateSensitive": true
     }
   ]
 }

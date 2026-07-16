@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminApi } from '@/lib/auth/admin';
+import { parseSanitizedAuditLogs, serializeAuditRun, serializeAuditTestResult } from '@/lib/services/audit-response';
 
 export async function GET(
   request: NextRequest,
@@ -38,11 +39,11 @@ export async function GET(
     }
 
     return NextResponse.json({
-      ...auditRun,
-      categories: JSON.parse(auditRun.categories),
+      ...serializeAuditRun(auditRun),
+      user: auditRun.user,
       testResults: auditRun.testResults.map((result) => ({
-        ...result,
-        logs: result.logs ? JSON.parse(result.logs) : null,
+        ...serializeAuditTestResult(result),
+        logs: parseSanitizedAuditLogs(result.logs),
       })),
     });
   } catch (error) {

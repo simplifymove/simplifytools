@@ -6,6 +6,7 @@ import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { getAlertHistory } from '@/lib/services/alerting';
 import { apiLogger } from '@/lib/logging/logger';
+import { sanitizeAuditValue } from '@/lib/services/audit-response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     // Get alert logs
     const logs = await getAlertHistory(limit);
-    return NextResponse.json({ logs });
+    return NextResponse.json({ logs: sanitizeAuditValue(logs) });
   } catch (error) {
     apiLogger.error({ error }, 'GET /api/admin/audit/alerts');
     return NextResponse.json(

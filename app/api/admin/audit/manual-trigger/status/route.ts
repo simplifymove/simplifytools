@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
+import { redactAuditText } from '@/lib/services/audit-response';
 
 export async function GET(req: NextRequest) {
   try {
@@ -102,7 +103,7 @@ export async function GET(req: NextRequest) {
         passedTests: run.passedTests,
         failedTests: run.failedTests,
         successPercentage: run.successPercentage,
-        errorMessage: run.errorMessage,
+        errorMessage: run.errorMessage ? redactAuditText(run.errorMessage) : null,
         duration: run.completedAt && run.startedAt 
           ? Math.round((run.completedAt.getTime() - run.startedAt.getTime()) / 1000)
           : null,

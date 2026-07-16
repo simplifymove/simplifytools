@@ -4,6 +4,7 @@ import { getAuditQueue } from '@/lib/queue/client';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
 import { getValidAuditCategoryIds } from '@/app/lib/audit-category-tools';
+import { sanitizeAuditValue } from '@/lib/services/audit-response';
 
 interface ManualAuditRequest {
   categories: string[];
@@ -360,8 +361,8 @@ export async function GET() {
         liveFailedTests: run.failedTests ?? testCounts.failed,
         liveTotalTests: progress?.totalTools ?? run.totalTests ?? testCounts.total,
         liveSkippedTests: run.skippedTests ?? testCounts.skipped,
-        progress,
-        commandError,
+        progress: sanitizeAuditValue(progress),
+        commandError: sanitizeAuditValue(commandError),
       };
     });
 
@@ -375,7 +376,7 @@ export async function GET() {
         auditRunId: job.auditRunId,
       })),
       recentRuns: recentRuns.map((run) => ({
-        commandError: parseCommandError(run.errorMessage),
+        commandError: sanitizeAuditValue(parseCommandError(run.errorMessage)),
         auditRunId: run.id,
         categories: parseCategories(run.categories, run.id),
         status: run.status,

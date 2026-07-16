@@ -105,29 +105,33 @@ export default function CalculatorPage() {
 
   if (!config) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <>
         <HomeHeader />
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="text-center">
-            <p className="text-lg text-gray-600">Calculator not found</p>
+        <main className="min-h-screen bg-gray-50">
+          <div className="max-w-4xl mx-auto px-4 py-12">
+            <div className="text-center">
+              <p className="text-lg text-gray-600">Calculator not found</p>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </>
     );
   }
 
   // Show loading if still detecting location or currency not selected
   if (!userLocation || !selectedCurrencyCode) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <>
         <HomeHeader />
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="flex items-center justify-center">
-            <Loader className="animate-spin mr-2" />
-            <p className="text-lg text-gray-600">Loading calculator...</p>
+        <main className="min-h-screen bg-gray-50">
+          <div className="max-w-4xl mx-auto px-4 py-12">
+            <div className="flex items-center justify-center">
+              <Loader className="animate-spin mr-2" />
+              <p className="text-lg text-gray-600">Loading calculator...</p>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </>
     );
   }
   const getAllCurrencies = () => {
@@ -280,7 +284,7 @@ export default function CalculatorPage() {
         </div>
 
         {/* Main Content */}
-        <div className="px-4 sm:px-6 lg:px-8 py-12 flex-1">
+        <main className="px-4 sm:px-6 lg:px-8 py-12 flex-1">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -406,7 +410,7 @@ export default function CalculatorPage() {
               )}
             </div>
           </motion.div>
-        </div>
+        </main>
 
         <Footer />
       </div>

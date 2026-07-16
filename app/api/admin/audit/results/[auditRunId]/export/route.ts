@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
+import { publicArtifactUrl, redactAuditText, sanitizeAuditValue } from '@/lib/services/audit-response';
 
 interface RouteParams {
   auditRunId: string;
@@ -27,13 +28,6 @@ function escapeHtml(value: unknown) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-function redactReportText(value: unknown) {
-  return String(value ?? '')
-    .replace(/[A-Za-z]:\\[^\r\n"']+/g, '[REDACTED_PATH]')
-    .replace(/(authorization|api[_-]?key|token|secret|password)\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]')
-    .replace(/\bsk-[A-Za-z0-9_-]{12,}\b/g, '[REDACTED_TOKEN]');
 }
 
 export async function GET(
@@ -75,10 +69,10 @@ export async function GET(
       failureStage: logs.failureStage || '',
       durationMs: result.durationMs,
       failureClass: logs.failureClass || '',
-      failureReason: redactReportText(result.errorMessage),
-      screenshot: result.screenshotPath?.startsWith('/api/') ? result.screenshotPath : '',
-      consoleErrors: Array.isArray(logs.consoleErrors) ? redactReportText(logs.consoleErrors.join('\n')) : '',
-      functionalEvidence: logs.functionalEvidence ? redactReportText(JSON.stringify(logs.functionalEvidence)) : '',
+      failureReason: redactAuditText(result.errorMessage),
+      screenshot: publicArtifactUrl(result.screenshotPath) || '',
+      consoleErrors: Array.isArray(logs.consoleErrors) ? redactAuditText(logs.consoleErrors.join('\n')) : '',
+      functionalEvidence: logs.functionalEvidence ? JSON.stringify(sanitizeAuditValue(logs.functionalEvidence)) : '',
     };
   });
 
@@ -95,6 +89,7 @@ export async function GET(
     skippedExternal: rows.filter((row) => row.auditOutcome === 'SKIPPED_EXTERNAL').length,
     notConfigured: rows.filter((row) => row.auditOutcome === 'NOT_CONFIGURED').length,
     rateLimited: rows.filter((row) => row.auditOutcome === 'RATE_LIMITED').length,
+    providerUnavailable: rows.filter((row) => row.auditOutcome === 'PROVIDER_UNAVAILABLE').length,
     startedAt: auditRun.startedAt,
     completedAt: auditRun.completedAt,
   };

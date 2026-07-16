@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
+import { redactAuditText, serializeAuditTestResult } from '@/lib/services/audit-response';
 
 export async function GET(req: NextRequest) {
   try {
@@ -46,20 +47,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       auditRunId,
-      testResults: testResults.map((tr) => ({
-        id: tr.id,
-        category: tr.category,
-        toolName: tr.toolName,
-        toolSlug: tr.toolSlug,
-        testCase: tr.testCase,
-        status: tr.status,
-        durationMs: tr.durationMs,
-        errorMessage: tr.errorMessage,
-        screenshotPath: tr.screenshotPath,
-        outputPath: tr.outputPath,
-        timestamp: tr.timestamp,
-        logs: tr.logs ? JSON.parse(tr.logs) : null,
-      })),
+      testResults: testResults.map((tr) => {
+        const serialized = serializeAuditTestResult(tr);
+        return { ...serialized, logs: serialized.logs ? JSON.parse(serialized.logs) : null };
+      }),
       summary: summary.map((s) => ({
         category: s.category,
         status: s.status,
@@ -71,7 +62,7 @@ export async function GET(req: NextRequest) {
         category: f.category,
         testName: f.testName,
         failureType: f.failureType,
-        failureReason: f.failureReason,
+        failureReason: redactAuditText(f.failureReason),
         isFlaky: f.isFlaky,
         occurrenceCount: f.occurrenceCount,
         firstSeenAt: f.firstSeenAt,

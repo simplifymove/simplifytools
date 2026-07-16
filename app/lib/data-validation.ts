@@ -109,6 +109,18 @@ export function sanitizeFilename(filename: string): string {
     .substring(0, 255);
 }
 
+export function normalizeFileExtension(extension: string): string {
+  const normalized = extension.trim().replace(/^\.+/, '').toLowerCase();
+  if (!normalized || !/^[a-z0-9]+$/.test(normalized)) {
+    throw new Error(`Invalid output extension: ${extension}`);
+  }
+  return `.${normalized}`;
+}
+
+export function createConvertedFilename(extension: string): string {
+  return `converted${normalizeFileExtension(extension)}`;
+}
+
 /**
  * Generate output filename based on tool
  */
@@ -122,7 +134,7 @@ export function generateOutputFilename(
   const baseName = inputFilename.split('.').slice(0, -1).join('.');
   const sanitized = sanitizeFilename(baseName);
   
-  return sanitized + tool.output;
+  return sanitized + normalizeFileExtension(tool.output);
 }
 
 /**

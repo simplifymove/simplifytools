@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger } from '@/lib/logging/logger';
+import { serializeAuditArtifact } from '@/lib/services/audit-response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    return NextResponse.json(artifacts);
+    return NextResponse.json(artifacts.map(serializeAuditArtifact));
   } catch (error) {
     apiLogger.error({ error }, 'GET /api/admin/audit/artifacts');
     return NextResponse.json(

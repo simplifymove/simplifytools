@@ -757,7 +757,7 @@ function parseAuditToolMarkers(stdout: string): Map<string, any> {
 
 function markerToIndividualTestResult(marker: any, category: string): IndividualTestResult {
   const passed = String(marker.status || '').toLowerCase() === 'passed';
-  const skipped = String(marker.status || '').toLowerCase() === 'skipped' || ['SKIPPED_EXTERNAL', 'NOT_CONFIGURED', 'RATE_LIMITED', 'PAID_PROVIDER_DISABLED'].includes(marker.auditOutcome);
+  const skipped = String(marker.status || '').toLowerCase() === 'skipped' || ['SKIPPED_EXTERNAL', 'NOT_CONFIGURED', 'RATE_LIMITED', 'PROVIDER_UNAVAILABLE', 'PAID_PROVIDER_DISABLED'].includes(marker.auditOutcome);
   const message = typeof marker.reason === 'string' ? marker.reason : undefined;
   const toolSlug = marker.toolSlug || marker.slug;
   const toolTitle = marker.toolTitle || marker.title || toolSlug || category;

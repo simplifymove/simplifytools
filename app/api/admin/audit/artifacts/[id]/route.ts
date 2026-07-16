@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { getArtifactById, deleteArtifact, downloadArtifact } from '@/lib/services/artifact';
 import { apiLogger } from '@/lib/logging/logger';
+import { serializeAuditArtifact } from '@/lib/services/audit-response';
 
 export async function GET(
   request: NextRequest,
@@ -36,7 +37,7 @@ export async function GET(
       });
     }
 
-    return NextResponse.json(artifact);
+    return NextResponse.json(serializeAuditArtifact(artifact));
   } catch (error) {
     apiLogger.error({ error }, 'GET /api/admin/audit/artifacts/[id]');
     return NextResponse.json(

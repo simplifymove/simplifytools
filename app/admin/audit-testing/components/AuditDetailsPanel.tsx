@@ -99,11 +99,12 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
     else if (outcome === 'SKIPPED_EXTERNAL') summary.skippedExternal += 1;
     else if (outcome === 'NOT_CONFIGURED') summary.notConfigured += 1;
     else if (outcome === 'RATE_LIMITED') summary.rateLimited += 1;
+    else if (outcome === 'PROVIDER_UNAVAILABLE') summary.providerUnavailable += 1;
     else if (outcome === 'PAID_PROVIDER_DISABLED') summary.paidProviderDisabled += 1;
     else if (outcome === 'FAILED' || result.status === 'FAIL' || result.status === 'ERROR') summary.failed += 1;
     return summary;
-  }, { pageHealthPassed: 0, functionalProcessingPassed: 0, outputValidationPassed: 0, fullyVerified: 0, skippedExternal: 0, notConfigured: 0, rateLimited: 0, paidProviderDisabled: 0, failed: 0 }) ||
-    { pageHealthPassed: 0, functionalProcessingPassed: 0, outputValidationPassed: 0, fullyVerified: 0, skippedExternal: 0, notConfigured: 0, rateLimited: 0, paidProviderDisabled: 0, failed: 0 };
+  }, { pageHealthPassed: 0, functionalProcessingPassed: 0, outputValidationPassed: 0, fullyVerified: 0, skippedExternal: 0, notConfigured: 0, rateLimited: 0, providerUnavailable: 0, paidProviderDisabled: 0, failed: 0 }) ||
+    { pageHealthPassed: 0, functionalProcessingPassed: 0, outputValidationPassed: 0, fullyVerified: 0, skippedExternal: 0, notConfigured: 0, rateLimited: 0, providerUnavailable: 0, paidProviderDisabled: 0, failed: 0 };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8">
@@ -132,6 +133,7 @@ export function AuditDetailsPanel({ details, loading, onClose }: Props) {
               ['Skipped External', verificationSummary.skippedExternal, 'text-gray-700'],
               ['Not Configured', verificationSummary.notConfigured, 'text-amber-700'],
               ['Rate Limited', verificationSummary.rateLimited, 'text-amber-700'],
+              ['Provider Unavailable', verificationSummary.providerUnavailable, 'text-amber-700'],
               ['Paid Provider Disabled', verificationSummary.paidProviderDisabled, 'text-amber-700'],
               ['Failed', verificationSummary.failed, 'text-red-700'],
             ].map(([label, value, color]) => (

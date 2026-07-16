@@ -2,6 +2,7 @@
 
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { Upload, Download, Loader2, AlertCircle } from 'lucide-react';
+import { createConvertedFilename } from '@/app/lib/data-validation';
 
 interface ConverterPageProps {
   title: string;
@@ -113,7 +114,7 @@ export default function ConverterPage({
 
     const link = document.createElement('a');
     link.href = result;
-    link.download = `converted.${toFormat}`;
+    link.download = createConvertedFilename(toFormat);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

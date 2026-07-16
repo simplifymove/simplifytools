@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { getJobStatus } from '@/lib/queue/client';
 import { prisma } from '@/lib/prisma';
+import { redactAuditText, sanitizeAuditValue } from '@/lib/services/audit-response';
 
 export async function GET(
   request: NextRequest,
@@ -61,13 +62,13 @@ export async function GET(
       severity: auditJob.severity,
       retryCount: auditJob.retryCount,
       maxRetries: auditJob.maxRetries,
-      lastError: auditJob.lastError,
+      lastError: auditJob.lastError ? redactAuditText(auditJob.lastError) : null,
       startedAt: auditJob.startedAt,
       completedAt: auditJob.completedAt,
       durationMs: auditJob.durationMs,
       createdAt: auditJob.createdAt,
       updatedAt: auditJob.updatedAt,
-      queueStatus,
+      queueStatus: sanitizeAuditValue(queueStatus),
       auditRun: auditJob.auditRun,
     });
   } catch (error) {

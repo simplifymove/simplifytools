@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/admin';
 import { prisma } from '@/lib/prisma';
 import { apiLogger as logger } from '@/lib/logging/logger';
+import { redactAuditText, sanitizeAuditValue, serializeAuditTestResult } from '@/lib/services/audit-response';
 
 interface RouteParams {
   auditRunId: string;
@@ -24,6 +25,16 @@ function parseAuditRunMessage(errorMessage: string | null) {
 
 function parseResultLogs(logs: string | null) {
   try { return logs ? JSON.parse(logs) : {}; } catch { return {}; }
+}
+
+function isCountedFailure(result: { status: string; logs: string | null }) {
+  const outcome = parseResultLogs(result.logs).auditOutcome;
+  return (result.status === 'FAIL' || result.status === 'ERROR')
+    && !['SKIPPED_EXTERNAL', 'NOT_CONFIGURED', 'RATE_LIMITED', 'PROVIDER_UNAVAILABLE', 'PAID_PROVIDER_DISABLED'].includes(outcome);
+}
+
+function isNonComparableExternalOutcome(logs: Record<string, any>) {
+  return ['SKIPPED_EXTERNAL', 'NOT_CONFIGURED', 'RATE_LIMITED', 'PROVIDER_UNAVAILABLE', 'PAID_PROVIDER_DISABLED'].includes(logs.auditOutcome);
 }
 
 export async function GET(
@@ -53,7 +64,6 @@ export async function GET(
             errorMessage: true,
             outputGenerated: true,
             outputType: true,
-            outputPath: true,
             screenshotPath: true,
             durationMs: true,
             timestamp: true,
@@ -84,8 +94,10 @@ export async function GET(
       },
     });
 
+    const safeTestResults = auditRun.testResults.map((result) => serializeAuditTestResult(result));
+
     // Group test results by category
-    const resultsByCategory = auditRun.testResults.reduce(
+    const resultsByCategory = safeTestResults.reduce(
       (acc, result) => {
         if (!acc[result.category]) {
           acc[result.category] = [];
@@ -93,7 +105,7 @@ export async function GET(
         acc[result.category].push(result);
         return acc;
       },
-      {} as Record<string, typeof auditRun.testResults>
+      {} as Record<string, typeof safeTestResults>
     );
 
     // Calculate stats
@@ -108,7 +120,7 @@ export async function GET(
         ? Math.round((auditRun.completedAt.getTime() - auditRun.startedAt.getTime()) / 1000)
         : null,
     };
-    const commandError = parseAuditRunMessage(auditRun.errorMessage);
+    const commandError = sanitizeAuditValue(parseAuditRunMessage(auditRun.errorMessage));
 
     const previousRun = await prisma.auditRun.findFirst({
       where: {
@@ -135,12 +147,12 @@ export async function GET(
     const targetKey = (result: { category: string; toolSlug: string }) => `${result.category}/${result.toolSlug}`;
     const currentFailed = new Set(
       auditRun.testResults
-        .filter((result) => result.status === 'FAIL' || result.status === 'ERROR')
+        .filter(isCountedFailure)
         .map(targetKey)
     );
     const previousFailed = new Set(
       previousRun?.testResults
-        .filter((result) => result.status === 'FAIL' || result.status === 'ERROR')
+        .filter(isCountedFailure)
         .map(targetKey) || []
     );
     const previousByTarget = new Map(previousRun?.testResults.map((result) => [targetKey(result), result]) || []);
@@ -154,13 +166,14 @@ export async function GET(
     for (const current of auditRun.testResults) {
       const previous = previousByTarget.get(targetKey(current));
       if (!previous) continue;
+      const currentLogs = parseResultLogs(current.logs);
+      const previousLogs = parseResultLogs(previous.logs);
+      if (isNonComparableExternalOutcome(currentLogs) || isNonComparableExternalOutcome(previousLogs)) continue;
       if (previous.status !== current.status) statusChanges.push({ category: current.category, toolSlug: current.toolSlug, previous: previous.status, current: current.status });
       if (current.durationMs > previous.durationMs * 1.5 && current.durationMs - previous.durationMs >= 2_000) {
         durationRegressions.push({ category: current.category, toolSlug: current.toolSlug, previousMs: previous.durationMs, currentMs: current.durationMs,
           percentSlower: Number((((current.durationMs - previous.durationMs) / Math.max(previous.durationMs, 1)) * 100).toFixed(1)) });
       }
-      const currentLogs = parseResultLogs(current.logs);
-      const previousLogs = parseResultLogs(previous.logs);
       const currentOutput = currentLogs.functionalEvidence?.output;
       const previousOutput = previousLogs.functionalEvidence?.output;
       if (currentOutput?.sizeBytes && previousOutput?.sizeBytes) {
@@ -203,14 +216,17 @@ export async function GET(
         status: auditRun.status,
         startedAt: auditRun.startedAt,
         completedAt: auditRun.completedAt,
-        errorMessage: auditRun.errorMessage,
+        errorMessage: auditRun.errorMessage ? redactAuditText(auditRun.errorMessage) : null,
         commandError,
       },
       stats,
-      testResults: auditRun.testResults,
+      testResults: safeTestResults,
       resultsByCategory,
-      failures,
-      comparison,
+      failures: failures.map((failure) => ({
+        ...failure,
+        failureReason: redactAuditText(failure.failureReason),
+      })),
+      comparison: sanitizeAuditValue(comparison),
     });
   } catch (error) {
     logger.error(error, 'Get audit results error');

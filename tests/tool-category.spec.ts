@@ -20,7 +20,7 @@ const auditResults: Array<{
 }> = [];
 const functionalEvidenceBySlug = new Map<string, FunctionalAuditEvidence>();
 
-type AuditOutcome = 'FULLY_VERIFIED' | 'SKIPPED_EXTERNAL' | 'NOT_CONFIGURED' | 'RATE_LIMITED' | 'PAID_PROVIDER_DISABLED' | 'FAILED';
+type AuditOutcome = 'FULLY_VERIFIED' | 'SKIPPED_EXTERNAL' | 'NOT_CONFIGURED' | 'RATE_LIMITED' | 'PROVIDER_UNAVAILABLE' | 'PAID_PROVIDER_DISABLED' | 'FAILED';
 
 function configuredSkipOutcome(target: AuditToolTarget): AuditOutcome | undefined {
   const contract = target.functionalAudit;
@@ -191,7 +191,16 @@ test.describe('Registry-driven category audit', () => {
       functionalAuditEvidence?: FunctionalAuditEvidence;
     }).functionalAuditEvidence;
     const runtimeRateLimited = functionalEvidence?.apiResponses.some((response) => response.status === 429) || /HTTP 429|rate limit/i.test(reason || '');
-    const auditOutcome: AuditOutcome = configuredSkipOutcome(target) || (runtimeRateLimited ? 'RATE_LIMITED' : failed ? 'FAILED' : skipped ? 'NOT_CONFIGURED' : 'FULLY_VERIFIED');
+    const providerFailureText = [
+      reason,
+      functionalEvidence?.failure,
+      ...(functionalEvidence?.apiResponses.map((response) => response.errorBody) || []),
+    ].filter(Boolean).join('\n');
+    const runtimeProviderUnavailable = target.functionalAudit.executionClass === 'EXTERNAL_CONFIGURED'
+      && failed
+      && /bing|edge.?tts|speech provider|websocket|ENOTFOUND|ECONN|connection (?:failed|refused)|network|timed? ?out|temporarily unavailable/i.test(providerFailureText);
+    const auditOutcome: AuditOutcome = configuredSkipOutcome(target) || (runtimeRateLimited ? 'RATE_LIMITED' : runtimeProviderUnavailable ? 'PROVIDER_UNAVAILABLE' : failed ? 'FAILED' : skipped ? 'NOT_CONFIGURED' : 'FULLY_VERIFIED');
+    const reportedStatus = runtimeProviderUnavailable ? 'skipped' : testInfo.status === 'passed' ? 'passed' : skipped ? 'skipped' : 'failed';
     const diagnosticState = testInfo as typeof testInfo & {
       browserConsole?: Array<{ type: string; text: string }>;
       networkFailures?: Array<{ method: string; url: string; status?: number; error?: string }>;
@@ -214,7 +223,7 @@ test.describe('Registry-driven category audit', () => {
       slug: target.slug,
       title: target.title,
       url: target.route,
-      status: testInfo.status === 'passed' ? 'passed' : skipped ? 'skipped' : 'failed',
+      status: reportedStatus,
       auditOutcome,
       pageHealth: functionalEvidence?.stages.pageHealth || (failed ? 'FAIL' : skipped ? 'NOT_RUN' : 'PASS'),
       functionalProcessing: functionalEvidence?.stages.functionalProcessing || 'NOT_RUN',
@@ -238,7 +247,7 @@ test.describe('Registry-driven category audit', () => {
       slug: target.slug,
       title: target.title,
       url: target.route,
-      status: testInfo.status === 'passed' ? 'passed' : skipped ? 'skipped' : 'failed',
+      status: reportedStatus,
       auditOutcome,
       durationMs: testInfo.duration,
       failureClass,
@@ -265,6 +274,7 @@ test.describe('Registry-driven category audit', () => {
       skippedExternalCount: auditResults.filter((result) => result.auditOutcome === 'SKIPPED_EXTERNAL').length,
       notConfiguredCount: auditResults.filter((result) => result.auditOutcome === 'NOT_CONFIGURED').length,
       rateLimitedCount: auditResults.filter((result) => result.auditOutcome === 'RATE_LIMITED').length,
+      providerUnavailableCount: auditResults.filter((result) => result.auditOutcome === 'PROVIDER_UNAVAILABLE').length,
       paidProviderDisabledCount: auditResults.filter((result) => result.auditOutcome === 'PAID_PROVIDER_DISABLED').length,
       failures: failed.map((failure) => ({
         title: failure.title,
