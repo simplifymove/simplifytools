@@ -28,9 +28,16 @@ export interface FunctionalAuditEvidence {
   filledInputs: Array<{ semanticField: string; value: string | number | boolean; source: FilledInputSource }>;
   action: string;
   resultFlow: string;
+  apiRequests: Array<{ method: string; url: string }>;
   apiResponses: Array<{ method: string; url: string; status: number; contentType?: string; errorBody?: string }>;
   output?: ValidatedOutputEvidence;
-  renderedOutput?: { selector: string; length: number; sha256: string };
+  renderedOutput?: {
+    selector: string;
+    length: number;
+    sha256: string;
+    text?: string;
+    resultType?: 'extracted-text' | 'no-text-detected';
+  };
   dialogs?: string[];
   failure?: string;
   failureStage?: 'fixture-upload' | 'preview-render' | 'configuration' | 'processing' | 'result-flow' | 'output-validation' | 'cleanup';
@@ -302,6 +309,75 @@ async function outputSnapshot(page: Page): Promise<Record<string, string[]>> {
   return snapshot;
 }
 
+function normalizeRenderedText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+export function classifyRenderedResult(
+  text: string,
+  previousText: string | undefined,
+  noTextSuccessMessages: string[] = [],
+): 'extracted-text' | 'no-text-detected' | null {
+  const normalized = normalizeRenderedText(text);
+  const previous = previousText === undefined ? undefined : normalizeRenderedText(previousText);
+  if (!normalized || normalized === previous) return null;
+  if (/^(?:loading|processing|extracting|please wait)(?:\.{0,3})?$/i.test(normalized)) return null;
+  if (/^(?:error|failed|failure|something went wrong|unable to|processing failed|conversion failed|text recognition failed)\b/i.test(normalized)) return null;
+  if (noTextSuccessMessages.some((message) => normalized === normalizeRenderedText(message))) return 'no-text-detected';
+  return 'extracted-text';
+}
+
+async function locatorValues(page: Page, selector: string): Promise<string[]> {
+  return page.locator(`${selector}:visible`).evaluateAll((elements) => elements.map((element) => {
+    if ('value' in element) return String((element as HTMLInputElement).value);
+    return element.textContent || '';
+  })).catch(() => []);
+}
+
+async function contractRenderedOutputEvidence(
+  page: Page,
+  contract: FunctionalAuditContract,
+  previousValues: string[],
+  apiRequests: FunctionalAuditEvidence['apiRequests'],
+  apiResponses: FunctionalAuditEvidence['apiResponses'],
+): Promise<NonNullable<FunctionalAuditEvidence['renderedOutput']>> {
+  const definition = contract.renderedResult;
+  if (!definition) throw new Error('Dedicated rendered-result contract is missing');
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    const values = await locatorValues(page, definition.selector);
+    for (const [index, value] of values.entries()) {
+      const resultType = classifyRenderedResult(value, previousValues[index], definition.noTextSuccessMessages);
+      if (!resultType) continue;
+      const apiResponse = definition.apiEndpoint
+        ? apiResponses.find((response) => response.method === 'POST' && response.url === definition.apiEndpoint)
+        : undefined;
+      if (definition.apiEndpoint && apiResponse?.status !== 200) {
+        await page.waitForTimeout(100);
+        continue;
+      }
+      const text = normalizeRenderedText(value);
+      return {
+        selector: definition.selector,
+        length: text.length,
+        sha256: crypto.createHash('sha256').update(text).digest('hex'),
+        text,
+        resultType,
+      };
+    }
+    await page.waitForTimeout(500);
+  }
+
+  if (definition.apiEndpoint) {
+    const requestSent = apiRequests.some((request) => request.method === 'POST' && request.url === definition.apiEndpoint);
+    const response = apiResponses.find((item) => item.method === 'POST' && item.url === definition.apiEndpoint);
+    if (!requestSent) throw new Error(`Processing request was not sent: POST ${definition.apiEndpoint}`);
+    if (!response) throw new Error(`Processing request was sent but no response was received: POST ${definition.apiEndpoint}`);
+    if (response.status !== 200) throw new Error(`Processing API returned HTTP ${response.status}: ${definition.apiEndpoint}`);
+  }
+  throw new Error('Processing finished without a valid dedicated rendered result');
+}
+
 async function renderedOutputEvidence(page: Page, before: Record<string, string[]>) {
   const deadline = Date.now() + 60_000;
   await page.waitForTimeout(500);
@@ -327,14 +403,19 @@ export async function executeFunctionalAudit(
   const contract = target.functionalAudit;
   if (!contract) throw new Error('Missing functional audit contract');
   if (contract.strategy === 'inactive') {
-    return { fixtureEvidence: [], configuredOptions: {}, filledInputs: [], action: 'inactive', resultFlow: 'none', apiResponses: [], finalUrl: page.url(), durationMs: Date.now() - startedAt,
+    return { fixtureEvidence: [], configuredOptions: {}, filledInputs: [], action: 'inactive', resultFlow: 'none', apiRequests: [], apiResponses: [], finalUrl: page.url(), durationMs: Date.now() - startedAt,
       stages: { pageHealth: 'NOT_RUN', fixtureUpload: 'NOT_APPLICABLE', functionalProcessing: 'NOT_RUN', outputValidation: 'NOT_RUN', cleanup: 'NOT_APPLICABLE' } };
   }
 
+  const apiRequests: FunctionalAuditEvidence['apiRequests'] = [];
   const apiResponses: FunctionalAuditEvidence['apiResponses'] = [];
   const dialogs: string[] = [];
   let resolveApiFailure: ((error: Error) => void) | undefined;
   const apiFailurePromise = new Promise<Error>((resolve) => { resolveApiFailure = resolve; });
+  page.on('request', (request) => {
+    if (!request.url().includes('/api/')) return;
+    apiRequests.push({ method: request.method(), url: new URL(request.url()).pathname });
+  });
   page.on('response', async (response) => {
     if (!response.url().includes('/api/')) return;
     const evidence = { method: response.request().method(), url: new URL(response.url()).pathname, status: response.status(), contentType: response.headers()['content-type'], errorBody: undefined as string | undefined };
@@ -363,7 +444,7 @@ export async function executeFunctionalAudit(
   const attachEvidence = async (failure?: string) => {
     const evidence: FunctionalAuditEvidence = {
       fixtureEvidence: uploadedFixtureEvidence, inputEvidence, configuredOptions: contract.optionValues || {}, filledInputs, action: actionText,
-      resultFlow: contract.resultFlow, apiResponses, output, renderedOutput, dialogs, failure, failureStage: failure ? failureStage : undefined, stages,
+      resultFlow: contract.resultFlow, apiRequests, apiResponses, output, renderedOutput, dialogs, failure, failureStage: failure ? failureStage : undefined, stages,
       finalUrl: page.url(), durationMs: Date.now() - startedAt,
     };
     (testInfo as TestInfo & { functionalAuditEvidence?: FunctionalAuditEvidence }).functionalAuditEvidence = evidence;
@@ -405,6 +486,9 @@ export async function executeFunctionalAudit(
     const action = await findAction(page, contract);
     actionText = (await action.innerText()).trim();
     const beforeOutputs = await outputSnapshot(page);
+    const beforeDedicatedResults = contract.renderedResult
+      ? await locatorValues(page, contract.renderedResult.selector)
+      : [];
     const observedDownloads: Download[] = [];
     page.on('download', (download) => observedDownloads.push(download));
     let resolveDownload: ((download: Download) => void) | undefined;
@@ -492,7 +576,9 @@ export async function executeFunctionalAudit(
       }
     } else if (contract.resultFlow === 'rendered-output') {
       renderedOutput = await Promise.race([
-        renderedOutputEvidence(page, beforeOutputs),
+        contract.renderedResult
+          ? contractRenderedOutputEvidence(page, contract, beforeDedicatedResults, apiRequests, apiResponses)
+          : renderedOutputEvidence(page, beforeOutputs),
         apiFailurePromise.then((error) => { throw error; }),
       ]);
       stages.functionalProcessing = 'PASS';

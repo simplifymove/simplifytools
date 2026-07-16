@@ -67,6 +67,11 @@ export interface FunctionalAuditContract {
   processButtonText?: string;
   resultFlow: FunctionalResultFlow;
   expectedOutput?: FunctionalExpectedOutput;
+  renderedResult?: {
+    selector: string;
+    apiEndpoint?: string;
+    noTextSuccessMessages?: string[];
+  };
   inactiveReason?: string;
   executionClass?: AuditExecutionClass;
   externalProvider?: string;
@@ -197,6 +202,11 @@ function mapImageTools(): AuditToolTarget[] {
           textInput: 'A small blue square on a white background',
           resultFlow: renderedOutput ? 'rendered-output' as const : 'download' as const,
           expectedOutput: renderedOutput ? undefined : outputContract(outputExtension),
+          renderedResult: routeSlug === 'image-to-text' ? {
+            selector: '.output-result textarea[aria-label="Extracted text result"]',
+            apiEndpoint: '/api/convert',
+            noTextSuccessMessages: ['No text was detected in this image.'],
+          } : undefined,
           executionClass: routeSlug === 'ai-image-generator' ? externalClass(['OPENROUTER_API_KEY']) : 'LOCAL_DETERMINISTIC',
           externalProvider: routeSlug === 'ai-image-generator' ? 'OpenRouter' : undefined,
           rateSensitive: routeSlug === 'ai-image-generator',
