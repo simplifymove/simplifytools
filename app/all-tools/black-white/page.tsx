@@ -2,15 +2,18 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Palette } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 type GrayscaleMethod = 'average' | 'lightness' | 'luminosity';
 
 export default function BlackWhitePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [method, setMethod] = useState<GrayscaleMethod>('luminosity');
@@ -112,16 +115,30 @@ export default function BlackWhitePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'black-white.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'black-white',
+        originalName: file.name,
+        outputName: 'black-white.png',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
