@@ -343,7 +343,7 @@ async function contractRenderedOutputEvidence(
 ): Promise<NonNullable<FunctionalAuditEvidence['renderedOutput']>> {
   const definition = contract.renderedResult;
   if (!definition) throw new Error('Dedicated rendered-result contract is missing');
-  const deadline = Date.now() + 60_000;
+  const deadline = Date.now() + (definition.timeoutMs ?? 60_000);
   while (Date.now() < deadline) {
     const values = await locatorValues(page, definition.selector);
     for (const [index, value] of values.entries()) {

@@ -71,6 +71,7 @@ export interface FunctionalAuditContract {
     selector: string;
     apiEndpoint?: string;
     noTextSuccessMessages?: string[];
+    timeoutMs?: number;
   };
   inactiveReason?: string;
   executionClass?: AuditExecutionClass;
@@ -278,6 +279,13 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
             : option.type === 'time' ? '00:01'
               : option.type === 'number' ? option.min ?? 1 : 'audit')])),
         resultFlow: tool.outputType === 'text' ? 'rendered-output' : 'download', expectedOutput: outputContract(tool.outputType),
+        renderedResult: tool.id === 'summarize-podcast'
+          ? {
+              selector: '[data-testid="podcast-summary-output"]',
+              apiEndpoint: '/api/media',
+              timeoutMs: 180_000,
+            }
+          : undefined,
         executionClass: tool.id === 'text-to-video' ? externalClass(['PIKA_API_KEY'], true)
           : /transcri|to-text|transcript/.test(tool.id) ? externalClass(['GROQ_API_KEY'])
           : /youtube|instagram|tiktok|twitter|facebook|download/.test(tool.id) ? externalClass(['DOWNLOADER_API_URL'])
