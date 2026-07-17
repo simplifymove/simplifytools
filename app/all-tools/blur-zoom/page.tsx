@@ -2,16 +2,20 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Zap } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function BlurZoomPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [strength, setStrength] = useState(10);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [downloadError, setDownloadError] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,14 +108,30 @@ export default function BlurZoomPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `blur-zoom-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setDownloadError('');
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'blur-zoom',
+        originalName: file.name,
+        outputName: 'blur-zoom.jpg',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      console.error('Error preparing blur zoom download:', error);
+      setDownloadError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -181,13 +201,29 @@ export default function BlurZoomPage() {
                 </>
               )}
 
+              {downloadError && (
+                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  {downloadError}
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
-                  className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  disabled={processing}
+                  className="w-full mt-4 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
-                  <Download size={20} />
-                  Download Zoomed Image
+                  {processing ? (
+                    <>
+                      <Loader className="animate-spin" size={20} />
+                      Preparing download...
+                    </>
+                  ) : (
+                    <>
+                      <Download size={20} />
+                      Download Zoomed Image
+                    </>
+                  )}
                 </button>
               )}
             </div>
