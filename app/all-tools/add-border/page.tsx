@@ -2,12 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Square } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function AddBorderPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [borderWidth, setBorderWidth] = useState(20);
@@ -86,16 +89,30 @@ export default function AddBorderPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'image-with-border.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'add-border',
+        originalName: file.name,
+        outputName: 'image-with-border.png',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -232,10 +249,11 @@ export default function AddBorderPage() {
                 {result && (
                   <button
                     onClick={handleDownload}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2"
+                    disabled={processing}
+                    className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2"
                   >
                     <Download size={18} />
-                    Download PNG
+                    {processing ? 'Preparing Download...' : 'Continue to Download'}
                   </button>
                 )}
               </div>
