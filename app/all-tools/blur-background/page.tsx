@@ -2,17 +2,21 @@
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'blur-background';
 const TOOL_NAME = 'Blur Background';
 
 export default function BlurBackgroundPage() {
+  const router = useRouter();
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [blurStrength, setBlurStrength] = useState(35);
@@ -27,6 +31,7 @@ export default function BlurBackgroundPage() {
     if (!file) return;
 
     clearError();
+    setOriginalFile(file);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -38,6 +43,7 @@ export default function BlurBackgroundPage() {
   };
 
   const handleClearPreview = () => {
+    setOriginalFile(null);
     setImage(null);
     setPreview(null);
     setResult(null);
@@ -100,15 +106,44 @@ export default function BlurBackgroundPage() {
     }
   };
 
-  const downloadResult = () => {
-    if (!result) return;
+  const downloadResult = async () => {
+    if (!result || !originalFile) return;
 
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `blur-background-${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setProcessing(true);
+    clearError();
+
+    try {
+      const response = await fetch(result);
+
+      if (!response.ok) {
+        throw new Error('Failed to read the processed image');
+      }
+
+      const blob = await response.blob();
+
+      const download = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: TOOL_ID,
+        originalName: originalFile.name,
+        outputName: 'blur-background.jpg',
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (error) {
+      createError(
+        ImageToolErrorType.NETWORK_ERROR,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        {
+          filename: originalFile.name,
+          size: originalFile.size,
+          mimeType: originalFile.type,
+        }
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -289,10 +324,20 @@ export default function BlurBackgroundPage() {
                   {result && (
                     <button
                       onClick={downloadResult}
-                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                      disabled={processing}
+                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
-                      <Download size={20} />
-                      Download Result
+                      {processing ? (
+                        <>
+                          <Loader size={20} className="animate-spin" />
+                          Preparing download...
+                        </>
+                      ) : (
+                        <>
+                          <Download size={20} />
+                          Download Result
+                        </>
+                      )}
                     </button>
                   )}
 
