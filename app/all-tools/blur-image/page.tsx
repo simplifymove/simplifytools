@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Droplet } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
@@ -9,11 +10,13 @@ import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'blur-image';
 const TOOL_NAME = 'Blur Image';
 
 export default function BlurImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [blurAmount, setBlurAmount] = useState(5);
@@ -81,16 +84,32 @@ export default function BlurImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'blurred.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName: 'blurred.jpg',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      createError(
+        ImageToolErrorType.NETWORK_ERROR,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        { filename: file.name, size: file.size, mimeType: file.type }
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -205,10 +224,20 @@ export default function BlurImagePage() {
                   {result && (
                     <button
                       onClick={handleDownload}
-                      className="w-full py-2 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition text-sm flex items-center justify-center gap-2"
+                      disabled={processing}
+                      className="w-full py-2 px-4 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition text-sm flex items-center justify-center gap-2"
                     >
-                      <Download size={16} />
-                      Download
+                      {processing ? (
+                        <>
+                          <Loader size={16} className="animate-spin" />
+                          Preparing download...
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          Download
+                        </>
+                      )}
                     </button>
                   )}
 
