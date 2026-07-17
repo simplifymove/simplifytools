@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Download, ChevronRight, Zap, Shield, CheckCircle, Loader } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
@@ -18,13 +17,11 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
-import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'png-to-jpg';
 const TOOL_NAME = 'PNG to JPG Converter';
 
 export default function PngToJpgPage() {
-  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -131,34 +128,16 @@ export default function PngToJpgPage() {
     }
   };
 
-  const handleDownload = async () => {
-    if (!result || !file) return;
-
-    setProcessing(true);
-    clearError();
-
-    try {
-      const baseName =
-        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
-
-      const downloadResult = await uploadBrowserDownloadResult({
-        blob: result,
-        toolSlug: TOOL_ID,
-        originalName: file.name,
-        outputName: `${baseName}.jpg`,
-      });
-
-      router.push(downloadResult.downloadPageUrl);
-    } catch {
-      createError(
-        ImageToolErrorType.SHARP_FAILED,
-        TOOL_ID,
-        TOOL_NAME,
-        { file },
-      );
-    } finally {
-      setProcessing(false);
-    }
+  const handleDownload = () => {
+    if (!result) return;
+    const url = URL.createObjectURL(result);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'converted.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -316,13 +295,12 @@ export default function PngToJpgPage() {
 
                   <motion.button
                     onClick={handleDownload}
-                    disabled={processing}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-green-500/30 flex items-center justify-center gap-2 transition-all"
                   >
                     <Download className="w-5 h-5" />
-                    {processing ? 'Preparing Download...' : 'Continue to Download'}
+                    Download JPG
                   </motion.button>
                 </motion.div>
               ) : (

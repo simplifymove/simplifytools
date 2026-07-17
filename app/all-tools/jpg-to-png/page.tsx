@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
@@ -16,11 +17,13 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'jpg-to-png';
 const TOOL_NAME = 'JPG to PNG Converter';
 
 export default function JpgToPngPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -126,16 +129,34 @@ export default function JpgToPngPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName: `${baseName}.png`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch {
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -203,10 +224,20 @@ export default function JpgToPngPage() {
                       />
                       <button
                         onClick={handleDownload}
-                        className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
+                        disabled={processing}
+                        className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                       >
-                        <Download size={18} />
-                        Download PNG
+                        {processing ? (
+                          <>
+                            <Loader size={18} className="animate-spin" />
+                            Preparing Download...
+                          </>
+                        ) : (
+                          <>
+                            <Download size={18} />
+                            Continue to Download
+                          </>
+                        )}
                       </button>
                     </div>
                   ) : (

@@ -531,7 +531,10 @@ export default function VideoToolPage({ params }: PageProps) {
                 {result.type === 'text' && (
                   <div>
                     <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-96 overflow-y-auto mb-4">
-                      <pre className="text-sm text-gray-800 whitespace-pre-wrap break-words font-mono">
+                      <pre
+                        data-testid="podcast-summary-output"
+                        className="text-sm text-gray-800 whitespace-pre-wrap break-words font-mono"
+                      >
                         {result.content}
                       </pre>
                     </div>
