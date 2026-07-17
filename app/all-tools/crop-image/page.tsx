@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, RotateCcw, ZoomIn, ZoomOut, Scissors, Hand } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
@@ -9,6 +10,7 @@ import { Footer } from '../../components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'crop-image';
 const TOOL_NAME = 'Crop Image';
@@ -21,6 +23,7 @@ interface CropBox {
 }
 
 export default function CropImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -318,14 +321,40 @@ export default function CropImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `cropped-image-${Date.now()}.${outputFormat}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const response = await fetch(result);
+
+      if (!response.ok) {
+        throw new Error('Failed to read the cropped image');
+      }
+
+      const blob = await response.blob();
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName: `cropped-image.${outputFormat}`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      createError(
+        ImageToolErrorType.NETWORK_ERROR,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        { filename: file.name, size: file.size, mimeType: file.type }
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -508,10 +537,17 @@ export default function CropImagePage() {
                 <div className="flex gap-4">
                   <button
                     onClick={handleDownload}
-                    className="flex-1 py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    disabled={processing}
+                    className="flex-1 py-3 px-6 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                   >
-                    <Download size={20} />
-                    Download {outputFormat.toUpperCase()}
+                    {processing ? (
+                      'Preparing download...'
+                    ) : (
+                      <>
+                        <Download size={20} />
+                        Download {outputFormat.toUpperCase()}
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={handleClearPreview}
