@@ -2,21 +2,19 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
-import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
-export default function EditToPngPage() {
-  const router = useRouter();
+export default function TiffToPngPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [quality, setQuality] = useState(90);
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
@@ -41,7 +39,9 @@ export default function EditToPngPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png');
+      const result = await convertImageFormat(file, 'image/png', {
+        quality: quality,
+      });
       setResult(result.blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
@@ -50,33 +50,16 @@ export default function EditToPngPage() {
     }
   };
 
-  const handleDownload = async () => {
-    if (!result || !file) return;
-
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const baseName =
-        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
-
-      const downloadResult = await uploadBrowserDownloadResult({
-        blob: result,
-        toolSlug: 'edit-to-png',
-        originalName: file.name,
-        outputName: `${baseName}.png`,
-      });
-
-      router.push(downloadResult.downloadPageUrl);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to prepare the download. Please try again.'
-      );
-    } finally {
-      setProcessing(false);
-    }
+  const handleDownload = () => {
+    if (!result) return;
+    const url = URL.createObjectURL(result);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'converted.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -92,7 +75,7 @@ export default function EditToPngPage() {
               <ChevronRight size={16} />
               <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
               <ChevronRight size={16} />
-              <span>Edit to PNG</span>
+              <span>TIFF to PNG</span>
             </div>
 
             {/* Title Section */}
@@ -101,8 +84,8 @@ export default function EditToPngPage() {
                 <FileUp size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Convert to PNG</h1>
-                <p className="text-lg text-white/90">Convert various image formats to PNG with support for JPG, BMP, GIF, TIFF, WebP, and more.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">TIFF to PNG Converter</h1>
+                <p className="text-lg text-white/90">Convert TIFF images to PNG format with lossless compression and transparency support.</p>
               </div>
             </div>
           </div>
@@ -115,12 +98,12 @@ export default function EditToPngPage() {
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image File</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload TIFF File</h2>
                   <ImageUploader
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
-                    accept="image/*"
+                    accept=".tiff,.tif"
                   />
                   {error && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -133,6 +116,28 @@ export default function EditToPngPage() {
               {/* Controls - Right (sticky sidebar) */}
               <div className="lg:col-span-1">
                 <div className="sticky top-4 space-y-4">
+                  {/* Options */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
+                    
+                    {/* Quality */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-2">
+                        Output Quality: {quality}%
+                      </label>
+                      <input
+                        type="range"
+                        min="10"
+                        max="100"
+                        step="5"
+                        value={quality}
+                        onChange={(e) => setQuality(parseInt(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
+                    </div>
+                  </div>
+
                   {/* Convert Button */}
                   <button
                     onClick={handleConvert}
@@ -154,32 +159,20 @@ export default function EditToPngPage() {
                     <button
                       onClick={handleDownload}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-                      disabled={processing}>
+                    >
                       <Download size={20} />
-                      {processing ? 'Preparing Download...' : 'Continue to Download'}
+                      Download PNG
                     </button>
                   )}
 
                   {/* Info Box */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-blue-900 mb-2">Supported Formats</h3>
+                    <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• JPG, JPEG</li>
-                      <li>• BMP, GIF</li>
-                      <li>• TIFF, WebP</li>
-                      <li>• And more...</li>
-                      <li>• Instant conversion</li>
-                    </ul>
-                  </div>
-
-                  {/* Additional Info */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-amber-900 mb-2">Why PNG?</h3>
-                    <ul className="text-sm text-amber-800 space-y-1">
+                      <li>• Instant conversion in your browser</li>
                       <li>• Lossless compression</li>
-                      <li>• Supports transparency</li>
-                      <li>• Best for web</li>
-                      <li>• Perfect quality</li>
+                      <li>• Supports TIFF and TIF formats</li>
+                      <li>• Secure - files never uploaded</li>
                     </ul>
                   </div>
                 </div>

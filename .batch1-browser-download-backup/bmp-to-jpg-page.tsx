@@ -2,14 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 
-import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function BmpToJpgPage() {
-  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -47,33 +44,16 @@ export default function BmpToJpgPage() {
     }
   };
 
-  const handleDownload = async () => {
-    if (!result || !file) return;
-
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const baseName =
-        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
-
-      const downloadResult = await uploadBrowserDownloadResult({
-        blob: result,
-        toolSlug: 'bmp-to-jpg',
-        originalName: file.name,
-        outputName: `${baseName}.jpg`,
-      });
-
-      router.push(downloadResult.downloadPageUrl);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to prepare the download. Please try again.'
-      );
-    } finally {
-      setProcessing(false);
-    }
+  const handleDownload = () => {
+    if (!result) return;
+    const url = URL.createObjectURL(result);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'converted.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -139,9 +119,9 @@ export default function BmpToJpgPage() {
                         <button
                           onClick={handleDownload}
                           className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
-                      disabled={processing}>
+                        >
                           <Download size={18} />
-                          {processing ? 'Preparing Download...' : 'Continue to Download'}
+                          Download JPG
                         </button>
                       </div>
                     </div>

@@ -2,16 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
-import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
-export default function EditToPngPage() {
-  const router = useRouter();
+export default function EpsToPngPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -50,33 +47,16 @@ export default function EditToPngPage() {
     }
   };
 
-  const handleDownload = async () => {
-    if (!result || !file) return;
-
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const baseName =
-        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
-
-      const downloadResult = await uploadBrowserDownloadResult({
-        blob: result,
-        toolSlug: 'edit-to-png',
-        originalName: file.name,
-        outputName: `${baseName}.png`,
-      });
-
-      router.push(downloadResult.downloadPageUrl);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to prepare the download. Please try again.'
-      );
-    } finally {
-      setProcessing(false);
-    }
+  const handleDownload = () => {
+    if (!result) return;
+    const url = URL.createObjectURL(result);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'converted.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -92,7 +72,7 @@ export default function EditToPngPage() {
               <ChevronRight size={16} />
               <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
               <ChevronRight size={16} />
-              <span>Edit to PNG</span>
+              <span>EPS to PNG</span>
             </div>
 
             {/* Title Section */}
@@ -101,8 +81,8 @@ export default function EditToPngPage() {
                 <FileUp size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Convert to PNG</h1>
-                <p className="text-lg text-white/90">Convert various image formats to PNG with support for JPG, BMP, GIF, TIFF, WebP, and more.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">EPS to PNG Converter</h1>
+                <p className="text-lg text-white/90">Convert EPS vector graphics to PNG format for web use and easy display across all platforms.</p>
               </div>
             </div>
           </div>
@@ -115,12 +95,12 @@ export default function EditToPngPage() {
               {/* Upload Section - Left (2 cols) */}
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image File</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload EPS File</h2>
                   <ImageUploader
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
-                    accept="image/*"
+                    accept=".eps"
                   />
                   {error && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -154,32 +134,21 @@ export default function EditToPngPage() {
                     <button
                       onClick={handleDownload}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-                      disabled={processing}>
+                    >
                       <Download size={20} />
-                      {processing ? 'Preparing Download...' : 'Continue to Download'}
+                      Download PNG
                     </button>
                   )}
 
                   {/* Info Box */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-blue-900 mb-2">Supported Formats</h3>
+                    <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• JPG, JPEG</li>
-                      <li>• BMP, GIF</li>
-                      <li>• TIFF, WebP</li>
-                      <li>• And more...</li>
-                      <li>• Instant conversion</li>
-                    </ul>
-                  </div>
-
-                  {/* Additional Info */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-amber-900 mb-2">Why PNG?</h3>
-                    <ul className="text-sm text-amber-800 space-y-1">
-                      <li>• Lossless compression</li>
-                      <li>• Supports transparency</li>
-                      <li>• Best for web</li>
-                      <li>• Perfect quality</li>
+                      <li>• Instant conversion in your browser</li>
+                      <li>• Converts vector to raster format</li>
+                      <li>• Perfect for web sharing</li>
+                      <li>• No file size limits</li>
+                      <li>• Secure - files never uploaded</li>
                     </ul>
                   </div>
                 </div>

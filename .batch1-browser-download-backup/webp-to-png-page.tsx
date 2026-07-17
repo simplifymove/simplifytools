@@ -2,14 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 
-import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
-export default function BmpToJpgPage() {
-  const router = useRouter();
+export default function WebpToPngPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -38,7 +35,7 @@ export default function BmpToJpgPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/jpeg');
+      const result = await convertImageFormat(file, 'image/png');
       setResult(result.blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
@@ -47,33 +44,16 @@ export default function BmpToJpgPage() {
     }
   };
 
-  const handleDownload = async () => {
-    if (!result || !file) return;
-
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const baseName =
-        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
-
-      const downloadResult = await uploadBrowserDownloadResult({
-        blob: result,
-        toolSlug: 'bmp-to-jpg',
-        originalName: file.name,
-        outputName: `${baseName}.jpg`,
-      });
-
-      router.push(downloadResult.downloadPageUrl);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to prepare the download. Please try again.'
-      );
-    } finally {
-      setProcessing(false);
-    }
+  const handleDownload = () => {
+    if (!result) return;
+    const url = URL.createObjectURL(result);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'converted.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -87,7 +67,7 @@ export default function BmpToJpgPage() {
             <ChevronRight size={16} />
             <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
             <ChevronRight size={16} />
-            <span>BMP to JPG</span>
+            <span>WebP to PNG</span>
           </div>
 
           {/* Title Section */}
@@ -96,8 +76,8 @@ export default function BmpToJpgPage() {
               <Image size={32} className="text-white" />
             </div>
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">BMP to JPG Converter</h1>
-              <p className="text-lg text-white/90">Convert BMP images to JPG format with lossless quality.</p>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">WebP to PNG Converter</h1>
+              <p className="text-lg text-white/90">Convert WebP images to PNG format with transparency support and lossless quality.</p>
             </div>
           </div>
         </div>
@@ -110,12 +90,12 @@ export default function BmpToJpgPage() {
             {/* Upload Section - Left (2 cols) */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload BMP Image</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload WebP Image</h2>
                 <ImageUploader
                   onFileSelect={handleFileSelect}
                   preview={preview}
                   onClearPreview={handleClearPreview}
-                  accept="image/bmp"
+                  accept="image/webp"
                 />
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -139,9 +119,9 @@ export default function BmpToJpgPage() {
                         <button
                           onClick={handleDownload}
                           className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
-                      disabled={processing}>
+                        >
                           <Download size={18} />
-                          {processing ? 'Preparing Download...' : 'Continue to Download'}
+                          Download PNG
                         </button>
                       </div>
                     </div>
@@ -165,7 +145,7 @@ export default function BmpToJpgPage() {
                       Converting...
                     </>
                   ) : (
-                    'Convert to JPG'
+                    'Convert to PNG'
                   )}
                 </button>
               </div>

@@ -2,16 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Download, Loader, ChevronRight, Image, CheckCircle } from 'lucide-react';
+import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
-import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
-export default function BmpToPngPage() {
-  const router = useRouter();
+export default function HeicToPngPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -49,33 +46,16 @@ export default function BmpToPngPage() {
     }
   };
 
-  const handleDownload = async () => {
-    if (!result || !file) return;
-
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const baseName =
-        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
-
-      const downloadResult = await uploadBrowserDownloadResult({
-        blob: result,
-        toolSlug: 'bmp-to-png',
-        originalName: file.name,
-        outputName: `${baseName}.png`,
-      });
-
-      router.push(downloadResult.downloadPageUrl);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to prepare the download. Please try again.'
-      );
-    } finally {
-      setProcessing(false);
-    }
+  const handleDownload = () => {
+    if (!result) return;
+    const url = URL.createObjectURL(result);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'converted.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -91,7 +71,7 @@ export default function BmpToPngPage() {
             <ChevronRight size={16} />
             <Link href="/all-tools" className="hover:text-white transition">All Tools</Link>
             <ChevronRight size={16} />
-            <span>BMP to PNG</span>
+            <span>HEIC to PNG</span>
           </div>
 
           {/* Title Section */}
@@ -100,8 +80,8 @@ export default function BmpToPngPage() {
               <Image size={32} className="text-white" />
             </div>
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">BMP to PNG Converter</h1>
-              <p className="text-lg text-white/90">Convert BMP images to PNG format with transparency support and lossless quality.</p>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">HEIC to PNG Converter</h1>
+              <p className="text-lg text-white/90">Convert HEIC images to PNG format with transparency support and lossless quality.</p>
             </div>
           </div>
         </div>
@@ -114,12 +94,12 @@ export default function BmpToPngPage() {
             {/* Upload Section - Left (2 cols) */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload BMP Image</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload HEIC Image</h2>
                 <ImageUploader
                   onFileSelect={handleFileSelect}
                   preview={preview}
                   onClearPreview={handleClearPreview}
-                  accept="image/bmp"
+                  accept="image/heic,image/heif"
                 />
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -143,9 +123,9 @@ export default function BmpToPngPage() {
                         <button
                           onClick={handleDownload}
                           className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
-                      disabled={processing}>
+                        >
                           <Download size={18} />
-                          {processing ? 'Preparing Download...' : 'Continue to Download'}
+                          Download PNG
                         </button>
                       </div>
                     </div>
@@ -178,34 +158,100 @@ export default function BmpToPngPage() {
         </div>
       </div>
 
+      {/* How To Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">How to Convert HEIC to PNG</h2>
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">1</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Upload Your HEIC Image</h3>
+                <p className="text-gray-600 mt-2">Select or drag and drop your HEIC file captured from an Apple device.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">2</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Click Convert Button</h3>
+                <p className="text-gray-600 mt-2">Press "Convert to PNG" to instantly transform your HEIC image to the widely compatible PNG format.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">3</div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Download PNG File</h3>
+                <p className="text-gray-600 mt-2">Download your converted PNG instantly. No signup required and completely secure.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Convert HEIC to PNG?</h2>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Universal Compatibility</h3>
+                <p className="text-gray-600 text-sm">PNG is supported by all browsers, devices, and applications. HEIC is limited to Apple devices, making PNG the better choice for sharing.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Lossless Quality</h3>
+                <p className="text-gray-600 text-sm">PNG uses lossless compression to preserve every detail of your image. Perfect for maintaining image quality across platforms.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Easy Sharing</h3>
+                <p className="text-gray-600 text-sm">Share PNG files effortlessly with anyone. No compatibility issues or need for special apps. Works everywhere.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="py-12 px-4 bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is BMP format?</h3>
-              <p className="text-gray-700">BMP (Bitmap) is an uncompressed image format that stores image data without compression, resulting in large file sizes. It's commonly used in older Windows systems but is rarely used on the web due to its large file size.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is HEIC format?</h3>
+              <p className="text-gray-700">HEIC (High Efficiency Image Container) is a modern image format used by Apple devices (iPhone, iPad, Mac) that provides excellent compression and quality.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why convert BMP to PNG?</h3>
-              <p className="text-gray-700">PNG format offers several advantages over BMP: it supports transparency, provides lossless compression (reducing file size), and is universally supported by web browsers and modern applications. PNG is ideal for web use, graphics, and images requiring transparency.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why is PNG better than HEIC?</h3>
+              <p className="text-gray-700">PNG is universally supported across all platforms and devices, while HEIC is primarily limited to Apple ecosystem. PNG is ideal for sharing and web use.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the converted image lose quality?</h3>
-              <p className="text-gray-700">No. Our converter uses lossless conversion, meaning the image quality remains identical to the original. PNG's compression is lossless, so you retain all the original image data while reducing file size.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will PNG be larger than HEIC?</h3>
+              <p className="text-gray-700">PNG files may be slightly larger than HEIC files. However, PNG's universal compatibility makes this worthwhile for sharing and cross-platform use.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple BMP files at once?</h3>
-              <p className="text-gray-700">Currently, our converter processes one image at a time. However, you can quickly convert multiple files by uploading and converting them individually. Each conversion is fast and takes just seconds.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple HEIC files?</h3>
+              <p className="text-gray-700">Currently our converter handles one file at a time. However, conversion is instant, so you can quickly process multiple HEIC files sequentially.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What's the file size limit?</h3>
-              <p className="text-gray-700">Most image files can be converted without issues. For very large files (over 50MB), we recommend compressing them first using our image compression tool, then converting to PNG format.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion secure?</h3>
+              <p className="text-gray-700">Yes, all conversions happen locally in your browser. Your HEIC files are never uploaded to any server and remain completely private.</p>
             </div>
             <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my image kept private and secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen in your browser locally. Your images are never uploaded to our servers or stored anywhere. Your files remain completely private and secure.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I edit the PNG after conversion?</h3>
+              <p className="text-gray-700">Yes, PNG files can be edited with any image editor. PNG's lossless format makes it perfect for both viewing and further editing.</p>
             </div>
           </div>
         </div>
@@ -219,50 +265,50 @@ export default function BmpToPngPage() {
           "mainEntity": [
             {
               "@type": "Question",
-              "name": "What is BMP format?",
+              "name": "What is HEIC format?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "BMP (Bitmap) is an uncompressed image format that stores image data without compression, resulting in large file sizes. It's commonly used in older Windows systems but is rarely used on the web due to its large file size."
+                "text": "HEIC (High Efficiency Image Container) is a modern image format used by Apple devices (iPhone, iPad, Mac) that provides excellent compression and quality."
               }
             },
             {
               "@type": "Question",
-              "name": "Why convert BMP to PNG?",
+              "name": "Why is PNG better than HEIC?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG format offers several advantages over BMP: it supports transparency, provides lossless compression (reducing file size), and is universally supported by web browsers and modern applications. PNG is ideal for web use, graphics, and images requiring transparency."
+                "text": "PNG is universally supported across all platforms and devices, while HEIC is primarily limited to Apple ecosystem. PNG is ideal for sharing and web use."
               }
             },
             {
               "@type": "Question",
-              "name": "Will the converted image lose quality?",
+              "name": "Will PNG be larger than HEIC?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. Our converter uses lossless conversion, meaning the image quality remains identical to the original. PNG's compression is lossless, so you retain all the original image data while reducing file size."
+                "text": "PNG files may be slightly larger than HEIC files. However, PNG's universal compatibility makes this worthwhile for sharing and cross-platform use."
               }
             },
             {
               "@type": "Question",
-              "name": "Can I convert multiple BMP files at once?",
+              "name": "Can I batch convert multiple HEIC files?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Currently, our converter processes one image at a time. However, you can quickly convert multiple files by uploading and converting them individually. Each conversion is fast and takes just seconds."
+                "text": "Currently our converter handles one file at a time. However, conversion is instant, so you can quickly process multiple HEIC files sequentially."
               }
             },
             {
               "@type": "Question",
-              "name": "What's the file size limit?",
+              "name": "Is the conversion secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Most image files can be converted without issues. For very large files (over 50MB), we recommend compressing them first using our image compression tool, then converting to PNG format."
+                "text": "Yes, all conversions happen locally in your browser. Your HEIC files are never uploaded to any server and remain completely private."
               }
             },
             {
               "@type": "Question",
-              "name": "Is my image kept private and secure?",
+              "name": "Can I edit the PNG after conversion?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen in your browser locally. Your images are never uploaded to our servers or stored anywhere. Your files remain completely private and secure."
+                "text": "Yes, PNG files can be edited with any image editor. PNG's lossless format makes it perfect for both viewing and further editing."
               }
             }
           ]
@@ -274,9 +320,9 @@ export default function BmpToPngPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Tools</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
-              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>
-              <p className="text-gray-600 text-sm mt-2">Convert PNG to JPG with quality control</p>
+            <Link href="/all-tools/heic-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">HEIC to JPG Converter</h3>
+              <p className="text-gray-600 text-sm mt-2">Convert HEIC to universally compatible JPG</p>
             </Link>
             <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
@@ -288,14 +334,13 @@ export default function BmpToPngPage() {
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>
-              <p className="text-gray-600 text-sm mt-2">Convert modern WebP format to JPG</p>
+              <p className="text-gray-600 text-sm mt-2">Convert modern WebP to JPG format</p>
             </Link>
           </div>
         </div>
       </section>
-
-      <Footer />
     </main>
+    <Footer />
     </>
   );
 }

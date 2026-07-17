@@ -2,16 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
-import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function HeicToJpgPage() {
-  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -49,33 +46,14 @@ export default function HeicToJpgPage() {
     }
   };
 
-  const handleDownload = async () => {
-    if (!result || !file) return;
-
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const baseName =
-        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
-
-      const downloadResult = await uploadBrowserDownloadResult({
-        blob: result,
-        toolSlug: 'heic-to-jpg',
-        originalName: file.name,
-        outputName: `${baseName}.jpg`,
-      });
-
-      router.push(downloadResult.downloadPageUrl);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to prepare the download. Please try again.'
-      );
-    } finally {
-      setProcessing(false);
-    }
+  const handleDownload = () => {
+    if (!result) return;
+    const url = URL.createObjectURL(result);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `converted-image-${Date.now()}.jpg`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -152,9 +130,9 @@ export default function HeicToJpgPage() {
                         <button
                           onClick={handleDownload}
                           className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition flex items-center gap-2"
-                      disabled={processing}>
+                        >
                           <Download size={20} />
-                          {processing ? 'Preparing Download...' : 'Continue to Download'}
+                          Download JPG
                         </button>
                       </div>
                     </div>
