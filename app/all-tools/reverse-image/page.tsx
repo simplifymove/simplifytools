@@ -2,12 +2,15 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Download, ChevronRight, RotateCcw } from 'lucide-react';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ReverseImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
   const [reverseType, setReverseType] = useState<'invert' | 'horizontalflip' | 'verticalflip'>('invert');
@@ -111,17 +114,30 @@ export default function ReverseImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+    if (!result || !file) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `reversed-image-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setProcessing(true);
+    setError('');
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'reverse-image',
+        originalName: file.name,
+        outputName: 'reversed-image.png',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
