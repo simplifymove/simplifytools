@@ -6,8 +6,11 @@ import { Download, ChevronRight, Loader, FileIcon } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function PsdToAiPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [quality, setQuality] = useState('high');
@@ -62,14 +65,20 @@ export default function PsdToAiPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = resultFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+
+      if (!result || !resultFileName) return;
+
+      const blob = await fetch(result).then((response) => response.blob());
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: "psd-to-ai",
+        originalName: resultFileName,
+        outputName: resultFileName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
   };
 
   return (

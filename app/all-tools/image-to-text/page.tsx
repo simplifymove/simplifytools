@@ -15,11 +15,14 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 const TOOL_ID = 'image-to-text';
 const TOOL_NAME = 'Image to Text';
 
 export default function ImageToTextPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [language, setLanguage] = useState('eng');
@@ -182,14 +185,20 @@ export default function ImageToTextPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = resultFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+
+      if (!result || !resultFileName) return;
+
+      const blob = await fetch(result).then((response) => response.blob());
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: "image-to-text",
+        originalName: resultFileName,
+        outputName: resultFileName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
   };
 
   return (
