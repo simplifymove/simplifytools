@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Mountain } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function EmbossEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [strength, setStrength] = useState(50);
@@ -56,7 +59,7 @@ export default function EmbossEffectPage() {
           for (let y = 1; y < canvas.height - 1; y++) {
             for (let x = 1; x < canvas.width - 1; x++) {
               const idx = (y * canvas.width + x) * 4;
-              
+
               for (let c = 0; c < 3; c++) {
                 const topLeft = data[((y - 1) * canvas.width + (x - 1)) * 4 + c];
                 const topCenter = data[((y - 1) * canvas.width + x) * 4 + c];
@@ -68,9 +71,9 @@ export default function EmbossEffectPage() {
                 const bottomCenter = data[((y + 1) * canvas.width + x) * 4 + c];
                 const bottomRight = data[((y + 1) * canvas.width + (x + 1)) * 4 + c];
 
-                const emboss = (topLeft * -2 + topCenter * -1 + middleLeft * -1 + middle * 1 + 
+                const emboss = (topLeft * -2 + topCenter * -1 + middleLeft * -1 + middle * 1 +
                                middleRight * 1 + bottomCenter * 1 + bottomRight * 2) * factor + 128;
-                
+
                 data[idx + c] = Math.min(255, Math.max(0, emboss));
               }
             }
@@ -102,16 +105,33 @@ export default function EmbossEffectPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `emboss-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'emboss-effect',
+            originalName: `emboss-${Date.now()}.jpg`,
+            outputName: `emboss-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -140,7 +160,7 @@ export default function EmbossEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Emboss Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input

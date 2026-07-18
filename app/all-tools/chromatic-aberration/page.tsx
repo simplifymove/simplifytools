@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ChromaticAberrationPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [offset, setOffset] = useState(5);
@@ -96,16 +99,33 @@ export default function ChromaticAberrationPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `chromatic-aberration-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'chromatic-aberration',
+            originalName: `chromatic-aberration-${Date.now()}.jpg`,
+            outputName: `chromatic-aberration-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -134,7 +154,7 @@ export default function ChromaticAberrationPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Chromatic Aberration</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input

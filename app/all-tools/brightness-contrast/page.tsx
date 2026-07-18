@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Palette } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function BrightnessContrastPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [brightness, setBrightness] = useState(0);
@@ -94,16 +97,33 @@ export default function BrightnessContrastPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `brightness-contrast-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'brightness-contrast',
+            originalName: `brightness-contrast-${Date.now()}.jpg`,
+            outputName: `brightness-contrast-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -132,7 +152,7 @@ export default function BrightnessContrastPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Adjust Brightness & Contrast</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input

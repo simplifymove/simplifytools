@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Download, ChevronRight, Combine, X, Plus } from 'lucide-react';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 type CollageLayout = '2x2' | '3x3' | '1x4' | '4x1';
 
@@ -15,6 +17,7 @@ interface CollageImage {
 }
 
 export default function CollageMakerPage() {
+    const router = useRouter();
   const [images, setImages] = useState<CollageImage[]>([]);
   const [layout, setLayout] = useState<CollageLayout>('2x2');
   const [spacing, setSpacing] = useState(10);
@@ -150,18 +153,32 @@ export default function CollageMakerPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+      if (!result || processing) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `collage-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+      setError("");
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'collage-maker',
+            originalName: `collage-${Date.now()}.png`,
+            outputName: `collage-${Date.now()}.png`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   const maxImagesForLayout = layout === '2x2' ? 4 : layout === '3x3' ? 9 : 4;
 
