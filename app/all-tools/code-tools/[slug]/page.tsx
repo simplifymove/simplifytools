@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 import Link from 'next/link';
 import { getToolBySlug, CodeTool } from '@/app/lib/code-tools';
 import {
@@ -272,6 +273,7 @@ const getActionText = (toolId: string): string => {
 };
 
 export default function CodeToolPage() {
+  const router = useRouter();
   const params = useParams();
   const slug = params?.slug as string | undefined;
 
@@ -382,19 +384,28 @@ export default function CodeToolPage() {
   };
 
   // Download result
-  const handleDownload = () => {
+  const handleDownload = async () => {
     try {
-      const element = document.createElement('a');
-      const file = new Blob([output], { type: 'text/plain' });
-      element.href = URL.createObjectURL(file);
-      element.download = `${slug}-result.txt`;
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-      setSuccess('✓ Downloaded');
+      if (!slug) {
+        setError('Unable to prepare download');
+        return;
+      }
+
+      const outputName = `${slug}-result.txt`;
+      const blob = new Blob([output], { type: 'text/plain' });
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: slug,
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+      setSuccess('✓ Ready to download');
       setTimeout(() => setSuccess(''), 2000);
     } catch {
-      setError('Failed to download');
+      setError('Failed to prepare download');
     }
   };
 
