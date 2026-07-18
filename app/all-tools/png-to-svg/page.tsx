@@ -4,8 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function PngToSvgPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -72,14 +75,20 @@ export default function PngToSvgPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!downloadUrl) return;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'converted.svg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+
+      if (!downloadUrl) return;
+
+      const blob = await fetch(downloadUrl).then((response) => response.blob());
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: "png-to-svg",
+        originalName: "converted.svg",
+        outputName: "converted.svg",
+      });
+
+      router.push(downloadResult.downloadPageUrl);
   };
 
   return (

@@ -9,11 +9,14 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 const TOOL_ID = 'jpg-to-tiff';
 const TOOL_NAME = 'JPG to TIFF';
 
 export default function JpgToTiffPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -86,14 +89,20 @@ export default function JpgToTiffPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!downloadUrl) return;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'converted.tiff';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+
+      if (!downloadUrl) return;
+
+      const blob = await fetch(downloadUrl).then((response) => response.blob());
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: "jpg-to-tiff",
+        originalName: "converted.tiff",
+        outputName: "converted.tiff",
+      });
+
+      router.push(downloadResult.downloadPageUrl);
   };
 
   return (

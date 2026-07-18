@@ -6,8 +6,11 @@ import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function PngToTiffPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -67,14 +70,20 @@ export default function PngToTiffPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!downloadUrl) return;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'converted.tiff';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+
+      if (!downloadUrl) return;
+
+      const blob = await fetch(downloadUrl).then((response) => response.blob());
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: "png-to-tiff",
+        originalName: "converted.tiff",
+        outputName: "converted.tiff",
+      });
+
+      router.push(downloadResult.downloadPageUrl);
   };
 
   return (
