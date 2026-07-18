@@ -1,5 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, RotateCcw, AlertCircle, FileText } from 'lucide-react';
@@ -8,6 +11,7 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { Footer } from '../../components/Footer';
 
 export default function PsdToPngPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -68,14 +72,20 @@ export default function PsdToPngPage() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `converted-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    const outputName = `converted-${Date.now()}.png`;
+    const blob = await fetch(result).then((response) => response.blob());
+
+    const downloadResult = await uploadBrowserDownloadResult({
+      blob,
+      toolSlug: 'psd-to-png',
+      originalName: outputName,
+      outputName,
+    });
+
+    router.push(downloadResult.downloadPageUrl);
   };
 
   return (
