@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Palette } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function WhiteBalancePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [temperature, setTemperature] = useState(0);
@@ -59,10 +62,10 @@ export default function WhiteBalancePage() {
           for (let i = 0; i < data.length; i += 4) {
             // Apply temperature shift (warm/cool)
             data[i] = Math.max(0, Math.min(255, data[i] * tempFactor));
-            
+
             // Apply tint shift (green/magenta)
             data[i + 1] = Math.max(0, Math.min(255, data[i + 1] * tintFactor));
-            
+
             // Blue channel inverse to temperature
             data[i + 2] = Math.max(0, Math.min(255, data[i + 2] / tempFactor));
           }
@@ -93,16 +96,33 @@ export default function WhiteBalancePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `white-balance-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'white-balance',
+            originalName: `white-balance-${Date.now()}.jpg`,
+            outputName: `white-balance-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -131,7 +151,7 @@ export default function WhiteBalancePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Adjust White Balance</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
