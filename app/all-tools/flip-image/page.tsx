@@ -15,11 +15,14 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'flip-image';
 const TOOL_NAME = 'Flip Image';
 
 export default function FlipImagePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
   const [flipHorizontal, setFlipHorizontal] = useState(false);
@@ -214,18 +217,33 @@ export default function FlipImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+      if (!result || processing) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `flipped-image-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+      
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'flip-image',
+            originalName: `flipped-image-${Date.now()}.png`,
+            outputName: `flipped-image-${Date.now()}.png`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <div className="min-h-screen bg-gray-50">
