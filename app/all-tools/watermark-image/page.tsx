@@ -15,11 +15,14 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'watermark-image';
 const TOOL_NAME = 'Watermark Image';
 
 export default function WatermarkImagePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [watermarkText, setWatermarkText] = useState('© 2024');
@@ -250,17 +253,33 @@ export default function WatermarkImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'watermarked.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+      
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'watermark-image',
+            originalName: 'watermarked.jpg',
+            outputName: 'watermarked.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   const handleClearPreview = () => {
     setFile(null);

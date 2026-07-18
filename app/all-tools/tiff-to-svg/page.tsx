@@ -7,8 +7,11 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function TiffToSvgPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -51,17 +54,32 @@ export default function TiffToSvgPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.svg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+      setError(null);
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'tiff-to-svg',
+            originalName: 'converted.svg',
+            outputName: 'converted.svg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>

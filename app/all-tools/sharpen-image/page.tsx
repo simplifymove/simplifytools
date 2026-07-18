@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function SharpenImagePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [sharpenAmount, setSharpenAmount] = useState(5);
@@ -74,17 +77,33 @@ export default function SharpenImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'sharpened.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+      
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'sharpen-image',
+            originalName: 'sharpened.jpg',
+            outputName: 'sharpened.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>

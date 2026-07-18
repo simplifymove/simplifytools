@@ -6,8 +6,11 @@ import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function VintageFilterPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [vintageIntensity, setVintageIntensity] = useState(50);
@@ -89,16 +92,33 @@ export default function VintageFilterPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'vintage-filtered-image.jpg';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+      
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'vintage-filter',
+            originalName: 'vintage-filtered-image.jpg',
+            outputName: 'vintage-filtered-image.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>

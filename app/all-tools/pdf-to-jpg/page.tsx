@@ -6,8 +6,11 @@ import { Download, ChevronRight, Loader, FileText } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function PdfToJpgPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dpi, setDpi] = useState(300);
@@ -61,17 +64,33 @@ export default function PdfToJpgPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.zip';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+      
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'pdf-to-jpg',
+            originalName: 'converted.zip',
+            outputName: 'converted.zip',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
