@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { createConvertedFilename } from '@/app/lib/data-validation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 interface FormData {
   [key: string]: string | number | boolean;
@@ -84,7 +85,7 @@ export default function DataToolPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [downloadPageUrl, setDownloadPageUrl] = useState<string | null>(null);
 
   // Generate FAQ schema for JSON-LD
   const faqSchema = {
@@ -304,19 +305,18 @@ export default function DataToolPage() {
 
       // Get converted file
       const blob = await response.blob();
+      const outputName = createConvertedFilename(tool.output);
 
-      // Create download URL
-      const url = window.URL.createObjectURL(blob);
-      setDownloadUrl(url);
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: tool.id,
+        originalName: selectedFile.name,
+        outputName,
+      });
+
+      setDownloadPageUrl(downloadResult.downloadPageUrl);
       setSuccess(true);
-
-      // Auto-download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = createConvertedFilename(tool.output);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      router.push(downloadResult.downloadPageUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Conversion failed');
     } finally {
@@ -576,13 +576,8 @@ export default function DataToolPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
-                      if (downloadUrl) {
-                        const a = document.createElement('a');
-                        a.href = downloadUrl;
-                        a.download = createConvertedFilename(tool.output);
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
+                      if (downloadPageUrl) {
+                        router.push(downloadPageUrl);
                       }
                     }}
                     className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium duration-0 flex items-center justify-center gap-2"
