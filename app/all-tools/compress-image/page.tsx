@@ -17,11 +17,14 @@ import {
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { ErrorAlert } from '@/app/components/error-components';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'compress-image';
 const TOOL_NAME = 'Compress Image';
 
 export default function CompressImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [quality, setQuality] = useState(0.7);
@@ -157,16 +160,32 @@ export default function CompressImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'compressed.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+
+    setProcessing(true);
+
+    try {
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'compress-image',
+          originalName: 'compressed.jpg',
+          outputName: 'compressed.jpg',
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      console.error('Download preparation failed:', caughtError);
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const reduction = originalSize > 0 ? (((originalSize - compressedSize) / originalSize) * 100).toFixed(1) : 0;
@@ -237,7 +256,7 @@ export default function CompressImagePage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Compression Settings</h3>
-                    
+
                     {/* Quality Slider */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">

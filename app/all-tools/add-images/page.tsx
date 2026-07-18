@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Download, ChevronRight, Image as ImageIcon, X, Plus } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 interface CanvasImage {
   id: string;
@@ -15,6 +17,7 @@ interface CanvasImage {
 }
 
 export default function AddImagesPage() {
+  const router = useRouter();
   const [images, setImages] = useState<CanvasImage[]>([]);
   const [canvasWidth, setCanvasWidth] = useState(1600);
   const [canvasHeight, setCanvasHeight] = useState(1200);
@@ -32,7 +35,7 @@ export default function AddImagesPage() {
     if (!files || files.length === 0) return;
 
     const validFiles: File[] = [];
-    
+
     // First, filter to get only image files
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -71,7 +74,7 @@ export default function AddImagesPage() {
           const totalIndex = images.length + newImages.length;
           const row = Math.floor(totalIndex / imagesPerRow);
           const col = totalIndex % imagesPerRow;
-          
+
           const newImage: CanvasImage = {
             id: String(Date.now() + index + Math.random()),
             blob: file,
@@ -83,7 +86,7 @@ export default function AddImagesPage() {
         } catch (err) {
           console.error('Error creating image object:', err);
         }
-        
+
         filesProcessed++;
 
         // Add all images once all files are processed
@@ -123,7 +126,7 @@ export default function AddImagesPage() {
     // Scale preview to fit container
     const maxWidth = 400;
     const scale = Math.min(1, maxWidth / canvasWidth);
-    
+
     canvas.width = canvasWidth * scale;
     canvas.height = canvasHeight * scale;
 
@@ -136,7 +139,7 @@ export default function AddImagesPage() {
 
     // Draw images with proper async handling
     let imagesDrawn = 0;
-    
+
     images.forEach((img, idx) => {
       const imgElement = new Image();
       imgElement.crossOrigin = 'anonymous';
@@ -148,7 +151,7 @@ export default function AddImagesPage() {
           const size = 320 * scale;
           const x = img.x * scale;
           const y = img.y * scale;
-          
+
           // Draw image
           ctx.drawImage(imgElement, x, y, size, size);
 
@@ -213,10 +216,10 @@ export default function AddImagesPage() {
       // High DPI rendering for crisp output (4K quality)
       const dpi = 300;
       const scale = dpi / 96; // Standard screen DPI is 96
-      
+
       canvas.width = canvasWidth * scale;
       canvas.height = canvasHeight * scale;
-      
+
       // Set canvas style size for proper display
       canvas.style.width = canvasWidth + 'px';
       canvas.style.height = canvasHeight + 'px';
@@ -224,7 +227,7 @@ export default function AddImagesPage() {
       // High-quality rendering settings
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
-      
+
       // Scale context without affecting text
       ctx.scale(scale, scale);
 
@@ -296,16 +299,31 @@ export default function AddImagesPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'combined-images.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+    setError(null);
+    setProcessing(true);
+
+    try {
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'add-images',
+          originalName: 'combined-images.png',
+          outputName: 'combined-images.png',
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   // Update preview when images or settings change
@@ -384,11 +402,10 @@ export default function AddImagesPage() {
                       {images.map((img, idx) => (
                         <div
                           key={img.id}
-                          className={`flex items-center justify-between p-2 rounded border cursor-pointer ${
-                            selectedImageId === img.id
+                          className={`flex items-center justify-between p-2 rounded border cursor-pointer ${selectedImageId === img.id
                               ? 'bg-orange-100 border-orange-300'
                               : 'bg-gray-50 border-gray-200'
-                          }`}
+                            }`}
                           onClick={() => setSelectedImageId(img.id)}
                         >
                           <div className="flex items-center gap-2 flex-1">

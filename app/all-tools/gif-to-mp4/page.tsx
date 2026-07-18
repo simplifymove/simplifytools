@@ -9,11 +9,14 @@ import { Footer } from '../../components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { VideoToolErrorType } from '@/app/utils/types/errors';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'gif-to-mp4';
 const TOOL_NAME = 'GIF to MP4';
 
 export default function GifToMp4Page() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -53,12 +56,12 @@ export default function GifToMp4Page() {
         to_format: 'mp4',
         options: { fps, quality },
       }));
-      
+
       const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const failure = await response.json().catch(() => ({ error: response.statusText }));
         setError({
@@ -78,7 +81,7 @@ export default function GifToMp4Page() {
         });
         return;
       }
-      
+
       const blob = await response.blob();
       setResult(blob);
     } catch (err) {
@@ -97,16 +100,32 @@ export default function GifToMp4Page() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.mp4';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+
+    setProcessing(true);
+
+    try {
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'gif-to-mp4',
+          originalName: 'converted.mp4',
+          outputName: 'converted.mp4',
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      console.error('Download preparation failed:', caughtError);
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -115,7 +134,7 @@ export default function GifToMp4Page() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Header */}
         <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -165,7 +184,7 @@ export default function GifToMp4Page() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
+
                     {/* FPS */}
                     <div className="mb-6">
                       <label className="text-sm font-medium text-gray-700 block mb-2">

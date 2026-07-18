@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ColorGraderPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [hue, setHue] = useState(0);
@@ -51,7 +54,7 @@ export default function ColorGraderPage() {
 
           ctx.filter = `hue-rotate(${hue}deg) saturate(${saturation}%)`;
           ctx.drawImage(img, 0, 0);
-          
+
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
           const balance = colorBalance / 100;
@@ -90,14 +93,31 @@ export default function ColorGraderPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'color-graded-image.jpg';
-      a.click();
-      URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+
+    setProcessing(true);
+
+    try {
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'color-grader',
+          originalName: 'color-graded-image.jpg',
+          outputName: 'color-graded-image.jpg',
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      console.error('Download preparation failed:', caughtError);
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -131,7 +151,7 @@ export default function ColorGraderPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Color Grade Your Image</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input

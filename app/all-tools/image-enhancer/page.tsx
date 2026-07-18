@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { Download, ChevronRight, Loader, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ImageEnhancerPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [brightness, setBrightness] = useState(100);
@@ -79,16 +82,32 @@ export default function ImageEnhancerPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'enhanced.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+
+    setProcessing(true);
+
+    try {
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'image-enhancer',
+          originalName: 'enhanced.jpg',
+          outputName: 'enhanced.jpg',
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      console.error('Download preparation failed:', caughtError);
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const resetSliders = () => {
@@ -132,7 +151,7 @@ export default function ImageEnhancerPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-pink-400 transition cursor-pointer mb-6">
                     <input
                       type="file"
@@ -173,7 +192,7 @@ export default function ImageEnhancerPage() {
                         Reset
                       </button>
                     </div>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <label className="text-sm font-medium text-gray-700 block mb-2">
