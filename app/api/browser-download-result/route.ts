@@ -399,6 +399,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    console.log('[browser-download-result] MIME validation', {
+      toolSlug,
+      outputName,
+      receivedMimeType: file.type,
+      allowedMimeTypes: toolPolicy.mimeTypes,
+      extension,
+      fileSize: file.size,
+    });
+
     if (!toolPolicy.mimeTypes.includes(file.type)) {
       return json(
         {
