@@ -2,12 +2,16 @@
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, SparklesIcon } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
 
 export default function UnblurImagePage() {
+  const router = useRouter();
   const [image, setImage] = useState<string | null>(null);
+  const [originalName, setOriginalName] = useState('image.jpg');
   const [preview, setPreview] = useState<string | null>(null);
   const [mode, setMode] = useState<'motion' | 'defocus'>('motion');
   
@@ -25,6 +29,7 @@ export default function UnblurImagePage() {
 
     setError(null);
     setResult(null);
+    setOriginalName(file.name);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -39,6 +44,7 @@ export default function UnblurImagePage() {
     setImage(null);
     setPreview(null);
     setResult(null);
+    setOriginalName('image.jpg');
     setError(null);
   };
 
@@ -84,15 +90,31 @@ export default function UnblurImagePage() {
     }
   };
 
-  const downloadResult = () => {
-    if (!result) return;
+  const downloadResult = async () => {
+    if (!result || processing) return;
 
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `unblur-image-${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const outputName = `unblur-image-${Date.now()}.jpg`;
+      const download = await uploadBrowserDownloadResultFromUrl({
+        url: result,
+        toolSlug: 'unblur-image',
+        originalName,
+        outputName,
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -324,7 +346,6 @@ export default function UnblurImagePage() {
     </>
   );
 }
-
 
 
 

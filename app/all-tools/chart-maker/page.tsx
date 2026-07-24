@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp, BarChart3 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 type ChartType = 'bar' | 'line' | 'pie';
 
@@ -14,6 +16,7 @@ interface DataPoint {
 }
 
 export default function ChartMakerPage() {
+  const router = useRouter();
   const [chartType, setChartType] = useState<ChartType>('bar');
   const [title, setTitle] = useState('My Chart');
   const [data, setData] = useState<DataPoint[]>([
@@ -47,16 +50,32 @@ export default function ChartMakerPage() {
     setData(newData);
   };
 
-  const downloadChart = () => {
+  const downloadChart = async () => {
     const canvas = document.getElementById('chart-canvas') as HTMLCanvasElement;
-    if (canvas) {
-      const url = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${title.replace(/\s+/g, '_')}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (!canvas) return;
+
+    try {
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((generatedBlob) => {
+          if (generatedBlob) resolve(generatedBlob);
+          else reject(new Error('Unable to generate the chart image.'));
+        }, 'image/png');
+      });
+      const outputName = `${title.replace(/\s+/g, '_')}.png`;
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'chart-maker',
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
     }
   };
 
@@ -448,7 +467,6 @@ export default function ChartMakerPage() {
     </>
   );
 }
-
 
 
 

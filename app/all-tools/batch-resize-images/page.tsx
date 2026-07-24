@@ -2,17 +2,20 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'batch-resize-images';
 const TOOL_NAME = 'Batch Resize Images';
 
 export default function BatchResizeImagesPage() {
+  const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [width, setWidth] = useState(800);
   const [height, setHeight] = useState(600);
@@ -94,30 +97,40 @@ export default function BatchResizeImagesPage() {
   };
 
   const handleDownloadAll = async () => {
+    if (files.length === 0 || processing) return;
+
     setProcessing(true);
+    clearError();
+    const additionalResultWindows = files.slice(1).map(() =>
+      window.open('about:blank', '_blank'),
+    );
+    let primaryDownloadPageUrl: string | null = null;
+
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const resizedBlob = await resizeImage(file, width, height);
-        
-        // Create object URL from blob
-        const blobUrl = URL.createObjectURL(resizedBlob);
-        
-        // Create download link
-        const link = document.createElement('a');
-        link.href = blobUrl;
         const newName = file.name.replace(/\.[^/.]+$/, '') + `-resized-${width}x${height}.jpg`;
-        link.download = newName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up the blob URL
-        URL.revokeObjectURL(blobUrl);
+        const downloadResult = await uploadBrowserDownloadResult({
+          blob: resizedBlob,
+          toolSlug: TOOL_ID,
+          originalName: file.name,
+          outputName: newName,
+        });
+
+        if (!primaryDownloadPageUrl) {
+          primaryDownloadPageUrl = downloadResult.downloadPageUrl;
+        } else {
+          const resultWindow = additionalResultWindows.shift();
+          if (resultWindow) {
+            resultWindow.location.href = downloadResult.downloadPageUrl;
+          }
+        }
         
         // Add slight delay between downloads to avoid browser blocking
         await new Promise(resolve => setTimeout(resolve, 150));
       }
+
     } catch (error) {
       createError(
         ImageToolErrorType.SHARP_FAILED,
@@ -126,7 +139,12 @@ export default function BatchResizeImagesPage() {
         { error: (error as Error).message }
       );
     } finally {
+      additionalResultWindows.forEach((resultWindow) => resultWindow?.close());
       setProcessing(false);
+    }
+
+    if (primaryDownloadPageUrl) {
+      router.push(primaryDownloadPageUrl);
     }
   };
 

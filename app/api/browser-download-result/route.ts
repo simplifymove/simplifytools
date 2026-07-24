@@ -7,19 +7,150 @@ import {
   getAllowedDownloadDirectories,
 } from '@/lib/services/download-result';
 import { sanitizePublicFilename } from '@/lib/services/pdf-download-result';
+import { aiWriteTools } from '@/app/lib/ai-tools';
+import { codeTools } from '@/app/lib/code-tools';
+import { allTools } from '@/app/data/tools';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const MAX_BROWSER_RESULT_BYTES = 100 * 1024 * 1024;
 
+interface BrowserResultToolPolicy {
+  extensions: string[];
+  mimeTypes: string[];
+}
+
+const PNG_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.png'],
+  mimeTypes: ['image/png'],
+};
+
+const JPEG_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.jpg', '.jpeg'],
+  mimeTypes: ['image/jpeg'],
+};
+
+const EDITABLE_RASTER_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.png', '.jpg', '.jpeg', '.webp'],
+  mimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
+};
+
+const FONT_AWESOME_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.png', '.jpg', '.jpeg', '.webp', '.svg'],
+  mimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'],
+};
+
+const TEXT_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.txt'],
+  mimeTypes: ['text/plain', 'text/plain;charset=utf-8'],
+};
+
+const CODE_MINIFIER_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.html', '.css', '.js'],
+  mimeTypes: ['text/plain'],
+};
+
+const CSV_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.csv'],
+  mimeTypes: ['text/csv'],
+};
+
+const DOCX_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.docx'],
+  mimeTypes: [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ],
+};
+
+const TEXT_BROWSER_TOOLS = [
+  ...Object.keys(aiWriteTools),
+  ...Object.keys(codeTools),
+  ...allTools
+    .filter((tool) => tool.category === 'Financial Calculator')
+    .map((tool) => tool.id),
+];
+
+const PNG_BROWSER_TOOLS = [
+  'add-border',
+  'add-images',
+  'add-opacity',
+  'add-text',
+  'black-white',
+  'chart-maker',
+  'cleanup-picture',
+  'collage-maker',
+  'colorize-photo',
+  'combine-images',
+  'flip-image',
+  'image-splitter',
+  'make-background-transparent',
+  'make-round-image',
+  'profile-photo-maker',
+  'resize-image',
+  'reverse-image',
+  'rotate-image',
+  'translate-image',
+];
+
+const JPEG_BROWSER_TOOLS = [
+  'batch-compress-images',
+  'batch-resize-images',
+  'blur-background',
+  'blur-image',
+  'blur-zoom',
+  'brightness-contrast',
+  'cartoon-effect',
+  'chromatic-aberration',
+  'color-balance',
+  'color-grader',
+  'compress-image',
+  'dream-effect',
+  'duotone-effect',
+  'edge-detect',
+  'emboss-effect',
+  'film-noir',
+  'glitch-effect',
+  'glow-effect',
+  'grayscale-image',
+  'histogram-equalize',
+  'hue-saturation',
+  'image-compressor',
+  'image-enhancer',
+  'invert-colors',
+  'kaleidoscope',
+  'lens-flare',
+  'mirror-image',
+  'mosaic-tile',
+  'motion-blur',
+  'neon-glow',
+  'oil-paint-effect',
+  'pixelate-image',
+  'posterize-image',
+  'remove-object',
+  'sepia-filter',
+  'sharpen-image',
+  'sketch-effect',
+  'solarize-effect',
+  'sunburst',
+  'swirl-distortion',
+  'thermal-vision',
+  'tilt-shift',
+  'unblur-image',
+  'vhs-effect',
+  'vignette-effect',
+  'vintage-filter',
+  'watermark-image',
+  'white-balance',
+];
+
 const ALLOWED_BROWSER_RESULT_TOOLS: Record<
   string,
-  {
-    extensions: string[];
-    mimeTypes: string[];
-  }
+  BrowserResultToolPolicy
 > = {
+  ...Object.fromEntries(PNG_BROWSER_TOOLS.map((toolSlug) => [toolSlug, PNG_POLICY])),
+  ...Object.fromEntries(JPEG_BROWSER_TOOLS.map((toolSlug) => [toolSlug, JPEG_POLICY])),
+  ...Object.fromEntries(TEXT_BROWSER_TOOLS.map((toolSlug) => [toolSlug, TEXT_POLICY])),
   'jpg-to-png': {
     extensions: ['.png'],
     mimeTypes: ['image/png'],
@@ -92,6 +223,18 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     extensions: ['.jpg', '.jpeg'],
     mimeTypes: ['image/jpeg'],
   },
+  'crop-image': EDITABLE_RASTER_POLICY,
+  'code-minifier': CODE_MINIFIER_POLICY,
+  'font-awesome-to-png': FONT_AWESOME_POLICY,
+  'remove-background': EDITABLE_RASTER_POLICY,
+  'remove-object': {
+    extensions: ['.png', '.jpg', '.jpeg'],
+    mimeTypes: ['image/png', 'image/jpeg'],
+  },
+  'remove-watermark': EDITABLE_RASTER_POLICY,
+  'resume-job-match': DOCX_POLICY,
+  'text-diff': CSV_POLICY,
+  'upscale-image': EDITABLE_RASTER_POLICY,
 };
 
 function json(body: unknown, status = 200): NextResponse {
@@ -156,6 +299,31 @@ function hasValidSignature(buffer: Buffer, extension: string): boolean {
       buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
       buffer.subarray(8, 12).toString('ascii') === 'WEBP'
     );
+  }
+
+  if (extension === '.svg') {
+    const svgPrefix = buffer
+      .subarray(0, Math.min(buffer.length, 4096))
+      .toString('utf8')
+      .replace(/^\uFEFF/, '')
+      .trimStart();
+
+    return /^(?:<\?xml[^>]*>\s*)?<svg(?:\s|>)/i.test(svgPrefix);
+  }
+
+  if (
+    extension === '.txt' ||
+    extension === '.csv' ||
+    extension === '.html' ||
+    extension === '.css' ||
+    extension === '.js'
+  ) {
+    return buffer.length > 0;
+  }
+
+  if (extension === '.docx') {
+    const signature = buffer.subarray(0, 4).toString('hex');
+    return ['504b0304', '504b0506', '504b0708'].includes(signature);
   }
 
   return false;

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Zap, Info, Cpu, AlertCircle } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
@@ -15,6 +16,7 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'upscale-image';
 const TOOL_NAME = 'Upscale Image';
@@ -33,6 +35,7 @@ interface UpscaleMetadata {
 }
 
 export default function UpscaleImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -262,14 +265,32 @@ export default function UpscaleImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `upscaled-${scale}x-${Date.now()}.${outputFormat}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!resultBlob || !file || processing) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const outputName = `upscaled-${scale}x-${Date.now()}.${outputFormat}`;
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: resultBlob,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch {
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -752,7 +773,6 @@ export default function UpscaleImagePage() {
     </>
   );
 }
-
 
 
 

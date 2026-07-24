@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, Eraser } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
@@ -15,11 +16,13 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'remove-background';
 const TOOL_NAME = 'Remove Background';
 
 export default function RemoveBackgroundPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -171,14 +174,32 @@ export default function RemoveBackgroundPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `no-background-${Date.now()}.${outputFormat}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !file || processing) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const outputName = `no-background-${Date.now()}.${outputFormat}`;
+      const downloadResult = await uploadBrowserDownloadResultFromUrl({
+        url: result,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch {
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -657,7 +678,6 @@ export default function RemoveBackgroundPage() {
     </>
   );
 }
-
 
 
 

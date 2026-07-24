@@ -2,11 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, User } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
 
 export default function ProfilePhotoMakerPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -92,14 +95,31 @@ export default function ProfilePhotoMakerPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `profile-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !file || processing) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const outputName = `profile-${Date.now()}.png`;
+      const downloadResult = await uploadBrowserDownloadResultFromUrl({
+        url: result,
+        toolSlug: 'profile-photo-maker',
+        originalName: file.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -353,7 +373,6 @@ export default function ProfilePhotoMakerPage() {
     </>
   );
 }
-
 
 
 

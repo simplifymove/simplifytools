@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Copy, Download, ArrowLeft, Loader, ChevronRight, Zap, CheckCircle, TrendingUp, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { detectUserLocation, formatCurrency, getCurrencySymbol, type UserLocation } from '@/app/lib/geolocation-currency';
+import { uploadBrowserTextDownloadResult } from '@/app/lib/download-result-client';
 
 const calculatorConfig: Record<string, any> = {
   'startup-runway': {
@@ -79,6 +80,7 @@ const calculatorConfig: Record<string, any> = {
 };
 
 export default function CalculatorPage() {
+  const router = useRouter();
   const params = useParams();
   const slug = (params?.slug as string | undefined) ?? '';
 
@@ -217,15 +219,26 @@ export default function CalculatorPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const downloadResult = () => {
+  const downloadResult = async () => {
     const textToDownload = JSON.stringify(result, null, 2);
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textToDownload));
-    element.setAttribute('download', `${slug}-result.txt`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    const outputName = `${slug}-result.txt`;
+
+    try {
+      const download = await uploadBrowserTextDownloadResult({
+        text: textToDownload,
+        toolSlug: slug,
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    }
   };
 
   return (

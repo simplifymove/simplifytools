@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
@@ -9,11 +10,13 @@ import { compressImage } from '../../lib/imageTools';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'batch-compress-images';
 const TOOL_NAME = 'Batch Compress Images';
 
 export default function BatchCompressImagesPage() {
+  const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [quality, setQuality] = useState(0.75);
   const [processing, setProcessing] = useState(false);
@@ -65,24 +68,37 @@ export default function BatchCompressImagesPage() {
   };
 
   const handleDownloadAll = async () => {
+    if (files.length === 0 || processing) return;
+
+    setProcessing(true);
+    clearError();
+    const additionalResultWindows = files.slice(1).map(() =>
+      window.open('about:blank', '_blank'),
+    );
+    let primaryDownloadPageUrl: string | null = null;
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
-        // Call actual compressImage function from lib/imageTools
         const result = await compressImage(file, quality);
-        const url = URL.createObjectURL(result.blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
         const newName = file.name.replace(/\.[^/.]+$/, '') + `-compressed-${Date.now()}.jpg`;
-        link.download = newName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Revoke the object URL to free memory
-        URL.revokeObjectURL(url);
+        const downloadResult = await uploadBrowserDownloadResult({
+          blob: result.blob,
+          toolSlug: TOOL_ID,
+          originalName: file.name,
+          outputName: newName,
+        });
+
+        if (!primaryDownloadPageUrl) {
+          primaryDownloadPageUrl = downloadResult.downloadPageUrl;
+        } else {
+          const resultWindow = additionalResultWindows.shift();
+          if (resultWindow) {
+            resultWindow.location.href = downloadResult.downloadPageUrl;
+          }
+        }
       } catch (error) {
+        additionalResultWindows.shift()?.close();
         createError(
           ImageToolErrorType.COMPRESSION_FAILED,
           TOOL_ID,
@@ -93,6 +109,13 @@ export default function BatchCompressImagesPage() {
       }
       
       await new Promise(resolve => setTimeout(resolve, 150));
+    }
+
+    additionalResultWindows.forEach((resultWindow) => resultWindow?.close());
+    setProcessing(false);
+
+    if (primaryDownloadPageUrl) {
+      router.push(primaryDownloadPageUrl);
     }
   };
 

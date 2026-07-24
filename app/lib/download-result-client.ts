@@ -55,6 +55,52 @@ export async function uploadBrowserDownloadResult({
   );
 }
 
+export async function uploadBrowserDownloadResultFromUrl({
+  url,
+  toolSlug,
+  originalName,
+  outputName,
+}: {
+  url: string;
+  toolSlug: string;
+  originalName: string;
+  outputName: string;
+}): Promise<Required<DownloadResultResponse>> {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error('Unable to read the generated file');
+  }
+
+  return uploadBrowserDownloadResult({
+    blob: await response.blob(),
+    toolSlug,
+    originalName,
+    outputName,
+  });
+}
+
+export async function uploadBrowserTextDownloadResult({
+  text,
+  mimeType = 'text/plain;charset=utf-8',
+  toolSlug,
+  originalName,
+  outputName,
+}: {
+  text: string;
+  mimeType?: string;
+  toolSlug: string;
+  originalName: string;
+  outputName: string;
+}): Promise<Required<DownloadResultResponse>> {
+  return uploadBrowserDownloadResult({
+    blob: new Blob([text], { type: mimeType }),
+    toolSlug,
+    originalName,
+    outputName,
+  });
+}
+
 export async function uploadBrowserPdfResult({
   blob,
   toolSlug,

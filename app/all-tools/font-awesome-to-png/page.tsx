@@ -2,9 +2,11 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Search, Copy, Check } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 // Comprehensive Font Awesome Icon Library
 const FONT_AWESOME_ICONS = [
@@ -200,6 +202,7 @@ const FONT_AWESOME_ICONS = [
 ];
 
 export default function FontAwesomeToPngPage() {
+  const router = useRouter();
   const [selectedIcon, setSelectedIcon] = useState<typeof FONT_AWESOME_ICONS[0]>(FONT_AWESOME_ICONS[0]);
   const [color, setColor] = useState('#000000');
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
@@ -293,43 +296,49 @@ export default function FontAwesomeToPngPage() {
     }
   };
 
-  const downloadAsFormat = (format: 'png' | 'svg' | 'jpg' | 'webp') => {
+  const downloadAsFormat = async (format: 'png' | 'svg' | 'jpg' | 'webp') => {
     if (!result) return;
-    
-    if (format === 'svg') {
-      const svgContent = `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="${size}" height="${size}" fill="${backgroundColor}" ${roundCorners ? `rx="15"` : ''}/>
-        <text x="${size / 2}" y="${size / 2}" font-size="${size * 0.5}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${color}" font-family="Arial, sans-serif">
-          ${selectedIcon.symbol}
-        </text>
-      </svg>`;
-      
-      const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${selectedIcon.name}.svg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } else {
-      const mimeType = 
-        format === 'png' ? 'image/png' :
-        format === 'jpg' ? 'image/jpeg' :
-        'image/webp';
-      
-      result.toBlob((blob) => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${selectedIcon.name}.${format}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, mimeType, format === 'jpg' ? 0.95 : undefined);
+
+    try {
+      let blob: Blob;
+
+      if (format === 'svg') {
+        const svgContent = `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+          <rect width="${size}" height="${size}" fill="${backgroundColor}" ${roundCorners ? `rx="15"` : ''}/>
+          <text x="${size / 2}" y="${size / 2}" font-size="${size * 0.5}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${color}" font-family="Arial, sans-serif">
+            ${selectedIcon.symbol}
+          </text>
+        </svg>`;
+        blob = new Blob([svgContent], { type: 'image/svg+xml' });
+      } else {
+        const mimeType =
+          format === 'png' ? 'image/png' :
+          format === 'jpg' ? 'image/jpeg' :
+          'image/webp';
+
+        blob = await new Promise<Blob>((resolve, reject) => {
+          result.toBlob((generatedBlob) => {
+            if (generatedBlob) resolve(generatedBlob);
+            else reject(new Error('Unable to generate the icon image.'));
+          }, mimeType, format === 'jpg' ? 0.95 : undefined);
+        });
+      }
+
+      const outputName = `${selectedIcon.name}.${format}`;
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'font-awesome-to-png',
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
     }
   };
 
@@ -735,7 +744,6 @@ export default function FontAwesomeToPngPage() {
     </>
   );
 }
-
 
 
 

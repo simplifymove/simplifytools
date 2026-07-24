@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronRight, Download, Eye, Edit2, CheckCircle, Zap, Shield, Users, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
@@ -11,8 +12,10 @@ import { resumeTemplates, type ResumeTemplate } from '@/app/lib/resume-templates
 import { resumeDesigns, type ResumeDesign } from '@/app/lib/resume-designs';
 import { generateResumeDOCX } from '@/app/lib/resume-docx-generator';
 import { industryJobTemplates, industries, getJobsForIndustry, getJobTemplate } from '@/app/lib/industry-job-templates';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ResumeBuilderPage() {
+  const router = useRouter();
   // State for design (unchanged)
   const [selectedDesign, setSelectedDesign] = useState<ResumeDesign>(resumeDesigns[0]);
   const [isEditing, setIsEditing] = useState(true);
@@ -163,7 +166,22 @@ export default function ResumeBuilderPage() {
 
   const handleDownload = async () => {
     const fileName = `${resumeData.fullName.replace(/\s+/g, '-')}-Resume.docx`;
-    await generateResumeDOCX(resumeData, fileName);
+    const blob = await generateResumeDOCX(resumeData);
+    if (!blob) return;
+
+    try {
+      const download = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'resume-job-match',
+        originalName: fileName,
+        outputName: fileName,
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (error) {
+      console.error('Error preparing DOCX download:', error);
+      alert('Error generating resume. Please try again.');
+    }
   };
 
   return (

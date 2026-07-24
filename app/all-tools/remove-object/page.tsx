@@ -2,12 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, Trash2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { CanvasMask } from '../../components/CanvasMask';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
 
 export default function RemoveObjectPage() {
+  const router = useRouter();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [maskFile, setMaskFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -104,14 +107,31 @@ export default function RemoveObjectPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `object-removed-${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !imageFile || processing) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const outputName = `object-removed-${Date.now()}.jpg`;
+      const downloadResult = await uploadBrowserDownloadResultFromUrl({
+        url: result,
+        toolSlug: 'remove-object',
+        originalName: imageFile.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -359,7 +379,6 @@ export default function RemoveObjectPage() {
     </>
   );
 }
-
 
 
 

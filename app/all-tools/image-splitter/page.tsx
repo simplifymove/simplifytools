@@ -2,10 +2,12 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Grid, X } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 interface SplitSegment {
   id: string;
@@ -16,6 +18,7 @@ interface SplitSegment {
 }
 
 export default function ImageSplitterPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [rows, setRows] = useState(2);
@@ -168,15 +171,28 @@ export default function ImageSplitterPage() {
     }
   };
 
-  const downloadSegment = (segment: SplitSegment) => {
-    const url = URL.createObjectURL(segment.blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `segment-${segment.row}-${segment.col}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const downloadSegment = async (segment: SplitSegment) => {
+    if (!file) return;
+
+    setError(null);
+
+    try {
+      const outputName = `segment-${segment.row}-${segment.col}.png`;
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: segment.blob,
+        toolSlug: 'image-splitter',
+        originalName: file.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    }
   };
 
   // Update preview when rows/cols change
@@ -360,7 +376,6 @@ export default function ImageSplitterPage() {
     </>
   );
 }
-
 
 
 

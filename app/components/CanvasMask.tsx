@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { RotateCcw, Download } from 'lucide-react';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export interface CanvasMaskProps {
   imageUrl: string;
@@ -20,6 +22,7 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
   brushSize = 10,
   setBrushSize,
 }) => {
+  const router = useRouter();
   const displayCanvasRef = useRef<HTMLCanvasElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -266,16 +269,33 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
     );
   };
 
-  const downloadMask = () => {
+  const downloadMask = async () => {
     const maskCanvas = maskCanvasRef.current;
     if (!maskCanvas) return;
 
-    const link = document.createElement('a');
-    link.href = maskCanvas.toDataURL('image/png');
-    link.download = `mask-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        maskCanvas.toBlob((generatedBlob) => {
+          if (generatedBlob) resolve(generatedBlob);
+          else reject(new Error('Unable to generate the mask image.'));
+        }, 'image/png');
+      });
+      const outputName = `mask-${Date.now()}.png`;
+      const download = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'remove-object',
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    }
   };
 
   return (
@@ -401,6 +421,5 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
     </div>
   );
 };
-
 
 

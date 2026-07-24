@@ -2,11 +2,13 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { ChevronRight, Upload, Play, Loader2, Copy, Download, Trash2, Share2, Lightbulb, Save } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { uploadBrowserTextDownloadResult } from '@/app/lib/download-result-client';
 
 interface DiffResult {
   valid: boolean;
@@ -23,6 +25,7 @@ interface DiffResult {
 }
 
 export default function TextDiffPage() {
+  const router = useRouter();
   const [text1, setText1] = useState('');
   const [text2, setText2] = useState('');
   const [diffResult, setDiffResult] = useState<DiffResult | null>(null);
@@ -182,7 +185,7 @@ export default function TextDiffPage() {
     }
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (!diffResult) {
       setError('Please run comparison first');
       return;
@@ -204,15 +207,27 @@ export default function TextDiffPage() {
       csv += `${i + 1},"${(lines1[i] || '').replace(/"/g, '""')}","${(lines2[i] || '').replace(/"/g, '""')}","${status}"\n`;
     }
     
-    const element = document.createElement('a');
-    const file = new Blob([csv], { type: 'text/csv' });
-    element.href = URL.createObjectURL(file);
-    element.download = 'diff-comparison.csv';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    setSuccess('✓ Exported as Excel');
-    setTimeout(() => setSuccess(''), 2000);
+    const outputName = 'diff-comparison.csv';
+
+    try {
+      const download = await uploadBrowserTextDownloadResult({
+        text: csv,
+        mimeType: 'text/csv',
+        toolSlug: 'text-diff',
+        originalName: outputName,
+        outputName,
+      });
+
+      setSuccess('✓ Exported as Excel');
+      setTimeout(() => setSuccess(''), 2000);
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the export.',
+      );
+    }
   };
 
   const handleSave = () => {
@@ -636,4 +651,3 @@ export default function TextDiffPage() {
     </>
   );
 }
-

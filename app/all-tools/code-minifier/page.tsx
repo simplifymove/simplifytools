@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Download, Copy, Zap } from 'lucide-react';
+import { uploadBrowserTextDownloadResult } from '@/app/lib/download-result-client';
 
 export default function CodeMinifier() {
+  const router = useRouter();
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [language, setLanguage] = useState('javascript');
@@ -56,15 +59,27 @@ export default function CodeMinifier() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
-    const element = document.createElement('a');
+  const handleDownload = async () => {
     const ext = language === 'html' ? 'html' : language === 'css' ? 'css' : 'js';
-    const file = new Blob([output], { type: 'text/plain' });
-    element.href = URL.createObjectURL(file);
-    element.download = `minified.${ext}`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    const outputName = `minified.${ext}`;
+
+    try {
+      const download = await uploadBrowserTextDownloadResult({
+        text: output,
+        mimeType: 'text/plain',
+        toolSlug: 'code-minifier',
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    }
   };
 
   const sizeReduction = input.length > 0 ? Math.round(((input.length - output.length) / input.length) * 100) : 0;
@@ -175,7 +190,6 @@ export default function CodeMinifier() {
     </div>
   );
 }
-
 
 
 

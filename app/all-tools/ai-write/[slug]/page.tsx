@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Copy, RefreshCw, Download, ArrowLeft, Loader, ChevronRight, Zap, Shield, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -9,6 +9,7 @@ import { getToolById } from '@/app/lib/ai-tools';
 import type { AIWriteTool } from '@/app/lib/ai-tools';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
+import { uploadBrowserTextDownloadResult } from '@/app/lib/download-result-client';
 
 // Action-specific CTA text for each tool
 function getActionText(toolId: string): string {
@@ -106,6 +107,7 @@ function getRelatedTools(toolId: string): Array<{ id: string; title: string; des
 }
 
 export default function AIWriteToolPage() {
+  const router = useRouter();
   const params = useParams();
   const slug = (params?.slug as string | undefined) ?? '';
 
@@ -180,14 +182,27 @@ export default function AIWriteToolPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const downloadResult = () => {
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(result));
-    element.setAttribute('download', `${tool?.id || 'result'}.txt`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+  const downloadResult = async () => {
+    if (!tool) return;
+
+    const outputName = `${tool.id}.txt`;
+
+    try {
+      const download = await uploadBrowserTextDownloadResult({
+        text: result,
+        toolSlug: tool.id,
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    }
   };
 
   if (!tool) {
