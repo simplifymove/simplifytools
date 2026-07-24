@@ -5,6 +5,8 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { generateOrganizationSchema, generateWebSiteSchema } from "./lib/seo";
 
+
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -126,6 +128,16 @@ export default function RootLayout({
         />
 
         {/* PDF.js Library is imported directly in PdfPageReorderer component */}
+
+
+{/* Google AdSense */}
+<script
+  async
+  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4666093512004911"
+  crossOrigin="anonymous"
+></script>
+
+
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
