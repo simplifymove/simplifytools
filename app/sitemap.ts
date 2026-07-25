@@ -9,11 +9,6 @@ import { pdfTools } from '@/app/lib/pdf-tools';
 import { videoTools } from '@/app/lib/video-tools';
 import { imageToolsRegistry } from '@/app/lib/image-tools-registry';
 
-// CRITICAL: Force Next.js to regenerate sitemap on every request
-// This prevents caching of stale sitemap data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 const BASE_URL = 'https://simplifyconvert.com';
 const SITEMAP_DEBUG =
   process.env.NODE_ENV === 'development' || process.env.SITEMAP_DEBUG === 'true';
@@ -36,20 +31,14 @@ const EXCLUDED_PATTERNS = [
   'tiktok-watermark',
 ];
 
-/**
- * Tools that exist in registries but don't have actual pages
- * These should be excluded from the sitemap
- */
-const TOOLS_WITHOUT_PAGES = [
-  'blur-background',
-  'compress-image',
-  'grayscale-image',
-  'profile-photo-maker',
-  'remove-object',
-  'resize-image',
-  'rotate-image',
-  'upscale-image',
-];
+function isExcludedTool(id: string, title = ''): boolean {
+  const idLower = id.toLowerCase();
+  const titleLower = title.toLowerCase();
+
+  return EXCLUDED_PATTERNS.some(
+    (pattern) => idLower.includes(pattern) || titleLower.includes(pattern)
+  );
+}
 
 /**
  * Extract tool IDs from nested tool libraries
@@ -67,16 +56,14 @@ function extractToolIds(toolsObject: any): string[] {
     const filtered = keys.filter(key => {
       // Skip non-tool properties (functions, special keys, etc.)
       const isValidTool = typeof toolsObject[key] === 'object' && 
-             toolsObject[key] !== null &&
-             (toolsObject[key].id !== undefined || true);
+             toolsObject[key] !== null;
       
-      // Also skip tools that don't have pages
-      const toolId = (toolsObject[key].id || key).toLowerCase();
-      const hasNoPage = TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolId);
-      
-      return isValidTool && !hasNoPage;
+      const toolId = toolsObject[key].id || key;
+      const toolTitle = toolsObject[key].title || '';
+
+      return isValidTool && !isExcludedTool(toolId, toolTitle);
     });
-    sitemapDebugLog(`    Object type: ${keys.length} keys → ${filtered.length} valid tools (excluded ${keys.length - filtered.length} without pages)`);
+    sitemapDebugLog(`    Object type: ${keys.length} keys → ${filtered.length} valid tools (excluded ${keys.length - filtered.length} restricted tools)`);
     return filtered;
   }
 
@@ -85,11 +72,11 @@ function extractToolIds(toolsObject: any): string[] {
     const filtered = toolsObject
       .filter(tool => {
         if (!tool || !(tool.id || tool.key)) return false;
-        const toolId = (tool.id || tool.key).toLowerCase();
-        return !TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolId);
+        const toolId = tool.id || tool.key;
+        return !isExcludedTool(toolId, tool.title || '');
       })
       .map(tool => tool.id || tool.key);
-    sitemapDebugLog(`    Array type: ${toolsObject.length} items → ${filtered.length} valid tools (excluded ${toolsObject.length - filtered.length} without pages)`);
+    sitemapDebugLog(`    Array type: ${toolsObject.length} items → ${filtered.length} valid tools (excluded ${toolsObject.length - filtered.length} restricted tools)`);
     return filtered;
   }
 
@@ -120,7 +107,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // 1. ADD HOMEPAGE - highest priority
   sitemapEntries.push({
     url: BASE_URL,
-    lastModified: new Date(),
     changeFrequency: 'daily',
     priority: 1.0,
   });
@@ -138,14 +124,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/contact', priority: 0.4, frequency: 'yearly' as const, label: 'Contact' },
     { url: '/privacy', priority: 0.3, frequency: 'yearly' as const, label: 'Privacy Policy' },
     { url: '/terms', priority: 0.3, frequency: 'yearly' as const, label: 'Terms of Service' },
+    { url: '/cookies', priority: 0.3, frequency: 'yearly' as const, label: 'Cookie Policy' },
+    { url: '/ai-code-assistant', priority: 0.7, frequency: 'monthly' as const, label: 'AI Code Assistant' },
+    { url: '/ai-code-assistant/docs', priority: 0.6, frequency: 'monthly' as const, label: 'AI Code Assistant Documentation' },
+    { url: '/ai-code-assistant/pricing', priority: 0.6, frequency: 'monthly' as const, label: 'AI Code Assistant Pricing' },
     { url: '/ai-studio', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio' },
     { url: '/ai-studio/pricing', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio Pricing' },
     { url: '/ai-studio/presentation-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Presentation Maker' },
+    { url: '/ai-studio/document-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Document Maker' },
+    { url: '/ai-studio/spreadsheet-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Spreadsheet Maker' },
     { url: '/all-tools/image-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Image Tools' },
     { url: '/all-tools/pdf-tools', priority: 0.8, frequency: 'weekly' as const, label: 'PDF Tools' },
     { url: '/all-tools/video-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Video Tools' },
     { url: '/all-tools/financial-calculators', priority: 0.7, frequency: 'monthly' as const, label: 'Financial Calculators' },
-    { url: '/all-tools/ai-write', priority: 0.7, frequency: 'monthly' as const, label: 'AI Write Tools' },
     { url: '/all-tools/resume-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Resume Maker' },
     { url: '/all-tools/text-to-speech', priority: 0.7, frequency: 'monthly' as const, label: 'Text to Speech' },
     { url: '/all-tools/pdf/add-text', priority: 0.6, frequency: 'monthly' as const, label: 'Add Text to PDF' },
@@ -154,12 +145,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/all-tools/eps-to-png', priority: 0.6, frequency: 'monthly' as const, label: 'EPS to PNG' },
     { url: '/all-tools/image-compressor', priority: 0.6, frequency: 'monthly' as const, label: 'Image Compressor' },
     { url: '/all-tools/webp-to-tiff', priority: 0.6, frequency: 'monthly' as const, label: 'WebP to TIFF' },
+    { url: '/all-tools/batch-compress-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Compress Images' },
+    { url: '/all-tools/batch-resize-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Resize Images' },
   ];
   
   mainPages.forEach(({ url, priority, frequency, label }) => {
     sitemapEntries.push({
       url: `${BASE_URL}${url}`,
-      lastModified: new Date(),
       changeFrequency: frequency,
       priority,
     });
@@ -183,15 +175,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const toolIdLower = tool.id.toLowerCase();
     const titleLower = tool.title.toLowerCase();
 
-    const isExcluded = EXCLUDED_PATTERNS.some(
-      (pattern) =>
-        toolIdLower.includes(pattern) || titleLower.includes(pattern)
-    );
-    
-    // Also exclude tools that don't have actual pages
-    const hasNoPage = TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolIdLower);
-
-    return !isExcluded && !hasNoPage;
+    return !isExcludedTool(toolIdLower, titleLower);
   });
 
   sitemapDebugLog('✓ Valid main tools (with routes, not excluded):', validMainTools.length);
@@ -200,7 +184,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   validMainTools.forEach((tool) => {
     sitemapEntries.push({
       url: `${BASE_URL}${tool.route}`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     });
@@ -222,6 +205,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       tools: extractToolIds(pdfTools),
       route: '/all-tools/pdf',
       label: 'PDF Tools',
+      includeCategory: false,
     },
     {
       tools: extractToolIds(videoTools),
@@ -307,7 +291,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     if (includeCategory !== false && !addedCategories.has(route) && !mainToolCategorySlugs.has(categorySlugFromRoute)) {
       sitemapEntries.push({
         url: `${BASE_URL}${route}`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       });
@@ -325,7 +308,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
       sitemapEntries.push({
         url: `${BASE_URL}${route}/${slug}`,
-        lastModified: new Date(),
         changeFrequency: 'monthly',
         priority: 0.6,
       });
@@ -368,7 +350,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   sitemapDebugLog('\n📊 FINAL SITEMAP BREAKDOWN');
   sitemapDebugLog('─────────────────────────────');
   sitemapDebugLog('Homepage entries: 1');
-  sitemapDebugLog('Main pages (All Tools, Blog, Terms): 3');
+  sitemapDebugLog('Main pages: ' + mainPages.length);
   sitemapDebugLog('Main tool pages: ' + validMainTools.length);
   
   // Count unique nested tools (excluding duplicates with main tools)
@@ -383,7 +365,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   sitemapDebugLog('Unique nested tool pages: ' + uniqueNestedToolsCount);
   sitemapDebugLog('Category pages: ' + addedCategories.size);
   
-  const expectedCount = 1 + 3 + validMainTools.length + uniqueNestedToolsCount + addedCategories.size;
+  const expectedCount = 1 + mainPages.length + validMainTools.length + uniqueNestedToolsCount + addedCategories.size;
   sitemapDebugLog('\n📈 EXPECTED TOTAL:', expectedCount);
   sitemapDebugLog('✅ ACTUAL FINAL TOTAL:', deduplicatedSitemap.length, 'URLs');
   

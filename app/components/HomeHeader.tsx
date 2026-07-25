@@ -33,7 +33,7 @@ export function HomeHeader() {
       icon: FileText,
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
-      count: '55+',
+      count: '55',
       link: '/all-tools/pdf',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
@@ -44,7 +44,7 @@ export function HomeHeader() {
       icon: ImageIcon,
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
-      count: '79',
+      count: '100+',
       link: '/all-tools/image-tools',
       glowColor: 'group-hover:shadow-orange-500/20'
     },
@@ -55,7 +55,7 @@ export function HomeHeader() {
       icon: Video,
       color: 'from-pink-500 via-pink-600 to-pink-700',
       bgColor: 'bg-pink-50',
-      count: '58',
+      count: '50+',
       link: '/all-tools/video-tools',
       glowColor: 'group-hover:shadow-pink-500/20'
     },
@@ -66,7 +66,7 @@ export function HomeHeader() {
       icon: PenTool,
       color: 'from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-50',
-      count: '60+',
+      count: '40+',
       link: '/all-tools/ai-tools',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
@@ -122,13 +122,13 @@ export function HomeHeader() {
       color: 'from-blue-500 via-cyan-600 to-teal-700',
       bgColor: 'bg-blue-50',
       count: '1',
-      link: '/all-tools/resume-maker/job-match',
+      link: '/all-tools/resume-maker',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
     {
       id: 'downloader',
       title: 'Save From Online',
-      description: 'Download any file from any URL - videos, images, PDFs, and more',
+      description: 'Download supported media and files from compatible URLs',
       icon: Download,
       color: 'from-green-500 via-emerald-600 to-green-700',
       bgColor: 'bg-green-50',
@@ -398,7 +398,7 @@ export function HomeHeader() {
               <Link href="/all-tools/financial-calculators" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Financial Calculators
               </Link>
-              <Link href="/all-tools/resume-maker/job-match" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link href="/all-tools/resume-maker" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Resume Maker
               </Link>
 
@@ -446,5 +446,4 @@ export function HomeHeader() {
     </>
   );
 }
-
 

@@ -135,7 +135,7 @@ export function generateOrganizationSchema() {
     '@type': 'Organization',
     name: 'SimplifyConvert',
     url: 'https://simplifyconvert.com',
-    logo: 'https://simplifyconvert.com/logo.png',
+    logo: 'https://simplifyconvert.com/favicon.png',
     description: '200+ free online tools for image editing, video conversion, AI writing, PDF manipulation, and data transformation.',
     sameAs: [
       'https://twitter.com/simplifyconvert',

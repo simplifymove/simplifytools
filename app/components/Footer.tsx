@@ -23,6 +23,7 @@ export function Footer() {
     ],
     Company: [
       { label: 'About Us', href: '/about' },
+      { label: 'SimplifyConvert Blog', href: '/blog' },
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
       { label: 'Contact Us', href: '/contact' },
@@ -139,5 +140,4 @@ export function Footer() {
     </footer>
   );
 }
-
 

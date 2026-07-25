@@ -50,9 +50,9 @@ export function BlogArticle({
       name: 'SimplifyConvert',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://simplifyconvert.com/logo.png',
-        width: 250,
-        height: 60,
+        url: 'https://simplifyconvert.com/favicon.png',
+        width: 96,
+        height: 96,
       },
     },
   };

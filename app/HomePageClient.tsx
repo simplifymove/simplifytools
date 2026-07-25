@@ -36,7 +36,7 @@ export default function Home() {
       icon: FileText,
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
-      count: '54+',
+      count: '55',
       link: '/all-tools/pdf-tools',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
@@ -47,7 +47,7 @@ export default function Home() {
       icon: Image,
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
-      count: '80+',
+      count: '100+',
       link: '/all-tools/image-tools',
       glowColor: 'group-hover:shadow-orange-500/20'
     },
@@ -58,7 +58,7 @@ export default function Home() {
       icon: Video,
       color: 'from-pink-500 via-pink-600 to-pink-700',
       bgColor: 'bg-pink-50',
-      count: '58+',
+      count: '50+',
       link: '/all-tools/video-tools',
       glowColor: 'group-hover:shadow-pink-500/20'
     },
@@ -69,7 +69,7 @@ export default function Home() {
       icon: PenTool,
       color: 'from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-50',
-      count: '60+',
+      count: '40+',
       link: '/all-tools/ai-tools',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
@@ -117,7 +117,7 @@ export default function Home() {
     {
       icon: Lock,
       title: 'Privacy First',
-      description: 'Your files are secure. We never store or share your data'
+      description: 'Some tools process files in your browser, while others use temporary server processing'
     },
     {
       icon: Smartphone,
@@ -131,13 +131,13 @@ export default function Home() {
     },
     {
       icon: BarChart3,
-      title: '200+ Tools',
-      description: 'Complete solution for all your conversion needs'
+      title: '200+ Utility Tools',
+      description: 'A broad collection for common conversion and editing tasks'
     },
     {
       icon: Sparkles,
-      title: 'Always Free',
-      description: 'All tools are completely free forever'
+      title: 'Free Utility Tools',
+      description: 'Utility tools are free to use; Premium AI Studio is a separate credit-based service'
     }
   ];
 
@@ -145,8 +145,8 @@ export default function Home() {
 
   const homepageFaqs = [
     {
-      question: "Are all SimplifyConvert tools really free?",
-      answer: "Yes! All 200+ free online tools at SimplifyConvert are completely free forever. No hidden costs, premium tiers, or surprise fees. You can use any tool unlimited times without signup or payment."
+      question: "Which SimplifyConvert tools are free?",
+      answer: "Our 200+ utility tools are free to use. Premium AI Studio is separate and uses purchased credits."
     },
     {
       question: "Do I need to install software to use these free online tools?",
@@ -154,11 +154,11 @@ export default function Home() {
     },
     {
       question: "Is my data safe when using SimplifyConvert free online tools?",
-      answer: "Yes, your privacy is our top priority. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption and follow strict data protection standards."
+      answer: "Connections use HTTPS. Some tools process files in your browser, while others temporarily send files to our servers for processing. See our Privacy Policy for details."
     },
     {
       question: "Do I need to create an account to use the free online tools?",
-      answer: "No signup required! You can start using any of our 200+ free online tools immediately without creating an account, providing an email, or any registration."
+      answer: "Most free utility tools can be used without an account. Premium AI Studio requires an eligible account and credits."
     },
     {
       question: "Which free online tools are most popular?",
@@ -367,7 +367,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                Free online tools for PDF, Image, Video, AI writing, and more. No signup required.
+                Explore 200+ free utility tools for PDFs, images, video, AI writing, and more. Premium AI Studio is available separately.
               </motion.p>
 
               {/* Search Bar with Suggestions */}
@@ -416,7 +416,7 @@ export default function Home() {
                 {[
                   { label: '200', suffix: '+', value: 'Tools' },
                   { label: '7', suffix: '', value: 'Categories' },
-                  { label: '100', suffix: '%', value: 'Free' }
+                  { label: 'Free', suffix: '', value: 'Utility Tools' }
                 ].map((stat) => (
                   <motion.div key={stat.value} className="rounded-2xl border border-gray-200 bg-white p-4 text-center shadow-sm group" variants={itemVariants}>
                     <div className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -642,6 +642,105 @@ export default function Home() {
         </div>
       </section>
 
+      {/* PREMIUM AI STUDIO SECTION */}
+      <section className="border-y border-orange-100 bg-orange-50/40 py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="max-w-3xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-orange-700">
+                <Sparkles size={14} />
+                Premium · Credit-based
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+                Create with Premium AI Studio
+              </h2>
+              <p className="mt-3 text-base leading-relaxed text-gray-600 md:text-lg">
+                Turn an idea into an editable presentation, structured document, or organized spreadsheet.
+                AI Studio uses purchased credits and is separate from SimplifyConvert&apos;s free utility tools.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/ai-studio"
+                className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+              >
+                Explore AI Studio
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                href="/ai-studio/pricing"
+                className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-orange-300 hover:text-orange-600"
+              >
+                View credit pricing
+              </Link>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 gap-5 md:grid-cols-3"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {[
+              {
+                title: 'AI Presentation Maker',
+                description: 'Build a presentation outline with slide content and visual direction, then export an editable PPTX.',
+                href: '/ai-studio/presentation-maker',
+                icon: Sparkles,
+              },
+              {
+                title: 'AI Document Maker',
+                description: 'Create structured reports, proposals, plans, letters, and other documents from a prompt.',
+                href: '/ai-studio/document-maker',
+                icon: FileText,
+              },
+              {
+                title: 'AI Spreadsheet Maker',
+                description: 'Generate organized tables for budgets, trackers, reports, and planning tasks, ready to review and export.',
+                href: '/ai-studio/spreadsheet-maker',
+                icon: BarChart3,
+              },
+            ].map((tool) => {
+              const Icon = tool.icon;
+
+              return (
+                <motion.div key={tool.href} variants={itemVariants}>
+                  <Link href={tool.href}>
+                    <motion.div
+                      className="group flex h-full min-h-[210px] flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-orange-200 hover:shadow-md"
+                      whileHover={{ y: -6 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="mb-5 inline-flex w-fit rounded-xl bg-orange-100 p-3 text-orange-600 transition group-hover:bg-orange-200">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <h3 className="mb-2 text-lg font-bold text-gray-900 transition group-hover:text-orange-600">
+                        {tool.title}
+                      </h3>
+                      <p className="mb-5 flex-1 text-sm leading-relaxed text-gray-600">
+                        {tool.description}
+                      </p>
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-orange-600">
+                        Open {tool.title}
+                        <ArrowRight size={16} />
+                      </span>
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </section>
+
       {/* HOW IT WORKS SECTION */}
       <section className="py-16 md:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -752,7 +851,7 @@ export default function Home() {
               Popular Tools
             </h2>
             <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Get started with the most-used tools that thousands of users love
+              Get started with popular tools for common conversion and editing tasks
             </p>
           </motion.div>
 
@@ -850,7 +949,7 @@ export default function Home() {
               Why Choose SimplifyConvert?
             </h2>
             <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Trusted by users for fast, secure file conversion and editing
+              Built for fast, straightforward file conversion and editing
             </p>
           </motion.div>
 
@@ -910,7 +1009,7 @@ export default function Home() {
             
             <div className="space-y-6 text-gray-700 leading-relaxed">
               <p>
-                <strong>SimplifyConvert</strong> is a comprehensive platform offering <strong>200+ free online tools</strong> for file conversion, image editing, video processing, PDF manipulation, and AI-powered content creation. Our free online tools eliminate the need for expensive software installations, subscriptions, or technical expertise. Whether you need to convert images, compress videos, merge PDFs, or generate AI content, SimplifyConvert provides instant solutions directly in your browser.
+                <strong>SimplifyConvert</strong> offers <strong>200+ free utility tools</strong> for file conversion, image editing, video processing, PDF tasks, and AI-assisted writing. These utility tools work online without software installation. Premium AI Studio is a separate credit-based product for creating presentations, documents, and spreadsheets.
               </p>
 
               <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
@@ -918,13 +1017,13 @@ export default function Home() {
               </h3>
               
               <p>
-                Users worldwide trust SimplifyConvert because our free online conversion tools are:
+                Our free online conversion tools are designed to be:
               </p>
 
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
-                  <span><strong>Completely Free:</strong> All 200+ tools are permanently free with no hidden costs, premium tiers, or surprise fees</span>
+                  <span><strong>Free Utility Tools:</strong> Our 200+ utility tools are free to use. Premium AI Studio is a separate credit-based service</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
@@ -936,7 +1035,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
-                  <span><strong>Privacy Focused:</strong> Files are processed securely and automatically deleted after processing. We do not store your files</span>
+                  <span><strong>Privacy Focused:</strong> Some tools process files locally in your browser, while others temporarily process files on our servers</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
@@ -976,7 +1075,7 @@ export default function Home() {
               </p>
 
               <p>
-                With 200+ free online tools covering every conversion need, SimplifyConvert is your one-stop platform for all file transformation tasks. Start using our free online conversion tools today—no signup, no credit card, completely free forever.
+                With 200+ free utility tools covering common file tasks, SimplifyConvert brings conversion and editing tools together in one place. Premium AI Studio is available separately for credit-based creation.
               </p>
             </div>
           </motion.div>
