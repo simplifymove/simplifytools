@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getToolById } from '@/app/lib/ai-tools';
+import { getAiToolFaqs } from '@/app/lib/ai-tool-faqs';
 
 interface Params {
   slug: string;
@@ -42,33 +43,6 @@ function resolveToolId(slug: string): string {
   // Not found
   return '';
 }
-
-const faqItems = [
-  {
-    q: 'Is the content 100% original?',
-    a: 'AI tools generate variations of existing content patterns. Always review and customize the output. Original thought and editing are essential to create unique content.',
-  },
-  {
-    q: 'Can I use the output directly without editing?',
-    a: 'We recommend reviewing and editing all AI-generated content. Add your own perspective, verify facts, and customize to your voice and brand.',
-  },
-  {
-    q: 'Does AI detection flag this content?',
-    a: 'Content created with our tools may be detected by AI detection services. Mix human and AI writing, add original insights, and edit heavily to reduce detectability.',
-  },
-  {
-    q: 'Is my content private?',
-    a: 'Content processed on our platform is handled securely. Always follow your organization\'s policies regarding sensitive data and AI tool usage.',
-  },
-  {
-    q: 'Can I use this for commercial purposes?',
-    a: 'Yes, but review our terms of service. Content must not violate copyright or contain harmful material.',
-  },
-  {
-    q: 'How do I get the best results?',
-    a: 'Provide detailed context, specific requirements, and clear examples. Better inputs lead to more useful AI suggestions that require less editing.',
-  },
-];
 
 // Comprehensive SEO metadata database for AI writing tools
 const toolSEODatabase: Record<string, {
@@ -334,6 +308,7 @@ async function AiToolsSlugLayoutContent({
   const baseUrl = 'https://simplifyconvert.com';
   const canonicalUrl = `${baseUrl}/all-tools/ai-tools/${toolId}`;
   const seoData = getSeoData(toolId, tool);
+  const faqItems = getAiToolFaqs(toolId);
 
   const softwareApplicationSchema = {
     '@context': 'https://schema.org',

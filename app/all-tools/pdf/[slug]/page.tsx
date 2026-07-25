@@ -319,8 +319,8 @@ export default function PdfToolPage({ params }: PageProps) {
                   <div className="flex items-start gap-3">
                     <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-green-700 mb-1">Your PDF is processed securely and automatically removed after processing</p>
-                      <p className="text-xs text-gray-600">No account needed • Files never stored • Encrypted transmission</p>
+                      <p className="text-sm font-semibold text-green-700 mb-1">Your PDF is sent to our server for processing</p>
+                      <p className="text-xs text-gray-600">No account needed • Temporary processing • HTTPS connection</p>
                     </div>
                   </div>
                 </div>
@@ -603,7 +603,7 @@ export default function PdfToolPage({ params }: PageProps) {
             Secure & Private
           </h3>
           <p className="text-sm text-gray-600">
-            Files are processed securely. Files are automatically removed after processing.
+            Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.
           </p>
         </div>
 
@@ -651,7 +651,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   {
                     step: '4',
                     title: 'Secure & Private',
-                    description: 'Your PDF is processed securely using encrypted connections and automatically removed after processing.'
+                    description: 'Your PDF is sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((item, idx) => (
                   <motion.div
@@ -688,7 +688,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Secure Processing',
-                    description: 'Your files are encrypted during transfer and automatically deleted after processing.'
+                    description: 'Files are sent over an HTTPS connection for processing. Generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     title: 'No Installation',
@@ -700,7 +700,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your privacy is protected with secure, encrypted processing.'
+                    description: 'Files are sent to our server for processing. Avoid uploading sensitive or confidential documents.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -769,7 +769,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my information kept confidential?',
-                    a: 'Yes. Your files are processed using secure, encrypted connections and automatically removed after processing. We do not permanently store your documents or passwords. Your privacy is protected throughout the process.'
+                    a: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents or passwords.'
                   }
                 ].map((faq, idx) => (
                   <motion.details
@@ -875,7 +875,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my information kept confidential?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes. Your files are processed using secure, encrypted connections and automatically removed after processing. We do not permanently store your documents or passwords. Your privacy is protected throughout the process.'
+                    text: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents or passwords.'
                   }
                 }
               ]
@@ -965,7 +965,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your documents are protected with secure, encrypted processing.'
+                    description: 'Files are sent to our server for processing. Avoid uploading sensitive or confidential documents.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -1034,7 +1034,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my information kept confidential?',
-                    a: 'Yes. Your files are processed using secure, encrypted connections and automatically removed after processing. We do not permanently store your documents. Your privacy is protected throughout the process.'
+                    a: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
                   <motion.details
@@ -1138,7 +1138,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my information kept confidential?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes. Your files are processed using secure, encrypted connections and automatically removed after processing. We do not permanently store your documents. Your privacy is protected throughout the process.'
+                    text: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 }
               ]
@@ -1242,7 +1242,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your PDFs are processed securely and automatically deleted after conversion.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -1324,7 +1324,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my PDF file secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 ].map((faq, idx) => (
                   <motion.details
@@ -1451,7 +1451,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my PDF file secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 }
               ]
@@ -1555,7 +1555,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your PDFs are processed securely and automatically deleted after conversion.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -1772,7 +1772,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my PDF file secure and private?',
-                    a: 'Yes. Your PDF is processed using secure, encrypted connections and automatically deleted from our servers immediately after conversion. We never store your files permanently or share them with anyone. Your privacy is completely protected.'
+                    a: 'Your PDF is sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
                   <motion.details
@@ -1842,7 +1842,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my PDF file secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 }
               ]
@@ -1946,7 +1946,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your PDFs are processed securely and automatically deleted after conversion.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -2171,7 +2171,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my PDF file secure when converting to TIFF?',
-                    a: 'Yes. Your PDF is processed using secure, encrypted connections and automatically deleted from our servers immediately after conversion. We never store your files permanently or share them with anyone. Your privacy and document security are completely protected.'
+                    a: 'Your PDF is sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
                   <motion.details
@@ -2241,7 +2241,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my PDF file secure when converting to TIFF?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 }
               ]
@@ -2255,7 +2255,7 @@ export default function PdfToolPage({ params }: PageProps) {
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Whether you're scanning documents, organizing photos, or preparing images for professional use, combining multiple JPG and PNG files into a single PDF is essential. Our free converter streamlines this process, allowing you to merge unlimited images while maintaining quality control.
+                Whether you're scanning documents, organizing photos, or preparing images for professional use, combining multiple JPG and PNG files into a single PDF is essential. Our free converter streamlines this process, allowing you to merge multiple images while maintaining quality control.
               </p>
               
               {/* Quick Benefits */}
@@ -2347,7 +2347,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'Files are processed securely and automatically deleted after processing.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -2537,7 +2537,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my image data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     q: 'Can I reorder images before converting to PDF?',
@@ -2603,7 +2603,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my image data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 },
                 {
@@ -2716,7 +2716,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'Files are processed securely and automatically deleted after processing.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -2813,7 +2813,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my PNG data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     q: 'Can I reorder PNG images before converting to PDF?',
@@ -2879,7 +2879,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my PNG data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 },
                 {
@@ -3001,7 +3001,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'Files are processed securely and automatically deleted after processing.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -3169,7 +3169,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my TIFF data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     q: 'Can I reorder TIFF images before converting to PDF?',
@@ -3235,7 +3235,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my TIFF data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 },
                 {
@@ -3314,7 +3314,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   { icon: '📦', title: 'Compression Control', description: 'Choose compression levels 0–9 to balance file size and image quality perfectly.' },
                   { icon: '⚡', title: 'No Installation', description: 'Our online converter requires no software downloads or installations on your computer.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most GIF to PDF conversions complete in seconds, even with multiple large files.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after processing. We do not store your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -3445,7 +3445,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my GIF data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing. We never permanently store your files on our servers, ensuring your privacy and data security throughout the conversion.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   },
                   {
                     q: 'Can I reorder GIF images before converting to PDF?',
@@ -3510,7 +3510,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my GIF data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We never permanently store your files on our servers, ensuring your privacy and data security throughout the conversion.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 },
                 {
@@ -3589,7 +3589,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   { icon: '📦', title: 'Compression Control', description: 'Choose compression levels 0–9 to balance file size and image quality perfectly.' },
                   { icon: '⚡', title: 'No Installation', description: 'Our online converter requires no software downloads or installations on your computer.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most HEIC to PDF conversions complete in seconds, even with multiple large files.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after processing. We do not store your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -3720,7 +3720,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my HEIC data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing. We do not store your files. Your HEIC photos remain completely private throughout the conversion process.'
+                    a: 'HEIC files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive photos.'
                   },
                   {
                     q: 'Can I reorder HEIC images before converting to PDF?',
@@ -3785,7 +3785,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my HEIC data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files. Your HEIC photos remain completely private throughout the conversion process.'
+                    text: 'HEIC files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive photos.'
                   }
                 },
                 {
@@ -3889,7 +3889,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   { icon: '📦', title: 'Compression Control', description: 'Choose compression levels 0–9 to balance file size and vector quality perfectly.' },
                   { icon: '⚡', title: 'No Installation', description: 'Our online converter requires no software downloads or installations on your computer.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most EPS to PDF conversions complete in seconds, even with multiple large vector files.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after processing. We do not store your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -4016,7 +4016,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my EPS data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing. We do not store your files. Your EPS designs and vector graphics remain completely private throughout the conversion process.'
+                    a: 'EPS files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive designs.'
                   },
                   {
                     q: 'Can designers edit the converted PDF?',
@@ -4077,7 +4077,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my EPS data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files. Your EPS designs and vector graphics remain completely private throughout the conversion process.'
+                    text: 'EPS files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive designs.'
                   }
                 },
                 {
@@ -4121,7 +4121,7 @@ export default function PdfToolPage({ params }: PageProps) {
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Converting images to PDF is one of the most practical tasks for document creation and sharing. Whether you have JPG photos, PNG screenshots, GIF animations, WEBP images, TIFF documents, or HEIC files from your iPhone, our free batch image-to-PDF converter makes it simple to merge multiple images into a single, professional PDF document. Convert photos to PDF, combine pictures into a single document, or create scanned documents from images instantly. Create PDFs from images without downloading software or signing up for an account. Perfect for creating photo albums, scanned documents, digital presentations, and more. Our converter supports all major image formats and lets you adjust compression levels to balance file size with quality. Merge unlimited images and convert with just a few clicks.
+                Converting images to PDF is one of the most practical tasks for document creation and sharing. Whether you have JPG photos, PNG screenshots, GIF animations, WEBP images, TIFF documents, or HEIC files from your iPhone, our free batch image-to-PDF converter makes it simple to merge multiple images into a single, professional PDF document. Convert photos to PDF, combine pictures into a single document, or create scanned documents from images instantly. Create PDFs from images without downloading software or signing up for an account. Perfect for creating photo albums, scanned documents, digital presentations, and more. Our converter supports all major image formats and lets you adjust compression levels to balance file size with quality. Merge multiple images and convert with just a few clicks.
               </p>
               
               {/* Quick Benefits */}
@@ -4189,12 +4189,12 @@ export default function PdfToolPage({ params }: PageProps) {
               <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Choose Our Image to PDF Converter?</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
-                  { icon: '✓', title: 'Completely Free', description: 'No hidden fees, watermarks, or premium tiers. Convert unlimited images to PDF without paying a dime.' },
+                  { icon: '✓', title: 'Free to Use', description: 'No subscription or credit card is required. File-count and size limits may apply.' },
                   { icon: '🔄', title: 'Batch Merge Images', description: 'Combine multiple images in one operation. Create multi-page PDFs from JPG, PNG, GIF, WEBP, TIFF, and HEIC files simultaneously.' },
                   { icon: '📦', title: 'Compression Control', description: 'Choose compression levels 0–9 to balance PDF file size and image quality based on your specific needs.' },
                   { icon: '⚡', title: 'No Installation', description: 'Works entirely online in your browser. No software downloads, installations, or system requirements needed.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most image-to-PDF conversions complete in seconds, even with multiple large images or batch operations.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after conversion. We do not store or access your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -4366,7 +4366,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my data secure when converting images to PDF?',
-                    a: 'Yes. All files are processed securely in the cloud and automatically deleted after conversion. We never store your files or access them after processing is complete.'
+                    a: 'Images are sent to our server for processing. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive images.'
                   },
                   {
                     q: 'Can I convert HEIC photos from my iPhone to PDF?',
@@ -4427,7 +4427,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my data secure when converting images to PDF?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes. All files are processed securely in the cloud and automatically deleted after conversion. We never store your files or access them after processing is complete.'
+                    text: 'Images are sent to our server for processing. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive images.'
                   }
                 },
                 {
@@ -4471,7 +4471,7 @@ export default function PdfToolPage({ params }: PageProps) {
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Converting PDF to Word is one of the most practical tasks for document editing and repurposing. Whether you have scanned documents, generated PDFs, or other text files, our free PDF to Word converter makes it simple to extract text and convert it into editable Microsoft Word documents. Convert PDF to editable Word documents (DOCX) instantly. Use this free PDF to Word converter online without email or registration. Convert PDFs to DOCX format without installing software or signing up for an account. Perfect for editing documents, reusing content, extracting data from PDFs, and more. Our converter preserves formatting and structure to ensure your documents remain professional and properly formatted. Convert unlimited PDFs with just a few clicks.
+                Converting PDF to Word is one of the most practical tasks for document editing and repurposing. Whether you have scanned documents, generated PDFs, or other text files, our free PDF to Word converter makes it simple to extract text and convert it into editable Microsoft Word documents. Convert PDF to editable Word documents (DOCX) instantly. Use this free PDF to Word converter online without email or registration. Convert PDFs to DOCX format without installing software or signing up for an account. Perfect for editing documents, reusing content, extracting data from PDFs, and more. Our converter preserves formatting and structure to ensure your documents remain professional and properly formatted. Convert PDFs with just a few clicks.
               </p>
               
               {/* Quick Benefits */}
@@ -4571,12 +4571,12 @@ export default function PdfToolPage({ params }: PageProps) {
               <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Choose Our PDF to Word Converter?</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
-                  { icon: '✓', title: 'Completely Free', description: 'No hidden fees, watermarks, or premium tiers. Convert unlimited PDFs to Word documents without paying a dime.' },
+                  { icon: '✓', title: 'Free to Use', description: 'No subscription or credit card is required. File-count and size limits may apply.' },
                   { icon: '🔄', title: 'Batch Convert', description: 'Convert multiple PDFs to Word in succession. Process numerous documents without size limitations or conversion count restrictions.' },
                   { icon: '📄', title: 'Preserve Formatting', description: 'Our converter maintains text layout, font sizes, and document structure. Your Word files are properly formatted and ready to edit.' },
                   { icon: '⚡', title: 'No Installation', description: 'Works entirely online in your browser. No software downloads, installations, or system requirements needed. Start converting immediately.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most PDF-to-Word conversions complete in seconds, even with large files. Get your editable Word document instantly.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after conversion. We do not store or access your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -4955,7 +4955,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 },
                 {
                   question: 'Is my data safe when merging PDFs online?',
-                  answer: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. Files are automatically removed after processing.'
+                  answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                 }
               ]}
               bgColor="white"
@@ -4970,12 +4970,12 @@ export default function PdfToolPage({ params }: PageProps) {
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
-              <h1 className="text-4xl font-bold text-gray-900 mb-6">Free Online PDF Splitter - Extract & Split PDF Pages</h1>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">Free Online PDF Splitter - Extract & Split PDF Pages</h2>
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Split PDF files instantly with our free online PDF splitter. Extract specific pages, remove unwanted pages, or separate large PDF documents into smaller files. No installation required—just upload, select the pages you want, and download. Our tool preserves PDF quality while splitting, making it perfect for organizing documents, sharing specific pages, or creating custom PDF compilations.
               </p>
               <p className="text-base text-gray-600 mb-4">
-                Whether you need to extract a single page from a 200-page document or separate different sections into individual files, our PDF splitter handles all scenarios with ease. All processing happens securely in your browser, and files are automatically deleted after conversion.
+                Whether you need to extract a single page from a 200-page document or separate different sections into individual files, our PDF splitter handles all scenarios with ease. Files are sent to our server for processing, temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.
               </p>
             </div>
 
@@ -5164,7 +5164,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 },
                 {
                   question: 'Are my PDFs safe when using this splitter?',
-                  answer: 'Absolutely! All files are processed using secure SSL encryption and are automatically deleted from our servers immediately after splitting. Files are automatically removed after processing. All processing happens securely in your browser.'
+                  answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                 }
               ]}
               bgColor="white"
@@ -5272,7 +5272,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'Files are processed securely and automatically deleted after processing.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -5432,7 +5432,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my WebP data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     q: 'Can I reorder WebP images before converting to PDF?',
@@ -5498,7 +5498,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my WebP data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 },
                 {
@@ -5519,7 +5519,7 @@ export default function PdfToolPage({ params }: PageProps) {
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section - Primary keyword in first 100 words */}
             <div className="mb-16">
-              <h1 className="text-4xl font-bold text-gray-900 mb-6">Rotate PDF Pages Online - Free PDF Rotation Tool</h1>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">Rotate PDF Pages Online - Free PDF Rotation Tool</h2>
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Need to rotate PDF pages? Our free online PDF rotation tool lets you rotate any PDF by 90°, 180°, or 270° in seconds. Rotate PDF pages while preserving quality, no signup required, and supports files up to 100MB. Whether you need to fix scanned document orientation or rotate individual pages, our PDF page rotator handles it all instantly.
               </p>
@@ -5602,7 +5602,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Fast & Secure',
-                    description: 'Rotations complete in seconds. Files are automatically deleted after processing. Your PDFs stay private and secure.'
+                    description: 'Rotations are processed on our server. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly.'
                   },
                   {
                     title: 'Completely Free',
@@ -5690,7 +5690,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     question: 'Is rotating a PDF secure and private?',
-                    answer: 'Files are processed securely and automatically deleted after processing.'
+                    answer: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 ]}
                 bgColor="white"
@@ -5783,7 +5783,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 { question: 'Does PDF cropping lose image quality?', answer: 'No, PDF cropping does not lose image quality because it is a lossless editing process. Unlike compression or re-encoding, cropping simply removes the areas you don\'t need without modifying or re-compressing the remaining content. Your PDF quality is preserved as much as possible throughout the cropping process. The text, images, and formatting in the cropped area remain intact and unchanged. No quality loss, compression artifacts, or degradation occurs—we are simply extracting the portions of the document you want to keep.' },
                 { question: 'Can I adjust crop areas manually?', answer: 'Yes, you can adjust crop areas manually with complete precision! Our visual PDF crop editor displays your pages and lets you select crop areas by dragging and adjusting borders directly on the preview. You can click and drag to define exact crop boundaries, resize the crop box as needed, and see real-time previews of your changes. This gives you full control over which parts of each page to keep and which areas to remove.' },
                 { question: 'What if I make a mistake while cropping?', answer: 'No problem! If you make a mistake or are unhappy with your crop, simply re-upload your original PDF file and crop it again. Your original file remains completely untouched and safe—we never modify your uploaded files. You can crop the same PDF multiple times until you get the exact result you want, trying different crop areas each time. This risk-free approach means you can experiment and refine your cropping without any consequences.' },
-                { question: 'Is my PDF data secure when cropping?', answer: 'Yes, your PDF data is completely secure when you crop with our tool. Files are automatically deleted and permanently removed from our servers immediately after processing, ensuring your documents never remain in our system. We use secure, encrypted connections for all file transfers and processing. Your PDFs are processed securely on our servers and are never stored, accessed, or shared with anyone. We prioritize your privacy and data security throughout the entire cropping process.' }
+                { question: 'Is my PDF data secure when cropping?', answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
@@ -5855,7 +5855,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 { question: 'Does deleting pages reduce file size?', answer: 'Yes, absolutely! Removing pages significantly reduces your PDF file size. Fewer pages mean a much smaller file, making it easier to email, upload, and share with others. This is especially helpful for large documents where size matters. File size reduction also speeds up download and upload times, and makes storage more efficient.' },
                 { question: 'Can I see which pages I\'m deleting before confirming?', answer: 'Yes, you can review your deletion selections before processing. Enter the specific page numbers or ranges you want to delete (such as pages 1-5 or pages 2, 8, 15), and review them carefully to ensure accuracy. Take your time to double-check your selections before clicking the delete button to process your PDF.' },
                 { question: 'Does page deletion affect PDF quality?', answer: 'No, deleting pages is a lossless operation that doesn\'t degrade quality. Remaining pages preserve their original formatting, text, images, and all content as much as possible. Since we\'re only removing pages rather than recompressing the PDF, the quality of the remaining pages stays intact. Your document will look exactly the same, just with fewer pages.' },
-                { question: 'Is my PDF secure when deleting pages?', answer: 'Yes, your PDF is completely secure. All files are processed using encrypted, secure connections. Files are automatically removed after processing. We don\'t store your data, keep backups, or share information with third parties. Your privacy is protected throughout the entire process.' }
+                { question: 'Is my PDF secure when deleting pages?', answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
@@ -5894,7 +5894,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <div className="grid md:grid-cols-2 gap-6">
                 {[
                   { title: 'Universal Compatibility', description: 'PDFs work everywhere—all devices, all browsers, all operating systems without compatibility issues.' },
-                  { title: 'Merge Multiple Images', description: 'Combine unlimited images from different formats into one organized, professional PDF document.' },
+                  { title: 'Merge Multiple Images', description: 'Combine multiple images from different formats into one organized PDF document. File-count and size limits may apply.' },
                   { title: 'Preserve Quality', description: 'High-quality conversion maintains clarity and detail. Choose compression levels (0-9) for your needs.' },
                   { title: 'Reduce File Sizes', description: 'PDF compression options create smaller files perfect for emailing, sharing, and cloud storage.' },
                   { title: 'Professional Appearance', description: 'Create polished documents from photos, scans, or images with consistent formatting and layout.' },
@@ -5927,7 +5927,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 { question: 'How do I control PDF file size?', answer: 'You can adjust the compression level to control file size and quality balance. Note that the exact compression options may vary, but our tool optimizes file sizes automatically. For most uses, the default settings provide an excellent balance between reducing file size for easy sharing while maintaining good image clarity and detail.' },
                 { question: 'Does conversion reduce image quality?', answer: 'Our converter preserves image quality as much as possible during the conversion process. The final quality depends on your source images and settings. We use optimized conversion methods to maintain clarity and detail while creating professional PDF documents. For best results, start with high-quality source images.' },
                 { question: 'Can I reorder images before converting?', answer: 'Yes! When uploading multiple images, you can arrange them in your preferred order before conversion. Upload images in the sequence you want them to appear in the final PDF. This controls the page order in your document, making it easy to organize scanned pages, photo collections, or mixed document batches exactly as you need them.' },
-                { question: 'Is my image data kept private?', answer: 'Your privacy is our priority. Files are processed securely using encrypted connections and are automatically deleted from our servers after processing completes. We do not store, share, or use your images for any other purpose. Your data remains private throughout the entire conversion process, and you have complete control over your files.' }
+                { question: 'Is my image data kept private?', answer: 'Images are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive images.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
@@ -5999,7 +5999,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 { question: 'Can I change the password after protection?', answer: 'Yes, you can change passwords by downloading your protected PDF and re-uploading it to our tool to apply a new password. Alternatively, you can share your current password with trusted recipients and later communicate a new password if needed. Keep password records in a secure location for future reference.' },
                 { question: 'What if someone forgets the password?', answer: 'Passwords cannot be recovered or reset once set. Make sure to keep your password stored securely in a password manager or safe location. If the password is lost, you\'ll need the original unprotected PDF file to create a new protected version with a different password. Always maintain backups of unprotected files.' },
                 { question: 'Can recipients print protected PDFs?', answer: 'Password-protected PDFs can typically still be printed by anyone who has the password to open the file. The primary function of password protection is to control who can access the document. For more granular control over printing, editing, or copying specific features, check if your PDF reader offers additional security options.' },
-                { question: 'Is password protection secure and private?', answer: 'Yes, our tool processes your files securely using encrypted connections. Your files are automatically deleted from our servers immediately after protection is applied—we don\'t store or keep copies of your documents or passwords. Your data remains completely private and is never used for any other purpose.' }
+                { question: 'Is password protection secure and private?', answer: 'PDFs and protection settings are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid reusing sensitive passwords.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>

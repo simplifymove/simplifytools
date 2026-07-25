@@ -391,11 +391,18 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
-export default function VideoSlugLayout({
+export default async function VideoSlugLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<Params>;
 }) {
+  const { slug } = await params;
+  const tool = getToolById(slug);
+  const baseUrl = 'https://simplifyconvert.com';
+  const canonicalUrl = `${baseUrl}/all-tools/video/${slug}`;
+
   return (
     <>
       {children}
@@ -412,7 +419,7 @@ export default function VideoSlugLayout({
                 name: 'Is this tool really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes, this tool is completely free with no hidden charges or subscription fees.'
+                  text: 'This tool can be used without a subscription or credit card. Processing limits can vary by tool, file type, and file size.'
                 }
               },
               {
@@ -420,7 +427,7 @@ export default function VideoSlugLayout({
                 name: 'Do you store my files?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'No, we do not store your files. All processing is done securely and files are immediately deleted.'
+                  text: 'Files are uploaded to our server when processing is required and may remain temporarily while the request and download are handled. Avoid uploading sensitive or confidential content.'
                 }
               },
               {
@@ -468,6 +475,12 @@ export default function VideoSlugLayout({
                 position: 3,
                 name: 'Video Tools',
                 item: 'https://simplifyconvert.com/all-tools/video-tools'
+              },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: tool?.title || 'Video Tool',
+                item: canonicalUrl
               }
             ]
           })

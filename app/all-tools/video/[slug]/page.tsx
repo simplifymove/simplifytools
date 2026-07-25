@@ -501,7 +501,7 @@ export default function VideoToolPage({ params }: PageProps) {
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">About this tool</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Process your video files with advanced compression and conversion capabilities. All operations are performed instantly and securely, without storing your files.
+                Process video and audio files with the options available for this tool. Files are uploaded to our server when processing is required, so avoid uploading sensitive content.
               </p>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 text-gray-700">
@@ -635,8 +635,8 @@ export default function VideoToolPage({ params }: PageProps) {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Completely Free</h3>
-                  <p className="text-gray-700 text-sm">No hidden charges, no premium tiers, no credit card required. Use unlimited conversions forever.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">Free to Use</h3>
+                  <p className="text-gray-700 text-sm">No subscription or credit card is required. Processing limits can vary by tool, file type, and file size.</p>
                 </div>
               </div>
               
@@ -672,7 +672,7 @@ export default function VideoToolPage({ params }: PageProps) {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Secure & Private</h3>
-                  <p className="text-gray-700 text-sm">Your files are processed securely with HTTPS encryption. Files are never stored on our servers.</p>
+                  <p className="text-gray-700 text-sm">Files are uploaded to our server for processing over an HTTPS connection. Avoid uploading sensitive or confidential content.</p>
                 </div>
               </div>
             </div>
@@ -688,7 +688,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   Is this tool really free?
                   <span className="text-pink-600">+</span>
                 </summary>
-                <p className="text-gray-700 mt-3 text-sm">Yes, {tool.title} is completely free. There are no hidden charges, subscription fees, or premium tiers. You can process unlimited files at no cost.</p>
+                <p className="text-gray-700 mt-3 text-sm">You can use {tool.title} without a subscription or credit card. Processing limits can vary by tool, file type, and file size.</p>
               </details>
               
               <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
@@ -696,7 +696,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   Do you store my files?
                   <span className="text-pink-600">+</span>
                 </summary>
-                <p className="text-gray-700 mt-3 text-sm">No, we don't store your files. All processing happens securely in your browser or our servers with immediate deletion after processing.</p>
+                <p className="text-gray-700 mt-3 text-sm">Files are uploaded to our server when processing is required and may remain temporarily while the request and download are handled. Avoid uploading sensitive or confidential content.</p>
               </details>
               
               <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
@@ -756,7 +756,7 @@ export default function VideoToolPage({ params }: PageProps) {
               {
                 icon: Shield,
                 title: 'Secure & Private',
-                description: 'Your files are never stored. All processing is secure.',
+                description: 'Files are uploaded to our server when processing is required. Avoid uploading sensitive or confidential content.',
               },
               {
                 icon: CheckCircle,

@@ -67,11 +67,11 @@ interface ToolSEOContent {
 const faqItems = [
   {
     question: 'Is my data secure and private?',
-    answer: 'Yes. All processing happens in your browser using client-side JavaScript. Your data is never sent to our servers and is not stored anywhere.',
+    answer: 'Tool inputs are sent to our server for processing. Avoid entering passwords, private keys, access tokens, personal data, or other sensitive information.',
   },
   {
     question: 'Can I use this tool offline?',
-    answer: "Yes. If you've loaded the page once, you can use it offline. All computation happens in your browser without any server connection.",
+    answer: 'No. An internet connection is required because tool inputs are sent to our server for processing.',
   },
   {
     question: 'What browsers are supported?',
@@ -79,7 +79,7 @@ const faqItems = [
   },
   {
     question: 'Is there a limit on input size?',
-    answer: "Input is limited only by your browser's available memory. Most browsers can handle files up to several MB without issues.",
+    answer: 'Input limits depend on the selected tool and server processing constraints.',
   },
   {
     question: 'Can I use this for commercial purposes?',
@@ -142,7 +142,7 @@ const toolSeoContent: Record<string, ToolSEOContent> = {
       'Check that every opening brace or bracket has a matching closing character.',
       'Validate copied API responses before pasting them into production code.',
     ],
-    privacyNote: 'JSON validation runs in your browser, so pasted JSON is not uploaded to a server by this page. Avoid sharing secrets, tokens, or private customer data in screenshots or copied examples.',
+    privacyNote: 'Your JSON input is sent to our server for processing. Avoid submitting secrets, tokens, or sensitive customer data.',
   },
   'xml-to-json': {
     whatItDoes: 'The XML to JSON converter transforms XML markup into a JSON-style structure so it is easier to inspect, pass into JavaScript code, or adapt for modern API workflows. It is useful when moving data from document-style XML into object-based formats.',
@@ -164,7 +164,7 @@ const toolSeoContent: Record<string, ToolSEOContent> = {
       'Review attributes and namespaces after conversion since different tools represent them differently.',
       'Validate the converted JSON before using it in an API request.',
     ],
-    privacyNote: 'XML conversion happens in the browser for this tool page. Still, remove passwords, API keys, access tokens, or sensitive customer records before using sample data.',
+    privacyNote: 'Your XML input is sent to our server for processing. Remove passwords, API keys, access tokens, and sensitive customer records before submitting data.',
   },
   'jwt-decoder': {
     whatItDoes: 'The JWT Decoder splits a JSON Web Token into its header and payload so you can inspect claims such as issuer, subject, audience, expiration time, and custom application fields. Decoding makes the token readable, but it does not prove the signature is valid.',
@@ -186,7 +186,7 @@ const toolSeoContent: Record<string, ToolSEOContent> = {
       'Do not trust decoded claims until your backend verifies the token signature.',
       'Use sample or redacted tokens when documenting authentication bugs.',
     ],
-    privacyNote: 'JWT decoding is intended for inspection in your browser. Real tokens can grant access to accounts or APIs, so avoid pasting live production tokens unless you understand the risk.',
+    privacyNote: 'JWT decoding is processed through the tool service. Real tokens can grant access to accounts or APIs, so avoid submitting live production tokens.',
   },
   'password-generator': {
     whatItDoes: 'The Password Generator creates random passwords using the selected length and character options. It is designed for quickly producing stronger credentials than human-chosen passwords, especially when combined with a password manager.',
@@ -208,7 +208,7 @@ const toolSeoContent: Record<string, ToolSEOContent> = {
       'Store generated passwords in a trusted password manager.',
       'Do not reuse generated passwords across different accounts.',
     ],
-    privacyNote: 'Password generation runs locally in the browser on this page. After generating a password, save it securely and avoid sending it through chat, email, logs, or screenshots.',
+    privacyNote: 'Password generation is processed through the tool service. Do not use the tool for secrets you are unwilling to transmit for processing.',
   },
 };
 
@@ -908,7 +908,7 @@ export default function CodeToolPage() {
                       <CheckCircle size={18} className="text-green-600" />
                       Privacy First
                     </h3>
-                    <p className="text-gray-600 text-sm">Your data is processed locally - nothing is stored on our servers</p>
+                    <p className="text-gray-600 text-sm">Inputs are sent to our server for processing. Avoid entering secrets or other sensitive data.</p>
                   </div>
                   <div className="p-4 border border-gray-200 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
@@ -929,14 +929,14 @@ export default function CodeToolPage() {
                       Is my data secure and private?
                       <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
                     </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. All processing happens in your browser using client-side JavaScript. Your data is never sent to our servers and is not stored anywhere.</p>
+                    <p className="text-gray-600 mt-3 text-sm">Tool inputs are sent to our server for processing. Avoid entering passwords, private keys, access tokens, personal data, or other sensitive information.</p>
                   </details>
                   <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
                     <summary className="font-semibold text-gray-900 flex items-center justify-between">
                       Can I use this tool offline?
                       <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
                     </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. If you've loaded the page once, you can use it offline. All computation happens in your browser without any server connection.</p>
+                    <p className="text-gray-600 mt-3 text-sm">No. An internet connection is required because tool inputs are sent to our server for processing.</p>
                   </details>
                   <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
                     <summary className="font-semibold text-gray-900 flex items-center justify-between">
@@ -950,7 +950,7 @@ export default function CodeToolPage() {
                       Is there a limit on input size?
                       <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
                     </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Input is limited only by your browser's available memory. Most browsers can handle files up to several MB without issues.</p>
+                    <p className="text-gray-600 mt-3 text-sm">Input limits depend on the selected tool and server processing constraints.</p>
                   </details>
                   <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
                     <summary className="font-semibold text-gray-900 flex items-center justify-between">
@@ -998,7 +998,7 @@ export default function CodeToolPage() {
                   {
                     icon: Shield,
                     title: 'Secure & Safe',
-                    description: 'Code is processed securely and automatically deleted after a short period. We do not permanently store your code or data',
+                    description: 'Inputs are sent to our server for processing. If you create a download link, the generated result may be retained temporarily for retrieval.',
                   },
                   {
                     icon: CheckCircle,

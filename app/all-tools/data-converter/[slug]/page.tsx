@@ -113,7 +113,7 @@ export default function DataToolPage() {
         "name": "Is my data stored after conversion?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. All uploaded files and converted outputs are automatically deleted from our servers after processing. We do not store or log your data."
+          "text": "Files are sent to our server for conversion. Temporary conversion files are cleaned up after the request, and the generated result may be retained briefly to provide your download link. Avoid uploading sensitive data."
         }
       },
       {
@@ -620,7 +620,7 @@ export default function DataToolPage() {
               {
                 icon: Shield,
                 title: 'Secure & Private',
-                description: 'Files are processed securely and automatically deleted after conversion. Your data is not permanently stored or shared.'
+                description: 'Files are sent to our server for conversion. Temporary conversion files are cleaned up after the request, and the result may be retained briefly for download.'
               },
               {
                 icon: CheckCircle,
@@ -681,7 +681,7 @@ export default function DataToolPage() {
                 },
                 {
                   title: 'Secure Processing',
-                  description: 'Your files are processed securely and automatically deleted after conversion.'
+                  description: 'Files are sent to our server for conversion, and temporary conversion files are cleaned up after the request.'
                 },
                 {
                   title: 'Batch Ready',
@@ -711,7 +711,7 @@ export default function DataToolPage() {
                 },
                 {
                   q: 'Is my data stored after conversion?',
-                  a: 'No. All uploaded files and converted outputs are automatically deleted from our servers after processing. We do not store or log your data.'
+                  a: 'Files are sent to our server for conversion. Temporary conversion files are cleaned up after the request, and the generated result may be retained briefly to provide your download link. Avoid uploading sensitive data.'
                 },
                 {
                   q: 'Which encoding formats are supported?',

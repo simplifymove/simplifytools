@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Copy, RefreshCw, Download, ArrowLeft, Loader, ChevronRight, Zap, Shield, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getToolById } from '@/app/lib/ai-tools';
+import { getAiToolFaqs } from '@/app/lib/ai-tool-faqs';
 import type { AIWriteTool } from '@/app/lib/ai-tools';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
@@ -88,7 +89,6 @@ type ToolSeoContent = {
   introduction: string;
   useCases: string[];
   examples: Array<{ label: string; input: string; output: string }>;
-  faqs: Array<{ q: string; a: string }>;
 };
 
 const topToolSeoContent: Record<string, ToolSeoContent> = {
@@ -102,11 +102,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         output: 'Remote work can help small businesses reduce overhead, hire from a wider talent pool, and give employees more flexibility while maintaining productivity.',
       },
     ],
-    faqs: [
-      { q: 'What should I enter in the Paragraph Writer?', a: 'Enter a clear topic, title, or short instruction. Adding tone, length, and language preferences helps the tool produce a more useful paragraph.' },
-      { q: 'Can I use the paragraph in an essay or article?', a: 'Yes, but review it first. Add your own facts, examples, citations, and voice before publishing or submitting the content.' },
-      { q: 'How do I get a stronger paragraph?', a: 'Give the tool a specific angle, audience, and purpose instead of a broad keyword. Specific prompts usually produce clearer writing.' },
-    ],
   },
   'content-improver': {
     introduction: 'The Content Improver rewrites existing text to make it clearer, smoother, and easier to read while preserving the original meaning. It is designed for drafts that already have the right ideas but need stronger structure, tone, or wording.',
@@ -117,11 +112,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         input: 'Our app helps teams do work better and faster with less confusion.',
         output: 'Our app helps teams work faster, stay aligned, and reduce confusion across everyday projects.',
       },
-    ],
-    faqs: [
-      { q: 'Will the Content Improver change my meaning?', a: 'It is intended to preserve the original meaning, but you should review the output to make sure important nuance is still correct.' },
-      { q: 'What kind of content can I improve?', a: 'You can improve emails, articles, product copy, reports, notes, social posts, and most other text-based drafts.' },
-      { q: 'Should I choose a tone?', a: 'Choosing a tone helps align the rewrite with your audience, especially for business, academic, formal, or casual writing.' },
     ],
   },
   'content-summarizer': {
@@ -134,11 +124,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         output: 'Remote teams work best when they document decisions, set response expectations, and reserve meetings for complex discussions.',
       },
     ],
-    faqs: [
-      { q: 'How long can the input be?', a: 'The tool is designed for long text, but very large documents should be summarized in sections for better accuracy.' },
-      { q: 'Can it create bullet-point summaries?', a: 'Yes. Choose the bullet option when you want scan-friendly key points instead of paragraph-style summaries.' },
-      { q: 'Does the summarizer add new information?', a: 'It should summarize the source text only. Always check the output against the original when accuracy matters.' },
-    ],
   },
   'grammar-fixer': {
     introduction: 'The Grammar Fixer checks text for grammar, spelling, punctuation, and clarity issues. It helps clean up drafts while keeping your intended meaning intact.',
@@ -149,11 +134,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         input: 'Their is many reason why this feature are useful.',
         output: 'There are many reasons why this feature is useful.',
       },
-    ],
-    faqs: [
-      { q: 'Does the Grammar Fixer rewrite my whole text?', a: 'It focuses on correcting errors and improving clarity, but it may lightly rewrite awkward phrasing when needed.' },
-      { q: 'Can it fix punctuation?', a: 'Yes. It can help with commas, periods, capitalization, apostrophes, and other common punctuation issues.' },
-      { q: 'Should I still proofread the result?', a: 'Yes. Grammar tools can miss context-specific meaning, names, technical terms, or preferred style choices.' },
     ],
   },
   'translate': {
@@ -166,11 +146,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         output: 'Gracias por su pedido. Enviaremos los detalles de seguimiento pronto.',
       },
     ],
-    faqs: [
-      { q: 'Is machine translation always accurate?', a: 'No. Translation quality depends on context, language pair, and subject matter. Review important translations before use.' },
-      { q: 'Can I translate marketing copy?', a: 'Yes, but localized marketing copy should be reviewed for tone, idioms, and cultural fit.' },
-      { q: 'Should I include context?', a: 'Yes. Adding audience, region, and purpose helps produce a more appropriate translation.' },
-    ],
   },
   'blog-post-generator': {
     introduction: 'The Blog Post Generator creates a structured draft from a topic, keywords, audience, and tone. It is built to help you move from idea to editable article faster, not to replace editorial review.',
@@ -181,11 +156,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         input: 'How small businesses can improve local SEO',
         output: 'A structured article covering Google Business Profile, local keywords, reviews, location pages, and measurement tips.',
       },
-    ],
-    faqs: [
-      { q: 'Can the Blog Post Generator create a complete article?', a: 'Yes, it can create a full first draft, but you should fact-check, edit, and add original examples before publishing.' },
-      { q: 'Should I provide keywords?', a: 'Providing keywords helps the draft align with search intent, but avoid forcing too many keywords into the final copy.' },
-      { q: 'Is the output SEO-ready?', a: 'It can provide an SEO-friendly draft, but final optimization should include internal links, source review, formatting, and expert edits.' },
     ],
   },
   'faq-generator': {
@@ -198,11 +168,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         output: 'Questions about pricing, data privacy, exporting invoices, tax fields, payment terms, and client sharing.',
       },
     ],
-    faqs: [
-      { q: 'How many FAQs should I generate?', a: 'Start with five to eight strong questions. Add more only when they answer real user concerns.' },
-      { q: 'Can I use these FAQs for SEO?', a: 'Yes, but the answers should be accurate, visible on the page, and genuinely helpful to readers.' },
-      { q: 'What makes a good FAQ prompt?', a: 'Include the product, audience, use case, and concerns you want to address.' },
-    ],
   },
   'word-counter': {
     introduction: 'The Word Counter measures text length and readability signals so you can check whether a draft fits a limit or needs editing. It is useful for essays, social posts, meta copy, articles, and any writing with length constraints.',
@@ -213,11 +178,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         input: 'Paste a product description or article draft.',
         output: 'Word count, character count, and readability-style metrics for quick review.',
       },
-    ],
-    faqs: [
-      { q: 'What can I count with this tool?', a: 'You can count words and characters in drafts, descriptions, essays, captions, emails, and other text.' },
-      { q: 'Why does word count matter?', a: 'Word count helps meet platform limits, assignment requirements, SEO guidelines, and editorial briefs.' },
-      { q: 'Can it improve my text too?', a: 'Use the related Content Improver or Grammar Fixer when you want editing help after counting your text.' },
     ],
   },
   'sentence-rewriter': {
@@ -230,11 +190,6 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         output: 'This solution helps teams save time.',
       },
     ],
-    faqs: [
-      { q: 'When should I use the Sentence Rewriter?', a: 'Use it when one sentence feels unclear, wordy, repetitive, or mismatched with the tone of the surrounding text.' },
-      { q: 'Will it change the meaning?', a: 'It aims to preserve meaning, but review the result if the sentence includes technical, legal, or sensitive details.' },
-      { q: 'Can I rewrite multiple sentences?', a: 'You can, but for full paragraphs or longer passages the Paragraph Rewriter or Content Improver is a better fit.' },
-    ],
   },
   'paragraph-rewriter': {
     introduction: 'The Paragraph Rewriter refreshes a full paragraph while keeping its main idea. It helps improve flow, reduce repetition, and create a cleaner version of text that already has the right direction.',
@@ -246,40 +201,8 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
         output: 'A clearer version that explains the benefit, removes repetition, and connects the idea to the reader.',
       },
     ],
-    faqs: [
-      { q: 'How is this different from Sentence Rewriter?', a: 'Paragraph Rewriter improves the flow of several connected sentences, while Sentence Rewriter focuses on one sentence at a time.' },
-      { q: 'Can it make copied text unique?', a: 'It can rephrase text, but you should not use it to hide plagiarism. Add original ideas, citations, and your own perspective.' },
-      { q: 'What input works best?', a: 'Use a complete paragraph with a clear main idea. Very short fragments may work better in the Sentence Rewriter.' },
-    ],
   },
 };
-
-const defaultFaqItems = [
-  {
-    q: 'Is the content 100% original?',
-    a: 'AI tools generate variations of existing content patterns. Always review and customize the output. Original thought and editing are essential to create unique content.'
-  },
-  {
-    q: 'Can I use the output directly without editing?',
-    a: 'We recommend reviewing and editing all AI-generated content. Add your own perspective, verify facts, and customize to your voice and brand.'
-  },
-  {
-    q: 'Does AI detection flag this content?',
-    a: 'Content created with our tools may be detected by AI detection services. Mix human and AI writing, add original insights, and edit heavily to reduce detectability.'
-  },
-  {
-    q: 'Is my content private?',
-    a: 'Content processed on our platform is handled securely. Always follow your organization\'s policies regarding sensitive data and AI tool usage.'
-  },
-  {
-    q: 'Can I use this for commercial purposes?',
-    a: 'Yes, but review our terms of service. Content must not violate copyright or contain harmful material.'
-  },
-  {
-    q: 'How do I get the best results?',
-    a: 'Provide detailed context, specific requirements, and clear examples. Better inputs lead to more useful AI suggestions that require less editing.'
-  }
-];
 
 export default function AIWriteToolPage() {
   const router = useRouter();
@@ -404,7 +327,7 @@ export default function AIWriteToolPage() {
   }
 
   const seoContent = topToolSeoContent[tool.id];
-  const faqItems = seoContent?.faqs || defaultFaqItems;
+  const faqItems = getAiToolFaqs(tool.id);
 
   return (
     <>
