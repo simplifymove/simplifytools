@@ -111,6 +111,8 @@ class PdfSecurityEngine:
         try:
             pdf_path = input_paths[0]
             method = options.get('method', 'text_rebuild')  # Default to text_rebuild
+            if method == 'all':
+                method = 'text_rebuild'
             
             print(f"[PDF] ========== WATERMARK REMOVAL START ==========")
             print(f"[PDF] Input: {pdf_path}")

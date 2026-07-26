@@ -8,7 +8,7 @@ npm run generate-fixtures
 
 The generator creates:
 
-- simple, multi-page, image-only, and password-protected PDFs (`Audit123!`);
+- simple, multi-page, image-only, password-protected (`Audit123!`), and ruled-table PDFs;
 - raster/vector image formats, including AVIF/HEIF containers;
 - OOXML and legacy-compatible document samples;
 - structured data and source-code text samples;

@@ -243,19 +243,19 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
   {
     id: 'pdf-tools',
     name: 'PDF Tools',
-    tools: getAllPdfTools().map((tool) => withRoute(tool, `/all-tools/pdf/${tool.id}`, tool.id === 'add-text' ? {
-      strategy: 'inactive', resultFlow: 'none', inactiveReason: 'Canonical entry currently renders a Coming Soon page and has no executable workflow.',
-      executionClass: 'EXTERNAL_NOT_CONFIGURED',
-    } : {
+    tools: getAllPdfTools().map((tool) => withRoute(tool, `/all-tools/pdf/${tool.id}`, {
       strategy: tool.id === 'edit-pdf' ? 'pdf-editor' : tool.id === 'annotate-pdf' ? 'pdf-annotate' : tool.id === 'esign-pdf' ? 'pdf-esign' : tool.id === 'rearrange-pdf' ? 'pdf-rearrange' : tool.inputMode === 'url' ? 'url' : 'file',
       fixtures: tool.id === 'merge-pdf' ? ['tests/fixtures/pdf/simple.pdf', 'tests/fixtures/pdf/multi-page.pdf']
         : tool.id === 'rearrange-pdf' ? ['tests/fixtures/pdf/multi-page.pdf']
+        : ['extract-tables-from-pdf', 'pdf-to-csv'].includes(tool.id) ? ['tests/fixtures/pdf/table.pdf']
         : tool.id === 'create-pdf' ? ['tests/fixtures/images/sample.png']
         : tool.id === 'unlock-pdf' ? ['tests/fixtures/pdf/protected.pdf']
         : tool.id === 'extract-images-pdf' ? ['tests/fixtures/pdf/images.pdf']
         : tool.output === '.zip' && tool.accepts.includes('.pdf') ? ['tests/fixtures/pdf/multi-page.pdf']
         : fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : [],
-      optionValues: Object.fromEntries((tool.options || []).filter((option) => option.default !== undefined || ['protect-pdf', 'unlock-pdf'].includes(tool.id)).map((option) => [option.id, option.default ?? (option.id.toLowerCase().includes('password') ? 'Audit123!' : '1')])),
+      optionValues: Object.fromEntries((tool.options || [])
+        .filter((option) => option.default !== undefined || ['protect-pdf', 'unlock-pdf'].includes(tool.id) || (tool.id === 'add-text' && option.id === 'text'))
+        .map((option) => [option.id, option.default ?? (option.id.toLowerCase().includes('password') ? 'Audit123!' : tool.id === 'add-text' ? 'Audit added text' : '1')])),
       processButtonText: tool.id === 'edit-pdf' ? '^Save$' : tool.id === 'annotate-pdf' ? 'Download Annotated PDF' : ['rearrange-pdf', 'url-to-pdf'].includes(tool.id) ? '^Process PDF$' : undefined,
       urlInput: 'https://example.com/', resultFlow: 'download-page', expectedOutput: outputContract(tool.output),
       executionClass: 'LOCAL_DETERMINISTIC',

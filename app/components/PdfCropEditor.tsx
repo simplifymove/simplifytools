@@ -43,6 +43,9 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
   const [loading, setLoading] = useState(false);
   const [pageWidth, setPageWidth] = useState(LETTER_WIDTH);
   const [pageHeight, setPageHeight] = useState(LETTER_HEIGHT);
+  const loadingTaskRef = useRef<any>(null);
+  const renderTaskRef = useRef<any>(null);
+  const renderGenerationRef = useRef(0);
 
   const width = pdfDimensions?.width || pageWidth;
   const height = pdfDimensions?.height || pageHeight;
@@ -66,6 +69,8 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
   // Load and render PDF
   useEffect(() => {
     if (!pdfFile) return;
+    let cancelled = false;
+    setPdfImage('');
 
     const loadPdf = async () => {
       try {
@@ -75,25 +80,52 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
           throw new Error('Failed to initialize PDF.js');
         }
         const arrayBuffer = await pdfFile.arrayBuffer();
-        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-        
+        if (cancelled) return;
+        const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
+        loadingTaskRef.current = loadingTask;
+        const pdf = await loadingTask.promise;
+        if (cancelled) {
+          await loadingTask.destroy();
+          return;
+        }
+
         setPdfDocument(pdf);
         setTotalPages(pdf.numPages);
         setCurrentPage(1);
         await renderPage(pdf, 1);
       } catch (error) {
-        console.error('Error loading PDF:', error);
+        if (!cancelled) {
+          console.error('Error loading PDF:', error);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
-    loadPdf();
+    void loadPdf();
+    return () => {
+      cancelled = true;
+      renderGenerationRef.current += 1;
+      renderTaskRef.current?.cancel();
+      renderTaskRef.current = null;
+      const loadingTask = loadingTaskRef.current;
+      loadingTaskRef.current = null;
+      if (loadingTask) {
+        void loadingTask.destroy().catch(() => undefined);
+      }
+    };
   }, [pdfFile]);
 
   const renderPage = async (pdf: { getPage: (num: number) => Promise<any> }, pageNum: number) => {
+    const generation = ++renderGenerationRef.current;
+    renderTaskRef.current?.cancel();
+    renderTaskRef.current = null;
+
     try {
       const page = await pdf.getPage(pageNum);
+      if (generation !== renderGenerationRef.current) return;
       const viewport = page.getViewport({ scale: PREVIEW_WIDTH / page.getViewport({ scale: 1 }).width });
       
       const canvas = document.createElement('canvas');
@@ -103,7 +135,10 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
       const context = canvas.getContext('2d');
       if (!context) return;
 
-      await (page.render({ canvas, viewport }) as any).promise;
+      const renderTask = page.render({ canvasContext: context, viewport });
+      renderTaskRef.current = renderTask;
+      await renderTask.promise;
+      if (generation !== renderGenerationRef.current) return;
       
       // Update page dimensions from actual PDF
       setPageWidth(page.getViewport({ scale: 1 }).width);
@@ -112,7 +147,13 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
       // Convert to data URL for display
       setPdfImage(canvas.toDataURL('image/png'));
     } catch (error) {
-      console.error('Error rendering page:', error);
+      if (generation === renderGenerationRef.current && (error as { name?: string })?.name !== 'RenderingCancelledException') {
+        console.error('Error rendering page:', error);
+      }
+    } finally {
+      if (generation === renderGenerationRef.current) {
+        renderTaskRef.current = null;
+      }
     }
   };
 

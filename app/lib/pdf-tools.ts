@@ -312,23 +312,10 @@ export const pdfTools: Record<string, PdfToolConfig> = {
         id: 'method',
         label: 'Removal Method',
         type: 'select',
-        default: 'all',
+        default: 'text_rebuild',
         options: [
-          { value: 'all', label: 'All Methods (Comprehensive)' },
-          { value: 'annotations', label: 'Remove Annotations Only' },
-          { value: 'graphics', label: 'Remove Graphics & Light Objects' },
-          { value: 'text', label: 'Remove Watermark Text Only' },
-        ],
-      },
-      {
-        id: 'sensitivity',
-        label: 'Removal Sensitivity',
-        type: 'select',
-        default: 'medium',
-        options: [
-          { value: 'low', label: 'Low (Conservative)' },
-          { value: 'medium', label: 'Medium (Balanced)' },
-          { value: 'high', label: 'High (Aggressive)' },
+          { value: 'text_rebuild', label: 'Rebuild Text (Recommended)' },
+          { value: 'rectangle_overlay', label: 'Cover Detected Watermark Areas' },
         ],
       },
     ],
@@ -1448,4 +1435,3 @@ export function getPdfToolsByEngine(
 ): PdfToolConfig[] {
   return Object.values(pdfTools).filter((tool) => tool.engine === engine);
 }
-

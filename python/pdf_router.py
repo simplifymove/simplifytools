@@ -171,7 +171,7 @@ class PdfRouter:
                 'pdf-to-powerpoint': ('convert', 'pdf_to_pptx'),
                 'powerpoint-to-pdf': ('convert', 'document_to_pdf'),
                 'pdf-to-excel': ('convert', 'pdf_to_xlsx'),
-                'pdf-to-csv': ('convert', 'pdf_to_document'),
+                'pdf-to-csv': ('extract', 'extract_tables'),
                 'pdf-to-text': ('convert', 'pdf_to_text'),
                 'pdf-to-epub': ('convert', 'pdf_to_ebook'),
                 'pdf-to-mobi': ('convert', 'pdf_to_ebook'),

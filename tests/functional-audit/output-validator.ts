@@ -74,6 +74,7 @@ export function validateOutputBuffer(
   if (expected?.signature === 'office' && !['.docx', '.xlsx', '.pptx'].includes(extension) && !['zip', 'ole-office', 'text-or-unknown'].includes(signature)) throw new Error('Downloaded output has an invalid Office signature');
   if (expected?.signature === 'image' && !['jpeg', 'png', 'gif', 'webp', 'tiff', 'iso-media', 'riff'].includes(signature)) throw new Error('Downloaded output has an invalid image signature');
   if (expected?.signature === 'media' && !['riff', 'iso-media', 'matroska', 'mpeg-audio', 'flac', 'ogg'].includes(signature)) throw new Error('Downloaded output has an invalid media signature');
+  if (expected?.signature === 'text' && signature !== 'text-or-unknown') throw new Error('Downloaded output has an invalid text signature');
 
   return {
     filename,

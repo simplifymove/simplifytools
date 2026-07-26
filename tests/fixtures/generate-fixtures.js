@@ -22,6 +22,38 @@ function addZipText(zip, name, content) {
   zip.addFile(name, Buffer.from(content, 'utf8'));
 }
 
+async function createTablePdf() {
+  const document = await PDFDocument.create();
+  const font = await document.embedFont(StandardFonts.Helvetica);
+  const page = document.addPage([360, 260]);
+  const columns = [24, 200, 336];
+  const rows = [220, 188, 156, 124];
+  const values = [
+    ['Name', 'Amount'],
+    ['Alpha', '10'],
+    ['Beta', '20'],
+  ];
+
+  for (const x of columns) {
+    page.drawLine({ start: { x, y: rows.at(-1) }, end: { x, y: rows[0] }, thickness: 1 });
+  }
+  for (const y of rows) {
+    page.drawLine({ start: { x: columns[0], y }, end: { x: columns.at(-1), y }, thickness: 1 });
+  }
+  values.forEach((row, rowIndex) => {
+    row.forEach((value, columnIndex) => {
+      page.drawText(value, {
+        x: columns[columnIndex] + 8,
+        y: rows[rowIndex + 1] + 10,
+        size: 11,
+        font,
+      });
+    });
+  });
+
+  write('pdf', 'table.pdf', Buffer.from(await document.save()));
+}
+
 async function createPdfs() {
   async function pdf(pageCount, label) {
     const document = await PDFDocument.create();
@@ -40,6 +72,7 @@ async function createPdfs() {
   write('pdf', 'multi-page.pdf', multi);
   write('pdf', 'multipage.pdf', multi);
   write('pdf', 'corrupted.pdf', Buffer.from('%PDF-1.4\ninvalid audit fixture\n%%EOF\n'));
+  await createTablePdf();
   const pythonCandidates = process.platform === 'win32'
     ? [path.join(process.cwd(), '.venv', 'Scripts', 'python.exe'), 'python']
     : [path.join(process.cwd(), '.venv', 'bin', 'python'), 'python3'];
@@ -264,7 +297,9 @@ if (require.main === module) {
     ? createThresholdImageFixtures
     : process.argv.includes('--ebook-fixtures')
       ? createEbookFixtures
-      : generateFixtures;
+      : process.argv.includes('--table-pdf')
+        ? createTablePdf
+        : generateFixtures;
   Promise.resolve(generate()).catch((error) => { console.error(error); process.exit(1); });
 }
-module.exports = { generateFixtures };
+module.exports = { generateFixtures, createTablePdf };

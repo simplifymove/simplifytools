@@ -40,5 +40,18 @@ try {
 }
 if (!rejectedMissingExtension) throw new Error('Output validation accepted a filename without its required extension');
 
+let rejectedZipAsCsv = false;
+try {
+  validateOutputBuffer(
+    fs.readFileSync(path.resolve('tests/fixtures/documents/sample.docx')),
+    'renamed.csv',
+    'text/csv',
+    { extension: '.csv', mimeType: 'text/csv', signature: 'text' },
+  );
+} catch {
+  rejectedZipAsCsv = true;
+}
+if (!rejectedZipAsCsv) throw new Error('Output validation accepted ZIP/OOXML bytes as CSV');
+
 const uniqueFixtures = new Set(activeTargets.flatMap(({ target }) => target.functionalAudit.fixtures || []));
 console.log(JSON.stringify({ categories: AUDIT_CATEGORY_DEFINITIONS.length, targets: activeTargets.length, fixtures: uniqueFixtures.size }, null, 2));
