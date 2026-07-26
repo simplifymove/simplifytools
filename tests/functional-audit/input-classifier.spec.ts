@@ -25,6 +25,16 @@ test('configured values match semantic labels with descriptive prefixes', () => 
   expect(decision).toMatchObject({ semanticField: 'language', value: 'eng', source: 'contract' });
 });
 
+test('specific configured fields win fuzzy semantic-label matches', () => {
+  const decision = decideSemanticInput(
+    { type: 'select', label: 'Text Color', required: true },
+    contract({ text: 'Audit added text', color: '0,0,0' }),
+    1,
+  );
+  expect(decision).toMatchObject({ semanticField: 'color', value: '0,0,0', source: 'contract' });
+  expect(decision.semanticField).not.toBe('text');
+});
+
 test('optional specialized fields remain empty without configuration', () => {
   const decision = decideSemanticInput({ type: 'text', label: 'Page Range (empty = all)', placeholder: '1-5', required: false }, contract(), 2);
   expect(decision.value).toBeUndefined();

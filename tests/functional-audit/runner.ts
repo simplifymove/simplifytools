@@ -30,6 +30,7 @@ export interface FunctionalAuditEvidence {
   resultFlow: string;
   apiRequests: Array<{ method: string; url: string }>;
   apiResponses: Array<{ method: string; url: string; status: number; contentType?: string; errorBody?: string }>;
+  downloadPagePost?: DownloadPagePostEvidence;
   output?: ValidatedOutputEvidence;
   renderedOutput?: {
     selector: string;
@@ -50,6 +51,36 @@ export interface FunctionalAuditEvidence {
   };
   finalUrl: string;
   durationMs: number;
+}
+
+type DownloadPagePostState =
+  | 'POST_NEVER_HAPPENED'
+  | 'POST_STILL_PENDING'
+  | 'POST_FAILED'
+  | 'POST_2XX_INVALID_DOWNLOAD_URL'
+  | 'POST_2XX_VALID_DOWNLOAD_URL';
+
+interface DownloadPagePostEvidence {
+  state: DownloadPagePostState;
+  requestUrl?: string;
+  status?: number;
+  downloadPageUrl?: string;
+  resultId?: string;
+  error?: string;
+}
+
+const DOWNLOAD_PAGE_TIMEOUT_MS = 120_000;
+
+function validatedDownloadPageUrl(value: unknown, baseUrl: string): string | undefined {
+  if (typeof value !== 'string' || !value.trim()) return undefined;
+  try {
+    const base = new URL(baseUrl);
+    const candidate = new URL(value, base);
+    if (candidate.origin !== base.origin || !/^\/download\/[^/?#]+$/.test(candidate.pathname)) return undefined;
+    return candidate.toString();
+  } catch {
+    return undefined;
+  }
 }
 
 function fixtureFromAccept(accept: string | null): string | undefined {
@@ -263,8 +294,23 @@ async function validateDownload(download: Download, contract: FunctionalAuditCon
   return validateOutputBuffer(await fs.readFile(filePath), download.suggestedFilename(), undefined, contract.expectedOutput);
 }
 
-async function fetchDownloadPageOutput(page: Page, request: APIRequestContext) {
-  await page.waitForURL(/\/download\/[^/?#]+/, { timeout: 120_000 });
+async function fetchDownloadPageOutput(
+  page: Page,
+  request: APIRequestContext,
+  expectedDownloadPageUrl: string,
+  timeout: number,
+) {
+  try {
+    await page.waitForURL(
+      (url) => url.toString() === expectedDownloadPageUrl,
+      { timeout },
+    );
+  } catch (error) {
+    throw new Error(
+      `Valid downloadPageUrl returned but client navigation did not occur: ${expectedDownloadPageUrl}`,
+      { cause: error },
+    );
+  }
   const link = page.getByRole('link', { name: /^Download File$/i });
   await link.waitFor({ state: 'visible' });
   const href = await link.getAttribute('href');
@@ -409,20 +455,61 @@ export async function executeFunctionalAudit(
 
   const apiRequests: FunctionalAuditEvidence['apiRequests'] = [];
   const apiResponses: FunctionalAuditEvidence['apiResponses'] = [];
+  const downloadPagePost: DownloadPagePostEvidence = { state: 'POST_NEVER_HAPPENED' };
+  let resolveDownloadPagePost: ((evidence: DownloadPagePostEvidence) => void) | undefined;
+  const downloadPagePostPromise = new Promise<DownloadPagePostEvidence>((resolve) => {
+    resolveDownloadPagePost = resolve;
+  });
   const dialogs: string[] = [];
   let resolveApiFailure: ((error: Error) => void) | undefined;
   const apiFailurePromise = new Promise<Error>((resolve) => { resolveApiFailure = resolve; });
   page.on('request', (request) => {
     if (!request.url().includes('/api/')) return;
-    apiRequests.push({ method: request.method(), url: new URL(request.url()).pathname });
+    const method = request.method();
+    const url = new URL(request.url()).pathname;
+    apiRequests.push({ method, url });
+    if (method === 'POST' && url === '/api/pdf') {
+      downloadPagePost.state = 'POST_STILL_PENDING';
+      downloadPagePost.requestUrl = url;
+    }
   });
   page.on('response', async (response) => {
     if (!response.url().includes('/api/')) return;
-    const evidence = { method: response.request().method(), url: new URL(response.url()).pathname, status: response.status(), contentType: response.headers()['content-type'], errorBody: undefined as string | undefined };
+    const method = response.request().method();
+    const url = new URL(response.url()).pathname;
+    const evidence = { method, url, status: response.status(), contentType: response.headers()['content-type'], errorBody: undefined as string | undefined };
     apiResponses.push(evidence);
-    if (response.request().method() !== 'GET' && response.status() >= 400) {
-      evidence.errorBody = (await response.text().catch(() => '')).slice(0, 500).replace(/(api[_-]?key|token|secret|password)\s*[:=]\s*[^\s,;}]+/gi, '$1=[REDACTED]');
-      resolveApiFailure?.(new Error(`Processing API failed with HTTP ${response.status()}: ${new URL(response.url()).pathname}`));
+    const isPdfPost = method === 'POST' && url === '/api/pdf';
+    const responseText = isPdfPost || (method !== 'GET' && response.status() >= 400)
+      ? await response.text().catch(() => '')
+      : '';
+    if (method !== 'GET' && response.status() >= 400) {
+      evidence.errorBody = responseText.slice(0, 500).replace(/(api[_-]?key|token|secret|password)\s*[:=]\s*[^\s,;}]+/gi, '$1=[REDACTED]');
+      resolveApiFailure?.(new Error(`Processing API failed with HTTP ${response.status()}: ${url}`));
+    }
+    if (isPdfPost) {
+      downloadPagePost.status = response.status();
+      if (!response.ok()) {
+        downloadPagePost.state = 'POST_FAILED';
+        downloadPagePost.error = evidence.errorBody || `HTTP ${response.status()}`;
+      } else {
+        let payload: { downloadPageUrl?: unknown; resultId?: unknown } | undefined;
+        try {
+          payload = JSON.parse(responseText) as { downloadPageUrl?: unknown; resultId?: unknown };
+        } catch {
+          payload = undefined;
+        }
+        const downloadPageUrl = validatedDownloadPageUrl(payload?.downloadPageUrl, page.url());
+        if (!downloadPageUrl) {
+          downloadPagePost.state = 'POST_2XX_INVALID_DOWNLOAD_URL';
+          downloadPagePost.error = 'POST returned 2xx but response has no valid downloadPageUrl';
+        } else {
+          downloadPagePost.state = 'POST_2XX_VALID_DOWNLOAD_URL';
+          downloadPagePost.downloadPageUrl = downloadPageUrl;
+          if (typeof payload?.resultId === 'string') downloadPagePost.resultId = payload.resultId;
+        }
+      }
+      resolveDownloadPagePost?.({ ...downloadPagePost });
     }
   });
   page.on('dialog', async (dialog) => {
@@ -444,7 +531,9 @@ export async function executeFunctionalAudit(
   const attachEvidence = async (failure?: string) => {
     const evidence: FunctionalAuditEvidence = {
       fixtureEvidence: uploadedFixtureEvidence, inputEvidence, configuredOptions: contract.optionValues || {}, filledInputs, action: actionText,
-      resultFlow: contract.resultFlow, apiRequests, apiResponses, output, renderedOutput, dialogs, failure, failureStage: failure ? failureStage : undefined, stages,
+      resultFlow: contract.resultFlow, apiRequests, apiResponses,
+      downloadPagePost: contract.resultFlow === 'download-page' ? { ...downloadPagePost } : undefined,
+      output, renderedOutput, dialogs, failure, failureStage: failure ? failureStage : undefined, stages,
       finalUrl: page.url(), durationMs: Date.now() - startedAt,
     };
     (testInfo as TestInfo & { functionalAuditEvidence?: FunctionalAuditEvidence }).functionalAuditEvidence = evidence;
@@ -496,6 +585,7 @@ export async function executeFunctionalAudit(
       ? new Promise<Download>((resolve) => { resolveDownload = resolve; })
       : undefined;
     if (resolveDownload) page.once('download', resolveDownload);
+    const resultFlowStartedAt = Date.now();
     await action.click();
     if (contract.strategy === 'pdf-editor') {
       const exportAction = page.getByRole('button', { name: /^Export PDF$/i });
@@ -505,10 +595,30 @@ export async function executeFunctionalAudit(
 
     failureStage = 'result-flow';
     if (contract.resultFlow === 'download-page') {
-      const downloaded = await Promise.race([
-        fetchDownloadPageOutput(page, request),
-        apiFailurePromise.then((error) => { throw error; }),
+      const postWaitTimeout = Math.max(1, DOWNLOAD_PAGE_TIMEOUT_MS - (Date.now() - resultFlowStartedAt));
+      const postResult = await Promise.race([
+        downloadPagePostPromise,
+        page.waitForTimeout(postWaitTimeout).then(() => undefined),
       ]);
+      if (!postResult) {
+        if (downloadPagePost.state === 'POST_NEVER_HAPPENED') {
+          throw new Error('Download-page processing failed: POST /api/pdf never happened');
+        }
+        throw new Error('Download-page processing failed: POST /api/pdf is still pending');
+      }
+      if (postResult.state === 'POST_FAILED') {
+        throw new Error(`Download-page processing failed: POST /api/pdf returned non-2xx status ${postResult.status}`);
+      }
+      if (postResult.state === 'POST_2XX_INVALID_DOWNLOAD_URL' || !postResult.downloadPageUrl) {
+        throw new Error('Download-page processing failed: POST /api/pdf returned 2xx but response has no valid downloadPageUrl');
+      }
+      const navigationTimeout = Math.max(1, DOWNLOAD_PAGE_TIMEOUT_MS - (Date.now() - resultFlowStartedAt));
+      const downloaded = await fetchDownloadPageOutput(
+        page,
+        request,
+        postResult.downloadPageUrl,
+        navigationTimeout,
+      );
       if (observedDownloads.length) throw new Error('Tool started an automatic download before the result-page button was clicked');
       stages.functionalProcessing = 'PASS';
       failureStage = 'output-validation';

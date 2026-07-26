@@ -51,9 +51,20 @@ function configuredValue(
   field: SemanticInputDescriptor,
   optionValues: FunctionalAuditContract['optionValues'],
 ): { key: string; value: string | number | boolean } | undefined {
-  const identity = fieldIdentity(field);
-  return Object.entries(optionValues || {}).map(([key, value]) => ({ key, value, normalizedKey: normalized(key) }))
-    .find(({ normalizedKey }) => normalizedKey && identity.split(' ').some((part) => part === normalizedKey || part.includes(normalizedKey)));
+  const identityParts = fieldIdentity(field).split(' ').filter(Boolean);
+  const configured = Object.entries(optionValues || {})
+    .map(([key, value]) => ({ key, value, normalizedKey: normalized(key) }))
+    .filter(({ normalizedKey }) => normalizedKey);
+  const exact = configured.find(({ normalizedKey }) =>
+    identityParts.some((part) => part === normalizedKey),
+  );
+  if (exact) return exact;
+
+  return configured
+    .filter(({ normalizedKey }) =>
+      identityParts.some((part) => part.includes(normalizedKey)),
+    )
+    .sort((left, right) => right.normalizedKey.length - left.normalizedKey.length)[0];
 }
 
 function boundedNumber(field: SemanticInputDescriptor): number {
