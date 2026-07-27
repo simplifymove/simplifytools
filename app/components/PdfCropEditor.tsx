@@ -16,6 +16,31 @@ interface CropBox {
   top: number;
 }
 
+const MIN_CROP_SPAN = 10;
+
+function clampCropBoxToPage(cropBox: CropBox, pageWidth: number, pageHeight: number): CropBox {
+  const maxRight = Math.max(Number.EPSILON, Math.floor(pageWidth));
+  const maxTop = Math.max(Number.EPSILON, Math.floor(pageHeight));
+  const minWidth = Math.min(MIN_CROP_SPAN, maxRight);
+  const minHeight = Math.min(MIN_CROP_SPAN, maxTop);
+  const left = Math.min(Math.max(0, cropBox.left), maxRight - minWidth);
+  const bottom = Math.min(Math.max(0, cropBox.bottom), maxTop - minHeight);
+
+  return {
+    left,
+    bottom,
+    right: Math.min(maxRight, Math.max(left + minWidth, cropBox.right)),
+    top: Math.min(maxTop, Math.max(bottom + minHeight, cropBox.top)),
+  };
+}
+
+function cropBoxesEqual(left: CropBox, right: CropBox): boolean {
+  return left.left === right.left
+    && left.bottom === right.bottom
+    && left.right === right.right
+    && left.top === right.top;
+}
+
 // Lazy load pdfjs-dist only in browser
 let pdfjsLib: any = null;
 const initPdfJs = async () => {
@@ -56,6 +81,7 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
     right: width,
     top: height,
   });
+  const cropBoxRef = useRef(cropBox);
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragType, setDragType] = useState<string>('');
@@ -126,7 +152,26 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
     try {
       const page = await pdf.getPage(pageNum);
       if (generation !== renderGenerationRef.current) return;
-      const viewport = page.getViewport({ scale: PREVIEW_WIDTH / page.getViewport({ scale: 1 }).width });
+      const actualViewport = page.getViewport({ scale: 1 });
+      const synchronizedCropBox = clampCropBoxToPage(
+        cropBoxRef.current,
+        actualViewport.width,
+        actualViewport.height,
+      );
+      cropBoxRef.current = synchronizedCropBox;
+      if (!cropBoxesEqual(cropBox, synchronizedCropBox)) {
+        setCropBox(synchronizedCropBox);
+      }
+      onCropChange([
+        synchronizedCropBox.left,
+        synchronizedCropBox.bottom,
+        synchronizedCropBox.right,
+        synchronizedCropBox.top,
+      ]);
+      setPageWidth(actualViewport.width);
+      setPageHeight(actualViewport.height);
+
+      const viewport = page.getViewport({ scale: PREVIEW_WIDTH / actualViewport.width });
       
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
@@ -140,10 +185,6 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
       await renderTask.promise;
       if (generation !== renderGenerationRef.current) return;
       
-      // Update page dimensions from actual PDF
-      setPageWidth(page.getViewport({ scale: 1 }).width);
-      setPageHeight(page.getViewport({ scale: 1 }).height);
-
       // Convert to data URL for display
       setPdfImage(canvas.toDataURL('image/png'));
     } catch (error) {
@@ -208,6 +249,7 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
       newCropBox.bottom = Math.max(0, Math.min(newCropBox.bottom, height));
       newCropBox.top = Math.max(0, Math.min(newCropBox.top, height));
 
+      cropBoxRef.current = newCropBox;
       setCropBox(newCropBox);
       setStartPos({ x: e.clientX, y: e.clientY });
     };
@@ -238,12 +280,14 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
     if (key === 'bottom') newCropBox.bottom = Math.min(newCropBox.bottom, newCropBox.top - 10);
     if (key === 'top') newCropBox.top = Math.max(newCropBox.top, newCropBox.bottom + 10);
 
+    cropBoxRef.current = newCropBox;
     setCropBox(newCropBox);
     onCropChange([newCropBox.left, newCropBox.bottom, newCropBox.right, newCropBox.top]);
   };
 
   const resetCrop = () => {
     const reset = { left: 0, bottom: 0, right: width, top: height };
+    cropBoxRef.current = reset;
     setCropBox(reset);
     onCropChange([reset.left, reset.bottom, reset.right, reset.top]);
   };
