@@ -49,6 +49,7 @@ toml>=0.10.2
 lxml==6.1.0
 beautifulsoup4>=4.12.2
 html2text>=2020.1.16
+extract-msg==0.56.0
 
 # Transitive Dependencies (pinned for stability)
 python-dateutil==2.9.0.post0

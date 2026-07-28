@@ -1096,19 +1096,198 @@ class PdfConvertEngine:
     
     @staticmethod
     def outlook_to_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
-        """Convert Outlook MSG file to PDF"""
+        """Convert an Outlook MSG file to PDF without requiring Outlook."""
+        message = None
+        html_path = None
         try:
+            from email import policy
+            from email.parser import BytesParser
+            from html import escape
+            import re
+            import tempfile
+            import uuid
+
+            from bs4 import BeautifulSoup
+
             msg_path = input_paths[0]
-            
-            # Try to use win32com on Windows for native support
-            try:
-                from win32com.client import Dispatch
-                outlook = Dispatch("Outlook.Application")
-                msg = outlook.CreateItemFromTemplate(msg_path)
-                msg.SaveAs(output_path, 4)  # 4 = olSaveAsPDF
-                return output_path
-            except ImportError:
-                # Fallback: extract text and create simple PDF
-                raise Exception("outlook_to_pdf requires win32com on Windows")
+            if not os.path.isfile(msg_path):
+                raise ValueError("Outlook MSG input file does not exist")
+
+            def as_text(value) -> str:
+                if value is None:
+                    return ""
+                if isinstance(value, bytes):
+                    for encoding in ("utf-8", "utf-16", "windows-1252"):
+                        try:
+                            return value.decode(encoding)
+                        except UnicodeDecodeError:
+                            continue
+                    return value.decode("utf-8", errors="replace")
+                return str(value)
+
+            def attachment_name(attachment) -> str:
+                for attribute in (
+                    "longFilename",
+                    "shortFilename",
+                    "name",
+                    "displayName",
+                ):
+                    value = getattr(attachment, attribute, None)
+                    if value:
+                        return as_text(value)
+                getter = getattr(attachment, "getFilename", None)
+                if callable(getter):
+                    value = getter()
+                    if value:
+                        return as_text(value)
+                return "Unnamed attachment"
+
+            with open(msg_path, "rb") as source:
+                signature = source.read(8)
+
+            if signature == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
+                try:
+                    import extract_msg
+                except ImportError as import_error:
+                    raise RuntimeError(
+                        "extract-msg is required to convert Outlook MSG files"
+                    ) from import_error
+
+                message = extract_msg.openMsg(msg_path)
+                subject = as_text(getattr(message, "subject", ""))
+                sender = as_text(getattr(message, "sender", ""))
+                recipients_to = as_text(getattr(message, "to", ""))
+                recipients_cc = as_text(getattr(message, "cc", ""))
+                recipients_bcc = as_text(getattr(message, "bcc", ""))
+                date = as_text(getattr(message, "date", ""))
+                html_body = as_text(getattr(message, "htmlBody", ""))
+                text_body = as_text(getattr(message, "body", ""))
+                attachments = [
+                    attachment_name(attachment)
+                    for attachment in (getattr(message, "attachments", None) or [])
+                ]
+            else:
+                # Preserve compatibility with RFC822-style message fixtures while
+                # genuine OLE Compound File MSG input always uses extract-msg.
+                with open(msg_path, "rb") as source:
+                    mime_message = BytesParser(policy=policy.default).parse(source)
+                subject = as_text(mime_message.get("Subject", ""))
+                sender = as_text(mime_message.get("From", ""))
+                recipients_to = as_text(mime_message.get("To", ""))
+                recipients_cc = as_text(mime_message.get("Cc", ""))
+                recipients_bcc = as_text(mime_message.get("Bcc", ""))
+                date = as_text(mime_message.get("Date", ""))
+                html_part = mime_message.get_body(preferencelist=("html",))
+                text_part = mime_message.get_body(preferencelist=("plain",))
+                html_body = html_part.get_content() if html_part else ""
+                text_body = text_part.get_content() if text_part else ""
+                attachments = [
+                    part.get_filename() or "Unnamed attachment"
+                    for part in mime_message.iter_attachments()
+                ]
+
+            if html_body:
+                body_soup = BeautifulSoup(html_body, "html.parser")
+                for dangerous_tag in body_soup.find_all(
+                    ["script", "style", "iframe", "object", "embed", "base", "link", "meta"]
+                ):
+                    dangerous_tag.decompose()
+                for form_tag in body_soup.find_all("form"):
+                    form_tag.unwrap()
+                for tag in body_soup.find_all(True):
+                    for attribute in list(tag.attrs):
+                        lowered = attribute.lower()
+                        if lowered.startswith("on") or lowered in {
+                            "src",
+                            "srcset",
+                            "poster",
+                            "background",
+                            "action",
+                            "formaction",
+                        }:
+                            del tag.attrs[attribute]
+                    if tag.has_attr("style"):
+                        tag["style"] = re.sub(
+                            r"url\s*\([^)]*\)",
+                            "none",
+                            str(tag["style"]),
+                            flags=re.IGNORECASE,
+                        )
+                if body_soup.body:
+                    rendered_body = "".join(str(child) for child in body_soup.body.contents)
+                else:
+                    rendered_body = str(body_soup)
+            else:
+                rendered_body = (
+                    f'<div class="plain-body">{escape(text_body).replace(chr(10), "<br>")}</div>'
+                )
+
+            metadata = [
+                ("Subject", subject),
+                ("From", sender),
+                ("To", recipients_to),
+                ("CC", recipients_cc),
+                ("BCC", recipients_bcc),
+                ("Date", date),
+            ]
+            metadata_rows = "".join(
+                "<tr>"
+                f'<th scope="row">{escape(label)}</th>'
+                f"<td>{escape(value)}</td>"
+                "</tr>"
+                for label, value in metadata
+            )
+            attachment_items = "".join(
+                f"<li>{escape(name)}</li>" for name in attachments
+            ) or "<li>None</li>"
+
+            rendered_html = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{escape(subject or "Outlook message")}</title>
+  <style>
+    @page {{ size: A4; margin: 18mm; }}
+    body {{ color: #202124; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.45; }}
+    h1 {{ font-size: 18pt; margin: 0 0 14px; overflow-wrap: anywhere; }}
+    table {{ border-collapse: collapse; margin-bottom: 20px; width: 100%; }}
+    th {{ color: #5f6368; text-align: left; vertical-align: top; white-space: nowrap; width: 72px; }}
+    th, td {{ border-bottom: 1px solid #dadce0; padding: 5px 8px; overflow-wrap: anywhere; }}
+    .message-body {{ margin-top: 18px; overflow-wrap: anywhere; }}
+    .plain-body {{ white-space: normal; }}
+    .attachments {{ border-top: 1px solid #dadce0; margin-top: 24px; padding-top: 12px; }}
+  </style>
+</head>
+<body>
+  <h1>{escape(subject or "(No subject)")}</h1>
+  <table aria-label="Email headers">{metadata_rows}</table>
+  <main class="message-body">{rendered_body}</main>
+  <section class="attachments">
+    <strong>Attachments</strong>
+    <ul>{attachment_items}</ul>
+  </section>
+</body>
+</html>
+"""
+
+            output_directory = str(Path(output_path).parent)
+            os.makedirs(output_directory, exist_ok=True)
+            html_path = os.path.join(
+                output_directory,
+                f"outlook_{uuid.uuid4().hex}.html",
+            )
+            with open(html_path, "w", encoding="utf-8", newline="\n") as html_file:
+                html_file.write(rendered_html)
+
+            return PdfConvertEngine.document_to_pdf([html_path], output_path, {})
         except Exception as e:
             raise Exception(f"Failed to convert Outlook to PDF: {str(e)}")
+        finally:
+            try:
+                if message is not None:
+                    close_message = getattr(message, "close", None)
+                    if callable(close_message):
+                        close_message()
+            finally:
+                if html_path and os.path.exists(html_path):
+                    os.remove(html_path)
