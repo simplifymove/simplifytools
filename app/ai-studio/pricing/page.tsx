@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ChevronRight, History, Sparkles } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { AI_STUDIO_PLANS } from '@/lib/ai-studio/plans';
-import { getAiStudioRequestRegion } from '@/lib/ai-studio/region';
+import { getAiStudioPricingRegion } from '@/lib/ai-studio/region';
 import { getAiStudioAccessForCurrentUser } from '@/lib/entitlements/ai-studio-server';
 import { getPayPalPublicClientId } from '@/lib/billing/paypal';
 import { PremiumAccessRequired } from '../components/PremiumAccessRequired';
@@ -40,16 +40,13 @@ export default async function AiStudioPricingPage() {
     return <PremiumAccessRequired toolName="AI Studio Credits" returnTo="/ai-studio/pricing" />;
   }
 
-  const region = await getAiStudioRequestRegion();
-  const plans = AI_STUDIO_PLANS.filter((plan) => plan.region === region);
+  const initialRegion = await getAiStudioPricingRegion();
   let paypalClientId: string | null = null;
 
-  if (plans.some((plan) => plan.provider === 'paypal')) {
-    try {
-      paypalClientId = getPayPalPublicClientId();
-    } catch {
-      paypalClientId = null;
-    }
+  try {
+    paypalClientId = getPayPalPublicClientId();
+  } catch {
+    paypalClientId = null;
   }
 
   return (
@@ -104,12 +101,14 @@ export default async function AiStudioPricingPage() {
         <section className="bg-[#f7f8fb] px-4 py-14 text-slate-950 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-5xl">
             <AiStudioPricingClient
-              plans={plans}
+              plans={AI_STUDIO_PLANS}
+              initialRegion={initialRegion}
               paypalClientId={paypalClientId}
             />
 
             <div className="mt-8 rounded-lg border border-slate-200 bg-white p-5 text-center text-sm leading-6 text-slate-600 shadow-sm">
-              Secure checkout is provided by trusted payment partners. Available payment methods are shown automatically based on your region.
+              Secure checkout is provided by trusted payment partners. The
+              available payment method matches your selected currency.
             </div>
           </div>
         </section>

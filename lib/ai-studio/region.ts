@@ -1,13 +1,13 @@
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import {
+  AI_STUDIO_PRICING_REGION_COOKIE,
+  getAiStudioRegionFromCountry,
+  resolveAiStudioPricingRegion,
+  type AiStudioPricingRegion,
+} from '@/lib/ai-studio/pricing-region';
 
-export type AiStudioPricingRegion = 'india' | 'global';
-
-export function getAiStudioRegionFromCountry(countryCode?: string | null): AiStudioPricingRegion {
-  // Default to INR when region detection is unavailable.
-  if (!countryCode) return 'india';
-
-  return countryCode.trim().toUpperCase() === 'IN' ? 'india' : 'global';
-}
+export type { AiStudioPricingRegion } from '@/lib/ai-studio/pricing-region';
+export { getAiStudioRegionFromCountry } from '@/lib/ai-studio/pricing-region';
 
 export async function getAiStudioRequestRegion(): Promise<AiStudioPricingRegion> {
   const requestHeaders = await headers();
@@ -17,4 +17,16 @@ export async function getAiStudioRequestRegion(): Promise<AiStudioPricingRegion>
     requestHeaders.get('x-country-code');
 
   return getAiStudioRegionFromCountry(countryCode);
+}
+
+export async function getAiStudioPricingRegion(): Promise<AiStudioPricingRegion> {
+  const [detectedRegion, cookieStore] = await Promise.all([
+    getAiStudioRequestRegion(),
+    cookies(),
+  ]);
+
+  return resolveAiStudioPricingRegion(
+    detectedRegion,
+    cookieStore.get(AI_STUDIO_PRICING_REGION_COOKIE)?.value,
+  );
 }
