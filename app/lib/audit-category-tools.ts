@@ -127,7 +127,7 @@ function outputContract(extension?: string): FunctionalExpectedOutput | undefine
     extension: normalized,
     mimeType: MIME_TYPES[normalized],
     minSizeBytes: ['.txt', '.csv', '.html', '.rtf'].includes(normalized) ? 1 : 32,
-    signature: normalized === '.pdf' ? 'pdf' : normalized === '.zip' ? 'zip' : normalized.startsWith('.doc') || normalized.startsWith('.xls') || normalized.startsWith('.ppt') ? 'office' : MIME_TYPES[normalized]?.startsWith('image/') ? 'image' : MIME_TYPES[normalized]?.startsWith('audio/') || MIME_TYPES[normalized]?.startsWith('video/') ? 'media' : 'text',
+    signature: normalized === '.pdf' ? 'pdf' : ['.zip', '.epub'].includes(normalized) ? 'zip' : normalized.startsWith('.doc') || normalized.startsWith('.xls') || normalized.startsWith('.ppt') ? 'office' : MIME_TYPES[normalized]?.startsWith('image/') ? 'image' : MIME_TYPES[normalized]?.startsWith('audio/') || MIME_TYPES[normalized]?.startsWith('video/') ? 'media' : 'text',
   };
 }
 

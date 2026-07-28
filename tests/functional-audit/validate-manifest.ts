@@ -32,6 +32,20 @@ validateOutputBuffer(fs.readFileSync(path.resolve('tests/fixtures/archives/sampl
 validateOutputBuffer(fs.readFileSync(path.resolve('tests/fixtures/images/sample.png')), 'sample.png', 'image/png', { extension: '.png', mimeType: 'image/png', minSizeBytes: 32, signature: 'image' });
 validateOutputBuffer(fs.readFileSync(path.resolve('tests/fixtures/documents/sample.docx')), 'sample.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', { extension: '.docx', minSizeBytes: 32, signature: 'office' });
 validateOutputBuffer(fs.readFileSync(path.resolve('tests/fixtures/video/sample.mp4')), 'sample.mp4', 'video/mp4', { extension: '.mp4', mimeType: 'video/mp4', minSizeBytes: 32, signature: 'media' });
+const epubContract = activeTargets.find(({ target }) => target.slug === 'pdf-to-epub')?.target.functionalAudit.expectedOutput;
+if (
+  epubContract?.extension !== '.epub'
+  || epubContract.mimeType !== 'application/epub+zip'
+  || epubContract.signature !== 'zip'
+) {
+  throw new Error('EPUB output contract must use extension .epub, MIME application/epub+zip, and ZIP signature validation');
+}
+validateOutputBuffer(
+  fs.readFileSync(path.resolve('tests/fixtures/documents/sample.epub')),
+  'sample.epub',
+  'application/epub+zip',
+  epubContract,
+);
 let rejectedMissingExtension = false;
 try {
   validateOutputBuffer(fs.readFileSync(path.resolve('tests/fixtures/pdf/simple.pdf')), 'missing-extension', 'application/pdf', { extension: '.pdf', mimeType: 'application/pdf', signature: 'pdf' });
