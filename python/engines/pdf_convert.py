@@ -997,7 +997,7 @@ class PdfConvertEngine:
             from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
             from playwright.sync_api import sync_playwright
             from PIL import Image
-            from python.security.url_safety import (
+            from security.url_safety import (
                 UnsafeUrlError,
                 validate_public_http_url,
             )

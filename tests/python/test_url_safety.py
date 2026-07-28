@@ -9,8 +9,8 @@ from unittest.mock import patch
 
 from PIL import Image
 
-from python.engines.pdf_convert import PdfConvertEngine
-from python.security.url_safety import UnsafeUrlError, validate_public_http_url
+from engines.pdf_convert import PdfConvertEngine
+from security.url_safety import UnsafeUrlError, validate_public_http_url
 
 
 def resolver_for(*addresses):
@@ -211,7 +211,7 @@ class UrlSafetyTests(unittest.TestCase):
                     "playwright.sync_api": sync_api_module,
                 },
             ), patch(
-                "python.security.url_safety.validate_public_http_url",
+                "security.url_safety.validate_public_http_url",
                 side_effect=validate_for_browser,
             ):
                 PdfConvertEngine.url_to_pdf(
