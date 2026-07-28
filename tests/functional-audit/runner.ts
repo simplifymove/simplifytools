@@ -70,6 +70,16 @@ interface DownloadPagePostEvidence {
 }
 
 const DOWNLOAD_PAGE_TIMEOUT_MS = 120_000;
+const RETAINED_RESULT_PROCESSING_ENDPOINTS = new Set([
+  '/api/pdf',
+  '/api/pdf/browser-result',
+  '/api/pdf/edit-text',
+  '/api/browser-download-result',
+]);
+
+function isRetainedResultProcessingPost(method: string, pathname: string): boolean {
+  return method === 'POST' && RETAINED_RESULT_PROCESSING_ENDPOINTS.has(pathname);
+}
 
 function validatedDownloadPageUrl(value: unknown, baseUrl: string): string | undefined {
   if (typeof value !== 'string' || !value.trim()) return undefined;
@@ -468,7 +478,7 @@ export async function executeFunctionalAudit(
     const method = request.method();
     const url = new URL(request.url()).pathname;
     apiRequests.push({ method, url });
-    if (method === 'POST' && url === '/api/pdf') {
+    if (isRetainedResultProcessingPost(method, url)) {
       downloadPagePost.state = 'POST_STILL_PENDING';
       downloadPagePost.requestUrl = url;
     }
@@ -479,15 +489,16 @@ export async function executeFunctionalAudit(
     const url = new URL(response.url()).pathname;
     const evidence = { method, url, status: response.status(), contentType: response.headers()['content-type'], errorBody: undefined as string | undefined };
     apiResponses.push(evidence);
-    const isPdfPost = method === 'POST' && url === '/api/pdf';
-    const responseText = isPdfPost || (method !== 'GET' && response.status() >= 400)
+    const isProcessingPost = isRetainedResultProcessingPost(method, url);
+    const responseText = isProcessingPost || (method !== 'GET' && response.status() >= 400)
       ? await response.text().catch(() => '')
       : '';
     if (method !== 'GET' && response.status() >= 400) {
       evidence.errorBody = responseText.slice(0, 500).replace(/(api[_-]?key|token|secret|password)\s*[:=]\s*[^\s,;}]+/gi, '$1=[REDACTED]');
       resolveApiFailure?.(new Error(`Processing API failed with HTTP ${response.status()}: ${url}`));
     }
-    if (isPdfPost) {
+    if (isProcessingPost) {
+      downloadPagePost.requestUrl = url;
       downloadPagePost.status = response.status();
       if (!response.ok()) {
         downloadPagePost.state = 'POST_FAILED';
@@ -602,15 +613,15 @@ export async function executeFunctionalAudit(
       ]);
       if (!postResult) {
         if (downloadPagePost.state === 'POST_NEVER_HAPPENED') {
-          throw new Error('Download-page processing failed: POST /api/pdf never happened');
+          throw new Error('Download-page processing failed: no recognized retained-result processing POST happened');
         }
-        throw new Error('Download-page processing failed: POST /api/pdf is still pending');
+        throw new Error(`Download-page processing failed: POST ${downloadPagePost.requestUrl || 'to retained-result endpoint'} is still pending`);
       }
       if (postResult.state === 'POST_FAILED') {
-        throw new Error(`Download-page processing failed: POST /api/pdf returned non-2xx status ${postResult.status}`);
+        throw new Error(`Download-page processing failed: POST ${postResult.requestUrl || 'to retained-result endpoint'} returned non-2xx status ${postResult.status}`);
       }
       if (postResult.state === 'POST_2XX_INVALID_DOWNLOAD_URL' || !postResult.downloadPageUrl) {
-        throw new Error('Download-page processing failed: POST /api/pdf returned 2xx but response has no valid downloadPageUrl');
+        throw new Error(`Download-page processing failed: POST ${postResult.requestUrl || 'to retained-result endpoint'} returned 2xx but response has no valid downloadPageUrl`);
       }
       const navigationTimeout = Math.max(1, DOWNLOAD_PAGE_TIMEOUT_MS - (Date.now() - resultFlowStartedAt));
       const downloaded = await fetchDownloadPageOutput(
