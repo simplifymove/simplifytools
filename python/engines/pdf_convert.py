@@ -985,45 +985,110 @@ class PdfConvertEngine:
     @staticmethod
     def url_to_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Convert URL to PDF using full-page screenshot (higher quality output)"""
+        browser = None
+        context = None
+        page = None
         try:
             url = options.get('url', '')
             if not url:
                 raise ValueError("URL not provided")
             
             # Use Playwright for headless browser
+            from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
             from playwright.sync_api import sync_playwright
             from PIL import Image
+            from python.security.url_safety import (
+                UnsafeUrlError,
+                validate_public_http_url,
+            )
             import io
-            
+
+            validate_public_http_url(url)
+            blocked_destinations = []
+
             with sync_playwright() as p:
                 browser = p.chromium.launch()
-                
-                # Set a standard viewport for consistent capture
-                page = browser.new_page(viewport={'width': 1920, 'height': 1080})
-                
-                # Navigate to URL and wait for network idle
-                page.goto(url, wait_until='networkidle')
-                
-                # Wait for any dynamic content to load
-                page.wait_for_load_state('domcontentloaded')
-                
-                # Capture full page screenshot
-                screenshot_bytes = page.screenshot(full_page=True)
-                
-                # Convert screenshot to PDF using PIL
-                image = Image.open(io.BytesIO(screenshot_bytes))
-                
-                # Convert RGBA to RGB if necessary
-                if image.mode in ('RGBA', 'LA', 'P'):
-                    # Create white background
-                    background = Image.new('RGB', image.size, (255, 255, 255))
-                    background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
-                    image = background
-                
-                # Save as PDF with high quality
-                image.save(output_path, 'PDF', quality=95)
-                
-                browser.close()
+                try:
+                    context = browser.new_context(
+                        viewport={'width': 1920, 'height': 1080},
+                        accept_downloads=False,
+                        service_workers='block',
+                        ignore_https_errors=False,
+                        permissions=[],
+                    )
+                    context.set_default_timeout(15_000)
+                    context.set_default_navigation_timeout(30_000)
+
+                    def guard_request(route):
+                        request_url = route.request.url
+                        try:
+                            validate_public_http_url(request_url)
+                        except UnsafeUrlError as unsafe_error:
+                            blocked_destinations.append(str(unsafe_error))
+                            route.abort("blockedbyclient")
+                            return
+                        route.continue_()
+
+                    def guard_websocket(websocket):
+                        try:
+                            validate_public_http_url(websocket.url)
+                        except UnsafeUrlError as unsafe_error:
+                            blocked_destinations.append(str(unsafe_error))
+                            websocket.close(code=1008, reason="Blocked unsafe destination")
+                            return
+                        websocket.connect_to_server()
+
+                    context.route("**/*", guard_request)
+                    context.route_web_socket("**/*", guard_websocket)
+
+                    page = context.new_page()
+                    try:
+                        try:
+                            page.goto(url, wait_until='domcontentloaded', timeout=30_000)
+                        except Exception as navigation_error:
+                            if blocked_destinations:
+                                raise UnsafeUrlError(
+                                    "Browser navigation to a non-public destination was blocked."
+                                ) from navigation_error
+                            raise
+                        try:
+                            page.wait_for_load_state('networkidle', timeout=5_000)
+                        except PlaywrightTimeoutError:
+                            # Continuously active pages may never become idle. The
+                            # bounded render delay below still gives them time to paint.
+                            pass
+                        page.wait_for_timeout(1_000)
+
+                        validate_public_http_url(page.url)
+                        screenshot_bytes = page.screenshot(
+                            full_page=True,
+                            timeout=30_000,
+                        )
+
+                        image = Image.open(io.BytesIO(screenshot_bytes))
+                        if image.mode in ('RGBA', 'LA', 'P'):
+                            background = Image.new('RGB', image.size, (255, 255, 255))
+                            background.paste(
+                                image,
+                                mask=image.split()[-1] if image.mode == 'RGBA' else None,
+                            )
+                            image = background
+                        image.save(output_path, 'PDF', quality=95)
+                    finally:
+                        if page is not None:
+                            page.close()
+                            page = None
+                finally:
+                    try:
+                        if context is not None:
+                            context.close()
+                    finally:
+                        context = None
+                        if browser is not None:
+                            try:
+                                browser.close()
+                            finally:
+                                browser = None
             
             return output_path
         except Exception as e:

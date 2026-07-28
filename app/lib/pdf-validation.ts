@@ -230,7 +230,17 @@ export function validatePdfInput(
       return { valid: false, error: 'Please enter a website URL.' };
     }
     try {
-      new URL(url);
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        return { valid: false, error: 'Only HTTP and HTTPS website URLs are allowed.' };
+      }
+      if (parsedUrl.username || parsedUrl.password) {
+        return { valid: false, error: 'Website URLs containing embedded credentials are not allowed.' };
+      }
+      const hostname = parsedUrl.hostname.replace(/^\[|\]$/g, '').replace(/\.$/, '').toLowerCase();
+      if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
+        return { valid: false, error: 'Localhost website URLs are not allowed.' };
+      }
     } catch {
       return { valid: false, error: 'Invalid URL format. Please enter a valid website URL (e.g., https://example.com).' };
     }
@@ -413,4 +423,3 @@ function validateToolSpecific(
       return { valid: true };
   }
 }
-

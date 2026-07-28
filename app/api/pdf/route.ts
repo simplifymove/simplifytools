@@ -23,6 +23,10 @@ import {
   getRequestedPdfOutputExtension,
   retainPdfDownloadResult,
 } from '@/lib/services/pdf-download-result';
+import {
+  PublicHttpUrlError,
+  validatePublicHttpUrl,
+} from '@/lib/security/public-http-url';
 
 /**
  * Server-side validation for tool-specific requirements
@@ -133,6 +137,25 @@ export async function POST(request: NextRequest) {
         { success: false, error: serverValidation.error },
         { status: 400 }
       );
+    }
+
+    if (tool.id === 'url-to-pdf') {
+      try {
+        await validatePublicHttpUrl(url || '');
+      } catch (error) {
+        const message = error instanceof PublicHttpUrlError
+          ? error.message
+          : 'The website URL could not be validated safely.';
+        console.warn('[PDF API SECURITY] Rejected unsafe URL-to-PDF destination:', {
+          tool: tool.id,
+          reason: message,
+          timestamp: new Date().toISOString(),
+        });
+        return NextResponse.json(
+          { success: false, error: message },
+          { status: 403 },
+        );
+      }
     }
 
     // FILE SECURITY VALIDATION (CRITICAL)
@@ -361,6 +384,10 @@ export async function POST(request: NextRequest) {
       // If using venv, also set VIRTUAL_ENV for compatibility
       if (!pythonExe.includes('/usr/bin/')) {
         (spawnEnv as any).VIRTUAL_ENV = path.dirname(path.dirname(pythonExe));
+      }
+
+      if (toolId === 'url-to-pdf' && process.platform !== 'win32') {
+        spawnEnv.PLAYWRIGHT_BROWSERS_PATH = '/var/www/simplifyconvertapp/.playwright-browsers';
       }
       
       console.log(`[PDF API] Python environment: PYTHONDONTWRITEBYTECODE=${spawnEnv.PYTHONDONTWRITEBYTECODE}, VIRTUAL_ENV=${(spawnEnv as any).VIRTUAL_ENV}`);

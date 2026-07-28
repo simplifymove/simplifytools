@@ -56,6 +56,43 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
             "cd /var/www/simplifyconvertapp && npm ci --silent" || { echo "❌ npm ci failed"; exit 1; }
           
+          # Provision the Python Playwright package and its matching Chromium
+          # revision in an application-local cache. Version markers and an
+          # executable check keep this idempotent across ordinary deployments.
+          echo "Provisioning URL-to-PDF browser runtime..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 '
+            set -eu
+            APP_DIR=/var/www/simplifyconvertapp
+            PYTHON_BIN="$APP_DIR/venv/bin/python"
+            BROWSER_DIR="$APP_DIR/.playwright-browsers"
+            PLAYWRIGHT_VERSION=$(sed -n "s/^playwright==//p" "$APP_DIR/requirements-vps.txt")
+            test -n "$PLAYWRIGHT_VERSION"
+            BROWSER_MARKER="$BROWSER_DIR/.playwright-version"
+            DEPS_MARKER="$BROWSER_DIR/.system-deps-$PLAYWRIGHT_VERSION"
+
+            INSTALLED_VERSION=$("$PYTHON_BIN" -c "import importlib.metadata; print(importlib.metadata.version(\"playwright\"))" 2>/dev/null || true)
+            if [ "$INSTALLED_VERSION" != "$PLAYWRIGHT_VERSION" ]; then
+              "$PYTHON_BIN" -m pip install --disable-pip-version-check "playwright==$PLAYWRIGHT_VERSION"
+            fi
+
+            mkdir -p "$BROWSER_DIR"
+            if [ ! -f "$DEPS_MARKER" ]; then
+              PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" "$PYTHON_BIN" -m playwright install-deps chromium
+              touch "$DEPS_MARKER"
+            fi
+
+            INSTALLED_MARKER=$(cat "$BROWSER_MARKER" 2>/dev/null || true)
+            BROWSER_EXECUTABLE=$(PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" "$PYTHON_BIN" -c "from playwright.sync_api import sync_playwright; p = sync_playwright().start(); print(p.chromium.executable_path); p.stop()")
+            if [ "$INSTALLED_MARKER" != "$PLAYWRIGHT_VERSION" ] || [ ! -x "$BROWSER_EXECUTABLE" ]; then
+              PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" "$PYTHON_BIN" -m playwright install chromium
+              printf "%s\n" "$PLAYWRIGHT_VERSION" > "$BROWSER_MARKER"
+              chmod -R a+rX "$BROWSER_DIR"
+            fi
+
+            BROWSER_EXECUTABLE=$(PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" "$PYTHON_BIN" -c "from playwright.sync_api import sync_playwright; p = sync_playwright().start(); print(p.chromium.executable_path); p.stop()")
+            test -x "$BROWSER_EXECUTABLE"
+          ' || { echo "URL-to-PDF browser provisioning failed"; exit 1; }
+
           # Build application
           echo "🏗️ Building application..."
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
