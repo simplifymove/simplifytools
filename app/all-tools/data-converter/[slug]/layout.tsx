@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getDataToolById } from '@/app/lib/data-tools';
+import { generateSoftwareApplicationSchema } from '@/app/lib/seo';
 
 interface Params {
   slug: string;
@@ -126,10 +127,34 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
-export default function DataConverterSlugLayout({
+export default async function DataConverterSlugLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<Params>;
 }) {
-  return <>{children}</>;
+  const { slug } = await params;
+  const tool = getDataToolById(slug);
+
+  if (!tool) {
+    return <>{children}</>;
+  }
+
+  const softwareSchema = generateSoftwareApplicationSchema({
+    name: tool.title,
+    description: tool.description,
+    url: `https://simplifyconvert.com/all-tools/data/${slug}`,
+    applicationCategory: 'UtilitiesApplication',
+  });
+
+  return (
+    <>
+      {children}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+      />
+    </>
+  );
 }

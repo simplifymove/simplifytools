@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 import { generateBreadcrumbSchema } from '@/app/lib/seo';
 
@@ -17,11 +18,19 @@ interface BreadcrumbProps {
 }
 
 export function Breadcrumb({ items, includeLogo = false, textColor = 'text-white/90' }: BreadcrumbProps) {
+  const pathname = usePathname();
+  const baseUrl = 'https://simplifyconvert.com';
+
   // Create full URLs for schema
-  const breadcrumbItems = items.map((item) => ({
-    name: item.name,
-    url: item.url ? `https://simplifyconvert.com${item.url}` : 'https://simplifyconvert.com',
-  }));
+  const breadcrumbItems = items.map((item, index) => {
+    const isCurrentPage = index === items.length - 1;
+    const url = item.url || (isCurrentPage ? pathname : undefined);
+
+    return {
+      name: item.name,
+      url: url ? new URL(url, baseUrl).toString() : undefined,
+    };
+  });
 
   return (
     <>

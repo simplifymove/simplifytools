@@ -10,6 +10,7 @@ import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { createConvertedFilename } from '@/app/lib/data-validation';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 interface FormData {
   [key: string]: string | number | boolean;
@@ -734,23 +735,12 @@ export default function DataToolPage() {
             </div>
           </section>
 
-          {/* Related Tools Section */}
-          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Related Tools</h2>
-            <p className="text-gray-700 mb-6">Explore other data conversion tools that might be useful for your workflow:</p>
-            <div className="grid md:grid-cols-2 gap-4">
-              {getRelatedTools(tool.id).map((relatedTool, idx) => (
-                <Link
-                  key={idx}
-                  href={`/all-tools/data/${relatedTool.id}`}
-                  className="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:border-teal-300 hover:shadow-md transition"
-                >
-                  <h3 className="font-semibold text-gray-900 group-hover:text-teal-600 mb-1">{relatedTool.title}</h3>
-                  <p className="text-gray-600 text-sm">{relatedTool.description}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
+          <RelatedToolsSection
+            family="data"
+            toolId={tool.id}
+            description="Explore other data conversion tools that might be useful for your workflow."
+            limit={8}
+          />
 
           {/* Data Safety & Best Practices Section */}
           <section className="bg-blue-50 rounded-xl border border-blue-200 p-8">

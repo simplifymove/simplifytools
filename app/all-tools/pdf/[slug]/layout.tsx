@@ -1,5 +1,9 @@
 import { Metadata } from 'next';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
+import {
+  generateBreadcrumbSchema,
+  generateSoftwareApplicationSchema,
+} from '@/app/lib/seo';
 
 interface Params {
   slug: string;
@@ -317,10 +321,53 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
-export default function PdfSlugLayout({
+const PAGE_LEVEL_SOFTWARE_SCHEMA_TOOL_IDS = new Set([
+  'eps-to-pdf',
+  'heic-to-pdf',
+  'images-to-pdf',
+  'pdf-to-word',
+]);
+
+export default async function PdfSlugLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<Params>;
 }) {
-  return <>{children}</>;
+  const { slug } = await params;
+  const tool = getPdfToolById(slug);
+
+  if (!tool) {
+    return <>{children}</>;
+  }
+
+  const canonicalUrl = `https://simplifyconvert.com/all-tools/pdf/${slug}`;
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: 'https://simplifyconvert.com' },
+    { name: 'PDF Tools', url: 'https://simplifyconvert.com/all-tools/pdf' },
+    { name: tool.title, url: canonicalUrl },
+  ]);
+  const softwareSchema = generateSoftwareApplicationSchema({
+    name: tool.title,
+    description: tool.description,
+    url: canonicalUrl,
+    applicationCategory: 'UtilitiesApplication',
+  });
+
+  return (
+    <>
+      {children}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {!PAGE_LEVEL_SOFTWARE_SCHEMA_TOOL_IDS.has(tool.id) && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        />
+      )}
+    </>
+  );
 }

@@ -13,6 +13,7 @@ import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { FAQSection } from '@/app/components/FAQSection';
 import { readDownloadResultResponse } from '@/app/lib/download-result-client';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -35,6 +36,26 @@ interface PageProps {
     slug: string;
   }>;
 }
+
+const PDF_TOOLS_WITH_EXISTING_RELATED_SECTIONS = new Set([
+  'eps-to-pdf',
+  'gif-to-pdf',
+  'heic-to-pdf',
+  'images-to-pdf',
+  'jpg-to-pdf',
+  'merge-pdf',
+  'pdf-to-jpg',
+  'pdf-to-png',
+  'pdf-to-tiff',
+  'pdf-to-word',
+  'pdf-watermark-remover',
+  'png-to-pdf',
+  'rotate-pdf',
+  'split-pdf',
+  'tiff-to-pdf',
+  'unlock-pdf',
+  'webp-to-pdf',
+]);
 
 export default function PdfToolPage({ params }: PageProps) {
   const router = useRouter();
@@ -6004,6 +6025,16 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
           </div>
         )}
+        {!PDF_TOOLS_WITH_EXISTING_RELATED_SECTIONS.has(tool.id) && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 pb-16">
+            <RelatedToolsSection
+              family="pdf"
+              toolId={tool.id}
+              description="Explore related PDF tools that can help with the same document workflow."
+              limit={8}
+            />
+          </div>
+        )}
         </div>
       </main>
       <Footer />
@@ -6265,6 +6296,14 @@ function AnnotatePdfPage({ tool }: { tool: PdfToolConfig }) {
                 )}
               </motion.div>
             )}
+          </div>
+          <div className="mt-8">
+            <RelatedToolsSection
+              family="pdf"
+              toolId={tool.id}
+              description="Explore related PDF tools that can help with the same document workflow."
+              limit={8}
+            />
           </div>
         </div>
       </main>

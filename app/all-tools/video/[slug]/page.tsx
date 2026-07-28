@@ -13,6 +13,7 @@ import { useVideoToolErrors } from '@/app/hooks/useVideoToolErrors';
 import { validateFile } from '@/app/utils/validation/file-validation';
 import { ErrorAlert } from '@/app/components/error-components';
 import { VideoToolErrorType } from '@/app/utils/types/errors';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 
 // Action-specific CTA text for each tool
 function getActionText(toolId: string): string {
@@ -725,23 +726,12 @@ export default function VideoToolPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Related Tools Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Related Tools</h2>
-            <p className="text-gray-700 mb-6">Check out these related video and audio tools that might help with your media processing needs:</p>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {getRelatedTools(resolvedParams.slug).map((relatedTool) => (
-                <Link key={relatedTool.id} href={relatedTool.route}>
-                  <div className="border border-gray-300 rounded-lg p-4 hover:border-pink-500 hover:bg-pink-50 transition h-full">
-                    <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{relatedTool.title}</h3>
-                    <p className="text-gray-600 text-xs line-clamp-2 mb-3">{relatedTool.description}</p>
-                    <span className="text-pink-600 text-xs font-medium">Use Tool →</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <RelatedToolsSection
+            family="video"
+            toolId={resolvedParams.slug}
+            description="Check out these related video and audio tools that might help with your media processing needs."
+            limit={8}
+          />
         </motion.div>
 
         {/* Feature Cards */}

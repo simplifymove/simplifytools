@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getToolById } from '@/app/lib/video-tools';
+import { generateSoftwareApplicationSchema } from '@/app/lib/seo';
 
 interface Params {
   slug: string;
@@ -402,10 +403,24 @@ export default async function VideoSlugLayout({
   const tool = getToolById(slug);
   const baseUrl = 'https://simplifyconvert.com';
   const canonicalUrl = `${baseUrl}/all-tools/video/${slug}`;
+  const softwareSchema = tool
+    ? generateSoftwareApplicationSchema({
+        name: tool.title,
+        description: tool.description,
+        url: canonicalUrl,
+        applicationCategory: 'MultimediaApplication',
+      })
+    : null;
 
   return (
     <>
       {children}
+      {softwareSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        />
+      )}
       {/* Schema Markup - FAQ Page */}
       <script
         type="application/ld+json"

@@ -45,7 +45,7 @@ export function generatePageMetadata(options: {
   };
 }
 
-export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+export function generateBreadcrumbSchema(items: Array<{ name: string; url?: string }>) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -53,7 +53,7 @@ export function generateBreadcrumbSchema(items: Array<{ name: string; url: strin
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: item.url,
+      ...(item.url ? { item: item.url } : {}),
     })),
   };
 }
@@ -71,13 +71,9 @@ export function generateSoftwareApplicationSchema(options: {
     name: options.name,
     description: options.description,
     url: options.url,
-    image: options.image || 'https://simplifyconvert.com/og-image.jpg',
     applicationCategory: options.applicationCategory,
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-    },
+    operatingSystem: 'Web',
+    ...(options.image ? { image: options.image } : {}),
   };
 }
 
