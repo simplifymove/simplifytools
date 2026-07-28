@@ -29,6 +29,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://simplifyconvert.com/all-tools/ai-image-generator',
   },
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function AiImageGeneratorLayout({
@@ -38,4 +42,3 @@ export default function AiImageGeneratorLayout({
 }) {
   return <>{children}</>;
 }
-

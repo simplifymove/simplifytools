@@ -592,7 +592,7 @@ export default function ColorizePhotoPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Photo Tools</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <Link href="/all-tools/enhance-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+            <Link href="/all-tools/image-enhancer" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Enhance Image</h3>
               <p className="text-sm text-gray-600">Improve photo quality and clarity</p>
             </Link>
@@ -600,7 +600,7 @@ export default function ColorizePhotoPage() {
               <h3 className="font-bold text-gray-800 mb-1">Grayscale Image</h3>
               <p className="text-sm text-gray-600">Convert to black and white</p>
             </Link>
-            <Link href="/all-tools/sepia-effect" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+            <Link href="/all-tools/sepia-filter" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Sepia Effect</h3>
               <p className="text-sm text-gray-600">Apply classic vintage tone</p>
             </Link>
@@ -648,7 +648,6 @@ export default function ColorizePhotoPage() {
     </div>
   );
 }
-
 
 
 

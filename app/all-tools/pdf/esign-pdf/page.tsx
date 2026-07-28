@@ -565,7 +565,7 @@ export default function EsignPdfPage() {
             <ChevronRight size={16} />
             <span className="font-semibold">E-Sign PDF</span>
           </div>
-          <h1 className="text-3xl font-bold text-purple-900">✍️ E-Sign PDF</h1>
+          <h2 className="text-3xl font-bold text-purple-900">✍️ E-Sign PDF</h2>
           <p className="text-purple-700 text-sm mt-2">Click on PDF to add signature, drag to reposition</p>
         </div>
       </div>
@@ -898,4 +898,3 @@ export default function EsignPdfPage() {
     </div>
   );
 }
-

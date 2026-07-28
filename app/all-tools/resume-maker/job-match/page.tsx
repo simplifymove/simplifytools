@@ -588,7 +588,7 @@ export default function ResumeBuilderPage() {
                 <div className="max-w-2xl mx-auto">
                   {/* Resume Preview */}
                   <div className="text-center mb-6 pb-4 border-b-2" style={{ borderColor: selectedDesign.primaryColor }}>
-                    <h1 className="text-3xl font-bold" style={{ color: selectedDesign.primaryColor }}>{resumeData.fullName}</h1>
+                    <h2 className="text-3xl font-bold" style={{ color: selectedDesign.primaryColor }}>{resumeData.fullName}</h2>
                     <p className="text-gray-600 text-sm mt-2">
                       {resumeData.email} • {resumeData.phone} • {resumeData.location}
                     </p>

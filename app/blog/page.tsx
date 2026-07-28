@@ -13,7 +13,14 @@ const categories = [
   { id: 'video', title: 'Video Tools', icon: Video, color: 'from-pink-500 via-pink-600 to-pink-700', count: '58+', link: '/all-tools/video-tools' },
   { id: 'ai', title: 'AI Writing', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '60+', link: '/all-tools/ai-tools' },
   { id: 'data', title: 'Data Tools', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/all-tools/data' },
-  { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '44+', link: '/all-tools' }
+  { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '44+', link: '/all-tools/code-tools' }
+];
+
+const navigationItems = [
+  { label: 'Image', href: '/all-tools/image-tools' },
+  { label: 'Video', href: '/all-tools/video-tools' },
+  { label: 'AI Write', href: '/all-tools/ai-tools' },
+  { label: 'Data', href: '/all-tools/data' },
 ];
 
 export default function BlogPage() {
@@ -177,14 +184,14 @@ export default function BlogPage() {
             </div>
 
             {/* Other Navigation Items */}
-            {['Image', 'Video', 'AI Write', 'Data'].map((item) => (
+            {navigationItems.map((item) => (
               <motion.a 
-                key={item} 
-                href="#" 
+                key={item.label}
+                href={item.href}
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
                 whileHover={{ y: -2 }}
               >
-                {item}
+                {item.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
               </motion.a>
             ))}
@@ -237,9 +244,9 @@ export default function BlogPage() {
             exit={{ opacity: 0, height: 0 }}
           >
             <div className="space-y-3">
-              {['All Tools', 'Image', 'Video', 'AI Write', 'Data'].map((item) => (
-                <Link key={item} href="/all-tools" className="block px-4 py-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
-                  {item}
+              {[{ label: 'All Tools', href: '/all-tools' }, ...navigationItems].map((item) => (
+                <Link key={item.label} href={item.href} className="block px-4 py-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
+                  {item.label}
                 </Link>
               ))}
               <Link href="/all-tools" className="block px-4 py-2 bg-orange-500 text-white rounded-lg font-medium">
@@ -315,7 +322,15 @@ export default function BlogPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Latest Articles</h2>
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <h2 className="text-3xl font-bold text-gray-900">Latest Articles</h2>
+            <Link
+              href="/blog/jpg-to-png-conversion-guide"
+              className="font-semibold text-orange-600 hover:text-orange-700"
+            >
+              Read the JPG to PNG Conversion Guide →
+            </Link>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogPosts.slice(1).map((post, idx) => (
               <motion.article
@@ -387,5 +402,4 @@ export default function BlogPage() {
     </main>
   );
 }
-
 

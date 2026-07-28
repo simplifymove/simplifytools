@@ -100,7 +100,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
 
                 <div className="flex flex-col gap-2">
                   <Link
-                    href="/profile"
+                    href="/account"
                     className="w-full py-2 bg-blue-500 text-white font-medium rounded-lg text-sm hover:bg-blue-600 transition-all"
                     onClick={onClose}
                   >
@@ -269,6 +269,5 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
     </AnimatePresence>
   );
 }
-
 
 

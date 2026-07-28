@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://simplifyconvert.com"),
   title: "Free Online Tools to Convert PDFs, Images & Videos",
   description: "Use 200+ free online tools to convert PDFs, images, videos, and files instantly. No signup needed. Fast, secure, and free forever.",
   keywords: [
@@ -149,5 +150,4 @@ export default function RootLayout({
     </html>
   );
 }
-
 

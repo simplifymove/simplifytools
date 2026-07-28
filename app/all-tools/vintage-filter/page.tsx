@@ -326,11 +326,6 @@ export default function VintageFilterPage() {
             price: '0',
             priceCurrency: 'USD',
           },
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: '4.8',
-            reviewCount: '240',
-          },
         })}
       </script>
       <script type="application/ld+json">

@@ -245,7 +245,7 @@ export default function InvertColorsPage() {
             <div className="bg-white rounded-lg shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Related Image Tools</h2>
               <div className="grid md:grid-cols-3 gap-4">
-                <Link href="/all-tools/black-white-filter" className="p-4 border-2 border-rose-200 rounded-lg hover:bg-rose-50 transition">
+                <Link href="/all-tools/black-white" className="p-4 border-2 border-rose-200 rounded-lg hover:bg-rose-50 transition">
                   <h3 className="font-bold text-gray-800">Black & White</h3>
                   <p className="text-sm text-gray-600">Convert to grayscale</p>
                 </Link>

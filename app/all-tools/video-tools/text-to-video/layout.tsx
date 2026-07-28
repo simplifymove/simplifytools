@@ -76,11 +76,6 @@ export default function TextToVideoLayout({
               'Professional Quality Output',
               'Free HD Download',
             ],
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.8',
-              ratingCount: '256',
-            },
             creator: {
               '@type': 'Organization',
               name: 'SimplifyConvert',
@@ -127,4 +122,3 @@ export default function TextToVideoLayout({
     </>
   );
 }
-

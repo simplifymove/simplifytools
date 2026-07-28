@@ -2,13 +2,40 @@
  * AI Code Assistant Landing Page
  */
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Code2, Zap, Shield, Brain, ArrowRight, CheckCircle } from "lucide-react";
 
-export const metadata = {
-  title: "AI Code Assistant - Intelligent Coding Help",
+export const metadata: Metadata = {
+  title: "AI Code Assistant - Intelligent Coding Help | SimplifyConvert",
   description:
     "Get instant help with code generation, debugging, and explanation using our advanced AI. Supports React, Node.js, Python, and more.",
+  alternates: {
+    canonical: "https://simplifyconvert.com/ai-code-assistant",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://simplifyconvert.com/ai-code-assistant",
+    siteName: "SimplifyConvert",
+    title: "AI Code Assistant - Intelligent Coding Help",
+    description:
+      "Get instant help with code generation, debugging, and explanation using our advanced AI.",
+    images: [
+      {
+        url: "https://simplifyconvert.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "SimplifyConvert AI Code Assistant",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Code Assistant - Intelligent Coding Help",
+    description:
+      "Get instant help with code generation, debugging, and explanation using our advanced AI.",
+    images: ["https://simplifyconvert.com/og-image.jpg"],
+  },
 };
 
 export default function AiCodeAssistantPage() {

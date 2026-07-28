@@ -726,7 +726,7 @@ export default function UpscaleImagePage() {
               <h3 className="font-bold text-gray-800 mb-1">Resize Image</h3>
               <p className="text-sm text-gray-600">Scale images to specific dimensions</p>
             </Link>
-            <Link href="/all-tools/enhance-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+            <Link href="/all-tools/image-enhancer" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Enhance Image</h3>
               <p className="text-sm text-gray-600">Improve photo quality and clarity</p>
             </Link>
@@ -773,7 +773,6 @@ export default function UpscaleImagePage() {
     </>
   );
 }
-
 
 
 

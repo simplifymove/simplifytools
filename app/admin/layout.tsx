@@ -1,8 +1,16 @@
 import { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { getAdminAuthState } from '@/lib/auth/admin';
 import { redirect } from 'next/navigation';
 import { AdminShell } from './components/AdminShell';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 function getEnvironmentLabel() {
   if (process.env.VERCEL_ENV === 'production') return 'Production';

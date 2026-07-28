@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   },
   twitter: { card: 'summary_large_image', title: 'WebP to TIFF', description: 'Convert and edit webp to tiff online instantly. Free tool without signup required.', images: ['https://simplifyconvert.com/og-image.jpg'] },
   alternates: { canonical: 'https://simplifyconvert.com/all-tools/webp-to-tiff' },
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function WebpToTiffLayout({ children }: { children: React.ReactNode }) {

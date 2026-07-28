@@ -233,14 +233,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 
   const baseUrl = 'https://simplifyconvert.com';
-  const canonicalUrl = `${baseUrl}/all-tools/ai-write/${toolId}`;
+  const canonicalUrl = `${baseUrl}/all-tools/ai-tools/${toolId}`;
 
   return {
     title: seoData.title,
     description: seoData.description,
     keywords: seoData.keywords,
     robots: {
-      index: true,
+      index: false,
       follow: true,
     },
     openGraph: {

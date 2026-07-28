@@ -31,11 +31,17 @@ const EXCLUDED_PATTERNS = [
   'tiktok-watermark',
 ];
 
+const UNFINISHED_TOOL_IDS = new Set([
+  'ai-image-gen',
+  'ai-image-generator',
+  'webp-to-tiff',
+]);
+
 function isExcludedTool(id: string, title = ''): boolean {
   const idLower = id.toLowerCase();
   const titleLower = title.toLowerCase();
 
-  return EXCLUDED_PATTERNS.some(
+  return UNFINISHED_TOOL_IDS.has(idLower) || EXCLUDED_PATTERNS.some(
     (pattern) => idLower.includes(pattern) || titleLower.includes(pattern)
   );
 }
@@ -144,7 +150,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/all-tools/code-minifier', priority: 0.6, frequency: 'monthly' as const, label: 'Code Minifier' },
     { url: '/all-tools/eps-to-png', priority: 0.6, frequency: 'monthly' as const, label: 'EPS to PNG' },
     { url: '/all-tools/image-compressor', priority: 0.6, frequency: 'monthly' as const, label: 'Image Compressor' },
-    { url: '/all-tools/webp-to-tiff', priority: 0.6, frequency: 'monthly' as const, label: 'WebP to TIFF' },
     { url: '/all-tools/batch-compress-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Compress Images' },
     { url: '/all-tools/batch-resize-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Resize Images' },
   ];

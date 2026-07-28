@@ -2,12 +2,37 @@
  * AI Code Assistant Documentation Page
  */
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Code2, Terminal, Book, Zap } from "lucide-react";
 
-export const metadata = {
-  title: "API Documentation - AI Code Assistant",
-  description: "Complete API documentation and setup guide for SimplifyConvert AI Code Assistant",
+export const metadata: Metadata = {
+  title: "AI Code Assistant API Documentation | SimplifyConvert",
+  description: "Complete API documentation and setup guide for SimplifyConvert AI Code Assistant.",
+  alternates: {
+    canonical: "https://simplifyconvert.com/ai-code-assistant/docs",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://simplifyconvert.com/ai-code-assistant/docs",
+    siteName: "SimplifyConvert",
+    title: "AI Code Assistant API Documentation",
+    description: "Complete API documentation and setup guide for SimplifyConvert AI Code Assistant.",
+    images: [
+      {
+        url: "https://simplifyconvert.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "AI Code Assistant API documentation",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Code Assistant API Documentation",
+    description: "Complete API documentation and setup guide for SimplifyConvert AI Code Assistant.",
+    images: ["https://simplifyconvert.com/og-image.jpg"],
+  },
 };
 
 export default function DocsPage() {

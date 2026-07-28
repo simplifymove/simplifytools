@@ -278,7 +278,7 @@ export default function PixelateImagePage() {
                   <h3 className="font-bold text-gray-800">Blur Image</h3>
                   <p className="text-sm text-gray-600">Blur effect with intensity</p>
                 </Link>
-                <Link href="/all-tools/black-white-filter" className="p-4 border-2 border-indigo-200 rounded-lg hover:bg-indigo-50 transition">
+                <Link href="/all-tools/black-white" className="p-4 border-2 border-indigo-200 rounded-lg hover:bg-indigo-50 transition">
                   <h3 className="font-bold text-gray-800">Black & White</h3>
                   <p className="text-sm text-gray-600">Convert to grayscale</p>
                 </Link>

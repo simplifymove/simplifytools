@@ -295,7 +295,7 @@ export default function SketchEffectPage() {
                   <h3 className="font-bold text-gray-800">Glow Effect</h3>
                   <p className="text-sm text-gray-600">Luminous glow</p>
                 </Link>
-                <Link href="/all-tools/black-white-filter" className="p-4 border-2 border-slate-200 rounded-lg hover:bg-slate-50 transition">
+                <Link href="/all-tools/black-white" className="p-4 border-2 border-slate-200 rounded-lg hover:bg-slate-50 transition">
                   <h3 className="font-bold text-gray-800">Black & White</h3>
                   <p className="text-sm text-gray-600">Grayscale conversion</p>
                 </Link>
