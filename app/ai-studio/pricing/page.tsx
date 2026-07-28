@@ -5,6 +5,7 @@ import { HomeHeader } from '@/app/components/HomeHeader';
 import { AI_STUDIO_PLANS } from '@/lib/ai-studio/plans';
 import { getAiStudioRequestRegion } from '@/lib/ai-studio/region';
 import { getAiStudioAccessForCurrentUser } from '@/lib/entitlements/ai-studio-server';
+import { getPayPalPublicClientId } from '@/lib/billing/paypal';
 import { PremiumAccessRequired } from '../components/PremiumAccessRequired';
 import { AiStudioPricingClient } from './AiStudioPricingClient';
 
@@ -41,6 +42,15 @@ export default async function AiStudioPricingPage() {
 
   const region = await getAiStudioRequestRegion();
   const plans = AI_STUDIO_PLANS.filter((plan) => plan.region === region);
+  let paypalClientId: string | null = null;
+
+  if (plans.some((plan) => plan.provider === 'paypal')) {
+    try {
+      paypalClientId = getPayPalPublicClientId();
+    } catch {
+      paypalClientId = null;
+    }
+  }
 
   return (
     <>
@@ -93,7 +103,10 @@ export default async function AiStudioPricingPage() {
 
         <section className="bg-[#f7f8fb] px-4 py-14 text-slate-950 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-5xl">
-            <AiStudioPricingClient plans={plans} />
+            <AiStudioPricingClient
+              plans={plans}
+              paypalClientId={paypalClientId}
+            />
 
             <div className="mt-8 rounded-lg border border-slate-200 bg-white p-5 text-center text-sm leading-6 text-slate-600 shadow-sm">
               Secure checkout is provided by trusted payment partners. Available payment methods are shown automatically based on your region.

@@ -74,6 +74,8 @@ function titleCase(value: string) {
 function providerLabel(provider: string) {
   return provider === 'razorpay'
     ? 'Razorpay'
+    : provider === 'paypal'
+      ? 'PayPal'
     : provider === 'stripe'
       ? 'Stripe'
       : titleCase(provider);
@@ -442,7 +444,7 @@ export default async function AiStudioBillingPage() {
                 {
                   label: 'Total Amount Spent',
                   value: totalAmountSpent,
-                  detail: 'Verified paid Razorpay and Stripe purchases',
+                  detail: 'Verified paid Razorpay and PayPal purchases',
                   icon: CreditCard,
                 },
               ].map((stat) => {
@@ -566,7 +568,7 @@ export default async function AiStudioBillingPage() {
                 <EmptyState
                   icon={ReceiptText}
                   title="No purchases yet"
-                  detail="AI Studio plan purchases will appear here after a Razorpay or Stripe checkout is created."
+                  detail="AI Studio plan purchases will appear here after a Razorpay or PayPal checkout is created."
                 />
               )}
             </section>

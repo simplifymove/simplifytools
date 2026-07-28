@@ -1,5 +1,5 @@
 export type AiStudioPlanRegion = 'india' | 'global';
-export type AiStudioPaymentProvider = 'razorpay' | 'stripe';
+export type AiStudioPaymentProvider = 'razorpay' | 'stripe' | 'paypal';
 
 export interface AiStudioPlanConfig {
   id: string;
@@ -52,7 +52,7 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     id: 'global-starter',
     name: 'Global Starter',
     region: 'global',
-    provider: 'stripe',
+    provider: 'paypal',
     currency: 'USD',
     grossAmountMinor: 599,
     aiUsageValueMinor: 300,
@@ -63,7 +63,7 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     id: 'global-pro',
     name: 'Global Pro',
     region: 'global',
-    provider: 'stripe',
+    provider: 'paypal',
     currency: 'USD',
     grossAmountMinor: 1299,
     aiUsageValueMinor: 800,
@@ -74,4 +74,15 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
 
 export function getAiStudioPlan(planId: string) {
   return AI_STUDIO_PLANS.find((plan) => plan.id === planId) ?? null;
+}
+
+export function isAiStudioPayPalUsdPlan(
+  plan: AiStudioPlanConfig | null,
+): plan is AiStudioPlanConfig {
+  return Boolean(
+    plan &&
+      plan.region === 'global' &&
+      plan.provider === 'paypal' &&
+      plan.currency === 'USD',
+  );
 }

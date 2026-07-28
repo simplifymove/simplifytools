@@ -8,7 +8,7 @@ interface FulfillAiStudioPurchaseOptions {
   rawPayload: unknown;
 }
 
-interface FulfillAiStudioStripePurchaseOptions {
+interface FulfillAiStudioCheckoutPurchaseOptions {
   checkoutSessionId: string;
   providerPaymentId?: string;
   rawPayload: unknown;
@@ -37,7 +37,7 @@ export async function fulfillAiStudioStripePurchase({
   checkoutSessionId,
   providerPaymentId,
   rawPayload,
-}: FulfillAiStudioStripePurchaseOptions) {
+}: FulfillAiStudioCheckoutPurchaseOptions) {
   return fulfillAiStudioPurchase({
     provider: 'stripe',
     providerPaymentId,
@@ -48,8 +48,8 @@ export async function fulfillAiStudioStripePurchase({
   });
 }
 
-interface FulfillAiStudioPurchaseByProviderOptions {
-  provider: 'razorpay' | 'stripe';
+export interface FulfillAiStudioPurchaseByProviderOptions {
+  provider: 'razorpay' | 'stripe' | 'paypal';
   providerPaymentId?: string;
   rawPayload: unknown;
   lookup: {
@@ -58,7 +58,7 @@ interface FulfillAiStudioPurchaseByProviderOptions {
   };
 }
 
-async function fulfillAiStudioPurchase({
+export async function fulfillAiStudioPurchase({
   provider,
   providerPaymentId,
   rawPayload,
@@ -105,7 +105,7 @@ async function fulfillAiStudioPurchase({
 
       if (existingPaidPayment && existingPaidPayment.id !== purchase.id) {
         throw new Error(
-          'Razorpay payment is already linked to another AI Studio purchase',
+          'Provider payment is already linked to another AI Studio purchase',
         );
       }
     }
