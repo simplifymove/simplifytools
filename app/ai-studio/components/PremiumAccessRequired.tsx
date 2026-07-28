@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { LockKeyhole, Sparkles } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
+import { getSignInPath } from '@/lib/auth/redirect';
 
 interface PremiumAccessRequiredProps {
   toolName?: string;
@@ -8,7 +9,7 @@ interface PremiumAccessRequiredProps {
 }
 
 export function PremiumAccessRequired({ toolName = 'AI Studio', returnTo = '/ai-studio' }: PremiumAccessRequiredProps) {
-  const signInHref = `/auth/signin?callbackUrl=${encodeURIComponent(returnTo)}`;
+  const signInHref = getSignInPath(returnTo);
 
   return (
     <>

@@ -10,10 +10,11 @@ import {
   Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle, ChevronDown, LogOut, Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getSignInPath } from '@/lib/auth/redirect';
 
 export function HomeHeader() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -275,7 +276,11 @@ export function HomeHeader() {
             </Link>
 
             <Link
-              href="/ai-studio"
+              href={
+                sessionStatus === 'unauthenticated'
+                  ? getSignInPath('/ai-studio')
+                  : '/ai-studio'
+              }
               className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-to-r from-slate-950 via-blue-700 to-cyan-600 px-3 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/30 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm"
             >
               <Sparkles size={15} className="shrink-0" />
@@ -446,4 +451,3 @@ export function HomeHeader() {
     </>
   );
 }
-

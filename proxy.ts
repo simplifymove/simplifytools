@@ -1,6 +1,7 @@
 import { getToken } from 'next-auth/jwt'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getAiStudioAuthenticationRedirect } from '@/lib/auth/redirect'
 
 export async function proxy(req: NextRequest) {
   const token = await getToken({
@@ -9,6 +10,14 @@ export async function proxy(req: NextRequest) {
   })
 
   const isAuth = !!token
+  const aiStudioRedirect = getAiStudioAuthenticationRedirect(
+    req.nextUrl.pathname,
+    isAuth,
+  )
+
+  if (aiStudioRedirect) {
+    return NextResponse.redirect(new URL(aiStudioRedirect, req.url))
+  }
 
   // Protect /account route
   if (req.nextUrl.pathname.startsWith('/account') && !isAuth) {
@@ -28,5 +37,12 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/account', '/account/:path*', '/admin', '/admin/:path*'],
+  matcher: [
+    '/account',
+    '/account/:path*',
+    '/admin',
+    '/admin/:path*',
+    '/ai-studio',
+    '/ai-studio/:path*',
+  ],
 }

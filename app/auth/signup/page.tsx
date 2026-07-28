@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { HomeHeader } from '@/app/components/HomeHeader'
 import { Footer } from '@/app/components/Footer'
+import { getSafeInternalCallbackPath } from '@/lib/auth/redirect'
 
 function SignUpContent() {
   const router = useRouter()
@@ -19,8 +20,9 @@ function SignUpContent() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   
-  // Read callbackUrl from query params, default to /account
-  const callbackUrl = searchParams?.get('callbackUrl') || '/account'
+  const callbackUrl = getSafeInternalCallbackPath(
+    searchParams?.get('callbackUrl'),
+  )
 
   const handleManualSignUp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

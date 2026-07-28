@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { CheckCircle, Sparkles } from 'lucide-react';
 import type { AiStudioPlanConfig } from '@/lib/ai-studio/plans';
+import { getSignInPath } from '@/lib/auth/redirect';
 import {
   getAiStudioPlansForPricingRegion,
   getAiStudioPricingCurrency,
@@ -380,6 +383,7 @@ export function AiStudioPricingClient({
   paypalClientId,
 }: AiStudioPricingClientProps) {
   const router = useRouter();
+  const { status: sessionStatus } = useSession();
   const paypalCheckoutLock = useRef<string | null>(null);
   const [selectedRegion, setSelectedRegion] =
     useState<AiStudioPricingRegion>(initialRegion);
@@ -390,6 +394,7 @@ export function AiStudioPricingClient({
     plans,
     selectedRegion,
   );
+  const signInHref = getSignInPath('/ai-studio/pricing');
 
   function handleCurrencyChange(currency: AiStudioPricingCurrency) {
     if (loadingPlanId) {
@@ -625,7 +630,23 @@ export function AiStudioPricingClient({
                 ))}
               </ul>
 
-              {isPayPalPlan && paypalClientId ? (
+              {sessionStatus !== 'authenticated' ? (
+                sessionStatus === 'unauthenticated' ? (
+                  <Link
+                    href={signInHref}
+                    className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-slate-800"
+                  >
+                    Sign in to purchase credits
+                  </Link>
+                ) : (
+                  <div
+                    className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-slate-200 px-4 text-sm font-semibold text-slate-600"
+                    role="status"
+                  >
+                    Checking sign-in...
+                  </div>
+                )
+              ) : isPayPalPlan && paypalClientId ? (
                 <PayPalPlanButton
                   plan={plan}
                   clientId={paypalClientId}
