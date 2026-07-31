@@ -3,28 +3,27 @@ import test from 'node:test';
 import {
   getAiStudioAuthenticationRedirect,
   getSafeInternalCallbackPath,
+  getSignInPath,
+  getSignUpPath,
 } from '../../lib/auth/redirect';
+import { canStartAiStudioCheckout } from '../../lib/ai-studio/checkout-access';
 
-test('logged-out AI Studio navigation redirects to sign-in', () => {
+test('logged-out users can open the public AI Studio landing page', () => {
   assert.equal(
     getAiStudioAuthenticationRedirect('/ai-studio', false),
-    '/auth/signin?callbackUrl=%2Fai-studio',
+    null,
   );
 });
 
-test('AI Studio sign-in callback returns to the intended dashboard', () => {
-  const redirect = getAiStudioAuthenticationRedirect('/ai-studio', false);
-  const callbackUrl = new URL(
-    redirect ?? '',
-    'https://simplifyconvert.com',
-  ).searchParams.get('callbackUrl');
-
-  assert.equal(callbackUrl, '/ai-studio');
+test('logged-out users can open public AI Studio pricing', () => {
+  assert.equal(
+    getAiStudioAuthenticationRedirect('/ai-studio/pricing', false),
+    null,
+  );
 });
 
-test('direct logged-out AI Studio routes redirect safely', () => {
+test('direct logged-out maker and billing routes redirect safely', () => {
   const protectedPaths = [
-    '/ai-studio/pricing',
     '/ai-studio/presentation-maker',
     '/ai-studio/document-maker',
     '/ai-studio/spreadsheet-maker',
@@ -42,6 +41,23 @@ test('direct logged-out AI Studio routes redirect safely', () => {
   }
 });
 
+test('protected route callbacks preserve safe query parameters', () => {
+  const redirect = getAiStudioAuthenticationRedirect(
+    '/ai-studio/presentation-maker',
+    false,
+    '?template=sales',
+  );
+  const callbackUrl = new URL(
+    redirect ?? '',
+    'https://simplifyconvert.com',
+  ).searchParams.get('callbackUrl');
+
+  assert.equal(
+    callbackUrl,
+    '/ai-studio/presentation-maker?template=sales',
+  );
+});
+
 test('authenticated users access AI Studio without an auth redirect', () => {
   assert.equal(
     getAiStudioAuthenticationRedirect('/ai-studio', true),
@@ -51,6 +67,36 @@ test('authenticated users access AI Studio without an auth redirect', () => {
     getAiStudioAuthenticationRedirect('/ai-studio/pricing', true),
     null,
   );
+});
+
+test('protected CTA callbacks survive sign-in and signup navigation', () => {
+  const destination = '/ai-studio/document-maker';
+  const signInPath = getSignInPath(destination);
+  const signInCallback = new URL(
+    signInPath,
+    'https://simplifyconvert.com',
+  ).searchParams.get('callbackUrl');
+  const signUpPath = getSignUpPath(signInCallback ?? '');
+  const signUpCallback = new URL(
+    signUpPath,
+    'https://simplifyconvert.com',
+  ).searchParams.get('callbackUrl');
+
+  assert.equal(signInCallback, destination);
+  assert.equal(signUpCallback, destination);
+  assert.equal(
+    new URL(
+      getSignInPath(signUpCallback ?? ''),
+      'https://simplifyconvert.com',
+    ).searchParams.get('callbackUrl'),
+    destination,
+  );
+});
+
+test('purchase checkout cannot start before authentication', () => {
+  assert.equal(canStartAiStudioCheckout('loading'), false);
+  assert.equal(canStartAiStudioCheckout('unauthenticated'), false);
+  assert.equal(canStartAiStudioCheckout('authenticated'), true);
 });
 
 test('external and absolute callback URLs are rejected', () => {

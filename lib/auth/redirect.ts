@@ -37,17 +37,33 @@ export function getSignInPath(callbackPath: string) {
   return `/auth/signin?callbackUrl=${encodeURIComponent(safeCallbackPath)}`;
 }
 
+export function getSignUpPath(callbackPath: string) {
+  const safeCallbackPath = getSafeInternalCallbackPath(callbackPath);
+
+  return `/auth/signup?callbackUrl=${encodeURIComponent(safeCallbackPath)}`;
+}
+
+const PUBLIC_AI_STUDIO_PATHS = new Set([
+  '/ai-studio',
+  '/ai-studio/pricing',
+]);
+
 export function isProtectedAiStudioPath(pathname: string) {
-  return pathname === '/ai-studio' || pathname.startsWith('/ai-studio/');
+  if (PUBLIC_AI_STUDIO_PATHS.has(pathname)) {
+    return false;
+  }
+
+  return pathname.startsWith('/ai-studio/');
 }
 
 export function getAiStudioAuthenticationRedirect(
   pathname: string,
   isAuthenticated: boolean,
+  search = '',
 ) {
   if (isAuthenticated || !isProtectedAiStudioPath(pathname)) {
     return null;
   }
 
-  return getSignInPath(pathname);
+  return getSignInPath(`${pathname}${search}`);
 }

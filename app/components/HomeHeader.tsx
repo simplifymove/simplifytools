@@ -10,11 +10,10 @@ import {
   Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle, ChevronDown, LogOut, Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getSignInPath } from '@/lib/auth/redirect';
 
 export function HomeHeader() {
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const { data: session } = useSession();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -276,11 +275,7 @@ export function HomeHeader() {
             </Link>
 
             <Link
-              href={
-                sessionStatus === 'unauthenticated'
-                  ? getSignInPath('/ai-studio')
-                  : '/ai-studio'
-              }
+              href="/ai-studio"
               className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-to-r from-slate-950 via-blue-700 to-cyan-600 px-3 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/30 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm"
             >
               <Sparkles size={15} className="shrink-0" />
@@ -298,6 +293,8 @@ export function HomeHeader() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  aria-expanded={userMenuOpen}
+                  aria-controls="header-user-menu"
                   className="hidden sm:flex items-center gap-2 px-4 py-2 border-2 border-orange-500 rounded-full hover:bg-orange-50 transition-colors"
                 >
                   {session.user.image ? (
@@ -313,6 +310,7 @@ export function HomeHeader() {
 
                 {userMenuOpen && (
                   <motion.div
+                    id="header-user-menu"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -365,6 +363,9 @@ export function HomeHeader() {
             <button
               className="lg:hidden p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-menu"
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -374,6 +375,7 @@ export function HomeHeader() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <motion.div
+            id="mobile-navigation-menu"
             className="lg:hidden border-t border-gray-200 bg-white px-4 py-4"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}

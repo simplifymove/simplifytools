@@ -1,25 +1,28 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getServerSession } from 'next-auth';
 import { ChevronRight, History, Sparkles } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
+import { Footer } from '@/app/components/Footer';
 import { AI_STUDIO_PLANS } from '@/lib/ai-studio/plans';
 import { getAiStudioPricingRegion } from '@/lib/ai-studio/region';
-import { getAiStudioAccessForCurrentUser } from '@/lib/entitlements/ai-studio-server';
 import { getPayPalPublicClientId } from '@/lib/billing/paypal';
-import { PremiumAccessRequired } from '../components/PremiumAccessRequired';
+import { authOptions } from '@/lib/auth/config';
+import { AiStudioNav } from '../components/AiStudioNav';
+import { ProtectedAiStudioLink } from '../components/ProtectedAiStudioLink';
 import { AiStudioPricingClient } from './AiStudioPricingClient';
 
 export const metadata: Metadata = {
   title: 'AI Studio Pricing | SimplifyConvert',
   description:
-    'Buy AI Studio credits for premium AI presentation generation, smart visual layouts, and PPTX export.',
+    'Compare one-time AI Studio credit packs in INR or USD for editable presentations, documents, and spreadsheets.',
   alternates: {
     canonical: 'https://simplifyconvert.com/ai-studio/pricing',
   },
   openGraph: {
     title: 'AI Studio Pricing | SimplifyConvert',
     description:
-      'AI Studio credit plans for premium presentation generation, visual storytelling, and PPTX export.',
+      'One-time credit packs for editable AI presentations, documents, and spreadsheets.',
     url: 'https://simplifyconvert.com/ai-studio/pricing',
     siteName: 'SimplifyConvert',
     type: 'website',
@@ -27,20 +30,17 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'AI Studio Pricing | SimplifyConvert',
-    description: 'Choose AI Studio credits for professional AI presentation generation.',
+    description: 'Choose one-time AI Studio credits in INR or USD.',
   },
 };
 
 export const dynamic = 'force-dynamic';
 
 export default async function AiStudioPricingPage() {
-  const access = await getAiStudioAccessForCurrentUser();
-
-  if (!access.allowed) {
-    return <PremiumAccessRequired toolName="AI Studio Credits" returnTo="/ai-studio/pricing" />;
-  }
-
-  const initialRegion = await getAiStudioPricingRegion();
+  const [initialRegion, session] = await Promise.all([
+    getAiStudioPricingRegion(),
+    getServerSession(authOptions),
+  ]);
   let paypalClientId: string | null = null;
 
   try {
@@ -52,6 +52,7 @@ export default async function AiStudioPricingPage() {
   return (
     <>
       <HomeHeader />
+      <AiStudioNav />
       <main className="min-h-screen bg-[#080a12] text-white">
         <section className="relative overflow-hidden px-4 pt-8 pb-14 sm:px-6 lg:px-8">
           <div className="absolute inset-0 bg-[linear-gradient(135deg,#080a12_0%,#0f172a_42%,#083344_100%)]" />
@@ -80,19 +81,21 @@ export default async function AiStudioPricingPage() {
                 </span>
               </div>
               <h1 className="text-4xl font-bold tracking-normal text-white sm:text-5xl">
-                Buy AI Studio Credits
+                Simple, one-time AI Studio credits
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                Create polished presentations, documents, and spreadsheets with professional AI tools and export-ready files.
+                Choose a credit pack in INR or USD. Use credits across presentations,
+                documents, and spreadsheets without starting a recurring subscription.
               </p>
               <div className="mt-7">
-                <Link
+                <ProtectedAiStudioLink
                   href="/ai-studio/billing"
+                  isAuthenticated={Boolean(session?.user?.email)}
                   className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
                 >
                   <History size={16} />
                   Billing History
-                </Link>
+                </ProtectedAiStudioLink>
               </div>
             </div>
           </div>
@@ -107,12 +110,29 @@ export default async function AiStudioPricingPage() {
             />
 
             <div className="mt-8 rounded-lg border border-slate-200 bg-white p-5 text-center text-sm leading-6 text-slate-600 shadow-sm">
-              Secure checkout is provided by trusted payment partners. The
-              available payment method matches your selected currency.
+              <p className="font-semibold text-slate-900">
+                INR payments use Razorpay. USD payments use PayPal.
+              </p>
+              <p className="mt-1">
+                Credits are added after payment confirmation. Actual generation
+                usage can depend on output size and complexity.
+              </p>
+              <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2">
+                <Link href="/terms" className="font-semibold text-cyan-800 underline-offset-4 hover:underline">
+                  Terms
+                </Link>
+                <Link href="/privacy" className="font-semibold text-cyan-800 underline-offset-4 hover:underline">
+                  Privacy
+                </Link>
+                <Link href="/contact" className="font-semibold text-cyan-800 underline-offset-4 hover:underline">
+                  Support
+                </Link>
+              </div>
             </div>
           </div>
         </section>
       </main>
+      <Footer />
     </>
   );
 }

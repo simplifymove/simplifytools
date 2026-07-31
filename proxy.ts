@@ -13,6 +13,7 @@ export async function proxy(req: NextRequest) {
   const aiStudioRedirect = getAiStudioAuthenticationRedirect(
     req.nextUrl.pathname,
     isAuth,
+    req.nextUrl.search,
   )
 
   if (aiStudioRedirect) {

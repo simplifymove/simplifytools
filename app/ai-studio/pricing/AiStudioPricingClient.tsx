@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { CheckCircle, Sparkles } from 'lucide-react';
 import type { AiStudioPlanConfig } from '@/lib/ai-studio/plans';
+import { canStartAiStudioCheckout } from '@/lib/ai-studio/checkout-access';
 import { getSignInPath } from '@/lib/auth/redirect';
 import {
   getAiStudioPlansForPricingRegion,
@@ -390,6 +391,7 @@ export function AiStudioPricingClient({
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({ status: 'idle', message: '' });
   const selectedCurrency = getAiStudioPricingCurrency(selectedRegion);
+  const canStartCheckout = canStartAiStudioCheckout(sessionStatus);
   const visiblePlans = getAiStudioPlansForPricingRegion(
     plans,
     selectedRegion,
@@ -563,6 +565,8 @@ export function AiStudioPricingClient({
 
       {checkoutState.status !== 'idle' && (
         <div
+          role={checkoutState.status === 'error' ? 'alert' : 'status'}
+          aria-live={checkoutState.status === 'error' ? 'assertive' : 'polite'}
           className={`mb-5 rounded-lg border p-4 text-sm font-semibold ${
             checkoutState.status === 'success'
               ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
@@ -630,13 +634,13 @@ export function AiStudioPricingClient({
                 ))}
               </ul>
 
-              {sessionStatus !== 'authenticated' ? (
+              {!canStartCheckout ? (
                 sessionStatus === 'unauthenticated' ? (
                   <Link
                     href={signInHref}
-                    className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-slate-800"
+                    className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
                   >
-                    Sign in to purchase credits
+                    Sign in to buy credits
                   </Link>
                 ) : (
                   <div
@@ -660,6 +664,7 @@ export function AiStudioPricingClient({
                   type="button"
                   onClick={() => handleBuyPlan(plan)}
                   disabled={!canBuyPlan || Boolean(loadingPlanId)}
+                  aria-busy={isLoading}
                   className={`mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold shadow-lg transition ${
                     canBuyPlan
                       ? 'bg-slate-950 text-white shadow-slate-950/20 hover:bg-slate-800 disabled:cursor-wait disabled:opacity-70'

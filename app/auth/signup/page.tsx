@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { HomeHeader } from '@/app/components/HomeHeader'
 import { Footer } from '@/app/components/Footer'
-import { getSafeInternalCallbackPath } from '@/lib/auth/redirect'
+import { getSafeInternalCallbackPath, getSignInPath } from '@/lib/auth/redirect'
 
 function SignUpContent() {
   const router = useRouter()
@@ -278,7 +278,7 @@ function SignUpContent() {
             <div className="text-center space-y-4 pt-4 border-t border-gray-200">
               <p className="text-gray-600">Already have an account?</p>
               <Link
-                href="/auth/signin"
+                href={getSignInPath(callbackUrl)}
                 className="inline-block px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200"
               >
                 Sign In
