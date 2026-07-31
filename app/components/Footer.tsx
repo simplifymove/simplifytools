@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,22 +10,27 @@ export function Footer() {
   const footerLinks = {
     Product: [
       { label: 'All Tools', href: '/all-tools' },
+      { label: 'AI Studio', href: '/ai-studio' },
+      { label: 'AI Studio Pricing', href: '/ai-studio/pricing' },
       { label: 'AI Writing', href: '/all-tools/ai-tools' },
+    ],
+    Categories: [
       { label: 'PDF Tools', href: '/all-tools/pdf-tools' },
       { label: 'Image Tools', href: '/all-tools/image-tools' },
-    ],
-    PopularTools: [
-      { label: 'Remove Background', href: '/all-tools/remove-background' },
-      { label: 'Compress Image', href: '/all-tools/compress-image' },
-      { label: 'Merge PDF', href: '/all-tools/pdf/merge-pdf' },
-      { label: 'AI Writing', href: '/all-tools/ai-tools' },
+      { label: 'Video Tools', href: '/all-tools/video-tools' },
+      { label: 'Data Tools', href: '/all-tools/data' },
+      { label: 'Code Tools', href: '/all-tools/code-tools' },
+      { label: 'Financial Calculators', href: '/all-tools/financial-calculators' },
     ],
     Company: [
       { label: 'About Us', href: '/about' },
       { label: 'SimplifyConvert Blog', href: '/blog' },
+    ],
+    Support: [
+      { label: 'Contact Us', href: '/contact' },
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
-      { label: 'Contact Us', href: '/contact' },
+      { label: 'Cookie Policy', href: '/cookies' },
     ],
   };
 
@@ -34,7 +38,7 @@ export function Footer() {
     <footer className="bg-gradient-to-b from-gray-900 to-black text-gray-300 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+        <div className="mb-12 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
           {/* Brand Column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -81,11 +85,11 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Popular Tools Links */}
+          {/* Category Links */}
           <div>
-            <h3 className="font-bold text-white mb-4">Popular Tools</h3>
+            <h3 className="font-bold text-white mb-4">Categories</h3>
             <ul className="space-y-2">
-              {footerLinks.PopularTools.map((link) => (
+              {footerLinks.Categories.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
@@ -103,6 +107,23 @@ export function Footer() {
             <h3 className="font-bold text-white mb-4">Company</h3>
             <ul className="space-y-2">
               {footerLinks.Company.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-gray-400 hover:text-white transition"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support and Legal Links */}
+          <div>
+            <h3 className="font-bold text-white mb-4">Support &amp; Legal</h3>
+            <ul className="space-y-2">
+              {footerLinks.Support.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
@@ -140,4 +161,3 @@ export function Footer() {
     </footer>
   );
 }
-

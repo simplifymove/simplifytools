@@ -16,6 +16,7 @@ export function HomeHeader() {
   const { data: session } = useSession();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(true);
 
@@ -23,6 +24,19 @@ export function HomeHeader() {
     const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setToolsMenuOpen(false);
+        setMobileMenuOpen(false);
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
   const categories = [
@@ -194,25 +208,55 @@ export function HomeHeader() {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex flex-1 items-center justify-center gap-5 xl:gap-7 min-w-0">
             {/* All Tools Dropdown */}
-            <div className="relative group">
-              <Link 
-                href="/all-tools"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative flex items-center gap-1 py-2 px-1"
+            <div
+              className="relative"
+              onMouseEnter={() => setToolsMenuOpen(true)}
+              onMouseLeave={() => setToolsMenuOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setToolsMenuOpen((open) => !open)}
+                aria-expanded={toolsMenuOpen}
+                aria-controls="desktop-tools-menu"
+                aria-haspopup="true"
+                className="relative flex items-center gap-1 px-1 py-2 text-sm font-medium text-gray-600 transition hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
               >
                 All Tools
-                <ChevronRight size={16} className="group-hover:rotate-90 transition-transform" />
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </Link>
+                <ChevronRight
+                  size={16}
+                  className={`transition-transform ${toolsMenuOpen ? 'rotate-90' : ''}`}
+                />
+                <span
+                  className={`absolute bottom-0 left-0 h-0.5 bg-orange-500 transition-all duration-300 ${
+                    toolsMenuOpen ? 'w-full' : 'w-0'
+                  }`}
+                />
+              </button>
 
               {/* Dropdown Menu */}
-              <div
-                className="absolute left-0 top-full min-w-max bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-6 pointer-events-none group-hover:pointer-events-auto"
-              >
-                <div className="grid grid-cols-5 gap-4">
+              {toolsMenuOpen && (
+                <div
+                  id="desktop-tools-menu"
+                  className="absolute left-0 top-full z-50 min-w-max rounded-xl border border-gray-200 bg-white p-6 shadow-2xl"
+                >
+                  <Link
+                    href="/all-tools"
+                    className="mb-4 inline-flex items-center gap-2 rounded-md text-sm font-semibold text-orange-700 hover:text-orange-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                    onClick={() => setToolsMenuOpen(false)}
+                  >
+                    Browse all tools
+                    <ChevronRight size={16} />
+                  </Link>
+                  <div className="grid grid-cols-5 gap-4">
                   {categories.map((cat) => {
                     const Icon = cat.icon;
                     return (
-                      <Link key={cat.id} href={cat.link}>
+                      <Link
+                        key={cat.id}
+                        href={cat.link}
+                        onClick={() => setToolsMenuOpen(false)}
+                        className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                      >
                         <motion.div
                           className="p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-all group/item w-40"
                           whileHover={{ scale: 1.05 }}
@@ -228,8 +272,9 @@ export function HomeHeader() {
                       </Link>
                     );
                   })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Other Navigation Items */}
@@ -340,22 +385,18 @@ export function HomeHeader() {
             ) : (
               // Not Logged In - Auth Buttons
               <div className="hidden sm:flex items-center gap-3">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link
-                    href="/auth/signin"
-                    className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:border-orange-500 hover:text-orange-600 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link
-                    href="/auth/signup"
-                    className="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600 transition-colors"
-                  >
-                    Sign Up
-                  </Link>
-                </motion.div>
+                <Link
+                  href="/auth/signin"
+                  className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-orange-500 hover:text-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="rounded-full bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                >
+                  Sign Up
+                </Link>
               </div>
             )}
 

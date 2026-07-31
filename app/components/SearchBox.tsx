@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Clock, Sparkles, X } from 'lucide-react';
 import { useSearchSuggestions } from '@/app/hooks/useSearchSuggestions';
@@ -57,6 +57,8 @@ export function SearchBox({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const searchLabelId = useId();
+  const suggestionsId = useId();
 
   // For header: show 8 in dropdown, for all-tools: show more
   const displayLimit = limit || (variant === 'header' ? 8 : undefined);
@@ -78,44 +80,6 @@ export function SearchBox({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Keyboard navigation
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!isOpen || displayedSuggestions.length === 0) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleSearch(query);
-        }
-        return;
-      }
-
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev < displayedSuggestions.length - 1 ? prev + 1 : prev));
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (selectedIndex >= 0) {
-            handleSelectSuggestion(displayedSuggestions[selectedIndex]);
-          } else {
-            handleSearch(query);
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          setIsOpen(false);
-          setSelectedIndex(-1);
-          break;
-      }
-    },
-    [isOpen, displayedSuggestions, selectedIndex, query]
-  );
 
   const handleSearch = (searchQuery: string) => {
     if (searchQuery.trim()) {
@@ -158,6 +122,51 @@ export function SearchBox({
     setSelectedIndex(-1);
   };
 
+  // Keyboard navigation
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isOpen || displayedSuggestions.length === 0) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSearch(query);
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex((prev) => (prev < displayedSuggestions.length - 1 ? prev + 1 : prev));
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0) {
+            handleSelectSuggestion(displayedSuggestions[selectedIndex]);
+          } else {
+            handleSearch(query);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          setIsOpen(false);
+          setSelectedIndex(-1);
+          break;
+      }
+    },
+    [
+      displayedSuggestions,
+      handleSearch,
+      handleSelectSuggestion,
+      isOpen,
+      query,
+      selectedIndex,
+    ]
+  );
+
   const handleClear = () => {
     setQuery('');
     inputRef.current?.focus();
@@ -165,16 +174,28 @@ export function SearchBox({
 
   const containerClass =
     variant === 'hero'
-      ? 'flex items-center gap-3 px-6 py-4 bg-white rounded-full shadow-lg border border-gray-200'
-      : 'flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-200 hover:border-gray-300';
+      ? 'flex items-center gap-3 px-4 sm:px-6 py-5 bg-white rounded-2xl sm:rounded-full shadow-lg border border-gray-200 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100'
+      : 'flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-200 hover:border-gray-300 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100';
 
   return (
     <div ref={containerRef} className={`relative w-full ${className}`}>
+      <label id={searchLabelId} htmlFor={`${suggestionsId}-input`} className="sr-only">
+        Search SimplifyConvert tools
+      </label>
       <div className={containerClass}>
         <Search size={variant === 'hero' ? 20 : 18} className="text-gray-400 shrink-0" />
         <input
           ref={inputRef}
+          id={`${suggestionsId}-input`}
           type="text"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-labelledby={searchLabelId}
+          aria-controls={suggestionsId}
+          aria-expanded={isOpen && displayedSuggestions.length > 0}
+          aria-activedescendant={
+            isOpen && selectedIndex >= 0 ? `${suggestionsId}-option-${selectedIndex}` : undefined
+          }
           placeholder={placeholder}
           value={query}
           onChange={(e) => {
@@ -193,8 +214,9 @@ export function SearchBox({
         />
         {query && (
           <button
+            type="button"
             onClick={handleClear}
-            className="text-gray-400 hover:text-gray-600 transition shrink-0"
+            className="shrink-0 rounded-full p-1 text-gray-400 transition hover:text-gray-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
             aria-label="Clear search"
           >
             <X size={18} />
@@ -210,9 +232,10 @@ export function SearchBox({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className={`absolute left-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden ${
-              variant === 'hero' ? 'w-96 md:w-full' : 'w-96'
-            }`}
+            id={suggestionsId}
+            role="listbox"
+            aria-label="Search suggestions"
+            className="absolute left-0 top-full z-50 mt-2 w-full max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl sm:max-w-lg"
           >
             <div className="max-h-96 overflow-y-auto">
               {/* Group by type */}
@@ -221,10 +244,14 @@ export function SearchBox({
                   {displayedSuggestions.map((suggestion, index) => (
                     <motion.button
                       key={`${suggestion.type}-${suggestion.id}-${suggestion.href ?? 'no-href'}`}
+                      id={`${suggestionsId}-option-${index}`}
+                      type="button"
+                      role="option"
+                      aria-selected={selectedIndex === index}
                       onClick={() => handleSelectSuggestion(suggestion)}
                       onMouseEnter={() => setSelectedIndex(index)}
                       disabled={suggestion.type !== 'recent' && !getSuggestionHref(suggestion)}
-                      className={`w-full px-4 py-3 text-left transition-colors ${
+                      className={`w-full px-4 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-orange-600 ${
                         selectedIndex === index
                           ? 'bg-orange-50 border-l-4 border-orange-500'
                           : suggestion.type !== 'recent' && !getSuggestionHref(suggestion)
