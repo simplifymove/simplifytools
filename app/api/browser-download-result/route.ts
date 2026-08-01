@@ -161,6 +161,26 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
   ...Object.fromEntries(PNG_BROWSER_TOOLS.map((toolSlug) => [toolSlug, PNG_POLICY])),
   ...Object.fromEntries(JPEG_BROWSER_TOOLS.map((toolSlug) => [toolSlug, JPEG_POLICY])),
   ...Object.fromEntries(TEXT_BROWSER_TOOLS.map((toolSlug) => [toolSlug, TEXT_POLICY])),
+  'jpg-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'png-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'webp-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'jpg-to-gif': {
+    extensions: ['.gif'],
+    mimeTypes: ['image/gif'],
+  },
+  'webp-to-gif': {
+    extensions: ['.gif'],
+    mimeTypes: ['image/gif'],
+  },
   'jpg-to-png': {
     extensions: ['.png'],
     mimeTypes: ['image/png'],

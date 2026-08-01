@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useRouter } from 'next/navigation';
@@ -41,8 +40,29 @@ export default function WebpToAvifPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/webp');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('config', JSON.stringify({
+        from_format: 'webp',
+        to_format: 'avif',
+        options: {},
+      }));
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || 'AVIF conversion failed');
+      }
+
+      const blob = await response.blob();
+      if (blob.type !== 'image/avif') {
+        throw new Error('Unexpected AVIF output type: ' + (blob.type || 'unknown'));
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -61,8 +81,8 @@ export default function WebpToAvifPage() {
           await uploadBrowserDownloadResult({
             blob: result,
             toolSlug: 'webp-to-avif',
-            originalName: 'converted.webp',
-            outputName: 'converted.webp',
+            originalName: 'converted.avif',
+            outputName: 'converted.avif',
           });
 
         router.push(downloadResult.downloadPageUrl);
@@ -162,10 +182,10 @@ export default function WebpToAvifPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
+                      <li>• Server-assisted AVIF conversion</li>
                       <li>• Maximum AVIF compression</li>
                       <li>• Smaller file sizes than WebP</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Files are temporarily processed for conversion</li>
                     </ul>
                   </div>
                 </div>
@@ -263,7 +283,7 @@ export default function WebpToAvifPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen locally in your browser. Your WebP files are never uploaded to any server and remain completely private.</p>
+              <p className="text-gray-700">The WebP file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</p>
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Should I convert all WebP files to AVIF?</h3>
@@ -316,7 +336,7 @@ export default function WebpToAvifPage() {
               "name": "Is the conversion process secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen locally in your browser. Your WebP files are never uploaded to any server and remain completely private."
+                "text": "The WebP file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy."
               }
             },
             {

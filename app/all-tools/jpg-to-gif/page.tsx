@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useRouter } from 'next/navigation';
@@ -17,9 +16,6 @@ export default function JpgToGifPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [fps, setFps] = useState(10);
-
-
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
     setError(null);
@@ -43,10 +39,36 @@ export default function JpgToGifPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/webp', {
-        quality: 80,
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'jpg',
+          to_format: 'gif',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
       });
-      setResult(result.blob);
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || 'GIF conversion failed');
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/gif') {
+        throw new Error(
+          `Expected GIF output but received ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
     } finally {
@@ -104,7 +126,7 @@ export default function JpgToGifPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to GIF Converter</h1>
-                <p className="text-lg text-white/90">Convert JPG images to GIF format with adjustable frame rate for smooth animations.</p>
+                <p className="text-lg text-white/90">Convert a JPG image to static GIF format.</p>
               </div>
             </div>
           </div>
@@ -135,28 +157,6 @@ export default function JpgToGifPage() {
               {/* Controls - Right (sticky sidebar) */}
               <div className="lg:col-span-1">
                 <div className="sticky top-4 space-y-4">
-                  {/* Options */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
-                    {/* FPS */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Frames Per Second: {fps}
-                      </label>
-                      <input
-                        type="range"
-                        min="5"
-                        max="30"
-                        step="1"
-                        value={fps}
-                        onChange={(e) => setFps(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Higher FPS = smoother animation</p>
-                    </div>
-                  </div>
-
                   {/* Convert Button */}
                   <button
                     onClick={handleConvert}
@@ -188,10 +188,10 @@ export default function JpgToGifPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Adjustable frame rate</li>
+                      <li>• Server-assisted GIF conversion</li>
+                      <li>• Creates a static GIF image</li>
                       <li>• Supports JPG and JPEG formats</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Files are temporarily processed for conversion</li>
                     </ul>
                   </div>
                 </div>

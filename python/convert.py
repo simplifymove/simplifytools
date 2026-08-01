@@ -28,6 +28,7 @@ CONVERSION_ROUTES = {
     # Raster conversions
     ('jpg', 'png'): convert_raster,
     ('jpg', 'webp'): convert_raster,
+    ('jpg', 'gif'): convert_raster,
     ('jpg', 'bmp'): convert_raster,
     ('jpg', 'tiff'): convert_raster,
     ('png', 'jpg'): convert_raster,
@@ -38,6 +39,7 @@ CONVERSION_ROUTES = {
     ('webp', 'png'): convert_raster,
     ('webp', 'bmp'): convert_raster,
     ('webp', 'tiff'): convert_raster,
+    ('webp', 'gif'): convert_raster,
     ('bmp', 'jpg'): convert_raster,
     ('bmp', 'png'): convert_raster,
     ('bmp', 'webp'): convert_raster,
