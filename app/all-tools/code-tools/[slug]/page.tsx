@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { use, useState } from 'react';
+import { notFound, useRouter } from 'next/navigation';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 import Link from 'next/link';
-import { getToolBySlug, CodeTool } from '@/app/lib/code-tools';
+import { getToolBySlug } from '@/app/lib/code-tools';
 import {
   Binary,
   Braces,
@@ -272,37 +272,27 @@ const getActionText = (toolId: string): string => {
   return actionMap[toolId] || 'Process';
 };
 
-export default function CodeToolPage() {
-  const router = useRouter();
-  const params = useParams();
-  const slug = params?.slug as string | undefined;
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 
-  const [tool, setTool] = useState<CodeTool | null>(null);
+export default function CodeToolPage({ params }: PageProps) {
+  const router = useRouter();
+  const { slug } = use(params);
+  const tool = getToolBySlug(slug);
+
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [options, setOptions] = useState<Record<string, any>>({});
-
-  // Initialize tool
-  useEffect(() => {
-    if (!slug) return;
-    
-    const foundTool = getToolBySlug(slug);
-    if (!foundTool) {
-      setError('Tool not found');
-      return;
-    }
-    setTool(foundTool);
-
-    // Initialize options with defaults
+  const [options, setOptions] = useState<Record<string, any>>(() => {
     const initialOptions: Record<string, any> = {};
-    foundTool.options.forEach((opt) => {
+    tool?.options.forEach((opt) => {
       initialOptions[opt.name] = opt.default ?? '';
     });
-    setOptions(initialOptions);
-  }, [slug]);
+    return initialOptions;
+  });
 
   // Handle option change
   const handleOptionChange = (name: string, value: any) => {
@@ -410,28 +400,7 @@ export default function CodeToolPage() {
   };
 
   if (!tool) {
-    return (
-      <>
-        <HomeHeader />
-        <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="flex-1 flex items-center justify-center w-full">
-            <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Tool Not Found
-              </h1>
-              <p className="text-gray-600 mb-6">The requested tool does not exist.</p>
-              <Link
-                href="/all-tools/code-tools"
-                className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-0 font-medium"
-              >
-                Back to Tools
-              </Link>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
+    notFound();
   }
 
   const actionText = slug ? getActionText(slug) : 'Process';

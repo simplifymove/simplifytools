@@ -37,6 +37,16 @@ const UNFINISHED_TOOL_IDS = new Set([
   'webp-to-tiff',
 ]);
 
+// Redirect-only aliases must never compete with their canonical destinations.
+const REDIRECT_ONLY_TOOL_ROUTES = new Set([
+  '/all-tools/pdf-to-jpg',
+  '/all-tools/pdf-to-text',
+  '/all-tools/image-compressor',
+  '/all-tools/mp4-to-gif',
+  '/all-tools/pdf',
+  '/all-tools/ai-write',
+]);
+
 function isExcludedTool(id: string, title = ''): boolean {
   const idLower = id.toLowerCase();
   const titleLower = title.toLowerCase();
@@ -134,11 +144,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/ai-code-assistant', priority: 0.7, frequency: 'monthly' as const, label: 'AI Code Assistant' },
     { url: '/ai-code-assistant/docs', priority: 0.6, frequency: 'monthly' as const, label: 'AI Code Assistant Documentation' },
     { url: '/ai-code-assistant/pricing', priority: 0.6, frequency: 'monthly' as const, label: 'AI Code Assistant Pricing' },
-    { url: '/ai-studio', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio' },
-    { url: '/ai-studio/pricing', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio Pricing' },
-    { url: '/ai-studio/presentation-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Presentation Maker' },
-    { url: '/ai-studio/document-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Document Maker' },
-    { url: '/ai-studio/spreadsheet-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Spreadsheet Maker' },
     { url: '/all-tools/image-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Image Tools' },
     { url: '/all-tools/pdf-tools', priority: 0.8, frequency: 'weekly' as const, label: 'PDF Tools' },
     { url: '/all-tools/video-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Video Tools' },
@@ -149,7 +154,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/all-tools/pdf/ocr-to-text', priority: 0.6, frequency: 'monthly' as const, label: 'PDF OCR to Text' },
     { url: '/all-tools/code-minifier', priority: 0.6, frequency: 'monthly' as const, label: 'Code Minifier' },
     { url: '/all-tools/eps-to-png', priority: 0.6, frequency: 'monthly' as const, label: 'EPS to PNG' },
-    { url: '/all-tools/image-compressor', priority: 0.6, frequency: 'monthly' as const, label: 'Image Compressor' },
     { url: '/all-tools/batch-compress-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Compress Images' },
     { url: '/all-tools/batch-resize-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Resize Images' },
   ];
@@ -180,7 +184,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const toolIdLower = tool.id.toLowerCase();
     const titleLower = tool.title.toLowerCase();
 
-    return !isExcludedTool(toolIdLower, titleLower);
+    return !isExcludedTool(toolIdLower, titleLower)
+      && !REDIRECT_ONLY_TOOL_ROUTES.has(tool.route);
   });
 
   sitemapDebugLog('✓ Valid main tools (with routes, not excluded):', validMainTools.length);

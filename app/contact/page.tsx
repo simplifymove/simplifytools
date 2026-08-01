@@ -93,13 +93,18 @@ export default function ContactPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            Have questions? Send us a message and we&apos;ll respond as soon as possible.
+            Ask about a tool, account, payment, privacy practice, or technical problem.
           </motion.p>
         </div>
       </section>
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="mb-8 rounded-2xl border border-orange-200 bg-orange-50 p-6 text-gray-700">
+            <h2 className="text-xl font-bold text-gray-900">Before you send a support request</h2>
+            <p className="mt-2 leading-7">Include the tool page URL, input format and approximate file size, the result you expected, and any error message. Do not send passwords, payment credentials, API keys, or other secrets.</p>
+            <p className="mt-3">You can also email <a className="font-semibold text-orange-700 underline" href="mailto:info@simplifyconvert.com">info@simplifyconvert.com</a>.</p>
+          </div>
           <motion.div
             className="bg-gray-50 p-8 rounded-2xl"
             initial={{ opacity: 0, y: 20 }}
@@ -192,6 +197,5 @@ export default function ContactPage() {
     </main>
   );
 }
-
 
 

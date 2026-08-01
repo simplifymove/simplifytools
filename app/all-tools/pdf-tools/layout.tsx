@@ -1,16 +1,16 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Free PDF Tools - Merge, Split & Compress PDFs',
-  description: 'Use free PDF tools to merge, split, compress, convert, and edit PDFs online. No signup needed. Fast, secure, completely free.',
+  title: 'PDF Tools - Merge, Split, Compress & Convert',
+  description: 'Browse PDF tools for combining, splitting, compressing, converting, editing, and signing documents. Formats and limits vary by workflow.',
   keywords: ['free PDF tools', 'PDF converter', 'merge PDF', 'split PDF', 'compress PDF', 'PDF editor online'],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://simplifyconvert.com/all-tools/pdf-tools',
     siteName: 'SimplifyConvert',
-    title: 'Free PDF Tools - Merge, Split & Compress PDFs',
-    description: 'Merge, split, compress, convert and edit PDFs online for free. No signup required.',
+    title: 'PDF Tools - Merge, Split, Compress & Convert',
+    description: 'Combine, split, compress, convert, edit, and sign PDF documents online.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Free PDF Tools - Merge, Split & Compress PDFs',
-    description: 'Merge, split, compress, convert and edit PDFs online for free. No signup required.',
+    title: 'PDF Tools - Merge, Split, Compress & Convert',
+    description: 'Combine, split, compress, convert, edit, and sign PDF documents online.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
   alternates: {
@@ -38,4 +38,3 @@ export default function PDFToolsLayout({
 }) {
   return <>{children}</>;
 }
-

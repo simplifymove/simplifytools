@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { getToolById } from '@/app/lib/ai-tools';
 import { getAiToolFaqs } from '@/app/lib/ai-tool-faqs';
+import { notFound } from 'next/navigation';
 
 interface Params {
   slug: string;
@@ -302,7 +303,7 @@ async function AiToolsSlugLayoutContent({
   const tool = toolId ? getToolById(toolId) : null;
 
   if (!tool) {
-    return <>{children}</>;
+    notFound();
   }
 
   const baseUrl = 'https://simplifyconvert.com';

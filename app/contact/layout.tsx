@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Contact Us - SimplifyConvert',
-  description: 'Get in touch with SimplifyConvert. We would love to hear from you about feedback, bugs, or feature requests.',
+  description: 'Contact SimplifyConvert about tool errors, accounts, payments, privacy questions, feedback, or feature requests.',
   keywords: ['contact', 'support', 'feedback'],
   openGraph: {
     type: 'website',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/contact',
     siteName: 'SimplifyConvert',
     title: 'Contact Us - SimplifyConvert',
-    description: 'Get in touch with us.',
+    description: 'Contact SimplifyConvert support about tools, accounts, payments, privacy, or feedback.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',

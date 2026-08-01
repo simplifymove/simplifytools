@@ -221,15 +221,15 @@ export default function ImageToolsPage() {
                 viewport={{ once: true }}
                 className="space-y-8"
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Image Tools?</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Choose the Image Operation That Matches the Goal</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <h3 className="font-semibold text-gray-900 text-lg">⚡ Lightning Fast Processing</h3>
-                    <p className="text-gray-700">Image compression and conversion happens instantly in your browser. No waiting, no delays. Process multiple images in seconds.</p>
+                    <p className="text-gray-700">Resize changes pixel dimensions, compression targets file size, and conversion changes the format. Each choice affects quality differently.</p>
                   </div>
                   <div className="space-y-3">
                     <h3 className="font-semibold text-gray-900 text-lg">🔒 100% Secure & Private</h3>
-                    <p className="text-gray-700">Images are processed securely and automatically deleted after a short period. We do not permanently store your images. All processing uses HTTPS encryption for complete privacy.</p>
+                    <p className="text-gray-700">Some basic image operations use browser APIs, while AI-assisted and background workflows can upload images for server processing. Check the individual tool before submitting sensitive material.</p>
                   </div>
                   <div className="space-y-3">
                     <h3 className="font-semibold text-gray-900 text-lg">📱 Works on All Devices</h3>
@@ -237,7 +237,7 @@ export default function ImageToolsPage() {
                   </div>
                   <div className="space-y-3">
                     <h3 className="font-semibold text-gray-900 text-lg">🎨 Professional Results</h3>
-                    <p className="text-gray-700">Achieve professional-grade image editing and conversion without expensive software. Perfect for social media, web design, and more.</p>
+                    <p className="text-gray-700">Preview the result at full size and confirm transparency, color, dimensions, and compression artifacts before publishing it.</p>
                   </div>
                 </div>
               </motion.div>
@@ -254,7 +254,7 @@ export default function ImageToolsPage() {
                 viewport={{ once: true }}
               >
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Popular Image Tools</h2>
-                <p className="text-gray-700 mb-6">SimplifyConvert offers 79 image tools. Here are our most popular ones:</p>
+                <p className="text-gray-700 mb-6">Start with these common resize, compression, conversion, and cropping workflows:</p>
                 <div className="space-y-3">
                   <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition">
                     <span className="text-orange-600 font-semibold">→</span>
@@ -286,9 +286,9 @@ export default function ImageToolsPage() {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Use Free Image Tools</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Use the Image Tools</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Using SimplifyConvert image tools is simple and straightforward. Select the tool you need from our 79 tools, upload your image file, configure options if needed, and click process. The tool handles complex image operations in seconds while maintaining quality. Download your edited or converted image instantly. No signup required, no registration needed, no learning curve.
+                  Choose the operation first, upload a supported image, and set dimensions, format, quality, or other available options. Download the result and compare it with the original at full size. Keep the original until you have checked sharpness, transparency, color, orientation, and file size.
                 </p>
                 <div className="space-y-4">
                   <div className="flex gap-4">
@@ -309,7 +309,7 @@ export default function ImageToolsPage() {
                     <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Process & Download</h3>
-                      <p className="text-gray-700">Click the process button and download your result immediately. Files are never stored on our servers.</p>
+                      <p className="text-gray-700">Process the image, download the result, and compare it with the original before discarding your source file.</p>
                     </div>
                   </div>
                 </div>
@@ -323,7 +323,7 @@ export default function ImageToolsPage() {
                 name: 'Are all image tools really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes! All image tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any image tool unlimited times without payment.'
+                  text: 'The image utilities are available without Premium AI Studio credits. Individual workflows may still impose file-size or rate limits.'
                 }
               },
               {
@@ -337,7 +337,7 @@ export default function ImageToolsPage() {
                 name: 'Is my image data safe?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Your images are processed securely in your browser and never stored on our servers. We use HTTPS encryption for all transfers. Images are processed immediately and deleted after download.'
+                  text: 'Processing varies by tool: some basic operations use browser APIs, while server-assisted and AI workflows upload the image over HTTPS. Review the individual tool and Privacy Policy before submitting sensitive images.'
                 }
               },
               {
@@ -351,7 +351,7 @@ export default function ImageToolsPage() {
                 name: 'How many images can I process?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'There are no limits! Process as many images as you need, anytime. Unlike other tools, we don\'t restrict the number of files you can compress, convert, or edit.'
+                  text: 'Limits vary by operation, file size, and current service capacity. The individual tool displays applicable validation or error messages.'
                 }
               },
               {
@@ -371,8 +371,6 @@ export default function ImageToolsPage() {
     </>
   );
 }
-
-
 
 
 

@@ -373,7 +373,7 @@ export default function WebpToJpgPage() {
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Add transparency to images</p></div>
             </Link>
-            <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size</p></div>
             </Link>
@@ -460,7 +460,6 @@ export default function WebpToJpgPage() {
     </>
   );
 }
-
 
 
 

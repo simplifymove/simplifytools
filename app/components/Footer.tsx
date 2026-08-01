@@ -55,7 +55,7 @@ export function Footer() {
               <span className="font-bold text-lg text-white">SimplifyConvert</span>
             </div>
             <p className="text-sm text-gray-400 mb-4">
-              Your all-in-one toolkit for PDF, images, video, data, and more conversion and processing.
+              Free utilities for everyday PDF, image, video, data, and code tasks, plus a separate credit-based AI Studio.
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-gray-400">

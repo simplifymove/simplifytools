@@ -207,16 +207,16 @@ export default function CodeToolsPage() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Code Tools?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Developer Utilities for Specific Text Transformations</h2>
             
             <p className="text-gray-700 leading-relaxed mb-6">
-              SimplifyConvert offers 49 free tools for developers to format, validate, and convert code instantly. <Link href="/all-tools/code-tools/code-minifier" className="text-green-600 font-medium hover:underline">Minify JavaScript and CSS</Link>, <Link href="/all-tools/code-tools/json-formatter" className="text-green-600 font-medium hover:underline">format JSON</Link>, or <Link href="/all-tools/code-tools/html-validator" className="text-green-600 font-medium hover:underline">validate HTML</Link>—all without any cost, signup, or installation. Our tools cover the most frequently needed code transformations and deliver reliable results instantly.
+              Use focused tools to <Link href="/all-tools/code-tools/code-minifier" className="text-green-600 font-medium hover:underline">minify JavaScript or CSS</Link>, <Link href="/all-tools/code-tools/json-formatter" className="text-green-600 font-medium hover:underline">format JSON</Link>, or <Link href="/all-tools/code-tools/html-validator" className="text-green-600 font-medium hover:underline">validate HTML</Link>. Formatting changes presentation, validation checks syntax rules, and encoding is not encryption.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
-                <p className="text-gray-700 text-sm">All code tools are permanently free. No hidden charges, premium tiers, or surprise fees. Process unlimited code without payment or credit card required.</p>
+                <p className="text-gray-700 text-sm">Choose a formatter, validator, minifier, encoder, decoder, converter, or generator based on the output you need.</p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
@@ -224,11 +224,11 @@ export default function CodeToolsPage() {
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Instant Results</h3>
-                <p className="text-gray-700 text-sm">Process code in milliseconds. Our optimized tools handle JavaScript, HTML, CSS, JSON, XML, and more with blazing speed. No waiting, no delays, no complex procedures.</p>
+                <p className="text-gray-700 text-sm">Runtime depends on input length and operation. Validation identifies syntax problems but does not prove application correctness or security.</p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                <p className="text-gray-700 text-sm">Code is processed securely and automatically deleted after a short period. HTTPS encryption protects all transfers. We do not permanently store your code. Complete privacy guaranteed.</p>
+                <p className="text-gray-700 text-sm">Tool input is sent over HTTPS to the processing API. Remove secrets, tokens, private keys, passwords, and sensitive customer data first.</p>
               </div>
             </div>
 
@@ -275,7 +275,7 @@ export default function CodeToolsPage() {
             name: 'Are all code tools really free?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! All code tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Process unlimited code without payment or credit card. We believe developers deserve free tools.'
+              text: 'The code utilities are available without Premium AI Studio credits. Individual tools may apply input-size or rate limits.'
             }
           },
           {
@@ -296,7 +296,7 @@ export default function CodeToolsPage() {
             name: 'Is my code safe when using these tools?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. Code is processed securely and automatically deleted after a short period. We use HTTPS encryption for all transfers. We do not permanently store your code. Complete privacy guaranteed with no tracking or logging.'
+              text: 'Input is sent over HTTPS to the tool service. Do not submit production secrets, API keys, access tokens, passwords, private keys, or sensitive customer data.'
             }
           },
           {
@@ -375,8 +375,6 @@ export default function CodeToolsPage() {
     </>
   );
 }
-
-
 
 
 

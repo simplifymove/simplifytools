@@ -48,7 +48,7 @@ export function HomeHeader() {
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
       count: '55',
-      link: '/all-tools/pdf',
+      link: '/all-tools/pdf-tools',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
     {
@@ -422,7 +422,7 @@ export function HomeHeader() {
             animate={{ opacity: 1, height: 'auto' }}
           >
             <div className="flex flex-col gap-4">
-              <Link href="/all-tools/pdf" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link href="/all-tools/pdf-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 PDF
               </Link>
               <Link href="/all-tools/image-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">

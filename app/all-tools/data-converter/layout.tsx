@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Free Data Converter for CSV, JSON, XML & Excel',
-  description: 'Free data converter to transform CSV, JSON, XML, and Excel formats instantly. Convert between data formats online without signup. Fast, secure, and reliable.',
+  title: 'Data Converters for CSV, JSON, XML & Excel',
+  description: 'Convert among CSV, JSON, XML, and Excel formats with tools designed for specific format pairs. Review headers, data types, and nested structures.',
   keywords: ['free data converter', 'convert CSV to JSON', 'data format converter', 'JSON to CSV converter', 'data transformation tool', 'online data converter'],
   openGraph: {
     type: 'website',

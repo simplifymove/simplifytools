@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { getToolById } from '@/app/lib/video-tools';
 import { generateSoftwareApplicationSchema } from '@/app/lib/seo';
+import { notFound } from 'next/navigation';
 
 interface Params {
   slug: string;
@@ -401,6 +402,9 @@ export default async function VideoSlugLayout({
 }) {
   const { slug } = await params;
   const tool = getToolById(slug);
+  if (!tool) {
+    notFound();
+  }
   const baseUrl = 'https://simplifyconvert.com';
   const canonicalUrl = `${baseUrl}/all-tools/video/${slug}`;
   const softwareSchema = tool

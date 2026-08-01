@@ -345,7 +345,7 @@ export default async function PdfSlugLayout({
   const canonicalUrl = `https://simplifyconvert.com/all-tools/pdf/${slug}`;
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://simplifyconvert.com' },
-    { name: 'PDF Tools', url: 'https://simplifyconvert.com/all-tools/pdf' },
+    { name: 'PDF Tools', url: 'https://simplifyconvert.com/all-tools/pdf-tools' },
     { name: tool.title, url: canonicalUrl },
   ]);
   const softwareSchema = generateSoftwareApplicationSchema({

@@ -149,16 +149,16 @@ export default function DataToolsPage() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Online Tools?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Move Data Between Common Formats</h2>
             
             <p className="text-gray-700 leading-relaxed mb-6">
-              SimplifyConvert offers 12 free tools to transform between common data formats. <Link href="/all-tools/data/csv-to-json" className="text-teal-600 font-medium hover:underline">Convert CSV to JSON</Link>, <Link href="/all-tools/data/excel-to-xml" className="text-teal-600 font-medium hover:underline">export Excel as XML</Link>, split large files, or work with <Link href="/all-tools/data/json-to-xml" className="text-teal-600 font-medium hover:underline">JSON and XML formats</Link>—all without any cost, signup, or installation. Our specialized tools cover the most frequently needed format conversions and deliver reliable results instantly.
+              Use a format-pair tool such as <Link href="/all-tools/data/csv-to-json" className="text-teal-600 font-medium hover:underline">CSV to JSON</Link>, <Link href="/all-tools/data/excel-to-xml" className="text-teal-600 font-medium hover:underline">Excel to XML</Link>, or <Link href="/all-tools/data/json-to-xml" className="text-teal-600 font-medium hover:underline">JSON to XML</Link>. Tabular and nested formats represent data differently, so inspect headers, types, empty values, and nesting in the result.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
-                <p className="text-gray-700 text-sm">All data conversion tools are permanently free. No hidden charges, premium tiers, or surprise fees. Convert unlimited files without payment or credit card required.</p>
+                <p className="text-gray-700 text-sm">Choose a specific source-and-target pair so parsing rules match the formats you are working with.</p>
               </div>
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
@@ -166,11 +166,11 @@ export default function DataToolsPage() {
               </div>
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Instant Results</h3>
-                <p className="text-gray-700 text-sm">Convert data formats in seconds. Our optimized conversion engines handle files quickly and deliver high-quality output instantly. No waiting, no delays, no complex procedures.</p>
+                <p className="text-gray-700 text-sm">Conversion time depends on input size and structure. Inspect the result before replacing a source dataset.</p>
               </div>
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                <p className="text-gray-700 text-sm">Data is processed securely and automatically deleted after a short period. HTTPS encryption protects all transfers. We do not permanently store your files. Complete privacy guaranteed.</p>
+                <p className="text-gray-700 text-sm">Input is sent over HTTPS to the conversion service. Remove credentials and sensitive records before submitting data.</p>
               </div>
             </div>
 
@@ -198,7 +198,7 @@ export default function DataToolsPage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Our Tools</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Check the Structure After Conversion</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
               It's simple and intuitive. Select the tool you need from our collection—try <Link href="/all-tools/data/csv-to-json" className="text-teal-600 font-medium hover:underline">CSV to JSON</Link>, <Link href="/all-tools/data/excel-to-csv" className="text-teal-600 font-medium hover:underline">Excel to CSV</Link>, or any other format pair. Upload your file or paste your data, then choose your desired output format. Our tools automatically process your input and generate results instantly. Download your file or copy the output to clipboard. No signup, no registration, no learning curve—just fast, secure format transformation in seconds.
             </p>
@@ -221,7 +221,7 @@ export default function DataToolsPage() {
             name: 'Are all data converter tools really free?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! All data conversion tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Convert unlimited files without payment or credit card.'
+              text: 'The data conversion utilities are available without Premium AI Studio credits. Individual tools may apply input-size or rate limits.'
             }
           },
           {
@@ -242,7 +242,7 @@ export default function DataToolsPage() {
             name: 'Is my data safe when using the converter?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. Data is processed securely and automatically deleted after a short period. We use HTTPS encryption for all transfers. We do not permanently store your files. Complete privacy guaranteed with no tracking.'
+              text: 'Data is sent over HTTPS to the server-side conversion service. Remove passwords, tokens, and sensitive records before submitting input, and review the Privacy Policy for retention details.'
             }
           },
           {
@@ -321,8 +321,6 @@ export default function DataToolsPage() {
     </>
   );
 }
-
-
 
 
 

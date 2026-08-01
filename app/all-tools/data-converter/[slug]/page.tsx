@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { use, useState, useCallback } from 'react';
+import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { dataTools, getDataToolById } from '@/app/lib/data-tools';
 import { Download, AlertCircle, CheckCircle, Loader2, Upload, ChevronRight, Zap, Shield, FileJson, FileText, Database } from 'lucide-react';
@@ -74,10 +74,13 @@ function getRelatedTools(toolId: string): Array<{ id: string; title: string; des
   return relatedMap[toolId] || relatedMap['default'];
 }
 
-export default function DataToolPage() {
-  const params = useParams();
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default function DataToolPage({ params }: PageProps) {
   const router = useRouter();
-  const slug = (params?.slug as string | undefined) ?? '';
+  const { slug } = use(params);
 
   const tool = getDataToolById(slug);
 
@@ -171,27 +174,7 @@ export default function DataToolPage() {
   };
 
   if (!tool) {
-    return (
-      <>
-        <HomeHeader />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 flex flex-col">
-          <div className="flex-1 flex items-center justify-center w-full">
-            <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
-              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
-              <p className="text-gray-600 mb-6">The requested tool "{slug}" does not exist.</p>
-              <Link
-                href="/all-tools/data"
-                className="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition duration-0 font-medium"
-              >
-                Back to Tools
-              </Link>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
+    notFound();
   }
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

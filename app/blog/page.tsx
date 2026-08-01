@@ -50,63 +50,14 @@ export default function BlogPage() {
   const blogPosts = [
     {
       id: 1,
-      title: '10 Essential PDF Tools Every Professional Needs',
-      excerpt: 'Discover the most useful PDF tools that can save you hours of work. From merging and splitting to transformation and security.',
-      category: 'PDF Tools',
-      author: 'Sarah Johnson',
-      date: 'Jan 15, 2024',
-      readTime: '5 min read',
-      image: 'PDF'
-    },
-    {
-      id: 2,
-      title: 'Image Compression Without Quality Loss',
-      excerpt: 'Learn the best practices for compressing images while maintaining their visual quality. Perfect for web optimization.',
+      title: 'How to Convert JPG to PNG Without Losing Quality',
+      excerpt: 'Learn reliable ways to convert JPG images to PNG, understand the format tradeoffs, and preserve the best available image quality.',
       category: 'Image Tools',
-      author: 'Mike Chen',
-      date: 'Jan 12, 2024',
-      readTime: '8 min read',
-      image: 'IMAGE'
-    },
-    {
-      id: 3,
-      title: 'Convert Your Videos Like a Pro',
-      excerpt: 'Complete guide to video conversion, format selection, and optimization for different platforms.',
-      category: 'Video Tools',
-      author: 'Emma Davis',
-      date: 'Jan 8, 2024',
-      readTime: '6 min read',
-      image: 'VIDEO'
-    },
-    {
-      id: 4,
-      title: 'AI Writing: Boost Your Content Creation',
-      excerpt: 'Explore how AI writing tools can help improve your writing, generate ideas, and save time.',
-      category: 'AI Tools',
-      author: 'Alex Rodriguez',
-      date: 'Jan 5, 2024',
-      readTime: '7 min read',
-      image: 'AI'
-    },
-    {
-      id: 5,
-      title: 'Data Transformation Tips and Tricks',
-      excerpt: 'Master the art of converting and transforming your data. Includes CSV, JSON, and more formats.',
-      category: 'Data Tools',
-      author: 'Lisa Park',
-      date: 'Dec 30, 2023',
-      readTime: '9 min read',
-      image: 'DATA'
-    },
-    {
-      id: 6,
-      title: 'Speaking Matters: Text-to-Speech Guide',
-      excerpt: 'Discover how text-to-speech technology works and best practices for audio content creation.',
-      category: 'Audio Tools',
-      author: 'James Wilson',
-      date: 'Dec 25, 2023',
+      author: 'SimplifyConvert Team',
+      date: 'January 15, 2024',
       readTime: '5 min read',
-      image: 'VOICE'
+      image: 'IMAGE',
+      href: '/blog/jpg-to-png-conversion-guide',
     }
   ];
 
@@ -272,7 +223,7 @@ export default function BlogPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            Tips, tricks, and best practices for converting and editing your files.
+            Practical guides that explain file formats, conversion tradeoffs, and how to choose the right tool for a task.
           </motion.p>
         </div>
       </div>
@@ -287,31 +238,31 @@ export default function BlogPage() {
         >
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="flex-1">
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold mb-4 ${categoryColors['PDF Tools']}`}>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold mb-4 ${categoryColors['Image Tools']}`}>
                 Featured
               </span>
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">10 Essential PDF Tools Every Professional Needs</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">How to Convert JPG to PNG Without Losing Quality</h2>
               <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                Discover the most useful PDF tools that can save you hours of work. From merging and splitting to transformation and security. Learn how to optimize your workflow.
+                Learn reliable ways to convert JPG images to PNG, understand the format tradeoffs, and preserve the best available image quality.
               </p>
               <div className="flex flex-wrap gap-6 text-gray-600 text-sm mb-6">
                 <div className="flex items-center gap-2">
                   <User size={16} />
-                  <span>Sarah Johnson</span>
+                  <span>SimplifyConvert Team</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
-                  <span>Jan 15, 2024</span>
+                  <span>January 15, 2024</span>
                 </div>
                 <span>5 min read</span>
               </div>
-              <button className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all flex items-center gap-2">
+              <Link href="/blog/jpg-to-png-conversion-guide" className="w-fit px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all flex items-center gap-2">
                 Read Full Article
                 <ArrowRight size={18} />
-              </button>
+              </Link>
             </div>
             <div className="w-full md:w-64 h-64 bg-linear-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center text-white text-4xl font-bold">
-              PDF
+              JPG → PNG
             </div>
           </div>
         </motion.div>
@@ -332,7 +283,7 @@ export default function BlogPage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.slice(1).map((post, idx) => (
+            {blogPosts.map((post, idx) => (
               <motion.article
                 key={post.id}
                 className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-lg transition-all group cursor-pointer"
@@ -367,10 +318,10 @@ export default function BlogPage() {
                     </div>
                     <span className="pt-4">{post.readTime}</span>
                   </div>
-                  <button className="text-orange-500 font-semibold hover:text-orange-600 flex items-center gap-2">
+                  <Link href={post.href} className="text-orange-500 font-semibold hover:text-orange-600 flex items-center gap-2">
                     Read More
                     <ArrowRight size={16} />
-                  </button>
+                  </Link>
                 </div>
               </motion.article>
             ))}
@@ -402,4 +353,3 @@ export default function BlogPage() {
     </main>
   );
 }
-

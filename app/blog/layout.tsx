@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blog - SimplifyConvert | Free Online Tools Guides & Tutorials',
-  description: 'Learn how to use free online tools effectively. Discover helpful guides, tips, and tutorials on image conversion, PDF editing, video processing, and data transformation.',
+  title: 'SimplifyConvert Blog - Practical File and Format Guides',
+  description: 'Read practical SimplifyConvert guides about file formats, conversion tradeoffs, and using online utilities for everyday tasks.',
   keywords: [
     'image conversion guide',
     'PDF tools tutorial',

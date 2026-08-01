@@ -14,6 +14,7 @@ import { validateFile } from '@/app/utils/validation/file-validation';
 import { ErrorAlert } from '@/app/components/error-components';
 import { VideoToolErrorType } from '@/app/utils/types/errors';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { notFound } from 'next/navigation';
 
 // Action-specific CTA text for each tool
 function getActionText(toolId: string): string {
@@ -114,20 +115,7 @@ export default function VideoToolPage({ params }: PageProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!tool) {
-    return (
-      <>
-        <HomeHeader />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center flex flex-col">
-          <div className="flex-1 flex items-center justify-center w-full">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
-              <p className="text-gray-600">The requested tool could not be found.</p>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
+    notFound();
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

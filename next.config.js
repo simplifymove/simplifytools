@@ -208,6 +208,42 @@ const nextConfig = {
         destination: '/all-tools/video-tools',
         permanent: true, // 301 redirect
       },
+      // Consolidate duplicate-purpose URLs onto the established canonical routes.
+      {
+        source: '/all-tools/pdf-to-jpg',
+        destination: '/all-tools/pdf/pdf-to-jpg',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/pdf-to-text',
+        destination: '/all-tools/pdf/pdf-to-text',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/image-compressor',
+        destination: '/all-tools/compress-image',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/mp4-to-gif',
+        destination: '/all-tools/video/mp4-to-gif',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/pdf',
+        destination: '/all-tools/pdf-tools',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/ai-write',
+        destination: '/all-tools/ai-tools',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/ai-write/:path*',
+        destination: '/all-tools/ai-tools/:path*',
+        statusCode: 301,
+      },
     ];
   },
 };

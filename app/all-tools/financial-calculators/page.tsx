@@ -292,14 +292,14 @@ export default function FinancialCalculatorsPage() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Choose Our Financial Calculators?</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Four Focused Planning Calculators</h2>
               
               <p className="text-gray-700 leading-relaxed mb-6">
-                SimplifyConvert provides advanced <Link href="/all-tools" className="text-green-600 font-medium hover:underline">financial calculator tools</Link> designed for advanced financial analysis. Create models, projections, and scenario planning for startups, small businesses, loan analysis, and tax planning. Whether you need a <Link href="/all-tools/financial-calculators/startup-runway" className="text-green-600 font-medium hover:underline">startup runway calculator</Link>, <Link href="/all-tools/financial-calculators/saas-profit" className="text-green-600 font-medium hover:underline">SaaS profit simulator</Link>, <Link href="/all-tools/financial-calculators/loan-optimizer" className="text-green-600 font-medium hover:underline">loan optimization tool</Link>, or <Link href="/all-tools/financial-calculators/india-tax" className="text-green-600 font-medium hover:underline">India tax estimator</Link>, our calculators provide instant, reliable estimates without signup or fees.
+                Explore a <Link href="/all-tools/financial-calculators/startup-runway" className="text-green-600 font-medium hover:underline">startup runway estimate</Link>, <Link href="/all-tools/financial-calculators/saas-profit" className="text-green-600 font-medium hover:underline">SaaS profit scenario</Link>, <Link href="/all-tools/financial-calculators/loan-optimizer" className="text-green-600 font-medium hover:underline">loan repayment comparison</Link>, or <Link href="/all-tools/financial-calculators/india-tax" className="text-green-600 font-medium hover:underline">Indian income tax estimate</Link>. Each calculator has a narrower purpose and depends on the figures and assumptions entered.
               </p>
 
               <p className="text-gray-700 leading-relaxed mb-6">
-                Unlike basic Excel sheets or simple calculators, these tools provide deeper financial insights and projections. Automated calculations eliminate manual errors, while built-in formulas handle complex financial scenarios that would take hours in spreadsheets.
+                Each calculator applies a defined set of assumptions to the values you enter. Use the output to explore scenarios, then verify formulas, dates, tax rules, rates, and source figures before making a financial decision.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
@@ -313,11 +313,11 @@ export default function FinancialCalculatorsPage() {
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                   <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Business-Ready Insights</h3>
-                  <p className="text-gray-700 text-sm">Actionable recommendations and detailed breakdowns. Use results for pitch decks, investor presentations, business planning, and financial strategy decisions.</p>
+                  <p className="text-gray-700 text-sm">Results are informational estimates, not accounting, tax, legal, investment, or lending advice.</p>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                   <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ 100% Free & Private</h3>
-                  <p className="text-gray-700 text-sm">No hidden fees, no premium tiers, no signup required. Your financial data stays private. Use unlimited times for business and personal planning.</p>
+                  <p className="text-gray-700 text-sm">Calculator inputs are sent to the financial-calculator service. Avoid entering account numbers, credentials, or personally identifying financial records.</p>
                 </div>
               </div>
 
@@ -344,7 +344,7 @@ export default function FinancialCalculatorsPage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong>Investment Analysis:</strong> Evaluate returns, compare investment options, and model long-term wealth growth scenarios</span>
+                    <span><strong>Scenario Review:</strong> Change assumptions to see how the displayed runway, profit, repayment, or tax estimate responds</span>
                   </li>
                 </ul>
               </div>
@@ -352,7 +352,7 @@ export default function FinancialCalculatorsPage() {
               <div className="mb-12">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Best Free Financial Calculators Online</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Looking for the best free financial calculators? Our collection delivers professional-grade financial analysis tools designed for everyone. Whether you're an entrepreneur calculating startup runway, a SaaS founder modeling growth, or an individual planning finances, our online financial calculators provide instant, reliable results without signup or fees.
+                  This collection covers four defined workflows: startup runway, SaaS profit, loan repayment, and Indian income tax estimates. Select the calculator that matches the question you are exploring, and treat its result as an estimate based on the inputs and assumptions shown.
                 </p>
                 <p className="text-gray-700 leading-relaxed mb-6">
                   Our best financial calculators include:
@@ -392,7 +392,7 @@ export default function FinancialCalculatorsPage() {
               name: 'Are these financial calculators really free?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Yes! All our financial calculators are completely free with no hidden costs, signup requirements, or premium features. Calculate unlimited scenarios without any charges or ads. We believe everyone deserves access to professional financial planning tools.'
+                text: 'The four calculators on this page are available without Premium AI Studio credits. Normal service limits can still apply.'
               }
             },
             {
@@ -406,7 +406,7 @@ export default function FinancialCalculatorsPage() {
               name: 'Are the calculations reliable?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Our financial calculators use standard algorithms and formulas for financial modeling. Results provide reliable estimates for planning and decision-making purposes. Always consult a financial advisor for critical business or investment decisions.'
+                text: 'The calculators produce estimates from the inputs and assumptions shown. They can contain errors or omit rules relevant to your situation. Verify important results and consult an appropriately qualified professional.'
               }
             },
             {

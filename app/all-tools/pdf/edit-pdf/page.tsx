@@ -75,7 +75,7 @@ export default function EditPdfPage() {
             <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
               <Link href="/" className="hover:text-white transition">Home</Link>
               <span>/</span>
-              <Link href="/all-tools/pdf" className="hover:text-white transition">PDF Tools</Link>
+              <Link href="/all-tools/pdf-tools" className="hover:text-white transition">PDF Tools</Link>
               <span>/</span>
               <span className="text-white">Edit PDF</span>
             </div>

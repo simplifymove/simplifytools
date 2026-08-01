@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy - SimplifyConvert',
-  description: 'Read SimplifyConvert privacy policy to understand how we protect your data and use it.',
+  description: 'Learn how SimplifyConvert handles files, accounts, AI Studio content, analytics, advertising, cookies, payments, and temporary download results.',
   keywords: ['privacy policy', 'data protection'],
   openGraph: {
     type: 'website',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/privacy',
     siteName: 'SimplifyConvert',
     title: 'Privacy Policy - SimplifyConvert',
-    description: 'Read our privacy policy.',
+    description: 'How SimplifyConvert handles files, accounts, AI content, analytics, advertising, cookies, and payments.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',

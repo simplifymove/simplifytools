@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { use, useState } from 'react';
+import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Copy, RefreshCw, Download, ArrowLeft, Loader, ChevronRight, Zap, Shield, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getToolById } from '@/app/lib/ai-tools';
 import { getAiToolFaqs } from '@/app/lib/ai-tool-faqs';
-import type { AIWriteTool } from '@/app/lib/ai-tools';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import AIDetectorResults from '@/app/components/AIDetectorResults';
@@ -204,38 +203,29 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
   },
 };
 
-export default function AIWriteToolPage() {
-  const router = useRouter();
-  const params = useParams();
-  const slug = (params?.slug as string | undefined) ?? '';
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 
-  const [tool, setTool] = useState<AIWriteTool | null>(null);
-  const [inputs, setInputs] = useState<Record<string, any>>({});
+export default function AIWriteToolPage({ params }: PageProps) {
+  const router = useRouter();
+  const { slug } = use(params);
+  const resolvedToolId = resolveToolId(slug);
+  const tool = resolvedToolId ? getToolById(resolvedToolId) : undefined;
+
+  const [inputs, setInputs] = useState<Record<string, any>>(() => {
+    const defaultInputs: Record<string, any> = {};
+    tool?.fields.forEach((field) => {
+      defaultInputs[field.name] = field.type === 'select' && field.options
+        ? field.options[0]?.value || ''
+        : '';
+    });
+    return defaultInputs;
+  });
   const [result, setResult] = useState<string | any>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [copied, setCopied] = useState(false);
-
-  // Load tool configuration with alias resolution
-  useEffect(() => {
-    const resolvedToolId = resolveToolId(slug);
-    if (resolvedToolId) {
-      const loadedTool = getToolById(resolvedToolId);
-      if (loadedTool) {
-        setTool(loadedTool);
-        // Initialize inputs with default values
-        const defaultInputs: Record<string, any> = {};
-        loadedTool.fields.forEach(field => {
-          if (field.type === 'select' && field.options) {
-            defaultInputs[field.name] = field.options[0]?.value || '';
-          } else {
-            defaultInputs[field.name] = '';
-          }
-        });
-        setInputs(defaultInputs);
-      }
-    }
-  }, [slug]);
 
   const handleInputChange = (name: string, value: string) => {
     setInputs(prev => ({ ...prev, [name]: value }));
@@ -310,20 +300,7 @@ export default function AIWriteToolPage() {
   };
 
   if (!tool) {
-    return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <Link href="/all-tools/ai-tools" className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 mb-8">
-            <ArrowLeft className="w-4 h-4" />
-            Back to AI Write Tools
-          </Link>
-          <div className="text-center py-12">
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">AI Writing Tool Not Found</h1>
-            <p className="text-lg text-gray-600">The requested AI writing tool could not be found.</p>
-          </div>
-        </div>
-      </main>
-    );
+    notFound();
   }
 
   const seoContent = topToolSeoContent[tool.id];

@@ -1,16 +1,16 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Free AI Writing Tools - Generate Content Online',
-  description: 'Free AI writing tools to generate blogs, emails, and content instantly. Use our AI writer without signup. Create professional content in seconds.',
+  title: 'AI Writing Tools - Generate, Rewrite & Summarize',
+  description: 'Browse AI-assisted tools for drafting, rewriting, summarizing, and analyzing text. Review generated output for accuracy before using it.',
   keywords: ['free AI writing tools', 'AI content generator', 'AI blog writer free', 'AI writing assistant', 'generate content with AI', 'AI tools online'],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://simplifyconvert.com/all-tools/ai-tools',
     siteName: 'SimplifyConvert',
-    title: 'Free AI Writing Tools - Generate Content Online',
-    description: 'Free AI writing tools to generate blogs, emails, and content instantly. Use our AI writer without signup. Create professional content in seconds.',
+    title: 'AI Writing Tools - Generate, Rewrite & Summarize',
+    description: 'AI-assisted tools for drafting, rewriting, summarizing, and analyzing text.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Free AI Writing Tools - Generate Content Online',
-    description: 'Free AI writing tools to generate blogs, emails, and content instantly. Use our AI writer without signup.',
+    title: 'AI Writing Tools - Generate, Rewrite & Summarize',
+    description: 'AI-assisted tools for drafting, rewriting, summarizing, and analyzing text.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
   alternates: {
@@ -38,4 +38,3 @@ export default function AIToolsLayout({
 }) {
   return <>{children}</>;
 }
-

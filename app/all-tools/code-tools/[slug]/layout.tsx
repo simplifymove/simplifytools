@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { CodeTool, getToolBySlug } from '@/app/lib/code-tools';
+import { notFound } from 'next/navigation';
 
 interface Params {
   slug: string;
@@ -210,10 +211,17 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
-export default function CodeToolsSlugLayout({
+export default async function CodeToolsSlugLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<Params>;
 }) {
+  const { slug } = await params;
+  if (!getToolBySlug(slug)) {
+    notFound();
+  }
+
   return <>{children}</>;
 }

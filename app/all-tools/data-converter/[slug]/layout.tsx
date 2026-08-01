@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { getDataToolById } from '@/app/lib/data-tools';
 import { generateSoftwareApplicationSchema } from '@/app/lib/seo';
+import { notFound } from 'next/navigation';
 
 interface Params {
   slug: string;
@@ -138,7 +139,7 @@ export default async function DataConverterSlugLayout({
   const tool = getDataToolById(slug);
 
   if (!tool) {
-    return <>{children}</>;
+    notFound();
   }
 
   const softwareSchema = generateSoftwareApplicationSchema({

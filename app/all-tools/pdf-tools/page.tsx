@@ -70,7 +70,7 @@ export default function PdfToolsPage() {
         name: 'Are all PDF tools really free?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes! All free PDF tools at SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any PDF tool unlimited times without payment.',
+          text: 'The PDF utilities are available without Premium AI Studio credits. Individual tools may enforce file-size, page-count, or rate limits.',
         },
       },
       {
@@ -86,7 +86,7 @@ export default function PdfToolsPage() {
         name: 'Is my data safe when using SimplifyConvert PDF tools?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption for all transfers.',
+          text: 'PDF files are sent over HTTPS for server processing. Temporary working files are cleaned during the request, and standard generated download results normally expire after about 30 minutes.',
         },
       },
       {
@@ -317,16 +317,16 @@ export default function PdfToolsPage() {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free PDF Tools?</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Choose a PDF Tool for the Document Task</h2>
                 
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  SimplifyConvert offers a complete suite of free PDF tools to handle all your document needs. Whether you need to merge multiple PDFs into one document, split a large PDF into individual pages, compress files for email sharing, or convert PDFs to other formats, our free PDF tools deliver professional results without any cost, signup, or software installation.
+                  Use merge when several documents belong in one file, split or extract when only selected pages are needed, and compress when a PDF exceeds an upload or email limit. Conversion tools change formats, while editing and signing tools modify the document itself; layouts can shift when converting complex PDFs.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
-                    <p className="text-gray-700 text-sm">All 55+ PDF tools are permanently free. No hidden charges, premium tiers, or surprise fees. Use unlimited PDF conversions without payment or credit card.</p>
+                    <p className="text-gray-700 text-sm">The category groups page organization, compression, conversion, editing, and signing workflows so you can start with the intended result.</p>
                   </div>
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
@@ -334,11 +334,11 @@ export default function PdfToolsPage() {
                   </div>
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Fast Processing</h3>
-                    <p className="text-gray-700 text-sm">Convert, merge, split, and compress PDFs in seconds. Advanced processing algorithms deliver fast results without lag or delays.</p>
+                    <p className="text-gray-700 text-sm">Processing time depends on file size, page count, document complexity, and the operation selected.</p>
                   </div>
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                    <p className="text-gray-700 text-sm">Files are processed securely and automatically deleted after processing. HTTPS encryption protects all transfers. We do not store your files.</p>
+                    <p className="text-gray-700 text-sm">PDF workflows upload files for server processing. Temporary working files are cleaned during the request; generated download results normally expire after about 30 minutes.</p>
                   </div>
                 </div>
 
@@ -366,9 +366,9 @@ export default function PdfToolsPage() {
                   </div>
                 </div>
 
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Free PDF Tools</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use the PDF Tools</h2>
                 <p className="text-gray-700 leading-relaxed">
-                  Using SimplifyConvert PDF tools is simple and straightforward. Select the tool you need, upload your PDF file, configure options if needed, and click process. The tool handles complex PDF operations in seconds while maintaining document quality. Download your converted or modified PDF instantly. No signup required, no registration needed, no learning curve.
+                  Select the operation, upload the required PDF or PDFs, review page ranges and output options, then process and inspect the downloaded result. Keep the original file until you have confirmed page order, text, fonts, links, and signatures in the output.
                 </p>
               </motion.div>
             </div>
@@ -380,7 +380,7 @@ export default function PdfToolsPage() {
                 name: 'Are all PDF tools really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes! All free PDF tools at SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any PDF tool unlimited times without payment.'
+                  text: 'The PDF utilities on this category page are available without a Premium AI Studio credit purchase. Individual tools can still enforce file-size, page-count, or rate limits.'
                 }
               },
               {
@@ -394,7 +394,7 @@ export default function PdfToolsPage() {
                 name: 'Is my data safe when using SimplifyConvert PDF tools?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption for all transfers.'
+                  text: 'PDF files are sent over HTTPS for server processing. Temporary working files are cleaned during the request, and standard generated download results normally expire after about 30 minutes.'
                 }
               },
               {
@@ -421,8 +421,6 @@ export default function PdfToolsPage() {
     </>
   );
 }
-
-
 
 
 

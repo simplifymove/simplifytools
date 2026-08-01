@@ -583,7 +583,7 @@ export default function RemoveBackgroundPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Tools</h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size after removal</p></div>
             </Link>
@@ -678,7 +678,6 @@ export default function RemoveBackgroundPage() {
     </>
   );
 }
-
 
 
 

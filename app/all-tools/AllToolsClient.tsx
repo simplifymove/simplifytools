@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
-import { Search, Clock, ChevronRight, Sparkles, TrendingUp } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Search, Clock, ChevronRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { ToolCard } from '@/app/components/ToolCard';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { SearchBox } from '@/app/components/SearchBox';
 import { allTools } from '@/app/data/tools';
@@ -20,19 +18,15 @@ const categoryColors: Record<string, { bg: string; gradient: string; text: strin
   'File': { bg: 'bg-indigo-50', gradient: 'from-indigo-500 to-indigo-600', text: 'text-indigo-600' },
 };
 
-function ToolsContent() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('default');
-  const searchParams = useSearchParams();
-  const categoryParam = searchParams?.get('category');
-  const searchParam = searchParams?.get('search');
+interface ToolsPageProps {
+  initialCategory?: string;
+  initialSearch?: string;
+}
 
-  // Initialize searchTerm from URL parameter
-  React.useEffect(() => {
-    if (searchParam) {
-      setSearchTerm(searchParam);
-    }
-  }, [searchParam]);
+function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPageProps) {
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [sortBy, setSortBy] = useState('default');
+  const categoryParam = initialCategory;
 
   // Check if category is coming soon or is data tools
   const isDataTools = categoryParam && ['data', 'Data'].includes(categoryParam);
@@ -79,9 +73,15 @@ function ToolsContent() {
     return tool.route || '#';
   };
 
-  const categories = ['Image', 'PDF', 'Video', 'AI Write', 'File'];
-  const uniqueCategories = [...new Set(allTools.map(t => t.category))];
-
+  const categoryDestinations = [
+    { label: 'PDF', href: '/all-tools/pdf-tools', detail: 'Combine, compress, convert, and edit documents' },
+    { label: 'Image', href: '/all-tools/image-tools', detail: 'Resize, convert, compress, and adjust images' },
+    { label: 'Video', href: '/all-tools/video-tools', detail: 'Convert, compress, trim, and extract media' },
+    { label: 'Data', href: '/all-tools/data', detail: 'Move between spreadsheet and structured-data formats' },
+    { label: 'Code', href: '/all-tools/code-tools', detail: 'Format, validate, encode, and transform developer text' },
+    { label: 'AI Writing', href: '/all-tools/ai-tools', detail: 'Generate, rewrite, summarize, and analyze text' },
+    { label: 'Calculators', href: '/all-tools/financial-calculators', detail: 'Explore startup, SaaS, loan, and India tax estimates' },
+  ];
   return (
     <>
       <HomeHeader />
@@ -174,30 +174,30 @@ function ToolsContent() {
 
           {/* Category Pills */}
           {!categoryParam && (
-            <motion.div
-              className="flex gap-2 flex-wrap mt-8"
+            <motion.nav
+              aria-label="Tool categories"
+              className="mt-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <span className="text-sm font-semibold text-gray-700">Quick categories:</span>
-              {categories.map((cat) => {
-                const getCategoryLink = (category: string) => {
-                  if (category === 'AI Write') return '/all-tools/ai-tools';
-                  return `/all-tools?category=${category}`;
-                };
-                
-                return (
+              <h2 className="text-xl font-bold text-gray-900">Choose a category</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-600">
+                Start with a category when you know the kind of task you need, or use search for a specific format or action. Each category page groups related tools and highlights common workflows.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {categoryDestinations.map((category) => (
                   <Link
-                    key={cat}
-                    href={getCategoryLink(cat)}
-                    className="px-4 py-2 rounded-full bg-white border-2 border-gray-200 hover:border-purple-500 text-gray-700 hover:text-purple-600 font-medium transition-all hover:shadow-md text-sm"
+                    key={category.href}
+                    href={category.href}
+                    className="rounded-xl border-2 border-gray-200 bg-white px-4 py-3 transition-all hover:border-purple-500 hover:shadow-md"
                   >
-                    {cat}
+                    <span className="block text-sm font-semibold text-gray-900">{category.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-gray-600">{category.detail}</span>
                   </Link>
-                );
-              })}
-            </motion.div>
+                ))}
+              </div>
+            </motion.nav>
           )}
         </div>
       </div>
@@ -364,13 +364,6 @@ function ToolsContent() {
   );
 }
 
-export default function ToolsPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
-      <ToolsContent />
-    </Suspense>
-  );
+export default function ToolsPage(props: ToolsPageProps) {
+  return <ToolsContent {...props} />;
 }
-
-
-

@@ -217,16 +217,16 @@ export default function VideoToolsPage() {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Video Tools?</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Choose a Video Workflow by Output</h2>
                 
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  SimplifyConvert offers a complete suite of free video tools to handle all your multimedia needs. Whether you need to convert videos between formats, compress large files for sharing, trim unwanted sections, or edit video properties, our free video tools deliver professional results without any cost, signup, or software installation.
+                  Convert when a player or platform needs another container, compress when file size matters, trim when only a time range is needed, and extract audio when the picture track is unnecessary. Re-encoding can change quality, compatibility, and processing time.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
-                    <p className="text-gray-700 text-sm">All 58 video tools are permanently free. No hidden charges, premium tiers, or surprise fees. Use unlimited video conversions without payment or credit card.</p>
+                    <p className="text-gray-700 text-sm">The category separates conversion, compression, trimming, extraction, and related workflows by intended result.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
@@ -234,11 +234,11 @@ export default function VideoToolsPage() {
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Fast Processing</h3>
-                    <p className="text-gray-700 text-sm">Convert, compress, and edit videos in seconds. Advanced processing handles large files quickly without lag or delays. Get results instantly.</p>
+                    <p className="text-gray-700 text-sm">Video is server-processed. Upload and encoding time depend on duration, resolution, codec, operation, and network speed.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                    <p className="text-gray-700 text-sm">Your video files are processed securely and never stored on servers. HTTPS encryption protects all transfers. Complete privacy guaranteed.</p>
+                    <p className="text-gray-700 text-sm">Uploads use HTTPS and are retained temporarily for processing and download. Media cleanup is scheduled after approximately one hour.</p>
                   </div>
                 </div>
 
@@ -281,7 +281,7 @@ export default function VideoToolsPage() {
                 name: 'Are all video tools really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes! All video tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any video tool unlimited times without payment.'
+                  text: 'The listed video utilities do not require Premium AI Studio credits. File-size, duration, format, and rate limits can vary by tool.'
                 }
               },
               {
@@ -295,7 +295,7 @@ export default function VideoToolsPage() {
                 name: 'Is my video data safe?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Your videos are processed securely and never stored on our servers. We use HTTPS encryption for all transfers. Videos are processed immediately and deleted after download.'
+                  text: 'Videos are uploaded over HTTPS for server processing and temporary download. Media cleanup is scheduled after approximately one hour; do not submit content you are not authorized to process.'
                 }
               },
               {
@@ -309,7 +309,7 @@ export default function VideoToolsPage() {
                 name: 'How large can video files be?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Our video tools can handle files up to several gigabytes depending on your internet connection. Large files may take longer to process, but the tools handle them efficiently without losing quality.'
+                  text: 'The media API currently validates uploads up to 500 MB, and individual tools may use lower limits. Larger, longer, or high-resolution files take more time and can fail if resources are unavailable.'
                 }
               },
               {
@@ -357,7 +357,6 @@ export default function VideoToolsPage() {
     </>
   );
 }
-
 
 
 
