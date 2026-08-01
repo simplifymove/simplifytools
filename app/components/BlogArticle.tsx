@@ -9,6 +9,8 @@ interface BlogArticleProps {
   description: string;
   author: string;
   date: string;
+  datePublished: string;
+  canonicalUrl: string;
   readTime: string;
   category: string;
   image: string;
@@ -26,6 +28,8 @@ export function BlogArticle({
   description,
   author,
   date,
+  datePublished,
+  canonicalUrl,
   readTime,
   category,
   image,
@@ -36,14 +40,17 @@ export function BlogArticle({
   // Generate article schema
   const articleSchema = {
     '@context': 'https://schema.org',
-    '@type': 'NewsArticle',
+    '@type': 'BlogPosting',
     headline: title,
     description: description,
+    url: canonicalUrl,
+    mainEntityOfPage: canonicalUrl,
     image: [image],
-    datePublished: date,
+    datePublished,
     author: {
-      '@type': 'Person',
+      '@type': 'Organization',
       name: author,
+      url: 'https://simplifyconvert.com',
     },
     publisher: {
       '@type': 'Organization',
@@ -109,7 +116,7 @@ export function BlogArticle({
             </div>
             <div className="flex items-center gap-2">
               <Calendar size={16} />
-              <time dateTime={date}>{date}</time>
+              <time dateTime={datePublished}>{date}</time>
             </div>
             <div className="flex items-center gap-2">
               <Clock size={16} />

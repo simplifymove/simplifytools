@@ -149,6 +149,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/ai-code-assistant', priority: 0.7, frequency: 'monthly' as const, label: 'AI Code Assistant' },
     { url: '/ai-code-assistant/docs', priority: 0.6, frequency: 'monthly' as const, label: 'AI Code Assistant Documentation' },
     { url: '/ai-code-assistant/pricing', priority: 0.6, frequency: 'monthly' as const, label: 'AI Code Assistant Pricing' },
+    { url: '/ai-studio', priority: 0.8, frequency: 'weekly' as const, label: 'AI Studio' },
+    { url: '/ai-studio/pricing', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio Pricing' },
     { url: '/all-tools/image-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Image Tools' },
     { url: '/all-tools/pdf-tools', priority: 0.8, frequency: 'weekly' as const, label: 'PDF Tools' },
     { url: '/all-tools/video-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Video Tools' },

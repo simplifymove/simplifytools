@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { getPdfToolById } from '@/app/lib/pdf-tools';
 import {
   generateBreadcrumbSchema,
@@ -14,10 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const tool = getPdfToolById(slug);
 
   if (!tool) {
-    return {
-      title: 'Tool Not Found - SimplifyConvert',
-      robots: { index: false },
-    };
+    notFound();
   }
 
   const baseUrl = 'https://simplifyconvert.com';
@@ -339,7 +337,7 @@ export default async function PdfSlugLayout({
   const tool = getPdfToolById(slug);
 
   if (!tool) {
-    return <>{children}</>;
+    notFound();
   }
 
   const canonicalUrl = `https://simplifyconvert.com/all-tools/pdf/${slug}`;

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     'free image converter',
     'online JPG to PNG',
   ],
-  authors: [{ name: 'SimplifyConvert Team' }],
+  authors: [{ name: 'SimplifyConvert', url: 'https://simplifyconvert.com' }],
   openGraph: {
     type: 'article',
     locale: 'en_US',
@@ -23,13 +23,13 @@ export const metadata: Metadata = {
     description: 'Learn the best methods to convert JPG to PNG while maintaining image quality.',
     images: [
       {
-        url: 'https://simplifyconvert.com/blog/jpg-png-conversion.jpg',
+        url: 'https://simplifyconvert.com/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'JPG to PNG Conversion Guide',
       },
     ],
-    authors: ['SimplifyConvert Team'],
+    authors: ['SimplifyConvert'],
     publishedTime: '2024-01-15T10:00:00Z',
     modifiedTime: '2024-01-15T10:00:00Z',
   },
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Convert JPG to PNG Without Losing Quality',
     description: 'Comprehensive guide to JPG to PNG conversion with quality preservation.',
-    images: ['https://simplifyconvert.com/blog/jpg-png-conversion.jpg'],
+    images: ['https://simplifyconvert.com/og-image.jpg'],
     creator: '@simplifyconvert',
   },
   alternates: {
@@ -56,11 +56,13 @@ export default function JPGToPNGBlogPost() {
     <BlogArticle
       title="How to Convert JPG to PNG Without Losing Quality"
       description="Complete guide to converting JPG images to PNG format while maintaining image quality. Learn different methods, best practices, and tool recommendations."
-      author="SimplifyConvert Team"
+      author="SimplifyConvert"
       date="January 15, 2024"
+      datePublished="2024-01-15T10:00:00Z"
+      canonicalUrl="https://simplifyconvert.com/blog/jpg-to-png-conversion-guide"
       readTime="5 min"
       category="Image Conversion"
-      image="https://simplifyconvert.com/blog/jpg-png-conversion.jpg"
+      image="https://simplifyconvert.com/og-image.jpg"
       imageAlt="JPG to PNG Conversion Process"
       relatedLinks={relatedLinks}
     >
@@ -256,7 +258,7 @@ export default function JPGToPNGBlogPost() {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 my-12 text-center">
         <h3 className="text-2xl font-bold text-gray-900 mb-3">Ready to Convert Your Images?</h3>
         <p className="text-gray-700 mb-6">
-          Use our free JPG to PNG converter to quickly transform your images. No registration, completely free!
+          Use our JPG to PNG converter to quickly transform your images. No registration is required.
         </p>
         <Link
           href="/all-tools/jpg-to-png"

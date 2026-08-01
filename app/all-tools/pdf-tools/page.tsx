@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { getAllPdfTools } from '@/app/lib/pdf-tools';
@@ -14,26 +14,6 @@ import { Footer } from '@/app/components/Footer';
 export default function PdfToolsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-
-  // Remove global FAQPage schema on this page - keep only PDF-specific FAQ schema
-  useEffect(() => {
-    const scripts = document.querySelectorAll('script[type="application/ld+json"]');
-    scripts.forEach((script) => {
-      try {
-        const schema = JSON.parse(script.innerHTML);
-        // Remove the global FAQ schema (contains "200+ free online tools")
-        if (
-          schema['@type'] === 'FAQPage' &&
-          schema.mainEntity &&
-          schema.mainEntity[0]?.name?.includes('SimplifyConvert tools')
-        ) {
-          script.remove();
-        }
-      } catch (e) {
-        // Ignore parsing errors
-      }
-    });
-  }, []);
 
   const allPdfTools = getAllPdfTools();
 
@@ -61,56 +41,8 @@ export default function PdfToolsPage() {
     return results;
   }, [searchTerm, selectedCategory]);
 
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: 'Are all PDF tools really free?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'The PDF utilities are available without Premium AI Studio credits. Individual tools may enforce file-size, page-count, or rate limits.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Do I need to install software to use PDF tools?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'No. All PDF tools work directly in your browser on Windows, Mac, iOS, and Android. Just upload your PDF, click convert, and download the result. No installation required.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Is my data safe when using SimplifyConvert PDF tools?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'PDF files are sent over HTTPS for server processing. Temporary working files are cleaned during the request, and standard generated download results normally expire after about 30 minutes.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Which PDF tools are most popular?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Merge PDF, PDF to text extraction, split PDF, and compress PDF are among our most popular tools. All are free, fast, and work without signup or installation.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Can I use PDF tools on mobile devices?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Absolutely! Our PDF tools are fully responsive and work perfectly on smartphones and tablets. Use any tool on iPhone, Android, iPad, or tablet with the same features and speed as desktop.',
-        },
-      },
-    ],
-  };
-
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       {/* Breadcrumb Schema */}
       <script
         type="application/ld+json"
@@ -421,7 +353,6 @@ export default function PdfToolsPage() {
     </>
   );
 }
-
 
 
 

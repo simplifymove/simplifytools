@@ -251,11 +251,17 @@ export default function ViewMetadataPage() {
             <div>
               <h4 className="font-semibold text-white mb-4">Categories</h4>
               <ul className="space-y-2 text-sm">
-                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
+                {[
+                  { label: 'PDF Tools', href: '/all-tools/pdf-tools' },
+                  { label: 'Image Tools', href: '/all-tools/image-tools' },
+                  { label: 'Video Tools', href: '/all-tools/video-tools' },
+                  { label: 'AI Write', href: '/all-tools/ai-tools' },
+                  { label: 'Code Tools', href: '/all-tools/code-tools' },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -265,11 +271,17 @@ export default function ViewMetadataPage() {
             <div>
               <h4 className="font-semibold text-white mb-4">Popular</h4>
               <ul className="space-y-2 text-sm">
-                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
+                {[
+                  { label: 'PDF to JPG', href: '/all-tools/pdf/pdf-to-jpg' },
+                  { label: 'Remove BG', href: '/all-tools/remove-background' },
+                  { label: 'Compress Image', href: '/all-tools/compress-image' },
+                  { label: 'JSON Formatter', href: '/all-tools/code-tools/json-formatter' },
+                  { label: 'CSV to Excel', href: '/all-tools/data/csv-to-excel' },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -306,7 +318,6 @@ export default function ViewMetadataPage() {
     </>
   );
 }
-
 
 
 

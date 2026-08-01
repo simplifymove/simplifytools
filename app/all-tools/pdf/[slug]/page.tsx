@@ -1096,16 +1096,18 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Merge PDF',
-                    description: 'Combine multiple PDF files into one document quickly and easily.'
+                    description: 'Combine multiple PDF files into one document quickly and easily.',
+                    link: '/all-tools/pdf/merge-pdf'
                   },
                   {
                     title: 'Compress PDF',
-                    description: 'Reduce PDF file size while maintaining quality for easier sharing and storage.'
+                    description: 'Reduce PDF file size while maintaining quality for easier sharing and storage.',
+                    link: '/all-tools/pdf/compress-pdf'
                   }
                 ].map((relatedTool, idx) => (
                   <Link
                     key={idx}
-                    href={relatedTool.link || '#'}
+                    href={relatedTool.link}
                     className="group p-6 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-lg transition-all"
                   >
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 group-hover:text-indigo-600 transition-colors">

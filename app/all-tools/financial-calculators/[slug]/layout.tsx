@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 // Calculator metadata map
 const calculatorMetadata: Record<string, { title: string; description: string }> = {
@@ -27,10 +28,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   
-  const meta = calculatorMetadata[slug] || {
-    title: 'Financial Calculator',
-    description: 'Free financial planning and calculation tool',
-  };
+  const meta = calculatorMetadata[slug];
+  if (!meta) notFound();
 
   const canonicalUrl = `https://simplifyconvert.com/all-tools/financial-calculators/${slug}`;
 
@@ -66,6 +65,15 @@ export async function generateMetadata({
   };
 }
 
-export default function CalculatorLayout({ children }: { children: React.ReactNode }) {
+export default async function CalculatorLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  if (!calculatorMetadata[slug]) notFound();
+
   return <>{children}</>;
 }

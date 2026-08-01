@@ -273,7 +273,7 @@ export default function GlitchEffectPage() {
             <div className="bg-white rounded-lg shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Related Effect Tools</h2>
               <div className="grid md:grid-cols-3 gap-4">
-                <Link href="/all-tools/pixel ize-image" className="p-4 border-2 border-red-200 rounded-lg hover:bg-red-50 transition">
+                <Link href="/all-tools/pixelate-image" className="p-4 border-2 border-red-200 rounded-lg hover:bg-red-50 transition">
                   <h3 className="font-bold text-gray-800">Pixelate Image</h3>
                   <p className="text-sm text-gray-600">Pixel effects</p>
                 </Link>

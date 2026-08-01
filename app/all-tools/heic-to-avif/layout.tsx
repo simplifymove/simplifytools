@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/heic-to-avif',
     images: [
       {
-        url: 'https://simplifyconvert.com/og-image.png',
+        url: 'https://simplifyconvert.com/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'HEIC to AVIF Converter',

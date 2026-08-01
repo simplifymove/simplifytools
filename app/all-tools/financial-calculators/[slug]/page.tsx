@@ -15,6 +15,14 @@ const calculatorConfig: Record<string, any> = {
     title: 'Startup Runway Calculator',
     description: 'Project your startup\'s financial runway and funding needs',
     icon: '🚀',
+    assumptions: [
+      'Monthly burn and revenue begin with the values entered and change at the monthly growth rates provided.',
+      'The projection treats the available cash balance as the starting source of runway.',
+    ],
+    limitations: [
+      'This estimate does not model fundraising timing, one-off expenses, taxes, or changes in payment collection.',
+      'Use the projection as a planning scenario rather than a guarantee of how long cash will last.',
+    ],
     currencyFields: ['currentFunds', 'monthlyBurnRate', 'projectedRevenue', 'targetFunding'],
     fields: [
       { name: 'currentFunds', label: 'Current Funds', type: 'number', placeholder: '500000', required: true, isCurrency: true },
@@ -30,6 +38,14 @@ const calculatorConfig: Record<string, any> = {
     title: 'SaaS Profit Simulator',
     description: 'Model revenue growth, costs, and profitability for SaaS businesses',
     icon: '💼',
+    assumptions: [
+      'MRR and operating costs change each month using the growth rates entered for the forecast period.',
+      'The LTV-to-CAC comparison uses the customer acquisition cost and lifetime value supplied.',
+    ],
+    limitations: [
+      'The simulation does not model taxes, cash-collection timing, pricing tiers, or irregular expenses.',
+      'Actual churn, acquisition efficiency, and growth can vary from a repeated monthly scenario.',
+    ],
     currencyFields: ['initialMRR', 'customerAcquisitionCost', 'lifetimeValue', 'operatingCosts'],
     fields: [
       { name: 'initialMRR', label: 'Initial MRR', type: 'number', placeholder: '50000', required: true, isCurrency: true },
@@ -46,6 +62,14 @@ const calculatorConfig: Record<string, any> = {
     title: 'Loan Optimization Engine',
     description: 'Analyze loan terms and create optimal payment strategies',
     icon: '🏦',
+    assumptions: [
+      'Payments follow a standard amortizing-loan schedule using the entered principal, annual rate, and term.',
+      'Any extra monthly payment is treated as a consistent additional principal payment.',
+    ],
+    limitations: [
+      'The estimate does not include lender fees, penalties, insurance, taxes, or future variable-rate changes.',
+      'Confirm repayment terms and payoff amounts with the lender before making a financial decision.',
+    ],
     currencyFields: ['loanAmount', 'extraMonthlyPayment'],
     fields: [
       { name: 'loanAmount', label: 'Loan Amount', type: 'number', placeholder: '300000', required: true, isCurrency: true },
@@ -61,6 +85,14 @@ const calculatorConfig: Record<string, any> = {
     description: 'Calculate taxes and find optimization opportunities (FY 2024-25)',
     icon: '🇮🇳',
     isCurrencyINR: true,
+    assumptions: [
+      'The estimate uses the FY 2024-25 inputs and deduction fields shown in this calculator.',
+      'Amounts are treated as annual Indian-rupee values unless a field states otherwise.',
+    ],
+    limitations: [
+      'This calculator is informational and may not cover every exemption, surcharge, regime choice, or individual circumstance.',
+      'Tax rules and eligibility can change; verify the result with current official guidance or a qualified tax professional.',
+    ],
     currencyFields: ['grossIncome', 'section80CDeductions', 'section80DDeductions', 'section80EDeductions', 'section80EEADeductions', 'section80GDeductions', 'capitalGainsLongTerm', 'capitalGainsShortTerm', 'deductibleExpenses'],
     fields: [
       { name: 'grossIncome', label: 'Gross Income', type: 'number', placeholder: '1500000', required: true, isCurrency: true },
@@ -83,9 +115,17 @@ export default function CalculatorPage() {
   const router = useRouter();
   const params = useParams();
   const slug = (params?.slug as string | undefined) ?? '';
+  const config = calculatorConfig[slug];
+  const initialCurrency = config?.isCurrencyINR
+    ? { code: 'INR', symbol: '₹', name: 'Indian Rupee' }
+    : { code: 'USD', symbol: '$', name: 'US Dollar' };
 
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation>({
+    countryCode: config?.isCurrencyINR ? 'IN' : 'US',
+    countryName: config?.isCurrencyINR ? 'India' : 'United States',
+    currency: initialCurrency,
+  });
+  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState(initialCurrency.code);
   const [inputs, setInputs] = useState<Record<string, any>>({});
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -103,8 +143,6 @@ export default function CalculatorPage() {
     detectLocation();
   }, []);
 
-  const config = calculatorConfig[slug];
-
   if (!config) {
     return (
       <>
@@ -120,22 +158,6 @@ export default function CalculatorPage() {
     );
   }
 
-  // Show loading if still detecting location or currency not selected
-  if (!userLocation || !selectedCurrencyCode) {
-    return (
-      <>
-        <HomeHeader />
-        <main className="min-h-screen bg-gray-50">
-          <div className="max-w-4xl mx-auto px-4 py-12">
-            <div className="flex items-center justify-center">
-              <Loader className="animate-spin mr-2" />
-              <p className="text-lg text-gray-600">Loading calculator...</p>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
   const getAllCurrencies = () => {
     const currencies = new Map<string, { code: string; symbol: string; name: string }>();
     
@@ -423,6 +445,21 @@ export default function CalculatorPage() {
               )}
             </div>
           </motion.div>
+
+          <section className="max-w-6xl mx-auto mt-10 grid gap-6 md:grid-cols-2" aria-label="Calculator methodology">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">Assumptions used by this calculator</h2>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                {config.assumptions.map((assumption: string) => <li key={assumption}>{assumption}</li>)}
+              </ul>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">Limitations</h2>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                {config.limitations.map((limitation: string) => <li key={limitation}>{limitation}</li>)}
+              </ul>
+            </div>
+          </section>
         </main>
 
         <Footer />

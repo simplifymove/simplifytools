@@ -79,7 +79,10 @@ test.describe('crawl and index integrity', () => {
     for (const path of excludedPaths) {
       expect(xml, path).not.toContain(`<loc>https://simplifyconvert.com${path}</loc>`);
     }
-    expect(xml).not.toContain('<loc>https://simplifyconvert.com/ai-studio');
+    expect(xml).toContain('<loc>https://simplifyconvert.com/ai-studio</loc>');
+    expect(xml).toContain('<loc>https://simplifyconvert.com/ai-studio/pricing</loc>');
+    expect(xml).not.toContain('<loc>https://simplifyconvert.com/ai-studio/billing</loc>');
+    expect(xml).not.toMatch(/<loc>https:\/\/simplifyconvert\.com\/ai-studio\/(?:document|presentation|spreadsheet)-maker/);
 
     expect(xml).toContain('<loc>https://simplifyconvert.com/all-tools/pdf/pdf-to-jpg</loc>');
     expect(xml).toContain('<loc>https://simplifyconvert.com/all-tools/compress-image</loc>');

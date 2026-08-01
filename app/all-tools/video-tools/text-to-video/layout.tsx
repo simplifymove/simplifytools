@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: 'SimplifyConvert',
     images: [
       {
-        url: 'https://simplifyconvert.com/og-text-to-video.png',
+        url: 'https://simplifyconvert.com/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'AI Text to Video Generator',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'AI Text to Video Generator',
     description: 'Generate professional videos from text in minutes with AI',
-    images: ['https://simplifyconvert.com/og-text-to-video.png'],
+    images: ['https://simplifyconvert.com/og-image.jpg'],
     creator: '@simplifyconvert',
   },
 };

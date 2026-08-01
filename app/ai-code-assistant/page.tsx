@@ -304,19 +304,19 @@ export default function AiCodeAssistantPage() {
               <h4 className="font-bold text-white mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/about" className="hover:text-white">
                     About
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/blog" className="hover:text-white">
                     Blog
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/contact" className="hover:text-white">
                     Contact
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -324,34 +324,14 @@ export default function AiCodeAssistantPage() {
               <h4 className="font-bold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/privacy" className="hover:text-white">
                     Privacy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/terms" className="hover:text-white">
                     Terms
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-white mb-4">Connect</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Twitter
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Discord
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

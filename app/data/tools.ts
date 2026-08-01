@@ -393,7 +393,7 @@ const converterTools: Tool[] = [
     description: 'Convert PDF pages to JPG images',
     category: 'Image',
     icon: FileImage,
-    route: '/all-tools/pdf-to-jpg',
+    route: '/all-tools/pdf/pdf-to-jpg',
     headerColor: 'from-orange-400 via-red-400 to-orange-500',
   },
   {
@@ -411,7 +411,7 @@ const converterTools: Tool[] = [
     description: 'Extract text from PDF documents',
     category: 'Image',
     icon: FileText,
-    route: '/all-tools/pdf-to-text',
+    route: '/all-tools/pdf/pdf-to-text',
     headerColor: 'from-blue-400 via-indigo-400 to-blue-500',
   },
   {
@@ -537,7 +537,7 @@ const converterTools: Tool[] = [
     description: 'Convert MP4 videos to animated GIF',
     category: 'Image',
     icon: FileAudio,
-    route: '/all-tools/mp4-to-gif',
+    route: '/all-tools/video/mp4-to-gif',
     headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
@@ -1687,4 +1687,3 @@ const downloaderTools: Tool[] = [
 
 export const allTools: Tool[] = [...aiEditingTools, ...converterTools, ...aiWriteTools, ...videoTools, ...financialTools, ...resumeTools, ...downloaderTools];
 export { aiEditingTools, converterTools, aiWriteTools, videoTools, financialTools, resumeTools, downloaderTools };
-
