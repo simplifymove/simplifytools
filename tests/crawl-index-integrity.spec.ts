@@ -86,14 +86,21 @@ test.describe('crawl and index integrity', () => {
     expect(xml).not.toContain('<lastmod>');
   });
 
-  test('blog read links only advertise the existing guide', async ({ request }) => {
+  test('blog read links advertise only the six published guides', async ({ request }) => {
     const response = await request.get('/blog');
     expect(response.status()).toBe(200);
     const html = await response.text();
     const articleLinks = [...html.matchAll(/href="(\/blog\/[^"?#]+)"/g)].map((match) => match[1]);
 
     expect(articleLinks.length).toBeGreaterThan(0);
-    expect(new Set(articleLinks)).toEqual(new Set(['/blog/jpg-to-png-conversion-guide']));
+    expect(new Set(articleLinks)).toEqual(new Set([
+      '/blog/jpg-to-png-conversion-guide',
+      '/blog/merge-split-compress-ocr-pdf-guide',
+      '/blog/jpg-png-webp-avif-image-formats',
+      '/blog/image-compression-quality-file-size',
+      '/blog/csv-excel-json-data-formats',
+      '/blog/video-compression-resolution-bitrate-codec',
+    ]));
     expect(html).not.toContain('href="#"');
   });
 });

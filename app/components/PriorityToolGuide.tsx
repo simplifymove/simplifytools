@@ -53,6 +53,7 @@ const guides: Record<ToolId, Guide> = {
       { label: 'Compress PDF', href: '/all-tools/pdf/compress-pdf', detail: 'Try to reduce the merged file size.' },
       { label: 'Rearrange PDF', href: '/all-tools/pdf/rearrange-pdf', detail: 'Change page order within a document.' },
     ],
+    guideLink: { label: 'Compare merging, splitting, compression, OCR, and PDF-to-Word workflows', href: '/blog/merge-split-compress-ocr-pdf-guide' },
     faqs: [
       { question: 'How many PDFs are required?', answer: 'The tool requires at least two PDF files and accepts up to the shared server file-count limit of 50.' },
       { question: 'Does merging change the text or images?', answer: 'It appends source pages; it does not intentionally rewrite visible page content. Advanced PDF features can behave differently, so review the result.' },
@@ -80,6 +81,7 @@ const guides: Record<ToolId, Guide> = {
       { label: 'Merge PDF', href: '/all-tools/pdf/merge-pdf', detail: 'Combine finalized sections into one file.' },
       { label: 'PDF to JPG', href: '/all-tools/pdf/pdf-to-jpg', detail: 'Render pages as images for a different workflow.' },
     ],
+    guideLink: { label: 'Choose between PDF compression, splitting, OCR, and related operations', href: '/blog/merge-split-compress-ocr-pdf-guide' },
     faqs: [
       { question: 'Will High always create the smallest PDF?', answer: 'Not always. It applies more cleanup, but the source structure and already-compressed assets determine the final size.' },
       { question: 'Does compression lower image resolution?', answer: 'The verified implementation compresses streams and cleans document objects; it does not expose an image-resolution control or promise image downsampling.' },
@@ -107,6 +109,7 @@ const guides: Record<ToolId, Guide> = {
       { label: 'PDF to Text', href: '/all-tools/pdf/pdf-to-text', detail: 'Extract plain text without DOCX formatting.' },
       { label: 'Extract Tables', href: '/all-tools/pdf/extract-tables-from-pdf', detail: 'Use a workflow focused on tabular content.' },
     ],
+    guideLink: { label: 'Learn when PDF-to-Word is more appropriate than OCR alone', href: '/blog/merge-split-compress-ocr-pdf-guide' },
     faqs: [
       { question: 'Will the DOCX look exactly like the PDF?', answer: 'No. The implementation prioritizes text extraction and writes paragraphs by page; complex visual layout is not reconstructed.' },
       { question: 'Can it read a scanned PDF?', answer: 'When a page has no extractable text, the converter attempts English OCR. Recognition quality depends on the scan.' },
@@ -134,6 +137,7 @@ const guides: Record<ToolId, Guide> = {
       { label: 'JPG to PNG', href: '/all-tools/jpg-to-png', detail: 'Change the container to PNG when that format is required.' },
       { label: 'Batch Compress Images', href: '/all-tools/batch-compress-images', detail: 'Work through multiple images in one workflow.' },
     ],
+    guideLink: { label: 'Understand how compression, dimensions, and image content affect file size', href: '/blog/image-compression-quality-file-size' },
     faqs: [
       { question: 'Does compression change image dimensions?', answer: 'No. This tool keeps the Canvas width and height equal to the source image and changes encoding quality.' },
       { question: 'Why does PNG show little reduction?', answer: 'The browser PNG encoder can ignore the quality setting because PNG is lossless. Resizing dimensions may have a larger effect.' },
@@ -161,6 +165,7 @@ const guides: Record<ToolId, Guide> = {
       { label: 'Compress Image', href: '/all-tools/compress-image', detail: 'Tune encoding after dimensions are correct.' },
       { label: 'Batch Resize Images', href: '/all-tools/batch-resize-images', detail: 'Apply a shared size workflow to multiple files.' },
     ],
+    guideLink: { label: 'Compare resizing with image-quality compression', href: '/blog/image-compression-quality-file-size' },
     faqs: [
       { question: 'What does Maintain Aspect Ratio do?', answer: 'It calculates the other dimension from the original width-to-height ratio whenever you change width or height.' },
       { question: 'Will making an image larger improve it?', answer: 'No. Upscaling adds pixels through interpolation but cannot recover detail that was not present in the source.' },
@@ -243,6 +248,7 @@ const guides: Record<ToolId, Guide> = {
       { label: 'Resize Video', href: '/all-tools/video/resize-video', detail: 'Change resolution in a separate workflow.' },
       { label: 'Extract Audio', href: '/all-tools/video/extract-audio-from-video', detail: 'Keep only the audio track when video is unnecessary.' },
     ],
+    guideLink: { label: 'Learn how resolution, bitrate, codec, and audio affect video size', href: '/blog/video-compression-resolution-bitrate-codec' },
     faqs: [
       { question: 'Which input formats are accepted?', answer: 'The tool accepts MP4, MOV, AVI, and MKV files and produces MP4 output.' },
       { question: 'What does a lower CRF mean?', answer: 'Lower CRF retains more visual detail and normally creates a larger file. Higher CRF is more aggressive and can introduce artifacts.' },
@@ -270,6 +276,7 @@ const guides: Record<ToolId, Guide> = {
       { label: 'CSV to XML', href: '/all-tools/data/csv-to-xml', detail: 'Use XML as the target format instead.' },
       { label: 'CSV to Excel', href: '/all-tools/data/csv-to-excel', detail: 'Move CSV into a spreadsheet workbook.' },
     ],
+    guideLink: { label: 'Compare CSV, Excel, and JSON before converting data', href: '/blog/csv-excel-json-data-formats' },
     faqs: [
       { question: 'Does the first row become data?', answer: 'No. The parser uses the first row as column headers, and subsequent rows become JSON objects.' },
       { question: 'Can I choose a semicolon or tab delimiter?', answer: 'Yes. The page offers comma, semicolon, tab, and pipe choices.' },

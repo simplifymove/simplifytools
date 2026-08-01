@@ -1,354 +1,88 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Calendar, User, ArrowRight, Search, Menu, X, FileText, Image, Video, PenTool, Database, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowRight, Calendar, FileText, Image, Video, Database } from 'lucide-react';
 import { Footer } from '@/app/components/Footer';
+import { blogGuides, existingBlogGuide, GUIDE_DISPLAY_DATE } from './guides';
 
-const categories = [
-  { id: 'pdf', title: 'PDF Tools', icon: FileText, color: 'from-purple-500 via-purple-600 to-purple-700', count: '55+', link: '/all-tools/pdf-tools' },
-  { id: 'image', title: 'Image Tools', icon: Image, color: 'from-orange-500 via-orange-600 to-orange-700', count: '80+', link: '/all-tools/image-tools' },
-  { id: 'video', title: 'Video Tools', icon: Video, color: 'from-pink-500 via-pink-600 to-pink-700', count: '58+', link: '/all-tools/video-tools' },
-  { id: 'ai', title: 'AI Writing', icon: PenTool, color: 'from-blue-500 via-blue-600 to-blue-700', count: '60+', link: '/all-tools/ai-tools' },
-  { id: 'data', title: 'Data Tools', icon: Database, color: 'from-teal-500 via-teal-600 to-teal-700', count: '12', link: '/all-tools/data' },
-  { id: 'code', title: 'Code Tools', icon: FileText, color: 'from-green-500 via-green-600 to-green-700', count: '44+', link: '/all-tools/code-tools' }
+const posts = [
+  ...blogGuides.map((guide) => ({ ...guide, date: GUIDE_DISPLAY_DATE })),
+  { ...existingBlogGuide, date: 'January 15, 2024' },
 ];
 
-const navigationItems = [
-  { label: 'Image', href: '/all-tools/image-tools' },
-  { label: 'Video', href: '/all-tools/video-tools' },
-  { label: 'AI Write', href: '/all-tools/ai-tools' },
-  { label: 'Data', href: '/all-tools/data' },
-];
+const categoryStyles: Record<string, string> = {
+  PDF: 'bg-purple-100 text-purple-800',
+  Images: 'bg-orange-100 text-orange-800',
+  Data: 'bg-teal-100 text-teal-800',
+  Video: 'bg-pink-100 text-pink-800',
+};
+
+const categoryIcons = {
+  PDF: FileText,
+  Images: Image,
+  Data: Database,
+  Video: Video,
+};
 
 export default function BlogPage() {
-  const router = useRouter();
-  const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (query: string) => {
-    if (query.trim()) {
-      router.push(`/all-tools?search=${encodeURIComponent(query)}`);
-    }
-  };
-
-  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch((e.target as HTMLInputElement).value);
-    }
-  };
-
-  useEffect(() => {
-    const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  const blogPosts = [
-    {
-      id: 1,
-      title: 'How to Convert JPG to PNG Without Losing Quality',
-      excerpt: 'Learn reliable ways to convert JPG images to PNG, understand the format tradeoffs, and preserve the best available image quality.',
-      category: 'Image Tools',
-      author: 'SimplifyConvert Team',
-      date: 'January 15, 2024',
-      readTime: '5 min read',
-      image: 'IMAGE',
-      href: '/blog/jpg-to-png-conversion-guide',
-    }
-  ];
-
-  const categoryColors: { [key: string]: string } = {
-    'PDF Tools': 'bg-purple-100 text-purple-700',
-    'Image Tools': 'bg-orange-100 text-orange-700',
-    'Video Tools': 'bg-pink-100 text-pink-700',
-    'AI Tools': 'bg-blue-100 text-blue-700',
-    'Data Tools': 'bg-teal-100 text-teal-700',
-    'Audio Tools': 'bg-indigo-100 text-indigo-700'
-  };
+  const featured = blogGuides[0];
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Top Navigation Header */}
-      <motion.header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          isHeaderScrolled 
-            ? 'bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm' 
-            : 'bg-white'
-        }`}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-2xl text-gray-900 hover:opacity-80 transition">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
-              SC
-            </div>
+      <header className="border-b border-gray-200 bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8">
+          <Link href="/" className="flex items-center gap-2 rounded-sm text-2xl font-bold text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-sm text-white">SC</span>
             <span className="hidden sm:inline">SimplifyConvert</span>
           </Link>
-
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {/* All Tools Dropdown */}
-            <div className="relative group pb-2">
-              <motion.a 
-                href="/#categories"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative flex items-center gap-1 py-2 px-1"
-                whileHover={{ y: -2 }}
-              >
-                All Tools
-                <ChevronRight size={16} className="group-hover:rotate-90 transition-transform" />
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </motion.a>
-
-              {/* Dropdown Menu */}
-              <div
-                className="absolute left-0 top-full w-80 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-4 pointer-events-none group-hover:pointer-events-auto"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  {categories.map((cat) => {
-                    const Icon = cat.icon;
-                    return (
-                      <Link key={cat.id} href={cat.link}>
-                        <motion.div
-                          className="p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-all group/item"
-                          whileHover={{ scale: 1.05 }}
-                        >
-                          <div className={`flex items-center gap-2 mb-2`}>
-                            <div className={`p-1.5 bg-linear-to-br ${cat.color} rounded-md shrink-0`}>
-                              <Icon className="w-3.5 h-3.5 text-white" />
-                            </div>
-                            <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition whitespace-nowrap overflow-hidden text-ellipsis">{cat.title}</p>
-                          </div>
-                          <p className="text-xs text-gray-500">{cat.count} tools</p>
-                        </motion.div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Other Navigation Items */}
-            {navigationItems.map((item) => (
-              <motion.a 
-                key={item.label}
-                href={item.href}
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative group"
-                whileHover={{ y: -2 }}
-              >
-                {item.label}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </motion.a>
-            ))}
+          <nav aria-label="Primary" className="flex items-center gap-5 text-sm font-semibold text-gray-700">
+            <Link href="/all-tools" className="rounded-sm hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600">All tools</Link>
+            <Link href="/blog" aria-current="page" className="rounded-sm text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600">Guides</Link>
           </nav>
-
-          {/* Search & CTA */}
-          <div className="flex items-center gap-4">
-            <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-              searchActive ? 'bg-orange-50 border border-orange-200 shadow-lg shadow-orange-500/10' : 'bg-gray-50 border border-gray-200'
-            }`}>
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search tools..."
-                className="bg-transparent outline-none text-sm w-32 text-gray-900 placeholder-gray-400"
-                onFocus={() => setSearchActive(true)}
-                onBlur={() => setSearchActive(false)}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleSearchKeyPress}
-              />
-            </div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                href="/all-tools"
-                className="hidden sm:inline-block px-6 py-2 bg-orange-500 text-white font-medium rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all"
-              >
-                Browse Tools
-              </Link>
-            </motion.div>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="lg:hidden p-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
         </div>
+      </header>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <motion.div
-            className="lg:hidden border-t border-gray-200 bg-white px-4 py-4"
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <div className="space-y-3">
-              {[{ label: 'All Tools', href: '/all-tools' }, ...navigationItems].map((item) => (
-                <Link key={item.label} href={item.href} className="block px-4 py-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
-                  {item.label}
-                </Link>
-              ))}
-              <Link href="/all-tools" className="block px-4 py-2 bg-orange-500 text-white rounded-lg font-medium">
-                Browse Tools
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </motion.header>
-
-      {/* Hero Section */}
-      <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <motion.h1
-            className="text-4xl md:text-5xl font-bold text-white mb-4"
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            SimplifyConvert Blog
-          </motion.h1>
-          <motion.p
-            className="text-xl text-white/90 max-w-2xl"
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            Practical guides that explain file formats, conversion tradeoffs, and how to choose the right tool for a task.
-          </motion.p>
+      <section className="bg-orange-500 px-4 py-16 md:px-8">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="text-4xl font-bold text-white md:text-5xl">SimplifyConvert Guides</h1>
+          <p className="mt-4 max-w-2xl text-xl leading-8 text-white/95">Practical explanations of file formats, conversion tradeoffs, and how to choose the right operation before changing a file.</p>
         </div>
-      </div>
+      </section>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
-        {/* Featured Post */}
-        <motion.div
-          className="mb-16 p-8 bg-linear-to-br from-orange-50 to-orange-100/50 rounded-2xl border-2 border-orange-200"
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex flex-col md:flex-row gap-8 items-center">
-            <div className="flex-1">
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold mb-4 ${categoryColors['Image Tools']}`}>
-                Featured
-              </span>
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">How to Convert JPG to PNG Without Losing Quality</h2>
-              <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                Learn reliable ways to convert JPG images to PNG, understand the format tradeoffs, and preserve the best available image quality.
-              </p>
-              <div className="flex flex-wrap gap-6 text-gray-600 text-sm mb-6">
-                <div className="flex items-center gap-2">
-                  <User size={16} />
-                  <span>SimplifyConvert Team</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} />
-                  <span>January 15, 2024</span>
-                </div>
-                <span>5 min read</span>
-              </div>
-              <Link href="/blog/jpg-to-png-conversion-guide" className="w-fit px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all flex items-center gap-2">
-                Read Full Article
-                <ArrowRight size={18} />
-              </Link>
-            </div>
-            <div className="w-full md:w-64 h-64 bg-linear-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center text-white text-4xl font-bold">
-              JPG → PNG
-            </div>
+      <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
+        <section aria-labelledby="featured-guide" className="rounded-2xl border-2 border-orange-200 bg-linear-to-br from-orange-50 to-white p-8 md:p-10">
+          <p className="font-semibold uppercase tracking-wider text-orange-700">Featured guide</p>
+          <h2 id="featured-guide" className="mt-3 max-w-4xl text-3xl font-bold text-gray-950 md:text-4xl">{featured.title}</h2>
+          <p className="mt-4 max-w-3xl text-lg leading-8 text-gray-700">{featured.description}</p>
+          <Link href={`/blog/${featured.slug}`} className="mt-6 inline-flex items-center gap-2 rounded-full bg-orange-600 px-6 py-3 font-semibold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-700">
+            Read the PDF workflow guide <ArrowRight size={18} aria-hidden="true" />
+          </Link>
+        </section>
+
+        <section aria-labelledby="all-guides" className="mt-16">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+            <div><h2 id="all-guides" className="text-3xl font-bold text-gray-950">All guides</h2><p className="mt-2 text-gray-600">Six published articles; every card opens a complete guide.</p></div>
+            <span className="text-sm font-semibold text-gray-600">{posts.length} articles</span>
           </div>
-        </motion.div>
-
-        {/* Blog Posts Grid */}
-        <motion.div
-          className="space-y-6"
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <h2 className="text-3xl font-bold text-gray-900">Latest Articles</h2>
-            <Link
-              href="/blog/jpg-to-png-conversion-guide"
-              className="font-semibold text-orange-600 hover:text-orange-700"
-            >
-              Read the JPG to PNG Conversion Guide →
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.map((post, idx) => (
-              <motion.article
-                key={post.id}
-                className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-lg transition-all group cursor-pointer"
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
-                whileHover={{ y: -8 }}
-              >
-                {/* Image */}
-                <div className={`h-48 flex items-center justify-center text-4xl font-bold text-white group-hover:scale-105 transition-transform`}
-                  style={{
-                    backgroundImage: `linear-gradient(135deg, ${post.image === 'IMAGE' ? '#F97316' : post.image === 'VIDEO' ? '#EC4899' : post.image === 'AI' ? '#2563EB' : post.image === 'DATA' ? '#14B8A6' : '#6366F1'} 0%, ${post.image === 'IMAGE' ? '#FB923C' : post.image === 'VIDEO' ? '#F472B6' : post.image === 'AI' ? '#3B82F6' : post.image === 'DATA' ? '#2DD4BF' : '#818CF8'} 100%)`
-                  }}
-                >
-                  {post.image}
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${categoryColors[post.category]}`}>
-                    {post.category}
-                  </span>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition">{post.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{post.excerpt}</p>
-                  <div className="flex flex-wrap gap-4 text-gray-500 text-xs mb-4 pb-4 border-t border-gray-100">
-                    <div className="flex items-center gap-1 pt-4">
-                      <User size={14} />
-                      <span>{post.author}</span>
-                    </div>
-                    <div className="flex items-center gap-1 pt-4">
-                      <Calendar size={14} />
-                      <span>{post.date}</span>
-                    </div>
-                    <span className="pt-4">{post.readTime}</span>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => {
+              const Icon = categoryIcons[post.category];
+              return (
+                <article key={post.slug} className="flex flex-col rounded-2xl border-2 border-gray-200 bg-white p-6 transition hover:border-orange-300 hover:shadow-lg">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${categoryStyles[post.category]}`}><Icon size={14} aria-hidden="true" />{post.category}</span>
+                    <span className="text-xs text-gray-500">{post.readTime} read</span>
                   </div>
-                  <Link href={post.href} className="text-orange-500 font-semibold hover:text-orange-600 flex items-center gap-2">
-                    Read More
-                    <ArrowRight size={16} />
+                  <h3 className="mt-5 text-xl font-bold leading-7 text-gray-950">{post.title}</h3>
+                  <p className="mt-3 grow leading-7 text-gray-600">{post.description}</p>
+                  <div className="mt-5 flex items-center gap-2 border-t border-gray-100 pt-4 text-xs text-gray-500"><Calendar size={14} aria-hidden="true" /><time>{post.date}</time></div>
+                  <Link href={`/blog/${post.slug}`} className="mt-5 inline-flex items-center gap-2 rounded-sm font-semibold text-orange-700 hover:text-orange-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600">
+                    Read {post.category.toLowerCase()} guide <ArrowRight size={16} aria-hidden="true" />
                   </Link>
-                </div>
-              </motion.article>
-            ))}
+                </article>
+              );
+            })}
           </div>
-        </motion.div>
-
-        {/* CTA Section */}
-        <motion.div
-          className="mt-16 p-8 bg-blue-50 rounded-2xl border-2 border-blue-200 text-center"
-          whileHover={{ scale: 1.02 }}
-        >
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">Stay Updated</h3>
-          <p className="text-gray-600 mb-6">Subscribe to our newsletter for tips, tutorials, and product updates delivered to your inbox.</p>
-          <div className="flex gap-2 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
-            />
-            <button className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all">
-              Subscribe
-            </button>
-          </div>
-        </motion.div>
+        </section>
       </div>
-
-      {/* FOOTER */}
       <Footer />
     </main>
   );
