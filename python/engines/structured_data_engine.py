@@ -7,6 +7,7 @@ Supports: csv-to-json, json-to-xml, xml-to-json, csv-to-xml
 """
 
 import json
+import re
 import csv
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -63,18 +64,23 @@ class StructuredDataEngine:
             with open(input_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            # Create root element
-            root = ET.Element('root')
+            root_tag = options.get('rootTag') or options.get('root_tag') or 'root'
+            item_tag = options.get('itemTag') or options.get('item_tag') or 'item'
+            self._validate_xml_tag_name(root_tag, 'rootTag')
+            self._validate_xml_tag_name(item_tag, 'itemTag')
+
+            # Create root element using the user-selected, validated name.
+            root = ET.Element(root_tag)
             
             # Handle different JSON structures
             if isinstance(data, list):
                 # Array of objects
                 for item in data:
                     if isinstance(item, dict):
-                        item_elem = ET.SubElement(root, 'item')
+                        item_elem = ET.SubElement(root, item_tag)
                         self._dict_to_xml_element(item, item_elem)
                     else:
-                        item_elem = ET.SubElement(root, 'item')
+                        item_elem = ET.SubElement(root, item_tag)
                         item_elem.text = str(item)
                         
             elif isinstance(data, dict):
@@ -132,12 +138,23 @@ class StructuredDataEngine:
         import re
         name = re.sub(r'[^a-zA-Z0-9_\-]', '_', name)
         
-        # Ensure doesn't start with number or hyphen
-        if name and name[0].isdigit():
+        # Ensure the first character is valid for an XML element name.
+        if name and not re.match(r'[A-Za-z_]', name[0]):
+            name = '_' + name
+
+        # Names beginning with any casing of "xml" are reserved by XML.
+        if name.lower().startswith('xml'):
             name = '_' + name
         
         # Ensure not empty
         return name or 'item'
+
+    def _validate_xml_tag_name(self, name: str, option_name: str):
+        """Validate configurable XML element names before constructing output."""
+        if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9._-]*', name):
+            raise ValueError(f'{option_name} must be a valid XML element name')
+        if name.lower().startswith('xml'):
+            raise ValueError(f'{option_name} cannot start with the reserved XML prefix')
     
     # ==================== XML to JSON ====================
     

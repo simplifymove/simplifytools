@@ -7,6 +7,7 @@ import { Download, ChevronRight, RotateCcw, ZoomIn, ZoomOut, Scissors, Hand } fr
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Footer } from '../../components/Footer';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
@@ -561,8 +562,10 @@ export default function CropImagePage() {
             )}
           </div>
         </div>
+        <PriorityToolGuide toolId="crop-image" />
       </main>
 
+      {false && (<>
       {/* How to Use Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
         <div className="bg-white rounded-lg border border-gray-200 p-8">
@@ -679,12 +682,13 @@ export default function CropImagePage() {
         </div>
       </div>
 
+      </>)}
       <Footer />
 
       {/* Hidden canvas for final crop output */}
       <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+      {false && <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'Crop Image - Free Online Image Cropper & Resizer Tool',
@@ -704,8 +708,7 @@ export default function CropImagePage() {
           'No registration required',
           'Privacy-focused processing',
         ],
-      })}} />
+      })}} />}
     </>
   );
 }
-

@@ -19,8 +19,8 @@ const toolSEODatabase: Record<string, {
     keywords: ['CSV to Excel', 'CSV to XLSX', 'convert CSV', 'Excel converter', 'spreadsheet converter']
   },
   'excel-to-csv': {
-    title: 'Excel to CSV Converter - Export XLSX to CSV Online',
-    description: 'Convert Excel files to CSV format instantly. Free Excel to CSV converter. Export spreadsheet data to comma-separated values without signup.',
+    title: 'Excel to CSV - Export One Sheet or All Sheets as ZIP',
+    description: 'Export the first Excel worksheet as CSV or package every worksheet as a separate UTF-8 CSV in a ZIP, with selectable delimiters.',
     keywords: ['Excel to CSV', 'XLSX to CSV', 'convert Excel', 'CSV export', 'spreadsheet conversion']
   },
   'xml-to-excel': {
@@ -49,8 +49,8 @@ const toolSEODatabase: Record<string, {
     keywords: ['CSV to JSON', 'JSON converter', 'data conversion', 'API data', 'developer tool']
   },
   'json-to-xml': {
-    title: 'JSON to XML Converter - Convert JSON to XML Format',
-    description: 'Convert JSON data to XML format instantly. Free online JSON to XML converter. Perfect for data integration and system compatibility.',
+    title: 'JSON to XML with Custom Root and Item Elements',
+    description: 'Convert JSON objects and arrays to element-based XML using validated custom root and top-level item names, with explicit type and attribute limitations.',
     keywords: ['JSON to XML', 'XML converter', 'data transformation', 'format conversion', 'developer tool']
   },
   'xml-to-json': {

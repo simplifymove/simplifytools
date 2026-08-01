@@ -16,7 +16,9 @@ import {
   validateToolOptions,
   sanitizeFilename,
   generateOutputFilename,
-  validateExcelFile
+  validateExcelFile,
+  resolveDataOutputExtension,
+  dataMimeTypeForExtension,
 } from '@/app/lib/data-validation';
 
 export const maxDuration = 60;
@@ -133,7 +135,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Get output extension from tool config (already validated above)
-    const outputExt = toolConfig.output || '.zip';
+    const outputExt = resolveDataOutputExtension(tool, toolConfig.output || '.zip', options);
     
     // Create simple temp output file with proper extension
     const outputFile = join(tmpdir(), `output_${Date.now()}${outputExt}`);
@@ -274,18 +276,7 @@ export async function POST(request: NextRequest) {
     // Read output file
     const outputBuffer = await readFile(outputFile);
     
-    // Determine MIME type based on tool output extension
-    const mimeTypes: Record<string, string> = {
-      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      '.xls': 'application/vnd.ms-excel',
-      '.csv': 'text/csv',
-      '.json': 'application/json',
-      '.xml': 'application/xml',
-      '.pdf': 'application/pdf',
-      '.zip': 'application/zip',
-    };
-    
-    const mimeType = mimeTypes[outputExt] || 'application/octet-stream';
+    const mimeType = dataMimeTypeForExtension(outputExt);
     
     // Create clean download filename with proper extension
     const baseName = outputFilename.split('.')[0] || 'converted';
@@ -365,4 +356,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

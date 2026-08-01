@@ -56,6 +56,16 @@ const CSV_POLICY: BrowserResultToolPolicy = {
   mimeTypes: ['text/csv'],
 };
 
+const EXCEL_TO_CSV_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.csv', '.zip'],
+  mimeTypes: ['text/csv', 'application/zip'],
+};
+
+const XML_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.xml'],
+  mimeTypes: ['application/xml', 'text/xml'],
+};
+
 const DOCX_POLICY: BrowserResultToolPolicy = {
   extensions: ['.docx'],
   mimeTypes: [
@@ -224,6 +234,8 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     mimeTypes: ['image/jpeg'],
   },
   'crop-image': EDITABLE_RASTER_POLICY,
+  'excel-to-csv': EXCEL_TO_CSV_POLICY,
+  'json-to-xml': XML_POLICY,
   'code-minifier': CODE_MINIFIER_POLICY,
   'font-awesome-to-png': FONT_AWESOME_POLICY,
   'remove-background': EDITABLE_RASTER_POLICY,
@@ -324,6 +336,20 @@ function hasValidSignature(buffer: Buffer, extension: string): boolean {
   if (extension === '.docx') {
     const signature = buffer.subarray(0, 4).toString('hex');
     return ['504b0304', '504b0506', '504b0708'].includes(signature);
+  }
+
+  if (extension === '.zip') {
+    const signature = buffer.subarray(0, 4).toString('hex');
+    return ['504b0304', '504b0506', '504b0708'].includes(signature);
+  }
+
+  if (extension === '.xml') {
+    const prefix = buffer
+      .subarray(0, Math.min(buffer.length, 4096))
+      .toString('utf8')
+      .replace(/^\uFEFF/, '')
+      .trimStart();
+    return /^(?:<\?xml[^>]*>\s*)?<[A-Za-z_][A-Za-z0-9._-]*(?:\s|>|\/)/.test(prefix);
   }
 
   return false;

@@ -58,7 +58,7 @@ const titleOverrides: Record<string, string> = {
   'json-to-csv': 'JSON to CSV Converter Online Free | Export JSON to CSV',
   'json-to-xml': 'JSON to XML Converter Online Free | Convert JSON Data',
   'json-to-yaml': 'JSON to YAML Converter Online Free | Convert JSON Data',
-  'json-validator': 'JSON Validator Online Free | Validate and Format JSON',
+  'json-validator': 'JSON Validator - Check JSON Syntax and Parser Errors',
   'jwt-decoder': 'JWT Decoder Online Free | Decode JWT Tokens Securely',
   'lorem-ipsum-generator': 'Lorem Ipsum Generator Online Free | Create Dummy Text',
   'markdown-to-html': 'Markdown to HTML Converter Online | Convert Markdown',
@@ -86,7 +86,7 @@ const titleOverrides: Record<string, string> = {
 
 const descriptionOverrides: Record<string, string> = {
   'json-formatter': 'Parse valid JSON and rewrite it with your selected indentation. Includes common syntax-error guidance and a warning not to submit secrets to server processing.',
-  'json-validator': 'Validate, format, and check JSON syntax instantly online. Free browser-based JSON validator with no uploads, signup, or installation required.',
+  'json-validator': 'Check JSON syntax with JSON.parse and diagnose quotes, trailing commas, missing values, and nesting errors. This validates syntax, not JSON Schema.',
   'jwt-decoder': 'Decode JWT tokens instantly in your browser. View headers, payloads, and claims securely without sending token data to servers.',
   'password-generator': 'Generate strong random passwords instantly online. Customize length, symbols, numbers, and letter options securely in your browser.',
 };

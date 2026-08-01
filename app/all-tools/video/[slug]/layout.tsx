@@ -211,13 +211,13 @@ const toolSEODatabase: Record<string, {
   
   // Editing Tools
   'trim-video': {
-    title: 'Trim Video Online - Free Video Trimming Tool',
-    description: 'Trim unwanted sections from videos instantly. Free online tool with frame-accurate cutting. Supports all major formats.',
+    title: 'Trim Video by Start and End Time | MP4 Output',
+    description: 'Keep one continuous video interval using start and end times. Learn about expected duration, stream-copy keyframes, supported inputs, and MP4 output.',
     keywords: ['trim video', 'video trimmer', 'cut video', 'video editor', 'remove sections']
   },
   'resize-video': {
-    title: 'Resize Video Online - Free Video Dimension Changer',
-    description: 'Change video dimensions instantly. Free online tool to resize videos for social media and streaming. No installation required.',
+    title: 'Resize Video Dimensions with Optional Aspect Preservation',
+    description: 'Fit a video inside requested dimensions or scale to an exact width and height, with guidance about aspect ratio, upscaling, bitrate, and MP4 output.',
     keywords: ['resize video', 'video resizer', 'change video dimensions', 'video dimension converter']
   },
   'mute-video': {
@@ -426,7 +426,7 @@ export default async function VideoSlugLayout({
         />
       )}
       {/* Schema Markup - FAQ Page */}
-      {slug !== 'compress-video' && <script
+      {!['compress-video', 'trim-video', 'resize-video'].includes(slug) && <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({

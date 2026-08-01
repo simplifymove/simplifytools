@@ -7,7 +7,7 @@ import { Download, ChevronRight, Loader, FileUp, CheckCircle } from 'lucide-reac
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
-import { Footer } from '../../components/Footer';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function WebpToJpgPage() {
@@ -201,8 +201,10 @@ export default function WebpToJpgPage() {
             </div>
           </div>
         </div>
+        <PriorityToolGuide toolId="webp-to-jpg" />
       </main>
 
+      {false && (<>
       {/* How To Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
@@ -385,6 +387,7 @@ export default function WebpToJpgPage() {
         </div>
       </div>
 
+      </>)}
       <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
@@ -460,8 +463,6 @@ export default function WebpToJpgPage() {
     </>
   );
 }
-
-
 
 
 

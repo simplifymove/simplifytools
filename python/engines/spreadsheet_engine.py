@@ -11,6 +11,8 @@ import csv
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import json
+import re
+import zipfile
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import openpyxl
@@ -96,30 +98,43 @@ class SpreadsheetConvertEngine:
             print(f"[DEBUG] Input file exists, size: {os.path.getsize(input_file)} bytes", flush=True)
             
             # Determine which sheet to export
-            sheet_mode = options.get('sheet_mode', 'first')  # first or all
+            sheet_mode = options.get('sheet_mode', 'first')  # first or zip
             print(f"[DEBUG] Sheet mode: {sheet_mode}", flush=True)
             
-            if sheet_mode == 'all':
-                # Export all sheets as single CSV with all rows (first sheet only for CSV format)
+            delimiter = normalize_delimiter(options.get('delimiter', 'comma'))
+
+            if sheet_mode in ('zip', 'all'):
+                # A CSV can represent one table, so export every worksheet as its own
+                # UTF-8 CSV and package the complete workbook inventory in a ZIP.
                 print(f"[DEBUG] Reading all sheets from Excel...", flush=True)
-                df = pd.read_excel(input_file, sheet_name=None)  # Get all sheets as dict
-                print(f"[DEBUG] Found {len(df)} sheet(s)", flush=True)
-                # For CSV, we can only export the first sheet
-                # So concatenate all sheets or just use first
-                df = pd.read_excel(input_file, sheet_name=0)
-                print(f"[DEBUG] Using first sheet with {len(df)} rows", flush=True)
+                sheets = pd.read_excel(input_file, sheet_name=None, dtype=object)
+                print(f"[DEBUG] Found {len(sheets)} sheet(s)", flush=True)
+                used_names = set()
+
+                with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as archive:
+                    for index, (sheet_name, frame) in enumerate(sheets.items(), start=1):
+                        safe_base = re.sub(r'[^A-Za-z0-9._-]+', '_', str(sheet_name)).strip('._')
+                        safe_base = safe_base or f'sheet_{index}'
+                        candidate = safe_base[:100]
+                        suffix = 2
+                        while candidate.casefold() in used_names:
+                            tail = f'_{suffix}'
+                            candidate = f'{safe_base[:100-len(tail)]}{tail}'
+                            suffix += 1
+                        used_names.add(candidate.casefold())
+                        csv_bytes = frame.to_csv(index=False, sep=delimiter, lineterminator='\n').encode('utf-8-sig')
+                        archive.writestr(f'{candidate}.csv', csv_bytes)
+                print(f"[DEBUG] ZIP written successfully to {output_file}", flush=True)
             else:
                 # Export first sheet
                 print(f"[DEBUG] Reading first sheet from Excel...", flush=True)
-                df = pd.read_excel(input_file, sheet_name=0)
+                df = pd.read_excel(input_file, sheet_name=0, dtype=object)
                 print(f"[DEBUG] Read {len(df)} rows, {len(df.columns)} columns", flush=True)
             
-            # Write to CSV
-            delimiter = normalize_delimiter(options.get('delimiter', 'comma'))
-            print(f"[DEBUG] Writing CSV with separator: {repr(delimiter)}", flush=True)
-            
-            df.to_csv(output_file, index=False, sep=delimiter, encoding="utf-8-sig")
-            print(f"[DEBUG] CSV written successfully to {output_file}", flush=True)
+                # Write the first worksheet as one CSV, preserving existing behavior.
+                print(f"[DEBUG] Writing CSV with separator: {repr(delimiter)}", flush=True)
+                df.to_csv(output_file, index=False, sep=delimiter, encoding="utf-8-sig")
+                print(f"[DEBUG] CSV written successfully to {output_file}", flush=True)
             
             # Verify output file
             if not os.path.exists(output_file):

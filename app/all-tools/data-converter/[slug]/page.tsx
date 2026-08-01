@@ -8,7 +8,7 @@ import { Download, AlertCircle, CheckCircle, Loader2, Upload, ChevronRight, Zap,
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
-import { createConvertedFilename } from '@/app/lib/data-validation';
+import { createConvertedFilename, resolveDataOutputExtension } from '@/app/lib/data-validation';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
@@ -256,6 +256,7 @@ export default function DataToolPage({ params }: PageProps) {
         columnName: 'column_name',
         parts: 'num_parts',
         numParts: 'num_parts',
+        sheetMode: 'sheet_mode',
       };
       
       const snakeCaseOptions: Record<string, any> = {};
@@ -290,7 +291,8 @@ export default function DataToolPage({ params }: PageProps) {
 
       // Get converted file
       const blob = await response.blob();
-      const outputName = createConvertedFilename(tool.output);
+      const outputExtension = resolveDataOutputExtension(tool.id, tool.output, finalOptions);
+      const outputName = createConvertedFilename(outputExtension);
 
       const downloadResult = await uploadBrowserDownloadResult({
         blob,
@@ -314,7 +316,7 @@ export default function DataToolPage({ params }: PageProps) {
       <HomeHeader />
       
       {/* JSON-LD Schema Markup */}
-      {tool.id !== 'csv-to-json' && <script
+      {!['csv-to-json', 'excel-to-csv', 'json-to-xml'].includes(tool.id) && <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />}
@@ -534,7 +536,7 @@ export default function DataToolPage({ params }: PageProps) {
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <CheckCircle size={16} className="text-teal-600 flex-shrink-0" />
-                  <span>Output: .{tool.output}</span>
+                  <span>Output: {resolveDataOutputExtension(tool.id, tool.output, formData)}</span>
                 </div>
               </div>
             </motion.div>
@@ -594,7 +596,9 @@ export default function DataToolPage({ params }: PageProps) {
         </motion.div>
 
         {tool.id === 'csv-to-json' && <PriorityToolGuide toolId="csv-to-json" />}
-        {tool.id !== 'csv-to-json' && (<>
+        {tool.id === 'excel-to-csv' && <PriorityToolGuide toolId="excel-to-csv" />}
+        {tool.id === 'json-to-xml' && <PriorityToolGuide toolId="json-to-xml" />}
+        {!['csv-to-json', 'excel-to-csv', 'json-to-xml'].includes(tool.id) && (<>
         {/* Footer Feature Cards */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-7xl mx-auto mt-20">
           <div className="grid md:grid-cols-3 gap-6">

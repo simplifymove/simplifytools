@@ -31,8 +31,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       keywords: ['merge PDF', 'combine PDF files', 'PDF merger', 'join PDFs', 'free PDF tool', 'online PDF merger'],
     },
     'split-pdf': {
-      title: 'Split PDF Online Free | Extract PDF Pages',
-      description: 'Split a PDF into individual pages, a selected page range, or every nth page, then download the resulting PDF files.',
+      title: 'Split PDF by Pages, Ranges, or N-Page Chunks',
+      description: 'Split a PDF into individual pages, extract selected page ranges, or create sequential groups of up to N pages in source order.',
       keywords: ['split PDF', 'separate PDF pages', 'extract PDF', 'divide PDF', 'PDF splitter', 'free PDF tool'],
     },
     'rotate-pdf': {
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       keywords: ['remove PDF watermark', 'PDF watermark remover', 'remove watermark from PDF', 'watermark removal online', 'free PDF watermark remover', 'remove PDF text', 'delete PDF watermark'],
     },
     'pdf-to-jpg': {
-      title: 'Convert PDF to JPG Free - Online PDF to Image Tool',
+      title: 'PDF to JPG - Render PDF Pages at 72-600 DPI',
       description: 'Render all or selected PDF pages as JPG images at 72, 150, 300, or 600 DPI; multiple page images are packaged in a ZIP file.',
       keywords: ['PDF to JPG converter', 'convert PDF to JPG free', 'PDF to image conversion', 'extract images from PDF', 'convert PDF pages to JPG online', 'PDF to JPG free tool'],
     },

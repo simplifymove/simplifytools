@@ -608,6 +608,7 @@ export default function PdfToolPage({ params }: PageProps) {
       </div>
 
       {/* Footer Section - Features */}
+      {!['split-pdf', 'pdf-to-jpg'].includes(tool.id) && (
       <div className="mt-12 grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 md:px-8 pb-12">
         <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-purple-600 hover:shadow-xl transition-all">
           <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
@@ -639,10 +640,13 @@ export default function PdfToolPage({ params }: PageProps) {
           </p>
         </div>
       </div>
+      )}
 
         {tool.id === 'merge-pdf' && <PriorityToolGuide toolId="merge-pdf" />}
         {tool.id === 'compress-pdf' && <PriorityToolGuide toolId="compress-pdf" />}
         {tool.id === 'pdf-to-word' && <PriorityToolGuide toolId="pdf-to-word" />}
+        {tool.id === 'split-pdf' && <PriorityToolGuide toolId="split-pdf" />}
+        {tool.id === 'pdf-to-jpg' && <PriorityToolGuide toolId="pdf-to-jpg" />}
 
         {/* SEO Content for Unlock PDF */}
         {tool.id === 'unlock-pdf' && (
@@ -1173,7 +1177,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF to JPG Converter */}
-        {tool.id === 'pdf-to-jpg' && (
+        {false && tool?.id === 'pdf-to-jpg' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -4992,7 +4996,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Split PDF */}
-        {tool.id === 'split-pdf' && (
+        {false && tool?.id === 'split-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">

@@ -69,15 +69,15 @@ class PdfCoreEngine:
             pdf_path = input_paths[0]
             mode = options.get('mode', 'all')  # all, range, every_n
             page_range = options.get('pageRange', '')
-            every_n = int(options.get('everyN', 1))
             
             pdf = PyPDF2.PdfReader(pdf_path)
             total_pages = len(pdf.pages)
+            page_groups = []
             pages_to_split = []
             skipped_pages = []
             
             if mode == 'all':
-                pages_to_split = list(range(len(pdf.pages)))
+                page_groups = [[page_num] for page_num in range(len(pdf.pages))]
             elif mode == 'range' and page_range:
                 # Parse range like "1-5" or "1,3,5"
                 all_requested = []
@@ -105,22 +105,36 @@ class PdfCoreEngine:
                 # Log skipped pages for frontend warning
                 if skipped_pages:
                     print(f"[WARNING] Skipping out-of-range pages: {skipped_pages} (PDF has only {total_pages} pages)")
+                page_groups = [[page_num] for page_num in pages_to_split]
                 
             elif mode == 'every_n':
-                pages_to_split = list(range(0, len(pdf.pages), every_n))
+                try:
+                    every_n = int(options.get('everyN', 1))
+                except (TypeError, ValueError):
+                    raise Exception("Every N Pages must be a positive integer")
+                if every_n <= 0:
+                    raise Exception("Every N Pages must be greater than zero")
+                page_groups = [
+                    list(range(start, min(start + every_n, total_pages)))
+                    for start in range(0, total_pages, every_n)
+                ]
             
             output_dir = Path(output_path).parent
             results = []
             
-            for idx, page_num in enumerate(pages_to_split):
+            for page_group in page_groups:
                 writer = PyPDF2.PdfWriter()
-                writer.add_page(pdf.pages[page_num])
-                out_file = output_dir / f"page_{page_num+1}.pdf"
+                for page_num in page_group:
+                    writer.add_page(pdf.pages[page_num])
+                first_page = page_group[0] + 1
+                last_page = page_group[-1] + 1
+                filename = f"page_{first_page}.pdf" if first_page == last_page else f"pages_{first_page}-{last_page}.pdf"
+                out_file = output_dir / filename
                 with open(out_file, 'wb') as f:
                     writer.write(f)
                 results.append(str(out_file))
             
-            # If single page, return it; else zip all
+            # If one output document was produced, return it directly; otherwise ZIP all chunks.
             if len(results) == 1:
                 return results[0]
             else:

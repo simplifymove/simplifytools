@@ -121,6 +121,33 @@ export function createConvertedFilename(extension: string): string {
   return `converted${normalizeFileExtension(extension)}`;
 }
 
+export function resolveDataOutputExtension(
+  toolId: string,
+  configuredOutput: string,
+  options: Record<string, any>,
+): string {
+  if (
+    toolId === 'excel-to-csv' &&
+    (options.sheet_mode === 'zip' || options.sheetMode === 'zip')
+  ) {
+    return '.zip';
+  }
+  return normalizeFileExtension(configuredOutput);
+}
+
+export function dataMimeTypeForExtension(extension: string): string {
+  const mimeTypes: Record<string, string> = {
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.xls': 'application/vnd.ms-excel',
+    '.csv': 'text/csv',
+    '.json': 'application/json',
+    '.xml': 'application/xml',
+    '.pdf': 'application/pdf',
+    '.zip': 'application/zip',
+  };
+  return mimeTypes[normalizeFileExtension(extension)] || 'application/octet-stream';
+}
+
 /**
  * Generate output filename based on tool
  */
@@ -163,4 +190,3 @@ export async function validateExcelFile(fileBuffer: Buffer, filename: string): P
   
   return true; // Other formats are allowed
 }
-

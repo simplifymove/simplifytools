@@ -19,6 +19,13 @@ import {
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import {
+  normalizePngToJpgQuality,
+  PNG_TO_JPG_DEFAULT_QUALITY,
+  PNG_TO_JPG_MAX_QUALITY,
+  PNG_TO_JPG_MIN_QUALITY,
+} from '@/app/lib/png-to-jpg-quality';
 
 const TOOL_ID = 'png-to-jpg';
 const TOOL_NAME = 'PNG to JPG Converter';
@@ -29,7 +36,7 @@ export default function PngToJpgPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
-  const [quality, setQuality] = useState(90);
+  const [quality, setQuality] = useState(PNG_TO_JPG_DEFAULT_QUALITY);
   const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
@@ -117,7 +124,9 @@ export default function PngToJpgPage() {
     setProcessing(true);
     clearError();
     try {
-      const result = await convertImageFormat(file, 'image/jpeg');
+      const result = await convertImageFormat(file, 'image/jpeg', {
+        quality: normalizePngToJpgQuality(quality),
+      });
       setResult(result.blob);
     } catch (err) {
       createError(
@@ -256,10 +265,12 @@ export default function PngToJpgPage() {
                   </label>
                   <input
                     type="range"
-                    min="10"
-                    max="100"
+                    name="quality"
+                    aria-label="JPEG quality"
+                    min={PNG_TO_JPG_MIN_QUALITY}
+                    max={PNG_TO_JPG_MAX_QUALITY}
                     value={quality}
-                    onChange={(e) => setQuality(parseInt(e.target.value))}
+                    onChange={(e) => setQuality(normalizePngToJpgQuality(e.target.valueAsNumber))}
                     className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
                   />
                   <p className="text-xs text-orange-700 mt-2">
@@ -338,7 +349,10 @@ export default function PngToJpgPage() {
           </motion.div>
         </motion.div>
       </div>
+    </div>
 
+      <PriorityToolGuide toolId="png-to-jpg" />
+      {false && (<>
       {/* Footer Features */}
       <motion.div
         className="mt-12 grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 md:px-8 pb-12"
@@ -376,7 +390,6 @@ export default function PngToJpgPage() {
           </p>
         </motion.div>
       </motion.div>
-    </div>
 
     {/* How To Section */}
     <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
@@ -560,15 +573,13 @@ export default function PngToJpgPage() {
         </div>
       </div>
     </div>
+      </>)}
       </main>
 
       <Footer />
     </>
   );
 }
-
-
-
 
 
 

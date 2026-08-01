@@ -574,7 +574,9 @@ export default function VideoToolPage({ params }: PageProps) {
         </motion.div>
 
         {resolvedParams.slug === 'compress-video' && <PriorityToolGuide toolId="compress-video" />}
-        {resolvedParams.slug !== 'compress-video' && (<>
+        {resolvedParams.slug === 'trim-video' && <PriorityToolGuide toolId="trim-video" />}
+        {resolvedParams.slug === 'resize-video' && <PriorityToolGuide toolId="resize-video" />}
+        {!['compress-video', 'trim-video', 'resize-video'].includes(resolvedParams.slug) && (<>
         {/* Footer Feature Cards */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-6xl mx-auto mt-20 mb-20">
           {/* SEO Content Sections */}

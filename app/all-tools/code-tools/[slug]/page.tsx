@@ -473,7 +473,7 @@ export default function CodeToolPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
       />
-      {slug !== 'json-formatter' && <script
+      {!['json-formatter', 'json-validator'].includes(slug) && <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageSchema) }}
         />}
@@ -742,7 +742,8 @@ export default function CodeToolPage({ params }: PageProps) {
             </motion.div>
 
             {slug === 'json-formatter' && <PriorityToolGuide toolId="json-formatter" />}
-            {slug !== 'json-formatter' && (<>
+            {slug === 'json-validator' && <PriorityToolGuide toolId="json-validator" />}
+            {!['json-formatter', 'json-validator'].includes(slug) && (<>
             {/* Related Tools Section */}
             {slug && (
               <motion.div
