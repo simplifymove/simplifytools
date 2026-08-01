@@ -19,6 +19,7 @@ import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { useRouter } from 'next/navigation';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 const TOOL_ID = 'compress-image';
 const TOOL_NAME = 'Compress Image';
@@ -213,7 +214,7 @@ export default function CompressImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Image Compressor</h1>
-                <p className="text-lg text-white/90">Reduce image file size while maintaining visual quality with adjustable compression settings.</p>
+                <p className="text-lg text-white/90">Re-encode one image at its original dimensions with an adjustable browser quality setting.</p>
               </div>
             </div>
           </div>
@@ -338,8 +339,8 @@ export default function CompressImagePage() {
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Instant compression in your browser</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Maintains visual quality</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Compare output size and visible artifacts</li>
+                      <li>• Compression runs with browser Canvas</li>
                     </ul>
                   </div>
                 </div>
@@ -348,6 +349,10 @@ export default function CompressImagePage() {
           </div>
         </div>
       </main>
+
+      <PriorityToolGuide toolId="compress-image" />
+      <Footer />
+      {false && (<>
 
       {/* How To Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
@@ -530,12 +535,10 @@ export default function CompressImagePage() {
           </div>
         </div>
       </div>
-
+      </>)}
     </>
   );
 }
-
-
 
 
 

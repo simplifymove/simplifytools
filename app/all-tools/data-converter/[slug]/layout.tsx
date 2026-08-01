@@ -44,8 +44,8 @@ const toolSEODatabase: Record<string, {
     keywords: ['Excel to PDF', 'XLSX to PDF', 'convert spreadsheet', 'PDF export', 'document conversion']
   },
   'csv-to-json': {
-    title: 'CSV to JSON Converter - Transform CSV to JSON Online',
-    description: 'Convert CSV data to JSON format instantly. Free online CSV to JSON converter. Perfect for APIs, databases, and web development.',
+    title: 'CSV to JSON Converter - Headers, Delimiters & Types',
+    description: 'Convert a comma, semicolon, tab, or pipe-delimited CSV into an array of JSON row objects, with guidance for headers, inferred types, malformed rows, and encoding.',
     keywords: ['CSV to JSON', 'JSON converter', 'data conversion', 'API data', 'developer tool']
   },
   'json-to-xml': {

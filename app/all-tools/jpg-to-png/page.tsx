@@ -18,6 +18,7 @@ import {
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 const TOOL_ID = 'jpg-to-png';
 const TOOL_NAME = 'JPG to PNG Converter';
@@ -182,7 +183,7 @@ export default function JpgToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to PNG Converter</h1>
-                <p className="text-lg text-white/90">Convert JPG images to PNG with full transparency support. Perfect for graphics, logos, and images with transparent backgrounds. No signup required.</p>
+                <p className="text-lg text-white/90">Re-encode a JPG as PNG in your browser without changing its pixel dimensions.</p>
               </div>
             </div>
           </div>
@@ -272,7 +273,7 @@ export default function JpgToPngPage() {
                 {/* Info */}
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <p className="text-xs text-blue-700">
-                    <strong>💡 PNG Benefits:</strong> Lossless compression, transparency support, perfect for graphics.
+                    <strong>Format note:</strong> PNG supports transparency, but converting an opaque JPG does not create transparent pixels or restore lost detail.
                   </p>
                 </div>
               </div>
@@ -281,6 +282,7 @@ export default function JpgToPngPage() {
         </div>
       </div>
 
+      {false && (<>
       {/* How To Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
@@ -483,14 +485,14 @@ export default function JpgToPngPage() {
           </div>
         </div>
       </div>
+      </>)}
+      <PriorityToolGuide toolId="jpg-to-png" />
     </main>
 
     <Footer />
   </>
 );
 }
-
-
 
 
 

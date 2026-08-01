@@ -15,6 +15,7 @@ import { ErrorAlert } from '@/app/components/error-components';
 import { VideoToolErrorType } from '@/app/utils/types/errors';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 import { notFound } from 'next/navigation';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 // Action-specific CTA text for each tool
 function getActionText(toolId: string): string {
@@ -572,6 +573,8 @@ export default function VideoToolPage({ params }: PageProps) {
           </motion.div>
         </motion.div>
 
+        {resolvedParams.slug === 'compress-video' && <PriorityToolGuide toolId="compress-video" />}
+        {resolvedParams.slug !== 'compress-video' && (<>
         {/* Footer Feature Cards */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-6xl mx-auto mt-20 mb-20">
           {/* SEO Content Sections */}
@@ -758,6 +761,7 @@ export default function VideoToolPage({ params }: PageProps) {
             ))}
           </div>
         </motion.div>
+        </>)}
       </div>
         </div>
       </main>

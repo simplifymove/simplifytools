@@ -18,6 +18,8 @@ import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { useRouter } from 'next/navigation';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import { Footer } from '@/app/components/Footer';
 
 const TOOL_ID = 'resize-image';
 const TOOL_NAME = 'Resize Image';
@@ -358,8 +360,8 @@ export default function ResizeImagePage() {
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Custom width & height</li>
                       <li>• Aspect ratio preservation</li>
-                      <li>• All image formats supported</li>
-                      <li>• Instant processing</li>
+                      <li>• Browser-decodable image formats</li>
+                      <li>• Canvas-based resizing</li>
                     </ul>
                   </div>
                 </div>
@@ -368,6 +370,10 @@ export default function ResizeImagePage() {
           </div>
         </div>
       </main>
+
+      <PriorityToolGuide toolId="resize-image" />
+      <Footer />
+      {false && (<>
 
       {/* How To Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
@@ -628,11 +634,10 @@ export default function ResizeImagePage() {
           </div>
         </div>
       </footer>
+      </>)}
     </>
   );
 }
-
-
 
 
 

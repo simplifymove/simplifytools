@@ -11,6 +11,7 @@ import { Footer } from '@/app/components/Footer';
 import { createConvertedFilename } from '@/app/lib/data-validation';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 interface FormData {
   [key: string]: string | number | boolean;
@@ -313,10 +314,10 @@ export default function DataToolPage({ params }: PageProps) {
       <HomeHeader />
       
       {/* JSON-LD Schema Markup */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      {tool.id !== 'csv-to-json' && <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
@@ -592,6 +593,8 @@ export default function DataToolPage({ params }: PageProps) {
           </motion.div>
         </motion.div>
 
+        {tool.id === 'csv-to-json' && <PriorityToolGuide toolId="csv-to-json" />}
+        {tool.id !== 'csv-to-json' && (<>
         {/* Footer Feature Cards */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-7xl mx-auto mt-20">
           <div className="grid md:grid-cols-3 gap-6">
@@ -743,6 +746,7 @@ export default function DataToolPage({ params }: PageProps) {
             </div>
           </section>
         </motion.div>
+        </>)}
         </div>
       </div>
       </main>

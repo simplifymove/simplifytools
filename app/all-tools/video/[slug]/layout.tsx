@@ -236,8 +236,8 @@ const toolSEODatabase: Record<string, {
     keywords: ['video to gif', 'convert video to gif', 'gif converter', 'animated gif creator']
   },
   'compress-video': {
-    title: 'Compress Video Online - Free Video File Size Reducer',
-    description: 'Reduce video file size instantly. Free online compression tool with quality options. Perfect for sharing and storage.',
+    title: 'Compress Video - Preset and CRF Quality Controls',
+    description: 'Compress MP4, MOV, AVI, or MKV into H.264 MP4 using a speed/bitrate preset and CRF quality control. Final size varies by source and settings.',
     keywords: ['compress video', 'video compressor', 'reduce video size', 'video file size']
   },
   'compress-mov': {
@@ -426,7 +426,7 @@ export default async function VideoSlugLayout({
         />
       )}
       {/* Schema Markup - FAQ Page */}
-      <script
+      {slug !== 'compress-video' && <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
@@ -468,7 +468,7 @@ export default async function VideoSlugLayout({
             ]
           })
         }}
-      />
+      />}
       {/* Breadcrumb Schema */}
       <script
         type="application/ld+json"

@@ -17,6 +17,7 @@ import {
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 const TOOL_ID = 'remove-background';
 const TOOL_NAME = 'Remove Background';
@@ -300,7 +301,7 @@ export default function RemoveBackgroundPage() {
                       <li>1. Upload an image with a background</li>
                       <li>2. Our AI automatically detects and removes it</li>
                       <li>3. Choose your processing mode and output format</li>
-                      <li>4. Download the result with transparent background</li>
+                      <li>4. Use PNG or WebP for transparency, or JPEG for white</li>
                       <li>5. Use it in designs, websites, or other projects</li>
                     </ol>
                   </div>
@@ -317,8 +318,8 @@ export default function RemoveBackgroundPage() {
                         <li>• AI-powered detection</li>
                         <li>• Automatic background removal</li>
                         <li>• Multiple output formats</li>
-                        <li>• High quality mode</li>
-                        <li>• Fast processing</li>
+                        <li>• Standard and HQ model modes</li>
+                        <li>• Edge quality varies by subject</li>
                       </ul>
                     </div>
                   )}
@@ -353,7 +354,7 @@ export default function RemoveBackgroundPage() {
                         />
                         <label htmlFor="hqMode" className="flex-1 cursor-pointer">
                           <div className="text-sm font-medium text-gray-900">High Quality Mode</div>
-                          <div className="text-xs text-gray-600">Better results (slower)</div>
+                          <div className="text-xs text-gray-600">Uses a larger model and may take longer</div>
                         </label>
                       </div>
                     </div>
@@ -430,6 +431,10 @@ export default function RemoveBackgroundPage() {
           </div>
         </div>
       </main>
+
+      <PriorityToolGuide toolId="remove-background" />
+      <Footer />
+      {false && (<>
 
       {/* How It Works Section */}
       <section className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
@@ -675,11 +680,10 @@ export default function RemoveBackgroundPage() {
           </div>
         </div>
       </footer>
+      </>)}
     </>
   );
 }
-
-
 
 
 

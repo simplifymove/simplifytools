@@ -53,7 +53,7 @@ const titleOverrides: Record<string, string> = {
   'html-formatter': 'HTML Formatter Online Free | Beautify HTML Code Fast',
   'html-minifier': 'HTML Minifier Online Free | Compress HTML Code Fast',
   'html-validator': 'HTML Validator Online Free | Check HTML Markup Fast',
-  'json-formatter': 'JSON Formatter Online Free | Format and Beautify JSON',
+  'json-formatter': 'JSON Formatter - Validate Syntax and Set Indentation',
   'json-schema-validator': 'JSON Schema Validator Online | Validate JSON Schema',
   'json-to-csv': 'JSON to CSV Converter Online Free | Export JSON to CSV',
   'json-to-xml': 'JSON to XML Converter Online Free | Convert JSON Data',
@@ -85,6 +85,7 @@ const titleOverrides: Record<string, string> = {
 };
 
 const descriptionOverrides: Record<string, string> = {
+  'json-formatter': 'Parse valid JSON and rewrite it with your selected indentation. Includes common syntax-error guidance and a warning not to submit secrets to server processing.',
   'json-validator': 'Validate, format, and check JSON syntax instantly online. Free browser-based JSON validator with no uploads, signup, or installation required.',
   'jwt-decoder': 'Decode JWT tokens instantly in your browser. View headers, payloads, and claims securely without sending token data to servers.',
   'password-generator': 'Generate strong random passwords instantly online. Customize length, symbols, numbers, and letter options securely in your browser.',

@@ -45,6 +45,7 @@ import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 interface ToolOption {
   name: string;
@@ -472,10 +473,10 @@ export default function CodeToolPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageSchema) }}
-      />
+      {slug !== 'json-formatter' && <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageSchema) }}
+        />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbListSchema) }}
@@ -740,6 +741,8 @@ export default function CodeToolPage({ params }: PageProps) {
               </motion.div>
             </motion.div>
 
+            {slug === 'json-formatter' && <PriorityToolGuide toolId="json-formatter" />}
+            {slug !== 'json-formatter' && (<>
             {/* Related Tools Section */}
             {slug && (
               <motion.div
@@ -991,6 +994,7 @@ export default function CodeToolPage({ params }: PageProps) {
                 ))}
               </div>
             </motion.div>
+            </>)}
           </div>
         </div>
       </main>

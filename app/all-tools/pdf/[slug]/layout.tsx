@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   // SEO-optimized metadata per tool
   const seoConfig: Record<string, { title: string; description: string; keywords: string[] }> = {
     'merge-pdf': {
-      title: 'Merge PDF Files Online - Combine PDFs Free',
+      title: 'Merge PDF Files - Preserve Order and Page Sizes',
       description: 'Combine two or more PDF files in your chosen order and download one merged PDF without rasterizing the original pages.',
       keywords: ['merge PDF', 'combine PDF files', 'PDF merger', 'join PDFs', 'free PDF tool', 'online PDF merger'],
     },
@@ -131,7 +131,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       keywords: ['convert images to PDF', 'image to PDF converter', 'merge images to PDF', 'batch image to PDF', 'create PDF from images', 'multiple images to PDF free', 'JPG PNG to PDF'],
     },
     'pdf-to-word': {
-      title: 'Convert PDF to Word Online Free - Edit PDFs Easily',
+      title: 'PDF to Word - Text Extraction and OCR Caveats',
       description: 'Extract PDF text into a DOCX document, using OCR as a fallback for pages without extractable text; original page layout is not retained.',
       keywords: ['PDF to Word converter', 'convert PDF to Word', 'PDF to DOCX', 'edit PDF in Word', 'extract PDF to Word free', 'PDF to Word online'],
     },

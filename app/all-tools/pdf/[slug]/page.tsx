@@ -14,6 +14,7 @@ import { Footer } from '@/app/components/Footer';
 import { FAQSection } from '@/app/components/FAQSection';
 import { readDownloadResultResponse } from '@/app/lib/download-result-client';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -638,6 +639,10 @@ export default function PdfToolPage({ params }: PageProps) {
           </p>
         </div>
       </div>
+
+        {tool.id === 'merge-pdf' && <PriorityToolGuide toolId="merge-pdf" />}
+        {tool.id === 'compress-pdf' && <PriorityToolGuide toolId="compress-pdf" />}
+        {tool.id === 'pdf-to-word' && <PriorityToolGuide toolId="pdf-to-word" />}
 
         {/* SEO Content for Unlock PDF */}
         {tool.id === 'unlock-pdf' && (
@@ -4487,7 +4492,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF to Word Converter */}
-        {tool.id === 'pdf-to-word' && (
+        {false && tool?.id === 'pdf-to-word' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -4791,7 +4796,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Merge PDF */}
-        {tool.id === 'merge-pdf' && (
+        {false && tool?.id === 'merge-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
