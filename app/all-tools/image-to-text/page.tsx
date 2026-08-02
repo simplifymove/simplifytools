@@ -358,7 +358,7 @@ export default function ImageToTextPage() {
                       <li>• Supports 9+ languages</li>
                       <li>• Advanced OCR technology</li>
                       <li>• Multiple output formats</li>
-                      <li>• Secure & instant processing</li>
+                      <li>• Server-assisted OCR processing</li>
                     </ul>
                   </div>
                 </div>

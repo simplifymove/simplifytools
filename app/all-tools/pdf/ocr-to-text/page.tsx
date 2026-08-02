@@ -2,10 +2,15 @@
 
 import React, { useState } from 'react';
 import { FileUp, Download } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function OcrToTextPage() {
+  const router = useRouter();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [resultText, setResultText] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -18,34 +23,54 @@ export default function OcrToTextPage() {
     if (!pdfFile) return;
 
     setIsProcessing(true);
+    setError(null);
+    setResultText(null);
+
     try {
       const formData = new FormData();
-      formData.append('tool', 'ocr-to-text');
       formData.append('file', pdfFile);
 
-      const response = await fetch('/api/pdf', {
+      const response = await fetch('/api/pdf/ocr', {
         method: 'POST',
         body: formData,
       });
 
       const result = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !result.success) {
         throw new Error(result.error || 'Failed to extract text');
       }
 
-      // Download the result
-      if (result.output) {
-        const a = document.createElement('a');
-        a.href = result.output;
-        a.download = `text-${pdfFile.name.replace('.pdf', '.txt')}`;
-        a.click();
-      }
-    } catch (error) {
-      alert('Error: ' + (error as Error).message);
+      const text = String(result.data?.fullText || '').trim();
+      setResultText(text || 'No text was detected in this PDF.');
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Failed to extract text',
+      );
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleDownload = async () => {
+    if (!resultText || !pdfFile) return;
+
+    const blob = new Blob([resultText], {
+      type: 'text/plain;charset=utf-8',
+    });
+
+    const outputName = `text-${pdfFile.name.replace(/\.pdf$/i, '')}.txt`;
+
+    const downloadResult = await uploadBrowserDownloadResult({
+      blob,
+      toolSlug: 'ocr-to-text',
+      originalName: outputName,
+      outputName,
+    });
+
+    router.push(downloadResult.downloadPageUrl);
   };
 
   return (
@@ -82,6 +107,32 @@ export default function OcrToTextPage() {
           {pdfFile && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-gray-800 font-medium truncate">📄 {pdfFile.name}</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {resultText && (
+            <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+              <h3 className="mb-2 font-semibold text-gray-900">Extracted Text</h3>
+              <textarea
+                readOnly
+                value={resultText}
+                aria-label="Extracted PDF text"
+                className="min-h-40 w-full resize-y rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-800"
+              />
+
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="mt-3 w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700"
+              >
+                Download TXT
+              </button>
             </div>
           )}
 

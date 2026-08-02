@@ -647,14 +647,14 @@ export const pdfToolsTestConfig: Record<string, PdfToolTestConfig> = {
     url: '/all-tools/pdf/ocr-to-text',
     inputType: 'single-file',
     files: ['scanned.pdf'],
-    options: { language: 'eng', outputFormat: 'docx' },
-    expectedOutputType: 'docx',
-    skip: true, // Requires complex file handling and tesseract.js
+    options: {},
+    expectedOutputType: 'txt',
+    skip: true, // Full OCR execution remains covered by the dedicated OCR integrity test
     positiveTests: [
       {
         name: 'OCR scanned PDF',
         files: ['scanned.pdf'],
-        options: { language: 'eng', outputFormat: 'docx' },
+        options: {},
         description: 'Should extract text from scanned PDF',
       },
     ],

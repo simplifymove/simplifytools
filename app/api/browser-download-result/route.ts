@@ -74,6 +74,8 @@ const DOCX_POLICY: BrowserResultToolPolicy = {
 };
 
 const TEXT_BROWSER_TOOLS = [
+  'image-to-text',
+  'ocr-to-text',
   ...Object.keys(aiWriteTools),
   ...Object.keys(codeTools),
   ...allTools

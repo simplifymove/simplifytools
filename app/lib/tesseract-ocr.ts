@@ -50,7 +50,7 @@ export async function extractTextFromPDF(
   try {
     // For images, use Tesseract directly
     if (mimeType.startsWith('image/')) {
-      return await extractTextFromImage(fileBuffer);
+      return await extractTextFromImage(fileBuffer, mimeType);
     }
 
     // For PDF, convert pages to images first
@@ -69,12 +69,13 @@ export async function extractTextFromPDF(
  * Extract text from image using Tesseract
  */
 async function extractTextFromImage(
-  fileBuffer: Buffer
+  fileBuffer: Buffer,
+  mimeType: string,
 ): Promise<OCRResult> {
   try {
-    // Convert buffer to base64
+    // Preserve the actual uploaded image MIME type.
     const imageData = fileBuffer.toString('base64');
-    const imageUrl = `data:image/png;base64,${imageData}`;
+    const imageUrl = `data:${mimeType};base64,${imageData}`;
 
     // Run Tesseract OCR
     const result = await Tesseract.recognize(imageUrl, 'eng', {
@@ -144,17 +145,21 @@ async function extractTextFromPDFPages(
         const page = await pdf.getPage(pageNum);
         const viewport = page.getViewport({ scale: 2 }); // Higher scale for better OCR
 
-        // Create canvas
-        const canvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;
-        if (!canvas) continue;
+        // Create a Node.js canvas because this function runs in the API route.
+        const { createCanvas } = await import('canvas');
+        const canvas = createCanvas(
+          Math.ceil(viewport.width),
+          Math.ceil(viewport.height),
+        );
 
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        const context = canvas.getContext('2d');
 
-        const context = canvas.getContext('2d')!;
-        await (page.render({ canvas, viewport }) as any).promise;
+        await (page.render({
+          canvasContext: context,
+          viewport,
+        }) as any).promise;
 
-        // Convert canvas to image and run OCR
+        // Convert the rendered PDF page to PNG for OCR.
         const imageData = canvas.toDataURL('image/png');
 
         const result = await Tesseract.recognize(imageData, 'eng', {
