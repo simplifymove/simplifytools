@@ -42,7 +42,9 @@ export default function PngToWebpPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/webp');
+      const result = await convertImageFormat(file, 'image/webp', {
+        quality,
+      });
       setResult(result.blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
@@ -288,7 +290,7 @@ export default function PngToWebpPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the image quality be affected?</h3>
-              <p className="text-gray-700">No. Our converter uses high-quality WebP encoding. You can adjust the quality slider to find the perfect balance between file size and visual quality for your needs.</p>
+              <p className="text-gray-700">WebP encoding can introduce compression depending on the selected quality. Use the slider to balance file size and visual quality.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is WebP suitable for web graphics and logos?</h3>
@@ -333,7 +335,7 @@ export default function PngToWebpPage() {
               "name": "Will the image quality be affected?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. Our converter uses high-quality WebP encoding. You can adjust the quality slider to find the perfect balance between file size and visual quality for your needs."
+                "text": "WebP encoding can introduce compression depending on the selected quality. Use the slider to balance file size and visual quality."
               }
             },
             {
@@ -379,7 +381,7 @@ export default function PngToWebpPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with efficient compression</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

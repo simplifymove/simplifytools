@@ -42,7 +42,9 @@ export default function JpgToWebpPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/webp');
+      const result = await convertImageFormat(file, 'image/webp', {
+        quality,
+      });
       setResult(result.blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
@@ -103,7 +105,7 @@ export default function JpgToWebpPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to WebP Converter</h1>
-              <p className="text-lg text-white/90">Convert JPG images to WebP format for smaller file sizes without losing quality. Perfect for web optimization.</p>
+              <p className="text-lg text-white/90">Convert JPG images to WebP format in your browser with adjustable quality for web optimization.</p>
             </div>
           </div>
         </div>
@@ -296,7 +298,7 @@ export default function JpgToWebpPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will I lose quality when converting to WebP?</h3>
-              <p className="text-gray-700">No. WebP uses advanced compression algorithms that maintain excellent quality at smaller file sizes. Our converter allows you to adjust quality settings to find the perfect balance.</p>
+              <p className="text-gray-700">WebP encoding can reduce file size while retaining good visual quality. Use the quality slider to choose the balance between compression and image fidelity.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can WebP replace JPG on my website?</h3>
@@ -341,7 +343,7 @@ export default function JpgToWebpPage() {
               "name": "Will I lose quality when converting to WebP?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. WebP uses advanced compression algorithms that maintain excellent quality at smaller file sizes. Our converter allows you to adjust quality settings to find the perfect balance."
+                "text": "WebP encoding can reduce file size while retaining good visual quality. Use the quality slider to choose the balance between compression and image fidelity."
               }
             },
             {
@@ -387,7 +389,7 @@ export default function JpgToWebpPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with efficient compression</p>
             </Link>
             <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>

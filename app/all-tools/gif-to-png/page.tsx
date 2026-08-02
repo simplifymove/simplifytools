@@ -17,7 +17,6 @@ export default function GifToPngPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [quality, setQuality] = useState(90);
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
@@ -42,9 +41,7 @@ export default function GifToPngPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png', {
-        quality: quality,
-      });
+      const result = await convertImageFormat(file, 'image/png');
       setResult(result.blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
@@ -136,28 +133,6 @@ export default function GifToPngPage() {
               {/* Controls - Right (sticky sidebar) */}
               <div className="lg:col-span-1">
                 <div className="sticky top-4 space-y-4">
-                  {/* Options */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
-                    {/* Quality */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Output Quality: {quality}%
-                      </label>
-                      <input
-                        type="range"
-                        min="10"
-                        max="100"
-                        step="5"
-                        value={quality}
-                        onChange={(e) => setQuality(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
-                    </div>
-                  </div>
-
                   {/* Convert Button */}
                   <button
                     onClick={handleConvert}
@@ -221,7 +196,7 @@ export default function GifToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Adjust Quality Settings</h3>
-                <p className="text-gray-600 mt-2">Set the output quality level (10-100%) to control file size and image clarity.</p>
+                <p className="text-gray-600 mt-2">The first rendered frame is converted to a static PNG image.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -255,7 +230,7 @@ export default function GifToPngPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Better Compression</h3>
-                <p className="text-gray-600 text-sm">PNG uses more efficient compression algorithms than GIF, resulting in smaller file sizes while maintaining quality.</p>
+                <p className="text-gray-600 text-sm">PNG uses lossless compression and is well suited to static graphics, screenshots, logos, and images requiring transparency.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -291,7 +266,7 @@ export default function GifToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert GIFs with text or graphics?</h3>
-              <p className="text-gray-700">Yes, absolutely. Our converter handles all types of GIFs - text overlays, graphics, photographs, and logos. The quality remains excellent regardless of content type.</p>
+              <p className="text-gray-700">The converter can process many common GIF images, including graphics, photographs, logos, and text-based artwork. Animated GIFs use the first rendered frame.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">What file size limits exist?</h3>
@@ -303,7 +278,7 @@ export default function GifToPngPage() {
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Which GIF types are supported?</h3>
-              <p className="text-gray-700">We support all GIF types: static GIFs, animated GIFs, GIFs with transparency, and interlaced GIFs. All convert successfully to high-quality PNG files.</p>
+              <p className="text-gray-700">Common static and animated GIF files can be converted. Animated GIFs produce a static PNG from the first rendered frame.</p>
             </div>
           </div>
         </div>
@@ -336,7 +311,7 @@ export default function GifToPngPage() {
               "name": "Can I convert GIFs with text or graphics?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, absolutely. Our converter handles all types of GIFs - text overlays, graphics, photographs, and logos. The quality remains excellent regardless of content type."
+                "text": "The converter can process many common GIF images, including graphics, photographs, logos, and text-based artwork. Animated GIFs use the first rendered frame."
               }
             },
             {
@@ -360,7 +335,7 @@ export default function GifToPngPage() {
               "name": "Which GIF types are supported?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "We support all GIF types: static GIFs, animated GIFs, GIFs with transparency, and interlaced GIFs. All convert successfully to high-quality PNG files."
+                "text": "Common static and animated GIF files can be converted. Animated GIFs produce a static PNG from the first rendered frame."
               }
             }
           ]
@@ -382,7 +357,7 @@ export default function GifToPngPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Convert images to PNG format</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>
