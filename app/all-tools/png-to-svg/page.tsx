@@ -47,10 +47,7 @@ export default function PngToSvgPage() {
       formData.append('config', JSON.stringify({
         from_format: 'png',
         to_format: 'svg',
-        options: {
-          quality: 100,
-          trace_threshold: 128,
-        },
+        options: {},
       }));
 
       const response = await fetch('/api/convert', {
@@ -64,6 +61,12 @@ export default function PngToSvgPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/svg+xml') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setConversionTip('✓ Vectorization complete! Your SVG is ready to download.');
@@ -112,7 +115,7 @@ export default function PngToSvgPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to SVG Converter</h1>
-              <p className="text-lg text-white/90">Convert PNG images to scalable SVG vector format. Perfect for logos, icons, and graphics that need infinite scalability.</p>
+              <p className="text-lg text-white/90">Trace PNG artwork into SVG vector paths. High-contrast logos, icons, and simple graphics produce the clearest results.</p>
             </div>
           </div>
         </div>
@@ -216,10 +219,10 @@ export default function PngToSvgPage() {
                     <strong>💡 SVG Benefits:</strong>
                   </p>
                   <ul className="text-xs text-blue-700 space-y-1">
-                    <li>• Infinitely scalable without quality loss</li>
+                    <li>• SVG vector-path output</li>
                     <li>• Smaller file sizes than raster formats</li>
-                    <li>• Perfect for logos, icons, and illustrations</li>
-                    <li>• Editable in any vector design tool</li>
+                    <li>• Best suited to high-contrast logos, icons, and illustrations</li>
+                    <li>• Vector paths can be edited in compatible SVG editors</li>
                   </ul>
                 </div>
               </div>
@@ -265,19 +268,19 @@ export default function PngToSvgPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">What is SVG format?</h3>
-                <p className="text-gray-600">SVG (Scalable Vector Graphics) is a vector image format that uses mathematical equations to define shapes and lines. This allows images to scale infinitely without pixelation.</p>
+                <p className="text-gray-600">SVG (Scalable Vector Graphics) represents graphics using vector geometry. This converter traces suitable raster artwork into SVG paths that can be scaled without raster pixelation.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Why convert PNG to SVG?</h3>
-                <p className="text-gray-600">SVG files are infinitely scalable, have smaller file sizes, and are perfect for logos, icons, and graphics that need to work at any size. They're also easier to edit and customize.</p>
+                <p className="text-gray-600">Traced SVG paths can scale without raster pixelation and are useful for logos, icons, and simple artwork. File size and trace quality depend on the source image.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">What's the difference between raster and vector?</h3>
-                <p className="text-gray-600">Raster images (PNG, JPG) are made of pixels and lose quality when enlarged. Vector images (SVG) are made of shapes and mathematical curves, so they scale perfectly to any size without quality loss.</p>
+                <p className="text-gray-600">Raster images are made of pixels. This converter traces visible shapes into SVG paths, which can be scaled without the pixelation of the original raster image.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Can I edit the SVG file after conversion?</h3>
-                <p className="text-gray-600">Yes! SVG files can be edited in any vector design tool like Adobe Illustrator, Inkscape, Figma, or Adobe XD. You can modify colors, shapes, and other properties.</p>
+                <p className="text-gray-600">The traced output contains SVG vector paths that can be edited in compatible vector software. Trace accuracy depends on the complexity and contrast of the source image.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">What image types work best?</h3>

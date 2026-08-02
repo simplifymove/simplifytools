@@ -201,6 +201,14 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     extensions: ['.svg'],
     mimeTypes: ['image/svg+xml'],
   },
+  'jpg-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
+  'png-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
   'jpg-to-png': {
     extensions: ['.png'],
     mimeTypes: ['image/png'],
