@@ -20,8 +20,7 @@ logger = logging.getLogger(__name__)
 def convert_gif_to_mp4(
     input_file: str,
     output_file: str,
-    fps: int = 30,
-    quality: int = 85
+    fps: int = 30
 ) -> bool:
     """
     Convert GIF to MP4 using imageio + FFmpeg backend
@@ -30,7 +29,6 @@ def convert_gif_to_mp4(
         input_file: Path to GIF
         output_file: Path to output MP4
         fps: Frames per second
-        quality: Quality 0-100
     
     Returns:
         bool: Success status
@@ -195,8 +193,7 @@ def animation_convert(
         
         if from_format.lower() == 'gif' and to_format.lower() == 'mp4':
             fps = int(options.get('fps', 30))
-            quality = int(options.get('quality', 85))
-            return convert_gif_to_mp4(input_file, output_file, fps, quality)
+            return convert_gif_to_mp4(input_file, output_file, fps)
         
         elif from_format.lower() == 'mp4' and to_format.lower() == 'gif':
             fps = int(options.get('fps', 10))
@@ -222,13 +219,11 @@ if __name__ == '__main__':
     parser.add_argument('--from-format', required=True, choices=['gif', 'mp4'])
     parser.add_argument('--to-format', required=True, choices=['gif', 'mp4'])
     parser.add_argument('--fps', type=int, default=30, help='Frames per second')
-    parser.add_argument('--quality', type=int, default=85, help='Quality for MP4')
     parser.add_argument('--options-json', default='{}', help='Additional options')
     
     args = parser.parse_args()
     options = json.loads(args.options_json)
     options['fps'] = args.fps
-    options['quality'] = args.quality
     
     success = animation_convert(
         args.input,

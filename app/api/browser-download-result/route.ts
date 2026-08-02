@@ -78,6 +78,11 @@ const PDF_POLICY: BrowserResultToolPolicy = {
   mimeTypes: ['application/pdf'],
 };
 
+const MP4_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.mp4'],
+  mimeTypes: ['video/mp4'],
+};
+
 const TEXT_BROWSER_TOOLS = [
   'image-to-text',
   'ocr-to-text',
@@ -270,6 +275,7 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
   },
   'vsdx-to-pdf': PDF_POLICY,
   'vsd-to-pdf': PDF_POLICY,
+  'gif-to-mp4': MP4_POLICY,
   'crop-image': EDITABLE_RASTER_POLICY,
   'excel-to-csv': EXCEL_TO_CSV_POLICY,
   'json-to-xml': XML_POLICY,
@@ -365,6 +371,13 @@ function hasValidSignature(buffer: Buffer, extension: string): boolean {
     return (
       buffer.length >= 5 &&
       buffer.subarray(0, 5).toString('ascii') === '%PDF-'
+    );
+  }
+
+  if (extension === '.mp4') {
+    return (
+      buffer.length >= 12 &&
+      buffer.subarray(4, 8).toString('ascii') === 'ftyp'
     );
   }
 

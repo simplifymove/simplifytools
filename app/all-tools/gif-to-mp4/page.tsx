@@ -22,7 +22,6 @@ export default function GifToMp4Page() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [fps, setFps] = useState(30);
-  const [quality, setQuality] = useState(85);
   const { error, clearError, setError } = useImageToolErrors();
 
 
@@ -54,7 +53,7 @@ export default function GifToMp4Page() {
       formData.append('config', JSON.stringify({
         from_format: 'gif',
         to_format: 'mp4',
-        options: { fps, quality },
+        options: { fps },
       }));
 
       const response = await fetch('/api/convert', {
@@ -83,6 +82,13 @@ export default function GifToMp4Page() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'video/mp4') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
       setResult(blob);
     } catch (err) {
       setError({
@@ -154,7 +160,7 @@ export default function GifToMp4Page() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">GIF to MP4 Converter</h1>
-                <p className="text-lg text-white/90">Convert GIF animations to MP4 video format with adjustable frame rate and quality.</p>
+                <p className="text-lg text-white/90">Convert GIF animations to MP4 video format with adjustable frame rate.</p>
               </div>
             </div>
           </div>
@@ -202,22 +208,6 @@ export default function GifToMp4Page() {
                       <p className="text-xs text-gray-500 mt-1">Higher FPS = smoother motion</p>
                     </div>
 
-                    {/* Quality */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        MP4 Quality: {quality}%
-                      </label>
-                      <input
-                        type="range"
-                        min="60"
-                        max="95"
-                        step="5"
-                        value={quality}
-                        onChange={(e) => setQuality(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
-                    </div>
                   </div>
 
                   {/* Convert Button */}
@@ -251,10 +241,10 @@ export default function GifToMp4Page() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Adjustable frame rate and quality</li>
+                      <li>• Server-assisted GIF to MP4 conversion</li>
+                      <li>• Adjustable output frame rate</li>
                       <li>• Supports GIF format</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Files are processed only as needed for conversion</li>
                     </ul>
                   </div>
                 </div>
