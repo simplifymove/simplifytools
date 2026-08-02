@@ -63,6 +63,11 @@ export default function PsdToPngPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/png') {
+        throw new Error(`Unexpected output type: ${blob.type || 'unknown'}`);
+      }
+
       const url = URL.createObjectURL(blob);
       setResult(url);
     } catch (err) {
@@ -108,7 +113,7 @@ export default function PsdToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to PNG Converter</h1>
-                <p className="text-lg text-white/90">Convert Photoshop files to PNG format instantly with transparency support.</p>
+                <p className="text-lg text-white/90">Convert Photoshop PSD files to PNG format with transparency support.</p>
               </div>
             </div>
           </div>
@@ -189,10 +194,10 @@ export default function PsdToPngPage() {
                       Convert your Adobe Photoshop PSD files to PNG format. Our converter supports:
                     </p>
                     <ul className="text-sm text-blue-800 space-y-1 ml-4">
-                      <li>✓ Full transparency/alpha channel preservation</li>
+                      <li>✓ PNG output supports transparency</li>
                       <li>✓ High-quality color conversion</li>
                       <li>✓ Support for various PSD versions</li>
-                      <li>✓ Fast processing for files up to 100 MB</li>
+                      <li>✓ Supports PSD files up to 200 MB</li>
                     </ul>
                   </div>
                 )}
@@ -205,12 +210,12 @@ export default function PsdToPngPage() {
                     <div className="bg-white rounded-lg border border-gray-200 p-4">
                       <h3 className="font-semibold text-gray-900 mb-3">Features</h3>
                       <ul className="text-sm text-gray-700 space-y-2">
-                        <li>✓ Instant conversion</li>
+                        <li>✓ Server-assisted conversion</li>
                         <li>✓ No installation needed</li>
-                        <li>✓ Keep transparency</li>
+                        <li>✓ PNG transparency support</li>
                         <li>✓ Free and easy</li>
                         <li>✓ No registration</li>
-                        <li>✓ 100% secure</li>
+                        <li>✓ Files processed only as needed for conversion</li>
                       </ul>
                     </div>
                   )}
@@ -315,8 +320,8 @@ export default function PsdToPngPage() {
               <p className="text-gray-700">PNG files work on all platforms and devices. Use the converted images anywhere without restrictions.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Instant Conversion</h3>
-              <p className="text-gray-700">Fast processing means your files are converted in seconds, not minutes or hours.</p>
+              <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Online Conversion</h3>
+              <p className="text-gray-700">Processing time depends on the PSD file size, complexity, and current server load.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-purple-500 mb-2">✓ No Software Required</h3>
@@ -324,11 +329,11 @@ export default function PsdToPngPage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-purple-500 mb-2">✓ High Quality</h3>
-              <p className="text-gray-700">Lossless conversion preserves your image quality and color accuracy perfectly.</p>
+              <p className="text-gray-700">PNG uses lossless image compression. The rendered result depends on the PSD content supported by the conversion engine.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-purple-500 mb-2">✓ 100% Private</h3>
-              <p className="text-gray-700">Your files are processed securely and never stored on our servers. Your privacy is guaranteed.</p>
+              <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Server Processing</h3>
+              <p className="text-gray-700">PSD files are uploaded to the conversion server and processed only as needed to create the PNG output.</p>
             </div>
           </div>
         </div>
@@ -345,15 +350,15 @@ export default function PsdToPngPage() {
             </details>
             <details className="border-l-4 border-purple-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Will transparency be preserved?</summary>
-              <p className="text-gray-700 mt-2">Yes! Our converter preserves the full alpha channel and transparency information. Any transparent areas in your PSD will remain transparent in the PNG output.</p>
+              <p className="text-gray-700 mt-2">PNG supports transparency, and transparent PSD content is preserved when it is available in the rendered PSD image.</p>
             </details>
             <details className="border-l-4 border-purple-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Can I convert large PSD files?</summary>
-              <p className="text-gray-700 mt-2">We support PSD files up to 100 MB. If your file is larger, consider reducing the image dimensions or exporting specific layers from Photoshop before converting.</p>
+              <p className="text-gray-700 mt-2">We support PSD files up to 200 MB. If your file is larger, consider reducing the image dimensions or exporting a smaller version before converting.</p>
             </details>
             <details className="border-l-4 border-purple-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Is this tool free?</summary>
-              <p className="text-gray-700 mt-2">Yes, completely free! No hidden fees, subscriptions, or charges. Convert as many files as you need without any limitations.</p>
+              <p className="text-gray-700 mt-2">The converter can be used online without installing Photoshop. Availability is subject to the site's normal file-size and server limits.</p>
             </details>
             <details className="border-l-4 border-purple-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Do I need Adobe Photoshop installed?</summary>
@@ -361,7 +366,7 @@ export default function PsdToPngPage() {
             </details>
             <details className="border-l-4 border-purple-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Are my files safe?</summary>
-              <p className="text-gray-700 mt-2">Absolutely. Files are processed securely and deleted immediately after conversion. We never store your files on our servers. Your privacy is our priority.</p>
+              <p className="text-gray-700 mt-2">Files are uploaded to the conversion server and processed only as needed to create the PNG output.</p>
             </details>
           </div>
         </div>
@@ -394,7 +399,7 @@ export default function PsdToPngPage() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'PSD to PNG Converter - Free Online Photoshop File Converter',
-        description: 'Convert Photoshop PSD files to PNG format instantly with full transparency support. Free, fast, and secure online converter.',
+        description: 'Convert Photoshop PSD files to PNG format online with transparency support.',
         url: 'https://simplifyconvert.com/all-tools/psd-to-png',
         applicationCategory: 'Multimedia',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
@@ -402,13 +407,13 @@ export default function PsdToPngPage() {
         datePublished: '2024-01-01',
         image: 'https://simplifyconvert.com/og-image.jpg',
         featureList: [
-          'Convert PSD files to PNG instantly',
-          'Full transparency support',
+          'Convert PSD files to PNG online',
+          'PNG transparency support',
           'No software installation required',
-          'Support for files up to 100 MB',
-          'Lossless high-quality conversion',
+          'Support for files up to 200 MB',
+          'PNG lossless image compression',
           'Fast processing',
-          ' 100% secure and private',
+          'Server-assisted file conversion',
           'No registration required',
           'Works on all devices',
         ],

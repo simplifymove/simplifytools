@@ -65,7 +65,8 @@ def run_magick(input_path, output_path, quality):
 def convert_psd_to_image(input_file: str, output_file: str, output_format: str, options) -> bool:
     """Convert PSD to image format using PIL with fallback to ImageMagick"""
     try:
-        quality = options.get("quality", 85)
+        quality = int(options.get("quality", 85))
+        pillow_format = "JPEG" if output_format.lower() in ("jpg", "jpeg") else output_format.upper()
         
         # Try PIL/Pillow first (works for many PSD files)
         try:
@@ -82,18 +83,18 @@ def convert_psd_to_image(input_file: str, output_file: str, output_format: str, 
                     if img.mode == 'RGBA':
                         background = Image.new('RGB', img.size, (255, 255, 255))
                         background.paste(img, mask=img.split()[3])
-                        background.save(output_file, output_format.upper(), quality=quality)
+                        background.save(output_file, pillow_format, quality=quality)
                     elif img.mode == 'LA':
                         background = Image.new('RGB', img.size, (255, 255, 255))
                         background.paste(img, mask=img.split()[1])
-                        background.save(output_file, output_format.upper(), quality=quality)
+                        background.save(output_file, pillow_format, quality=quality)
                     else:
-                        img.convert('RGB').save(output_file, output_format.upper(), quality=quality)
+                        img.convert('RGB').save(output_file, pillow_format, quality=quality)
             else:
                 # No transparency, save directly
                 if img.mode == 'P':
                     img = img.convert('RGB')
-                img.save(output_file, output_format.upper(), quality=quality)
+                img.save(output_file, pillow_format, quality=quality)
             
             logger.info(f"✓ PSD conversion successful with PIL")
             return True

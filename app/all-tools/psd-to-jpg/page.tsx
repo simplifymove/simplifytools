@@ -72,6 +72,11 @@ export default function PsdToJpgPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/jpeg') {
+        throw new Error(`Unexpected output type: ${blob.type || 'unknown'}`);
+      }
+
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setPreview(url);
@@ -374,7 +379,7 @@ export default function PsdToJpgPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Is the conversion process secure?</h3>
-                  <p className="text-gray-600">Yes! Your files are processed securely and deleted after conversion. We don't store or share your files with third parties.</p>
+                  <p className="text-gray-600">Files are uploaded to the conversion server and processed only as needed to create the JPG output.</p>
                 </div>
               </div>
             </div>

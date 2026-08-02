@@ -13,10 +13,6 @@ export default function PsdToSvgPage() {
     const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [quality, setQuality] = useState(85);
-  const [colorReduce, setColorReduce] = useState(true);
-  const [cornerThreshold, setCornerThreshold] = useState(100);
-  const [curveOptimize, setCurveOptimize] = useState(2);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
@@ -48,12 +44,7 @@ export default function PsdToSvgPage() {
       formData.append('config', JSON.stringify({ 
         from_format: 'psd',
         to_format: 'svg',
-        options: {
-          quality,
-          color_reduce: colorReduce,
-          corner_threshold: cornerThreshold,
-          curve_optimize: curveOptimize
-        }
+        options: {}
       }));
 
       const response = await fetch('/api/convert', {
@@ -67,6 +58,11 @@ export default function PsdToSvgPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/svg+xml') {
+        throw new Error(`Unexpected output type: ${blob.type || 'unknown'}`);
+      }
+
       const url = URL.createObjectURL(blob);
       setResult(url);
       setResultFileName(`design.svg`);
@@ -115,8 +111,8 @@ export default function PsdToSvgPage() {
                 <Zap size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to SVG Vectorizer</h1>
-                <p className="text-lg text-white/90">Convert Photoshop PSD designs to scalable SVG vector format. Perfect for logos, icons, and graphics that need to scale without quality loss.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to SVG Converter</h1>
+                <p className="text-lg text-white/90">Convert a Photoshop PSD into an SVG container with the rendered PSD image embedded inside it.</p>
               </div>
             </div>
           </div>
@@ -167,19 +163,19 @@ export default function PsdToSvgPage() {
                     </p>
                   )}
                   
-                  {/* Industry Info */}
+                  {/* Conversion Info */}
                   <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <h4 className="font-semibold text-blue-900 mb-2">Rasterization</h4>
-                      <p className="text-sm text-blue-800">PSD is first rendered to PNG with adjustable quality</p>
+                      <h4 className="font-semibold text-blue-900 mb-2">PSD Rendering</h4>
+                      <p className="text-sm text-blue-800">The PSD is rendered as a raster image for the SVG output.</p>
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <h4 className="font-semibold text-green-900 mb-2">Vectorization</h4>
-                      <p className="text-sm text-green-800">PNG is traced to SVG using Potrace algorithm</p>
+                      <h4 className="font-semibold text-green-900 mb-2">SVG Container</h4>
+                      <p className="text-sm text-green-800">The rendered PNG image is embedded inside a standard SVG document.</p>
                     </div>
                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                      <h4 className="font-semibold text-purple-900 mb-2">Optimization</h4>
-                      <p className="text-sm text-purple-800">SVG output is optimized for clean curves and file size</p>
+                      <h4 className="font-semibold text-purple-900 mb-2">Important</h4>
+                      <p className="text-sm text-purple-800">This does not trace PSD artwork into editable vector paths.</p>
                     </div>
                   </div>
                 </div>
@@ -188,78 +184,13 @@ export default function PsdToSvgPage() {
               {/* Controls - Right (sticky sidebar) */}
               <div className="lg:col-span-1">
                 <div className="sticky top-4 space-y-4">
-                  {/* Options */}
+                  {/* Conversion */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">Vectorization Settings</h3>
-                    
-                    {/* Rasterization Quality */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Raster Quality: {quality}%
-                      </label>
-                      <input
-                        type="range"
-                        min="60"
-                        max="100"
-                        step="5"
-                        value={quality}
-                        onChange={(e) => setQuality(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Controls detail in rasterization step</p>
-                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-3">SVG Output</h3>
+                    <p className="text-xs text-gray-600 mb-4">
+                      The output is an SVG document containing an embedded raster image. It is not editable vector-path artwork.
+                    </p>
 
-                    {/* Color Reduce */}
-                    <div className="mb-6 flex items-center">
-                      <input
-                        type="checkbox"
-                        id="colorReduce"
-                        checked={colorReduce}
-                        onChange={(e) => setColorReduce(e.target.checked)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                      />
-                      <label htmlFor="colorReduce" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
-                        Reduce Colors (Recommended)
-                      </label>
-                    </div>
-                    <p className="text-xs text-gray-500 mb-4">Reduces to 256 colors for cleaner vectorization</p>
-
-                    {/* Corner Threshold */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Corner Threshold: {cornerThreshold}
-                      </label>
-                      <input
-                        type="range"
-                        min="50"
-                        max="200"
-                        step="10"
-                        value={cornerThreshold}
-                        onChange={(e) => setCornerThreshold(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Higher = smoother curves, fewer nodes</p>
-                    </div>
-
-                    {/* Curve Optimization */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Curve Optimization: {curveOptimize}
-                      </label>
-                      <select
-                        value={curveOptimize}
-                        onChange={(e) => setCurveOptimize(parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        <option value="0">Off</option>
-                        <option value="1">Level 1 (Light)</option>
-                        <option value="2">Level 2 (Standard)</option>
-                        <option value="3">Level 3 (Aggressive)</option>
-                      </select>
-                      <p className="text-xs text-gray-500 mt-1">Simplifies curves, reduces file size</p>
-                    </div>
-
-                    {/* Convert Button */}
                     <button
                       onClick={handleConvert}
                       disabled={!file || processing}
@@ -268,7 +199,7 @@ export default function PsdToSvgPage() {
                       {processing ? (
                         <>
                           <Loader size={18} className="animate-spin" />
-                          Vectorizing...
+                          Converting...
                         </>
                       ) : (
                         'Convert to SVG'

@@ -276,6 +276,18 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
   'vsdx-to-pdf': PDF_POLICY,
   'vsd-to-pdf': PDF_POLICY,
   'gif-to-mp4': MP4_POLICY,
+  'psd-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'psd-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'psd-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
   'crop-image': EDITABLE_RASTER_POLICY,
   'excel-to-csv': EXCEL_TO_CSV_POLICY,
   'json-to-xml': XML_POLICY,
