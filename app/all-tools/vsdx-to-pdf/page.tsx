@@ -13,8 +13,6 @@ export default function VsdxToPdfPage() {
     const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [quality, setQuality] = useState('high');
-  const [preserveFormatting, setPreserveFormatting] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
@@ -40,12 +38,15 @@ export default function VsdxToPdfPage() {
     setProcessing(true);
     try {
       const formData = new FormData();
-      formData.append('tool', 'vsdx-to-pdf');
-      formData.append('file', file);
-      formData.append('options', JSON.stringify({ 
-        quality,
-        preserveFormatting
-      }));
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'vsdx',
+          to_format: 'pdf',
+          options: {},
+        }),
+      );
 
       const response = await fetch('/api/convert', {
         method: 'POST',
@@ -57,6 +58,13 @@ export default function VsdxToPdfPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'application/pdf') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
       const url = URL.createObjectURL(blob);
       setResult(url);
       setResultFileName(`diagram.pdf`);
@@ -106,7 +114,7 @@ export default function VsdxToPdfPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">VSDX to PDF</h1>
-                <p className="text-lg text-white/90">Convert Visio VSDX diagrams to PDF format. Preserve shapes, text, and formatting for easy sharing and printing.</p>
+                <p className="text-lg text-white/90">Convert Visio VSDX diagrams to PDF format with server-assisted document rendering for sharing, printing, and archiving.</p>
               </div>
             </div>
           </div>
@@ -141,35 +149,10 @@ export default function VsdxToPdfPage() {
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
                     
-                    {/* Quality */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        PDF Quality
-                      </label>
-                      <select
-                        value={quality}
-                        onChange={(e) => setQuality(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      >
-                        <option value="high">High Quality</option>
-                        <option value="medium">Medium Quality</option>
-                        <option value="low">Low Quality (Smaller File)</option>
-                      </select>
-                    </div>
-
-                    {/* Preserve Formatting */}
-                    <div className="mb-6 flex items-center">
-                      <input
-                        type="checkbox"
-                        id="preserve"
-                        checked={preserveFormatting}
-                        onChange={(e) => setPreserveFormatting(e.target.checked)}
-                        className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
-                      />
-                      <label htmlFor="preserve" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
-                        Preserve Formatting
-                      </label>
-                    </div>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Your VSDX diagram is rendered to PDF using server-assisted
+                      document conversion.
+                    </p>
 
                     {/* Convert Button */}
                     <button

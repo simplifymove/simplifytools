@@ -259,16 +259,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     supportedOptions: [],
     maxFileSize: 100,
   },
-  {
-    id: 'vsd-to-pptx',
-    title: 'VSD to PPTX',
-    from: 'vsd',
-    to: 'pptx',
-    engine: 'document',
-    defaultOptions: {},
-    supportedOptions: [],
-    maxFileSize: 100,
-  },
+
 ];
 
 /**

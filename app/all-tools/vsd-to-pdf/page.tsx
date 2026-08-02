@@ -13,8 +13,6 @@ export default function VsdToPdfPage() {
     const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [pageSize, setPageSize] = useState('A4');
-  const [orientation, setOrientation] = useState('portrait');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
@@ -44,10 +42,7 @@ export default function VsdToPdfPage() {
       formData.append('config', JSON.stringify({ 
         from_format: 'vsd',
         to_format: 'pdf',
-        options: {
-          pageSize,
-          orientation
-        }
+        options: {}
       }));
 
       const response = await fetch('/api/convert', {
@@ -61,6 +56,13 @@ export default function VsdToPdfPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'application/pdf') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
       const url = URL.createObjectURL(blob);
       setResult(url);
       setResultFileName(`diagram.pdf`);
@@ -110,7 +112,7 @@ export default function VsdToPdfPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">VSD to PDF Converter</h1>
-                <p className="text-lg text-white/90">Convert Visio VSD/VSDX diagrams to PDF format. Perfect for sharing, printing, and archiving your technical drawings and flowcharts.</p>
+                <p className="text-lg text-white/90">Convert Visio VSD diagrams to PDF format for sharing, printing, and archiving technical drawings and flowcharts.</p>
               </div>
             </div>
           </div>
@@ -163,7 +165,7 @@ export default function VsdToPdfPage() {
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <h4 className="font-semibold text-green-900 mb-2">🎯 Accurate Layout</h4>
-                      <p className="text-sm text-green-800">Preserves all diagrams, shapes, and formatting from source</p>
+                      <p className="text-sm text-green-800">Renders Visio diagram content into a standard PDF</p>
                     </div>
                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                       <h4 className="font-semibold text-purple-900 mb-2">📄 Print Ready</h4>
@@ -180,61 +182,10 @@ export default function VsdToPdfPage() {
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
                     
-                    {/* Page Size */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Page Size
-                      </label>
-                      <select
-                        value={pageSize}
-                        onChange={(e) => setPageSize(e.target.value)}
-                        disabled={processing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100"
-                      >
-                        <option value="A0">A0 (841 × 1189 mm)</option>
-                        <option value="A1">A1 (594 × 841 mm)</option>
-                        <option value="A2">A2 (420 × 594 mm)</option>
-                        <option value="A3">A3 (297 × 420 mm)</option>
-                        <option value="A4">A4 (210 × 297 mm) - Recommended</option>
-                        <option value="A5">A5 (148 × 210 mm)</option>
-                        <option value="Letter">Letter (8.5 × 11 in)</option>
-                        <option value="Tabloid">Tabloid (11 × 17 in)</option>
-                      </select>
-                      <p className="text-xs text-gray-500 mt-1">Choose standard paper size</p>
-                    </div>
-
-                    {/* Orientation */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Orientation
-                      </label>
-                      <div className="flex gap-3">
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="orientation"
-                            value="portrait"
-                            checked={orientation === 'portrait'}
-                            onChange={(e) => setOrientation(e.target.value)}
-                            disabled={processing}
-                            className="w-4 h-4 text-red-500 cursor-pointer"
-                          />
-                          <span className="ml-2 text-sm text-gray-700 cursor-pointer">Portrait</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="orientation"
-                            value="landscape"
-                            checked={orientation === 'landscape'}
-                            onChange={(e) => setOrientation(e.target.value)}
-                            disabled={processing}
-                            className="w-4 h-4 text-red-500 cursor-pointer"
-                          />
-                          <span className="ml-2 text-sm text-gray-700 cursor-pointer">Landscape</span>
-                        </label>
-                      </div>
-                    </div>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Your VSD diagram is rendered to PDF using server-assisted
+                      document conversion.
+                    </p>
 
                     {/* Convert Button */}
                     <button

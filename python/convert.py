@@ -89,12 +89,8 @@ CONVERSION_ROUTES = {
     
     # Document
     ('vsdx', 'pdf'): document_convert,
-    ('vsdx', 'docx'): document_convert,
-    ('vsdx', 'pptx'): document_convert,
     ('vsdx', 'jpg'): document_convert,
     ('vsd', 'pdf'): document_convert,
-    ('vsd', 'docx'): document_convert,
-    ('vsd', 'pptx'): document_convert,
     ('psd', 'jpg'): document_convert,
     ('psd', 'png'): document_convert,
     ('psd', 'svg'): document_convert,
