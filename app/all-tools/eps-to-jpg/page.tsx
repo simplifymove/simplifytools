@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
@@ -41,8 +40,37 @@ export default function EpsToJpgPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/jpeg');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'eps',
+          to_format: 'jpg',
+          options: {
+            dpi: 300,
+          },
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/jpeg') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
     } finally {
@@ -102,7 +130,7 @@ export default function EpsToJpgPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">EPS to JPG Converter</h1>
-                <p className="text-lg text-white/90">Convert EPS vector graphics to JPG format with quality control. Reduce file size while maintaining image quality.</p>
+                <p className="text-lg text-white/90">Convert EPS vector graphics to JPG format with reliable server-assisted rendering for web and digital use.</p>
               </div>
             </div>
           </div>
@@ -169,15 +197,15 @@ export default function EpsToJpgPage() {
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
-                      <span className="text-gray-700">Fast and secure conversion</span>
+                      <span className="text-gray-700">Server-assisted EPS rendering</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
-                      <span className="text-gray-700">No file size limits</span>
+                      <span className="text-gray-700">High-resolution 300 DPI rendering</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
-                      <span className="text-gray-700">Preserves image quality</span>
+                      <span className="text-gray-700">Creates standard JPG output</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
@@ -222,11 +250,11 @@ export default function EpsToJpgPage() {
                 </details>
                 <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
                   <summary className="font-semibold text-gray-900">Does the conversion preserve quality?</summary>
-                  <p className="mt-2 text-gray-700">Our conversion tool maintains high quality during the conversion process. The resulting JPG file will be clear and suitable for web and digital use.</p>
+                  <p className="mt-2 text-gray-700">EPS vector artwork is rendered to a JPG image at high resolution. Because JPG is a raster format, the result no longer has the unlimited scalability of the original EPS file.</p>
                 </details>
                 <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
                   <summary className="font-semibold text-gray-900">Is my file secure?</summary>
-                  <p className="mt-2 text-gray-700">Yes, we process conversions on secure servers. Files are not stored or shared, and your privacy is completely protected.</p>
+                  <p className="mt-2 text-gray-700">Your EPS file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</p>
                 </details>
               </div>
             </div>

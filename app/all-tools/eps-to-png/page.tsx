@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
@@ -41,8 +40,37 @@ export default function EpsToPngPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'eps',
+          to_format: 'png',
+          options: {
+            dpi: 300,
+          },
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/png') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
     } finally {
@@ -164,11 +192,11 @@ export default function EpsToPngPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
+                      <li>• Server-assisted EPS rendering</li>
                       <li>• Converts vector to raster format</li>
                       <li>• Perfect for web sharing</li>
-                      <li>• No file size limits</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• High-resolution 300 DPI rendering</li>
+                      <li>• File is processed only as needed for conversion</li>
                     </ul>
                   </div>
                 </div>
