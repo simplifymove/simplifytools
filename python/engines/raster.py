@@ -56,7 +56,22 @@ def convert_raster(
         # Convert RGBA to RGB if saving as JPG
         if to_format.lower() in ['jpg', 'jpeg'] and img.mode in ['RGBA', 'LA', 'P']:
             logger.info("Converting RGBA → RGB for JPG output")
-            bg_color = tuple(int(x.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+            bg_color_hex = str(options.get('bg_color', '#FFFFFF')).strip()
+            if not (
+                len(bg_color_hex) == 7
+                and bg_color_hex.startswith('#')
+                and all(c in '0123456789abcdefABCDEF' for c in bg_color_hex[1:])
+            ):
+                logger.warning(
+                    "Invalid bg_color %r; falling back to #FFFFFF",
+                    bg_color_hex,
+                )
+                bg_color_hex = '#FFFFFF'
+
+            bg_color = tuple(
+                int(bg_color_hex[i:i + 2], 16)
+                for i in (1, 3, 5)
+            )
             bg = Image.new('RGB', img.size, bg_color)
             if img.mode == 'P':
                 img = img.convert('RGBA')

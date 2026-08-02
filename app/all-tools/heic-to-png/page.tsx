@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
@@ -40,8 +39,35 @@ export default function HeicToPngPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'heic',
+          to_format: 'png',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/png') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -267,7 +293,7 @@ export default function HeicToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen locally in your browser. Your HEIC files are never uploaded to any server and remain completely private.</p>
+              <p className="text-gray-700">Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the PNG output.</p>
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I edit the PNG after conversion?</h3>
@@ -320,7 +346,7 @@ export default function HeicToPngPage() {
               "name": "Is the conversion secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen locally in your browser. Your HEIC files are never uploaded to any server and remain completely private."
+                "text": "Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the PNG output."
               }
             },
             {

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
@@ -40,8 +39,35 @@ export default function HeicToJpgPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/jpeg');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'heic',
+          to_format: 'jpg',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/jpeg') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -96,7 +122,7 @@ export default function HeicToJpgPage() {
               🖼️ HEIC to JPG Converter
             </h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert HEIC images from your iPhone to JPG format instantly. Free, fast, and no uploads to servers.
+              Convert HEIC images from your iPhone to JPG format with reliable server-assisted processing.
             </p>
           </div>
         </div>
@@ -188,7 +214,7 @@ export default function HeicToJpgPage() {
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Click Convert to JPG</h3>
-                  <p className="text-gray-600 mt-2">Press the "Convert to JPG" button. The conversion happens instantly in your browser with no server upload.</p>
+                  <p className="text-gray-600 mt-2">Press the "Convert to JPG" button. Your HEIC file is securely processed to create a compatible JPG image.</p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -270,7 +296,7 @@ export default function HeicToJpgPage() {
                   <span>Is my image data secure?</span>
                   <span className="group-open:rotate-180 transition">▼</span>
                 </summary>
-                <p className="text-gray-600 mt-4">Yes! All conversion happens locally in your browser. Your images are never uploaded to our servers or stored anywhere. Your privacy is completely protected.</p>
+                <p className="text-gray-600 mt-4">Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</p>
               </details>
               <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
                 <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
