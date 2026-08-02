@@ -104,8 +104,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'bmp',
     to: 'png',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
   {

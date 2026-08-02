@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
@@ -40,8 +39,36 @@ export default function BmpToPngPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'bmp',
+          to_format: 'png',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Conversion failed');
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/png') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -101,7 +128,7 @@ export default function BmpToPngPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">BMP to PNG Converter</h1>
-              <p className="text-lg text-white/90">Convert BMP images to PNG format with transparency support and lossless quality.</p>
+              <p className="text-lg text-white/90">Convert BMP images to PNG format with lossless PNG compression and broad compatibility.</p>
             </div>
           </div>
         </div>
@@ -193,7 +220,7 @@ export default function BmpToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the converted image lose quality?</h3>
-              <p className="text-gray-700">No. Our converter uses lossless conversion, meaning the image quality remains identical to the original. PNG's compression is lossless, so you retain all the original image data while reducing file size.</p>
+              <p className="text-gray-700">PNG uses lossless image compression, so the conversion avoids the lossy compression used by formats such as JPG. The resulting PNG preserves the rendered pixel content supported by the source BMP.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple BMP files at once?</h3>
@@ -205,7 +232,7 @@ export default function BmpToPngPage() {
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my image kept private and secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen in your browser locally. Your images are never uploaded to our servers or stored anywhere. Your files remain completely private and secure.</p>
+              <p className="text-gray-700">Your BMP file is uploaded for server-assisted conversion and processed only as needed to create the PNG output.</p>
             </div>
           </div>
         </div>
@@ -238,7 +265,7 @@ export default function BmpToPngPage() {
               "name": "Will the converted image lose quality?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. Our converter uses lossless conversion, meaning the image quality remains identical to the original. PNG's compression is lossless, so you retain all the original image data while reducing file size."
+                "text": "PNG uses lossless image compression, so the conversion avoids the lossy compression used by formats such as JPG. The resulting PNG preserves the rendered pixel content supported by the source BMP."
               }
             },
             {
@@ -262,7 +289,7 @@ export default function BmpToPngPage() {
               "name": "Is my image kept private and secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen in your browser locally. Your images are never uploaded to our servers or stored anywhere. Your files remain completely private and secure."
+                "text": "Your BMP file is uploaded for server-assisted conversion and processed only as needed to create the PNG output."
               }
             }
           ]
@@ -284,7 +311,7 @@ export default function BmpToPngPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Convert images with lossless PNG compression</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

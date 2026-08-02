@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function BmpToJpgPage() {
@@ -38,8 +37,36 @@ export default function BmpToJpgPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/jpeg');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'bmp',
+          to_format: 'jpg',
+          options: { quality: 85 },
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Conversion failed');
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/jpeg') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -97,7 +124,7 @@ export default function BmpToJpgPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">BMP to JPG Converter</h1>
-              <p className="text-lg text-white/90">Convert BMP images to JPG format with lossless quality.</p>
+              <p className="text-lg text-white/90">Convert BMP images to JPG format with efficient compression for web and everyday use.</p>
             </div>
           </div>
         </div>
