@@ -65,6 +65,7 @@ CONVERSION_ROUTES = {
     # Raster to Vector
     ('jpg', 'svg'): vector_trace,
     ('png', 'svg'): vector_trace,
+    ('png', 'eps'): vector_trace,
     ('bmp', 'svg'): vector_trace,
     ('tiff', 'svg'): vector_trace,
     

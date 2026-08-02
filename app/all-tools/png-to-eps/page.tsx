@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useRouter } from 'next/navigation';
@@ -41,8 +40,35 @@ export default function PngToEpsPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'png',
+          to_format: 'eps',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || 'EPS conversion failed');
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'application/postscript') {
+        throw new Error(
+          `Expected EPS output but received ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
     } finally {
@@ -100,7 +126,7 @@ export default function PngToEpsPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to EPS Converter</h1>
-                <p className="text-lg text-white/90">Convert PNG images to EPS vector format for professional printing and scalable graphics.</p>
+                <p className="text-lg text-white/90">Trace PNG artwork into EPS vector paths. Best results come from simple, high-contrast graphics.</p>
               </div>
             </div>
           </div>
@@ -162,11 +188,11 @@ export default function PngToEpsPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Convert to scalable vector format</li>
-                      <li>• Perfect for professional printing</li>
-                      <li>• No file size limits</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Server-assisted vector tracing</li>
+                      <li>• Creates EPS vector paths from raster shapes</li>
+                      <li>• Best suited to logos, icons, and high-contrast artwork</li>
+                      <li>• Complex photographs may not trace cleanly</li>
+                      <li>• Files are temporarily processed for conversion</li>
                     </ul>
                   </div>
                 </div>

@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useRouter } from 'next/navigation';
@@ -43,10 +42,38 @@ export default function TiffToSvgPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/webp', {
-        quality: 80,
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'tiff',
+          to_format: 'svg',
+          options: {
+            corner_threshold: cornerThreshold,
+            curve_optimize: curveOptimize,
+          },
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
       });
-      setResult(result.blob);
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || 'SVG conversion failed');
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/svg+xml') {
+        throw new Error(
+          `Expected SVG output but received ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
     } finally {
@@ -104,7 +131,7 @@ export default function TiffToSvgPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">TIFF to SVG Converter</h1>
-                <p className="text-lg text-white/90">Convert TIFF images to scalable vector graphics (SVG) for infinite scaling without quality loss.</p>
+                <p className="text-lg text-white/90">Trace TIFF artwork into SVG vector paths for scalable use. High-contrast source images produce the clearest traces.</p>
               </div>
             </div>
           </div>
@@ -203,10 +230,10 @@ export default function TiffToSvgPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Creates scalable vector graphics</li>
+                      <li>• Server-assisted vector tracing</li>
+                      <li>• Creates SVG paths from raster shapes</li>
                       <li>• Supports TIFF and TIF formats</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Files are temporarily processed for conversion</li>
                     </ul>
                   </div>
                 </div>

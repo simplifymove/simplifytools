@@ -181,6 +181,14 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     extensions: ['.gif'],
     mimeTypes: ['image/gif'],
   },
+  'png-to-eps': {
+    extensions: ['.eps'],
+    mimeTypes: ['application/postscript'],
+  },
+  'tiff-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
   'jpg-to-png': {
     extensions: ['.png'],
     mimeTypes: ['image/png'],
@@ -330,6 +338,17 @@ function hasValidSignature(buffer: Buffer, extension: string): boolean {
     return (
       buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
       buffer.subarray(8, 12).toString('ascii') === 'WEBP'
+    );
+  }
+
+  if (extension === '.eps') {
+    const prefix = buffer
+      .subarray(0, Math.min(buffer.length, 256))
+      .toString('ascii');
+
+    return (
+      prefix.startsWith('%!PS-Adobe-') &&
+      prefix.includes('EPSF-')
     );
   }
 
