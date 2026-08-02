@@ -311,15 +311,15 @@ export default function JpgToPngPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
-              <div><h3 className="font-semibold text-gray-900">Transparency Support</h3><p className="text-gray-600 text-sm">PNG supports transparent backgrounds, perfect for overlays and graphics</p></div>
+              <div><h3 className="font-semibold text-gray-900">Transparency Support</h3><p className="text-gray-600 text-sm">PNG supports transparency when transparent pixels are present in the source; converting an opaque JPG does not create transparency</p></div>
             </div>
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
-              <div><h3 className="font-semibold text-gray-900">Lossless Compression</h3><p className="text-gray-600 text-sm">No quality loss when saving, ideal for archiving and editing</p></div>
+              <div><h3 className="font-semibold text-gray-900">Lossless Compression</h3><p className="text-gray-600 text-sm">PNG uses lossless compression for the newly encoded output, but it cannot restore detail already lost in the source JPG</p></div>
             </div>
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
-              <div><h3 className="font-semibold text-gray-900">Better for Graphics</h3><p className="text-gray-600 text-sm">Superior quality for logos, illustrations, and text-heavy images</p></div>
+              <div><h3 className="font-semibold text-gray-900">Better for Graphics</h3><p className="text-gray-600 text-sm">PNG is commonly used for logos, illustrations, screenshots, and text-heavy graphics</p></div>
             </div>
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
@@ -334,10 +334,10 @@ export default function JpgToPngPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Common Use Cases for JPG to PNG Conversion</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Converting logo files to transparent PNG for web design</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Creating stickers or graphics with transparent backgrounds</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Preparing product images for e-commerce with transparency</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Archiving images without quality loss</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Converting JPG artwork to PNG for workflows that require PNG format</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Preparing graphics for applications that prefer PNG format</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Preparing product images for systems that require PNG files</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Re-encoding images as PNG without adding further lossy compression</li>
             <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Using images as overlays in photo editing software</li>
           </ul>
         </div>
@@ -354,7 +354,7 @@ export default function JpgToPngPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, PNG uses lossless compression. Your image quality will remain the same as the original JPG. The only change is the file format and transparency support.</p>
+              <p className="text-gray-700 mt-3 text-sm">PNG uses lossless compression for the converted output, so the PNG encoding does not add JPEG-style lossy compression. However, detail already lost in the original JPG cannot be restored, and an opaque JPG does not gain transparency.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -372,7 +372,7 @@ export default function JpgToPngPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, conversion happens in your browser. Files are not uploaded to our servers and are automatically deleted after download.</p>
+              <p className="text-gray-700 mt-3 text-sm">The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -381,7 +381,7 @@ export default function JpgToPngPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">PNG uses lossless compression while JPG uses lossy compression. This means PNG may be larger, but preserves every pixel exactly. For photos, JPG is usually smaller; for graphics, PNG is better.</p>
+              <p className="text-gray-700 mt-3 text-sm">PNG uses lossless compression while JPG uses lossy compression. Re-encoding a JPG as PNG avoids additional JPEG-style compression, but it does not recover information already lost in the JPG source.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -415,7 +415,7 @@ export default function JpgToPngPage() {
             "name": "Will converting JPG to PNG reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No, PNG uses lossless compression. Your image quality will remain the same as the original JPG. The only change is the file format and transparency support."
+              "text": "PNG uses lossless compression for the converted output, so the PNG encoding does not add JPEG-style lossy compression. However, detail already lost in the original JPG cannot be restored, and an opaque JPG does not gain transparency."
             }
           },
           {
@@ -431,7 +431,7 @@ export default function JpgToPngPage() {
             "name": "Are my files stored on your servers?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No, conversion happens in your browser. Files are not uploaded to our servers and are automatically deleted after download."
+              "text": "The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared."
             }
           },
           {
@@ -439,7 +439,7 @@ export default function JpgToPngPage() {
             "name": "Why would PNG files be larger than JPG files?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "PNG uses lossless compression while JPG uses lossy compression. This means PNG may be larger, but preserves every pixel exactly. For photos, JPG is usually smaller; for graphics, PNG is better."
+              "text": "PNG uses lossless compression while JPG uses lossy compression. Re-encoding a JPG as PNG avoids additional JPEG-style compression, but it does not recover information already lost in the JPG source."
             }
           },
           {

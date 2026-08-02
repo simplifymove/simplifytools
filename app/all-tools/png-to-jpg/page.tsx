@@ -442,7 +442,7 @@ export default function PngToJpgPage() {
               <span className="text-gray-500 group-open:hidden">+</span>
               <span className="text-gray-500 hidden group-open:inline">−</span>
             </summary>
-            <p className="text-gray-700 mt-3 text-sm">JPG doesn't support transparency. Our converter fills transparent areas with white by default. You can upload a background color if needed.</p>
+            <p className="text-gray-700 mt-3 text-sm">JPG does not support transparency. Transparent or partially transparent pixels must be flattened when the browser creates the JPEG output, so transparency is not preserved.</p>
           </details>
 
           <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -469,7 +469,7 @@ export default function PngToJpgPage() {
               <span className="text-gray-500 group-open:hidden">+</span>
               <span className="text-gray-500 hidden group-open:inline">−</span>
             </summary>
-            <p className="text-gray-700 mt-3 text-sm">No. Conversion happens entirely in your browser. Files are never uploaded to our servers and are automatically deleted after download.</p>
+            <p className="text-gray-700 mt-3 text-sm">The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared.</p>
           </details>
 
           <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -503,7 +503,7 @@ export default function PngToJpgPage() {
           "name": "What happens to transparency when converting PNG to JPG?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "JPG doesn't support transparency. Our converter fills transparent areas with white by default. You can upload a background color if needed."
+            "text": "JPG does not support transparency. Transparent or partially transparent pixels must be flattened when the browser creates the JPEG output, so transparency is not preserved."
           }
         },
         {
@@ -527,7 +527,7 @@ export default function PngToJpgPage() {
           "name": "Are my files stored or shared?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Conversion happens entirely in your browser. Files are never uploaded to our servers and are automatically deleted after download."
+            "text": "The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared."
           }
         },
         {
@@ -556,7 +556,7 @@ export default function PngToJpgPage() {
         <div className="grid md:grid-cols-2 gap-4">
           <Link href="/all-tools/jpg-to-png" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
             <span className="text-orange-600 font-bold">→</span>
-            <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Add transparency support</p></div>
+            <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Convert JPG to PNG format</p></div>
           </Link>
           <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
             <span className="text-orange-600 font-bold">→</span>

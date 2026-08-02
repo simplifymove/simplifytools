@@ -24,9 +24,9 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     to: 'png',
     engine: 'raster',
     defaultOptions: {},
-    supportedOptions: ['resize'],
+    supportedOptions: [],
     maxFileSize: 100,
-    description: 'JPG to PNG with transparency support',
+    description: 'Convert JPG images to PNG format',
   },
   {
     id: 'jpg-to-webp',
@@ -35,7 +35,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     to: 'webp',
     engine: 'raster',
     defaultOptions: { quality: 85 },
-    supportedOptions: ['quality', 'resize'],
+    supportedOptions: ['quality'],
     maxFileSize: 100,
   },
   {
@@ -44,8 +44,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'png',
     to: 'jpg',
     engine: 'raster',
-    defaultOptions: { quality: 85, bg_color: '#FFFFFF' },
-    supportedOptions: ['quality', 'resize', 'bg_color'],
+    defaultOptions: { quality: 90 },
+    supportedOptions: ['quality'],
     maxFileSize: 100,
   },
   {
@@ -55,7 +55,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     to: 'webp',
     engine: 'raster',
     defaultOptions: { quality: 85 },
-    supportedOptions: ['quality', 'resize'],
+    supportedOptions: ['quality'],
     maxFileSize: 100,
   },
   {
@@ -65,7 +65,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     to: 'jpg',
     engine: 'raster',
     defaultOptions: { quality: 85 },
-    supportedOptions: ['quality', 'resize'],
+    supportedOptions: ['quality'],
     maxFileSize: 100,
   },
   {
@@ -75,7 +75,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     to: 'png',
     engine: 'raster',
     defaultOptions: {},
-    supportedOptions: ['resize'],
+    supportedOptions: [],
     maxFileSize: 100,
   },
   {

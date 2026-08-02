@@ -191,9 +191,9 @@ export default function WebpToJpgPage() {
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Instant conversion in your browser</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Perfect for older system compatibility</li>
+                      <li>• Useful for older system compatibility</li>
                       <li>• Supports WebP format</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Conversion processing runs in your browser</li>
                     </ul>
                   </div>
                 </div>
@@ -291,7 +291,7 @@ export default function WebpToJpgPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes. Conversion happens entirely in your browser. Images are never uploaded to servers or stored anywhere. Complete privacy guaranteed.</p>
+              <p className="text-gray-700 mt-3 text-sm">The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -348,7 +348,7 @@ export default function WebpToJpgPage() {
             "name": "Is the converter secure and private?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. Conversion happens in your browser. Images never uploaded to servers. Complete privacy guaranteed."
+              "text": "The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared."
             }
           },
           {
@@ -373,7 +373,7 @@ export default function WebpToJpgPage() {
             </Link>
             <Link href="/all-tools/jpg-to-png" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
-              <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Add transparency to images</p></div>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Convert JPG to PNG format</p></div>
             </Link>
             <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>

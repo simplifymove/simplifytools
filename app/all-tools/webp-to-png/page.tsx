@@ -97,7 +97,7 @@ export default function WebpToPngPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">WebP to PNG Converter</h1>
-              <p className="text-lg text-white/90">Convert WebP images to PNG format with transparency support and lossless quality.</p>
+              <p className="text-lg text-white/90">Convert WebP images to PNG format with lossless PNG encoding and support for transparency present in the source image.</p>
             </div>
           </div>
         </div>

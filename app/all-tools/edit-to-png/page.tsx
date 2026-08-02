@@ -179,7 +179,7 @@ export default function EditToPngPage() {
                       <li>• Lossless compression</li>
                       <li>• Supports transparency</li>
                       <li>• Best for web</li>
-                      <li>• Perfect quality</li>
+                      <li>• Lossless PNG output encoding</li>
                     </ul>
                   </div>
                 </div>
