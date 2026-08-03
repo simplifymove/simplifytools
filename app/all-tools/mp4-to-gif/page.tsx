@@ -50,7 +50,7 @@ export default function Mp4ToGifPage() {
 
     setProcessing(true);
     setError(null);
-    setConversionTip('Converting video to GIF... This may take a moment depending on video length and quality.');
+    setConversionTip('Converting video to GIF... This may take a moment depending on video length and resolution.');
     
     try {
       const formData = new FormData();
@@ -61,7 +61,6 @@ export default function Mp4ToGifPage() {
         options: {
           fps: 10,
           scale: 480,
-          quality: 85,
         },
       }));
 
@@ -76,6 +75,13 @@ export default function Mp4ToGifPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/gif') {
+        throw new Error(
+          `Expected GIF output but received ${blob.type || 'unknown'}`,
+        );
+      }
+
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setConversionTip('✓ Conversion complete! Your GIF is ready to download.');
@@ -301,11 +307,11 @@ export default function Mp4ToGifPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">What's the file size of the resulting GIF?</h3>
-                <p className="text-gray-600">GIF file sizes vary based on video length, resolution, and content. A 10-second HD video typically creates a 10-50MB GIF. We optimize for balance between quality and file size to keep GIFs manageable.</p>
+                <p className="text-gray-600">GIF file sizes vary based on video duration, frame rate, dimensions, and visual complexity. Animated GIFs can become significantly larger than the source video.</p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Can I customize the GIF quality?</h3>
-                <p className="text-gray-600">We automatically optimize GIFs with 10 frames per second and scaled dimensions for the best balance. Contact us if you need custom quality settings for specific use cases.</p>
+                <h3 className="font-semibold text-gray-900 mb-2">How is the GIF generated?</h3>
+                <p className="text-gray-600">The converter generates the GIF at 10 frames per second and limits the output width while preserving the source aspect ratio. FFmpeg generates and applies a color palette for the animation.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">What video formats are supported?</h3>

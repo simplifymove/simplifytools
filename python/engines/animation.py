@@ -91,91 +91,131 @@ def convert_mp4_to_gif(
     scale: int = 512
 ) -> bool:
     """
-    Convert MP4 to GIF using imageio + FFmpeg backend
-    
+    Convert MP4 to animated GIF using FFmpeg with a generated palette.
+
     Args:
         input_file: Path to MP4
         output_file: Path to output GIF
         fps: Frames per second for GIF
-        scale: Max width/height
-    
-    Returns:
-        bool: Success status
+        scale: Maximum output width while preserving aspect ratio
     """
+    palette_file = output_file.replace('.gif', '_palette.png')
+
     try:
-        logger.info(f"[Animation] Converting MP4 → GIF at {fps} FPS")
-        
+        logger.info(
+            f"[Animation] Converting MP4 → GIF at {fps} FPS, max width {scale}px"
+        )
+
         if not validate_file_exists(input_file):
             return False
-        
+
         output_dir = os.path.dirname(output_file)
         if output_dir:
             os.makedirs(output_dir, exist_ok=True)
-        
-        # Read video frames with fps limit
-        logger.info(f"Reading MP4 frames at {fps} FPS")
-        reader = imageio.get_reader(input_file, 'ffmpeg')
-        
-        frames = []
-        import numpy as np
-        
-        for frame in reader:
-            # Downscale if needed using PIL
-            if scale and (frame.shape[0] > scale or frame.shape[1] > scale):
-                img = Image.fromarray(frame)
-                img.thumbnail((scale, scale), Image.Resampling.LANCZOS)
-                frame = np.array(img)
-            frames.append(frame)
-        
-        logger.info(f"✓ Read {len(frames)} frames from MP4")
-        
-        # Write as GIF using FFmpeg for optimal palette
-        logger.info(f"Writing GIF: {fps} fps, {len(frames)} frames")
-        
-        # Generate palette first
-        palette_file = output_file.replace('.gif', '_palette.png')
+
+        # Keep values within practical bounds.
+        fps = max(1, min(30, int(fps)))
+        scale = max(64, min(1920, int(scale)))
+
+        # GIF dimensions must be even for predictable FFmpeg scaling.
+        scale_filter = (
+            f"fps={fps},"
+            f"scale='min({scale},iw)':-2:flags=lanczos"
+        )
+
+        # Generate an optimized palette from the same scaled frame stream
+        # that will be used for the final GIF.
         cmd_palette = [
             FFMPEG_PATH,
             '-i', input_file,
-            '-vf', rf'fps={fps},scale=min(iw\,-4):min(ih\,-4):flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer',
-            '-f', 'png',
-            '-y', palette_file
+            '-vf',
+            (
+                f"{scale_filter},"
+                "palettegen=max_colors=256:stats_mode=diff"
+            ),
+            '-y',
+            palette_file,
         ]
-        
-        result = subprocess.run(cmd_palette, capture_output=True, text=True, timeout=300)
+
+        result = subprocess.run(
+            cmd_palette,
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+
         if result.returncode != 0:
-            raise RuntimeError(f"Palette generation failed: {result.stderr}")
-        
-        # Use palette to create GIF
+            raise RuntimeError(
+                f"Palette generation failed: {result.stderr}"
+            )
+
         cmd_gif = [
             FFMPEG_PATH,
             '-i', input_file,
             '-i', palette_file,
-            '-vf', rf'fps={fps},scale=min(iw\,-4):min(ih\,-4):flags=lanczos[x];[x][1:v]paletteuse=dither=bayer',
+            '-lavfi',
+            (
+                f"{scale_filter}[x];"
+                "[x][1:v]paletteuse=dither=bayer:bayer_scale=5"
+            ),
             '-f', 'gif',
-            '-y', output_file
+            '-y',
+            output_file,
         ]
-        
-        result = subprocess.run(cmd_gif, capture_output=True, text=True, timeout=300)
-        
-        # Cleanup palette
-        if os.path.exists(palette_file):
-            os.remove(palette_file)
-        
+
+        result = subprocess.run(
+            cmd_gif,
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+
         if result.returncode != 0:
-            raise RuntimeError(f"GIF creation failed: {result.stderr}")
-        
-        log_execution('AnimationEngine', 'mp4', 'gif', input_file, output_file, True)
-        logger.info(f"✓ MP4 to GIF conversion successful")
+            raise RuntimeError(
+                f"GIF creation failed: {result.stderr}"
+            )
+
+        if (
+            not os.path.exists(output_file)
+            or os.path.getsize(output_file) == 0
+        ):
+            raise RuntimeError(
+                "FFmpeg did not create a valid GIF output file"
+            )
+
+        with open(output_file, 'rb') as output:
+            signature = output.read(6)
+
+        if signature not in (b'GIF87a', b'GIF89a'):
+            raise RuntimeError(
+                "Generated output does not contain a valid GIF signature"
+            )
+
+        log_execution(
+            'AnimationEngine',
+            'mp4',
+            'gif',
+            input_file,
+            output_file,
+            True,
+        )
+
+        logger.info("✓ MP4 to GIF conversion successful")
         return True
-        
-    except ImportError:
-        logger.error("imageio not installed. Install with: pip install imageio-ffmpeg imageio")
-        raise RuntimeError("Animation conversion not available - missing imageio")
+
     except Exception as e:
-        logger.error(f"MP4 to GIF conversion failed: {e}", exc_info=True)
+        logger.error(
+            f"MP4 to GIF conversion failed: {e}",
+            exc_info=True,
+        )
         safe_remove(output_file)
-        raise RuntimeError(f"MP4 to GIF conversion failed: {str(e)}")
+        raise RuntimeError(
+            f"MP4 to GIF conversion failed: {str(e)}"
+        )
+
+    finally:
+        if os.path.exists(palette_file):
+            safe_remove(palette_file)
 
 
 def animation_convert(

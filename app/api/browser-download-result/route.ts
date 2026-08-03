@@ -201,6 +201,10 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     extensions: ['.gif'],
     mimeTypes: ['image/gif'],
   },
+  'mp4-to-gif': {
+    extensions: ['.gif'],
+    mimeTypes: ['image/gif'],
+  },
   'png-to-eps': {
     extensions: ['.eps'],
     mimeTypes: ['application/postscript'],
