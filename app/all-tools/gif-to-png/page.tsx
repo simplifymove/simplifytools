@@ -262,7 +262,7 @@ export default function GifToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">What happens to GIF transparency?</h3>
-              <p className="text-gray-700">PNG preserves GIF transparency perfectly. If your GIF has a transparent background, it will remain transparent in the PNG file. PNG actually provides better transparency support than GIF.</p>
+              <p className="text-gray-700">PNG supports alpha transparency. When the browser decodes transparency from the selected GIF frame, the Canvas PNG export can preserve those transparent pixels. Animation and GIF-specific metadata are not preserved.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert GIFs with text or graphics?</h3>
@@ -303,7 +303,7 @@ export default function GifToPngPage() {
               "name": "What happens to GIF transparency?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG preserves GIF transparency perfectly. If your GIF has a transparent background, it will remain transparent in the PNG file. PNG actually provides better transparency support than GIF."
+                "text": "PNG supports alpha transparency. When the browser decodes transparency from the selected GIF frame, the Canvas PNG export can preserve those transparent pixels. Animation and GIF-specific metadata are not preserved."
               }
             },
             {
