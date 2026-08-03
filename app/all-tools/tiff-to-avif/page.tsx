@@ -14,7 +14,6 @@ export default function TiffToAvifPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [quality, setQuality] = useState('80');
-  const [speed, setSpeed] = useState('5');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
@@ -40,12 +39,17 @@ export default function TiffToAvifPage() {
     setProcessing(true);
     try {
       const formData = new FormData();
-      formData.append('tool', 'tiff-to-avif');
-      formData.append('file', file);
-      formData.append('options', JSON.stringify({ 
-        quality: parseInt(quality),
-        speed: parseInt(speed)
-      }));
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'tiff',
+          to_format: 'avif',
+          options: {
+            quality: parseInt(quality),
+          },
+        }),
+      );
 
       const response = await fetch('/api/convert', {
         method: 'POST',
@@ -57,6 +61,13 @@ export default function TiffToAvifPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/avif') {
+        throw new Error(
+          `Unexpected AVIF output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
       const url = URL.createObjectURL(blob);
       setResult(url);
       setResultFileName(`converted.avif`);
@@ -155,24 +166,6 @@ export default function TiffToAvifPage() {
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
-                    </div>
-
-                    {/* Speed */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Compression Speed
-                      </label>
-                      <select
-                        value={speed}
-                        onChange={(e) => setSpeed(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                      >
-                        <option value="0">Slowest (Best Quality)</option>
-                        <option value="3">Slow</option>
-                        <option value="5">Normal</option>
-                        <option value="8">Fast</option>
-                        <option value="10">Fastest</option>
-                      </select>
                     </div>
 
                     {/* Convert Button */}

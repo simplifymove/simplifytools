@@ -185,6 +185,14 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     extensions: ['.avif'],
     mimeTypes: ['image/avif'],
   },
+  'heic-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'tiff-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
   'jpg-to-gif': {
     extensions: ['.gif'],
     mimeTypes: ['image/gif'],
