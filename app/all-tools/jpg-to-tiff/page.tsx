@@ -51,9 +51,7 @@ export default function JpgToTiffPage() {
       formData.append('config', JSON.stringify({
         from_format: 'jpg',
         to_format: 'tiff',
-        options: {
-          quality: 100,
-        },
+        options: {},
       }));
 
       const response = await fetch('/api/convert', {
@@ -74,6 +72,12 @@ export default function JpgToTiffPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/tiff') {
+        throw new Error(
+          `Unexpected TIFF output type: ${blob.type || 'unknown'}`,
+        );
+      }
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
     } catch (error) {
@@ -131,7 +135,7 @@ export default function JpgToTiffPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to TIFF Converter</h1>
-              <p className="text-lg text-white/90">Convert JPG images to TIFF format with lossless compression. Perfect for archival and professional printing.</p>
+              <p className="text-lg text-white/90">Convert JPG images to TIFF format using lossless TIFF compression for professional and archival workflows.</p>
             </div>
           </div>
         </div>
@@ -243,7 +247,7 @@ export default function JpgToTiffPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Will my image lose quality?</h3>
-                <p className="text-gray-600">No! Our converter maintains 100% quality during conversion. TIFF supports lossless compression, so your image will retain all original details from the JPG source.</p>
+                <p className="text-gray-600">The TIFF output uses lossless compression, so the conversion does not introduce additional lossy TIFF compression. However, details already discarded by the original JPG compression cannot be restored.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>

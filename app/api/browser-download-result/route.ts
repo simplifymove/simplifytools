@@ -257,6 +257,18 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     extensions: ['.png'],
     mimeTypes: ['image/png'],
   },
+  'jpg-to-tiff': {
+    extensions: ['.tiff', '.tif'],
+    mimeTypes: ['image/tiff'],
+  },
+  'png-to-tiff': {
+    extensions: ['.tiff', '.tif'],
+    mimeTypes: ['image/tiff'],
+  },
+  'webp-to-tiff': {
+    extensions: ['.tiff', '.tif'],
+    mimeTypes: ['image/tiff'],
+  },
   'tiff-to-jpg': {
     extensions: ['.jpg', '.jpeg'],
     mimeTypes: ['image/jpeg'],

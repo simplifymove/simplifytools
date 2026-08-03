@@ -102,6 +102,11 @@ def convert_raster(
             save_kwargs = {'quality': quality}
         elif to_format.lower() == 'png':
             save_kwargs = {'optimize': True}
+        elif to_format.lower() in ['tiff', 'tif']:
+            # Use explicit lossless TIFF compression.
+            # Pillow's JPEG-style quality option does not control
+            # TIFF output when using lossless compression.
+            save_kwargs = {'compression': 'tiff_lzw'}
         
         # Ensure output directory exists
         output_dir = os.path.dirname(output_file)

@@ -45,9 +45,7 @@ export default function PngToTiffPage() {
       formData.append('config', JSON.stringify({
         from_format: 'png',
         to_format: 'tiff',
-        options: {
-          quality: 100,
-        },
+        options: {},
       }));
 
       const response = await fetch('/api/convert', {
@@ -61,6 +59,12 @@ export default function PngToTiffPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/tiff') {
+        throw new Error(
+          `Unexpected TIFF output type: ${blob.type || 'unknown'}`,
+        );
+      }
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
     } catch (error) {
@@ -225,7 +229,7 @@ export default function PngToTiffPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Will my image lose quality?</h3>
-                  <p className="text-gray-600">No! Our converter maintains 100% quality during conversion. TIFF supports lossless compression, so your image will retain all original details from the PNG source, including transparency.</p>
+                  <p className="text-gray-600">The TIFF output uses lossless compression. Image data supported by both formats is preserved without introducing lossy TIFF compression, although metadata or format-specific features may differ.</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
@@ -233,7 +237,7 @@ export default function PngToTiffPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">How is PNG to TIFF different from other conversions?</h3>
-                  <p className="text-gray-600">PNG to TIFF conversion preserves the PNG's transparency information and quality. Unlike JPG to TIFF, this maintains any transparency from your original PNG, making it ideal for images with transparent backgrounds.</p>
+                  <p className="text-gray-600">PNG images with transparency can be represented in TIFF when supported by the source image mode and conversion pipeline. Format-specific metadata or features may not transfer identically.</p>
                 </div>
               </div>
             </div>

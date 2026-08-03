@@ -134,8 +134,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'jpg',
     to: 'tiff',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
   {
@@ -144,8 +144,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'png',
     to: 'tiff',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
   {
@@ -164,8 +164,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'webp',
     to: 'tiff',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
 
