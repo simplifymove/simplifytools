@@ -285,6 +285,10 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     extensions: ['.png'],
     mimeTypes: ['image/png'],
   },
+  'eps-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
   'vsdx-to-jpg': {
     extensions: ['.jpg', '.jpeg'],
     mimeTypes: ['image/jpeg'],

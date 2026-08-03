@@ -50,9 +50,7 @@ export default function EpsToSvgPage() {
       formData.append('config', JSON.stringify({
         from_format: 'eps',
         to_format: 'svg',
-        options: {
-          quality: 100,
-        },
+        options: {},
       }));
 
       const response = await fetch('/api/convert', {
@@ -66,6 +64,13 @@ export default function EpsToSvgPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/svg+xml') {
+        throw new Error(
+          `Unexpected SVG output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setConversionTip('✓ Conversion complete! Your SVG is ready to download.');
@@ -110,7 +115,7 @@ export default function EpsToSvgPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">EPS to SVG Converter</h1>
-                <p className="text-lg text-white/90">Convert EPS vector files to scalable SVG format. Perfect for logos, illustrations, and professional graphics that need universal compatibility.</p>
+                <p className="text-lg text-white/90">Convert EPS vector files to SVG format for web and digital workflows. Results depend on the features used in the source EPS.</p>
               </div>
             </div>
           </div>
@@ -174,7 +179,7 @@ export default function EpsToSvgPage() {
                   {file && (
                     <div className="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
                       <p className="text-sm text-gray-700"><strong>Status:</strong> Ready to convert</p>
-                      <p className="text-xs text-gray-600 mt-2">Your EPS file will be converted to SVG format with full quality preservation.</p>
+                      <p className="text-xs text-gray-600 mt-2">Your EPS file will be converted to SVG vector format using server-side vector conversion.</p>
                     </div>
                   )}
 
@@ -225,7 +230,7 @@ export default function EpsToSvgPage() {
                       <strong>💡 SVG Benefits:</strong>
                     </p>
                     <ul className="text-xs text-indigo-700 space-y-1">
-                      <li>• Infinitely scalable without quality loss</li>
+                      <li>• Vector output can scale without raster pixelation</li>
                       <li>• Smaller file sizes than EPS</li>
                       <li>• Compatible with all modern browsers</li>
                       <li>• Easy to edit and customize</li>
@@ -258,7 +263,7 @@ export default function EpsToSvgPage() {
                     <span className="text-lg">→</span> Why Convert to SVG
                   </h3>
                   <p className="text-gray-600 text-sm mb-3">
-                    SVG is the modern standard for web graphics. Converting EPS to SVG makes your designs compatible with all browsers and digital platforms while maintaining quality.
+                    SVG is widely supported for web graphics. Converting EPS to SVG can make vector artwork easier to use in browsers and digital workflows.
                   </p>
                   <ul className="space-y-2 text-gray-600 text-sm">
                     <li>• Web and digital use</li>
@@ -284,15 +289,15 @@ export default function EpsToSvgPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Will the conversion preserve the quality?</h3>
-                  <p className="text-gray-600">Yes! Both EPS and SVG are vector formats, so the conversion maintains 100% quality. Your artwork will scale infinitely without any loss of detail or precision.</p>
+                  <p className="text-gray-600">Both EPS and SVG can represent vector artwork, but they support different features. Simple shapes and paths generally convert well, while complex effects, fonts, gradients, or PostScript-specific features may change during conversion.</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
-                  <p className="text-gray-600">You can convert EPS files up to 500MB in size. Larger files may take longer to process, but there's no quality compromise.</p>
+                  <p className="text-gray-600">You can upload EPS files up to the current 500MB image-conversion limit. Processing time and output fidelity depend on file complexity.</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Can I edit the SVG after conversion?</h3>
-                  <p className="text-gray-600">Yes! SVG files are fully editable in any vector design tool like Adobe Illustrator, Inkscape, Figma, or Adobe XD. You can modify colors, shapes, and other properties as needed.</p>
+                  <p className="text-gray-600">The generated SVG contains vector elements that can be edited in compatible SVG or vector-editing software. Editability depends on how the original EPS content is represented after conversion.</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Is the conversion lossless?</h3>

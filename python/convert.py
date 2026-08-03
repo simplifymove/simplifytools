@@ -61,6 +61,7 @@ CONVERSION_ROUTES = {
     ('pdf', 'png'): vector_render,
     ('eps', 'jpg'): vector_render,
     ('eps', 'png'): vector_render,
+    ('eps', 'svg'): vector_render,
     
     # Raster to Vector
     ('jpg', 'svg'): vector_trace,
