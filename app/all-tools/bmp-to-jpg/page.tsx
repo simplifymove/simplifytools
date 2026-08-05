@@ -198,6 +198,199 @@ export default function BmpToJpgPage() {
               </div>
             </div>
           </div>
+
+          {/* Supporting Content */}
+          <section className="mt-12 space-y-8">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                How to convert BMP to JPG
+              </h2>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    1. Upload your BMP
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    Choose the BMP image you want to convert. The converter
+                    accepts bitmap images and prepares them for JPG output.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    2. Convert the image
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    Select Convert to JPG. The image is encoded as a JPEG with
+                    balanced compression suitable for common sharing and web
+                    use.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    3. Download the JPG
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    After conversion finishes, continue to the download page
+                    and save the resulting JPG image.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why convert BMP to JPG?
+                </h2>
+
+                <p className="text-gray-600 leading-7 mb-4">
+                  BMP is a bitmap image format commonly associated with
+                  uncompressed or lightly compressed image data. BMP files can
+                  therefore be much larger than formats designed for everyday
+                  sharing.
+                </p>
+
+                <p className="text-gray-600 leading-7">
+                  JPG uses lossy compression to reduce image size. Converting a
+                  BMP to JPG can make photographs and other continuous-tone
+                  images easier to upload, email, store, and use on websites.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  BMP vs JPG
+                </h2>
+
+                <div className="space-y-4 text-gray-600 leading-7">
+                  <p>
+                    <strong className="text-gray-900">BMP:</strong> Often
+                    preserves image data with little or no compression, which
+                    can result in comparatively large files.
+                  </p>
+
+                  <p>
+                    <strong className="text-gray-900">JPG:</strong> Uses lossy
+                    compression and is widely supported by browsers, phones,
+                    photo applications, and online services.
+                  </p>
+
+                  <p>
+                    JPG is generally a better choice when smaller file size and
+                    broad compatibility matter more than preserving every
+                    original pixel exactly.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                When should you use JPG instead of BMP?
+              </h2>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  {
+                    title: 'Website images',
+                    text: 'Reduce the size of bitmap photographs before using them on a website.',
+                  },
+                  {
+                    title: 'Email attachments',
+                    text: 'Create a more compact image that is easier to attach and share.',
+                  },
+                  {
+                    title: 'Photo storage',
+                    text: 'Use JPG when efficient storage is more important than lossless pixel preservation.',
+                  },
+                  {
+                    title: 'Device compatibility',
+                    text: 'JPG is broadly supported across modern browsers, phones, computers, and apps.',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="rounded-lg bg-slate-50 border border-slate-200 p-5"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                What happens to image quality?
+              </h2>
+
+              <p className="text-gray-600 leading-7 mb-4">
+                JPG compression is lossy, so the converted file does not retain
+                every bit of the original BMP image data. This converter uses a
+                quality setting of 85 to provide a practical balance between
+                visual quality and file size.
+              </p>
+
+              <p className="text-gray-600 leading-7">
+                For photographs and typical web images, the difference may be
+                difficult to notice at normal viewing sizes. For screenshots,
+                diagrams, text-heavy graphics, or images that must remain
+                lossless, PNG may be a better output format.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                BMP to JPG FAQ
+              </h2>
+
+              <div className="divide-y divide-gray-200">
+                {[
+                  {
+                    q: 'Does converting BMP to JPG reduce file size?',
+                    a: 'In many cases, yes. JPG compression is designed to create smaller files than typical bitmap images, although the exact reduction depends on the image.',
+                  },
+                  {
+                    q: 'Will BMP to JPG conversion reduce image quality?',
+                    a: 'JPG uses lossy compression, so some image information is discarded. The converter uses a quality setting of 85 to balance visual quality with a smaller output file.',
+                  },
+                  {
+                    q: 'Should I use JPG or PNG for a BMP image?',
+                    a: 'JPG is usually suitable for photographs and images where smaller files are important. PNG is often preferable for screenshots, graphics, sharp text, transparency, or situations where lossless compression is required.',
+                  },
+                  {
+                    q: 'Can I open the converted JPG on phones and computers?',
+                    a: 'Yes. JPG is one of the most widely supported image formats and can be opened by modern browsers, phones, computers, and common image applications.',
+                  },
+                ].map((item) => (
+                  <div key={item.q} className="py-5 first:pt-0 last:pb-0">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {item.q}
+                    </h3>
+                    <p className="text-gray-600 leading-7">{item.a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="text-sm text-gray-600">
+              Need lossless output instead?{' '}
+              <Link
+                href="/all-tools/bmp-to-png"
+                className="font-semibold text-orange-600 hover:text-orange-700 underline"
+              >
+                Convert BMP to PNG
+              </Link>
+              .
+            </div>
+          </section>
         </div>
       </div>
     </main>
