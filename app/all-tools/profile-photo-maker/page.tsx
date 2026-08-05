@@ -159,7 +159,7 @@ export default function ProfilePhotoMakerPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Photo</h2>
-                  
+
                   <div
                     className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
                       preview ? 'border-orange-300 bg-orange-50' : 'border-gray-300 hover:border-orange-500 hover:bg-orange-50'
@@ -368,6 +368,224 @@ export default function ProfilePhotoMakerPage() {
             </div>
           </div>
         </div>
+
+          {/* Supporting content */}
+          <section className="max-w-6xl mx-auto px-4 md:px-8 pb-16">
+            <div className="space-y-12">
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How to Make a Profile Photo
+                </h2>
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">1. Upload a portrait</h3>
+                    <p className="text-gray-700">
+                      Choose a JPG, PNG, or WebP image up to 10 MB. A clear photo with the
+                      face and shoulders visible gives the automatic framing more information
+                      to work with.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">2. Choose the background</h3>
+                    <p className="text-gray-700">
+                      Replace the original background with white, blue, gray, a two-color
+                      gradient, or a blurred version of the uploaded image.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">3. Choose an output size</h3>
+                    <p className="text-gray-700">
+                      Select 512×512, 1024×1024, or 1536×1536 pixels. Every generated
+                      result uses a square layout suitable for profile-picture use.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">4. Create and review</h3>
+                    <p className="text-gray-700">
+                      The tool removes the background, attempts to detect the primary face,
+                      applies face-aware framing, and returns the finished image as a PNG.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Profile Photo Background Options
+                </h2>
+                <div className="grid md:grid-cols-2 gap-5 text-gray-700">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Solid backgrounds</h3>
+                    <p>
+                      White provides a neutral background, while blue and gray offer
+                      alternative solid-color treatments for profiles, portfolios, and
+                      company directories.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Gradient background</h3>
+                    <p>
+                      Choose two colors from blue, purple, pink, teal, white, and black.
+                      The tool creates a vertical gradient behind the extracted subject.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Blurred background</h3>
+                    <p>
+                      This option keeps the visual character of the original photograph
+                      while reducing background detail with a strong blur.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">PNG output</h3>
+                    <p>
+                      The finished profile picture is generated as a square PNG at the
+                      selected resolution.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Face-Aware Profile Photo Framing
+                </h2>
+                <div className="space-y-3 text-gray-700">
+                  <p>
+                    Profile Photo Maker attempts to locate the primary face before creating
+                    the final composition. When a face is detected, its position is used to
+                    scale and place the portrait so the face sits above the center of the
+                    square canvas with space for the head and shoulders.
+                  </p>
+                  <p>
+                    If face detection does not find a reliable face, processing does not
+                    automatically fail. The tool falls back to the visible foreground area
+                    obtained during background removal and uses that subject area for framing.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Choosing a Profile Photo Size
+                </h2>
+                <div className="grid md:grid-cols-3 gap-5">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">512×512</h3>
+                    <p className="text-gray-700">
+                      A lighter option for web avatars and services that display profile
+                      pictures at relatively small sizes.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">1024×1024</h3>
+                    <p className="text-gray-700">
+                      A balanced general-purpose choice when you want additional resolution
+                      for modern screens and later resizing.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">1536×1536</h3>
+                    <p className="text-gray-700">
+                      The highest size offered by the current interface when you want more
+                      pixels available for reuse or downscaling.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Tips for Better Results
+                  </h2>
+                  <ul className="space-y-3 text-gray-700">
+                    <li>• Use a sharp image where the face is clearly visible.</li>
+                    <li>• Front-facing or near-front-facing portraits are easier to detect reliably.</li>
+                    <li>• Leave some room around the head and shoulders in the source image.</li>
+                    <li>• Good contrast between the person and background can help subject separation.</li>
+                    <li>• Check fine hair and clothing edges in the preview before downloading.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Automatic Processing Limitations
+                  </h2>
+                  <div className="space-y-3 text-gray-700">
+                    <p>
+                      Background removal and face detection are automatic, so the result
+                      depends on the source photo. Fine hair, motion blur, low contrast,
+                      shadows, transparent objects, or a partially hidden face can reduce
+                      separation or framing accuracy.
+                    </p>
+                    <p>
+                      Face detection is used to help compose the profile picture. It is not
+                      used to identify the person in the photograph.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                  Profile Photo Maker FAQ
+                </h2>
+
+                <div className="space-y-4">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Does Profile Photo Maker remove the original background?
+                    </h3>
+                    <p className="text-gray-700">
+                      Yes. The tool separates the foreground subject before applying the
+                      selected solid, gradient, or blurred background.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      What happens if my face is not detected?
+                    </h3>
+                    <p className="text-gray-700">
+                      The tool uses the extracted foreground area as a fallback so the image
+                      can still be framed and processed.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Which image formats can I upload?
+                    </h3>
+                    <p className="text-gray-700">
+                      The current interface accepts JPG, PNG, and WebP files up to 10 MB.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      What format will I download?
+                    </h3>
+                    <p className="text-gray-700">
+                      Profile Photo Maker generates a square PNG at the size selected in
+                      the tool settings.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
       </main>
       <Footer />
     </>
