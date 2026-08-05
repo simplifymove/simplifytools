@@ -389,7 +389,205 @@ export default function ChartMakerPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                How to create a chart online
+              </h2>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  ['1', 'Enter your data', 'Add labels and numerical values for the information you want to visualize.'],
+                  ['2', 'Choose a chart type', 'Select a bar, line, or pie chart depending on how you want to present the data.'],
+                  ['3', 'Preview and download', 'Review the generated chart and download the finished visualization as a PNG image.'],
+                ].map(([step, title, text]) => (
+                  <div
+                    key={step}
+                    className="border border-gray-200 rounded-xl p-5"
+                  >
+                    <div className="font-bold text-blue-700 mb-2">
+                      Step {step}
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Which chart type should you use?
+                </h2>
+
+                <p className="text-gray-600 leading-7 mb-4">
+                  Different chart types communicate different kinds of
+                  information. Choosing a suitable format makes the data
+                  easier to understand.
+                </p>
+
+                <div className="space-y-3 text-gray-600 leading-7">
+                  <p>
+                    <strong className="text-gray-900">Bar chart:</strong>{' '}
+                    Compare values across categories such as products,
+                    departments, months, or survey responses.
+                  </p>
+
+                  <p>
+                    <strong className="text-gray-900">Line chart:</strong>{' '}
+                    Show how values change across an ordered sequence or period.
+                  </p>
+
+                  <p>
+                    <strong className="text-gray-900">Pie chart:</strong>{' '}
+                    Show how individual values contribute to a whole when the
+                    number of categories is manageable.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  What can you create with Chart Maker?
+                </h2>
+
+                <p className="text-gray-600 leading-7 mb-4">
+                  Chart Maker is useful when you already have labels and
+                  numerical values and need a simple visual that can be
+                  downloaded and reused elsewhere.
+                </p>
+
+                <ul className="space-y-2 text-gray-600">
+                  <li>• Business and project reports</li>
+                  <li>• School and college assignments</li>
+                  <li>• Presentation graphics</li>
+                  <li>• Survey result visualizations</li>
+                  <li>• Simple performance comparisons</li>
+                  <li>• Informational graphics</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Tips for creating clear charts
+              </h2>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  {
+                    title: 'Use clear labels',
+                    text: 'Keep category names short and descriptive so the chart can be understood quickly.',
+                  },
+                  {
+                    title: 'Use comparable values',
+                    text: 'Make sure the numerical values use a consistent measurement or meaning.',
+                  },
+                  {
+                    title: 'Limit categories',
+                    text: 'A smaller number of meaningful data points usually produces a clearer chart.',
+                  },
+                  {
+                    title: 'Review before download',
+                    text: 'Check the chart title, labels, values, and visualization type before saving the PNG.',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="bg-slate-50 rounded-xl border border-slate-200 p-4"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-5">
+                Chart Maker FAQ
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    q: 'Which chart types are available?',
+                    a: 'You can create bar charts, line charts, and pie charts from the labels and values entered in the tool.',
+                  },
+                  {
+                    q: 'What format is the chart downloaded in?',
+                    a: 'The generated chart is exported as a PNG image that can be reused in presentations, documents, reports, or websites.',
+                  },
+                  {
+                    q: 'Do I need spreadsheet software?',
+                    a: 'No. Labels and numerical values can be entered directly into Chart Maker in the browser.',
+                  },
+                  {
+                    q: 'Can I change the chart before downloading it?',
+                    a: 'Yes. Update the title, data points, or chart type and review the preview before downloading the final image.',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.q}
+                    className="border-b border-gray-200 pb-4"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {item.q}
+                    </h3>
+                    <p className="text-gray-600 leading-7">{item.a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Related data tools
+              </h2>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Link
+                  href="/all-tools/code-tools/json-formatter"
+                  className="border border-gray-200 rounded-xl p-5 hover:border-orange-400 transition"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    JSON Formatter
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Format and review structured JSON data.
+                  </p>
+                </Link>
+
+                <Link
+                  href="/all-tools/data/csv-to-excel"
+                  className="border border-gray-200 rounded-xl p-5 hover:border-orange-400 transition"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    CSV to Excel
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Convert CSV data into an Excel spreadsheet.
+                  </p>
+                </Link>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       {/* FOOTER */}
       <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
