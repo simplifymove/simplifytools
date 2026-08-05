@@ -158,6 +158,12 @@ const nextConfig = {
         destination: '/all-tools/:path*',
         permanent: true, // 301 redirect
       },
+      // Legacy OCR-to-Text -> canonical PDF OCR tool
+      {
+        source: '/all-tools/pdf/ocr-to-text',
+        destination: '/all-tools/pdf/pdf-ocr',
+        permanent: true,
+      },
       // Standalone Code Minifier -> canonical Code Tools route
       {
         source: '/all-tools/code-minifier',

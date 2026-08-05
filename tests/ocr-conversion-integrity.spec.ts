@@ -2,28 +2,32 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 
-test('PDF OCR page uses the dedicated OCR endpoint and TXT output', async () => {
+test('canonical PDF OCR uses the registered OCR engine', async () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'app/all-tools/pdf/ocr-to-text/page.tsx'),
+    path.join(process.cwd(), 'app/lib/pdf-tools.ts'),
     'utf8',
   );
 
-  expect(source).toContain(`fetch('/api/pdf/ocr'`);
-  expect(source).toContain(`result.data?.fullText`);
-  expect(source).toContain(`aria-label="Extracted PDF text"`);
-  expect(source).toContain(`toolSlug: 'ocr-to-text'`);
-  expect(source).not.toContain(`fetch('/api/pdf'`);
-  expect(source).not.toContain(`result.output`);
+  const start = source.indexOf(`'pdf-ocr': {`);
+  expect(start).toBeGreaterThan(-1);
+
+  const block = source.slice(start, start + 1100);
+
+  expect(block).toContain(`id: 'pdf-ocr'`);
+  expect(block).toContain(`engine: 'ocr_translate'`);
+  expect(block).toContain(`accepts: ['.pdf']`);
+  expect(block).toContain(`value: 'docx'`);
+  expect(block).toContain(`value: 'pdf'`);
+  expect(block).toContain(`value: 'txt'`);
 });
 
-test('OCR download policies include both image and PDF OCR tools', async () => {
+test('image OCR browser download policy remains registered', async () => {
   const source = fs.readFileSync(
     path.join(process.cwd(), 'app/api/browser-download-result/route.ts'),
     'utf8',
   );
 
   expect(source).toContain(`'image-to-text'`);
-  expect(source).toContain(`'ocr-to-text'`);
 });
 
 test('PDF OCR server library uses Node canvas', async () => {

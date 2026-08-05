@@ -20,9 +20,9 @@ const COMPLEX_TOOLS = {
     url: '/all-tools/pdf/esign-pdf',
     description: 'Upload PDF, wait for signature pad, add signature, export',
   },
-  'ocr-to-text': {
-    title: 'OCR to Text',
-    url: '/all-tools/pdf/ocr-to-text',
+  'pdf-ocr': {
+    title: 'PDF OCR',
+    url: '/all-tools/pdf/pdf-ocr',
     description: 'Upload scanned PDF, wait for OCR processing, verify text output',
   },
 };
@@ -79,7 +79,7 @@ async function waitForComponentLoad(
         );
         break;
 
-      case 'ocr-to-text':
+      case 'pdf-ocr':
         // OCR processing can take longer - just wait for the PDF to load
         await page.waitForSelector('input[type="file"]', { timeout });
         break;
@@ -237,9 +237,9 @@ async function testESignPdf(page: Page): Promise<void> {
  * Test OCR to Text tool
  */
 async function testOcrToText(page: Page): Promise<void> {
-  console.log('\n🧪 Testing: OCR to Text');
+  console.log('\n🧪 Testing: PDF OCR');
 
-  const tool = COMPLEX_TOOLS['ocr-to-text'];
+  const tool = COMPLEX_TOOLS['pdf-ocr'];
 
   // Navigate to tool
   await page.goto(`http://localhost:3000${tool.url}`);
@@ -310,7 +310,7 @@ test.describe('PDF Tools: Complex UI Components', () => {
     }
   });
 
-  test('OCR to Text - OCR processing interface loads', async ({ page }) => {
+  test('PDF OCR - OCR processing interface loads', async ({ page }) => {
     try {
       await testOcrToText(page);
       console.log(`\n✅ PASSED: OCR to Text component test`);

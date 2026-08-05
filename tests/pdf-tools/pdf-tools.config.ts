@@ -641,10 +641,10 @@ export const pdfToolsTestConfig: Record<string, PdfToolTestConfig> = {
   },
 
   // ===== OCR & ADVANCED TOOLS =====
-  'ocr-to-text': {
-    slug: 'ocr-to-text',
+  'pdf-ocr': {
+    slug: 'pdf-ocr',
     title: 'PDF OCR',
-    url: '/all-tools/pdf/ocr-to-text',
+    url: '/all-tools/pdf/pdf-ocr',
     inputType: 'single-file',
     files: ['scanned.pdf'],
     options: {},

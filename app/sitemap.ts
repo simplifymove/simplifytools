@@ -156,7 +156,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/all-tools/resume-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Resume Maker' },
     { url: '/all-tools/text-to-speech', priority: 0.7, frequency: 'monthly' as const, label: 'Text to Speech' },
     { url: '/all-tools/pdf/add-text', priority: 0.6, frequency: 'monthly' as const, label: 'Add Text to PDF' },
-    { url: '/all-tools/pdf/ocr-to-text', priority: 0.6, frequency: 'monthly' as const, label: 'PDF OCR to Text' },
     { url: '/all-tools/eps-to-png', priority: 0.6, frequency: 'monthly' as const, label: 'EPS to PNG' },
     { url: '/all-tools/batch-compress-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Compress Images' },
     { url: '/all-tools/batch-resize-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Resize Images' },
