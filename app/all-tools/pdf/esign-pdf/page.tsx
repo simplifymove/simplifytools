@@ -519,7 +519,7 @@ export default function EsignPdfPage() {
             >
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">✍️ E-Sign PDF</h1>
               <p className="text-lg text-white/90 max-w-2xl">
-                Sign, seal, and download your documents instantly with digital signatures
+                Add an electronic signature to your PDF and download the signed document
               </p>
             </motion.div>
           </div>
@@ -892,6 +892,206 @@ export default function EsignPdfPage() {
           </div>
         </div>
       )}
+      <section className="bg-white border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-16 space-y-14">
+
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              How to sign a PDF online
+            </h2>
+            <p className="text-gray-600 leading-7 mb-6">
+              Use the E-Sign PDF tool to place a handwritten or image-based
+              electronic signature onto a PDF document. You can preview the
+              document, choose the page and position, move the signature, and
+              download the completed PDF.
+            </p>
+
+            <ol className="grid md:grid-cols-5 gap-4">
+              {[
+                ['1', 'Upload PDF', 'Choose the PDF document you want to sign.'],
+                ['2', 'Choose position', 'Click the location on the PDF where the signature should appear.'],
+                ['3', 'Add signature', 'Draw your signature or upload an existing signature image.'],
+                ['4', 'Position it', 'Drag the signature to place it accurately on the page.'],
+                ['5', 'Download', 'Create and download the signed PDF when you are finished.'],
+              ].map(([number, title, description]) => (
+                <li key={number} className="border border-gray-200 rounded-xl p-5">
+                  <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold mb-3">
+                    {number}
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                  <p className="text-sm text-gray-600 leading-6">{description}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Draw your signature
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Click the PDF where you want to sign and use the signature pad
+                to draw your signature. After adding it, you can move the
+                signature to improve its placement before creating the final
+                PDF.
+              </p>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Upload a signature image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                If you already have an image of your signature, upload a JPG,
+                PNG, GIF, or WebP file. The image is placed on the selected PDF
+                page while preserving its proportions.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Sign multiple PDF pages
+            </h2>
+            <p className="text-gray-600 leading-7">
+              A signature can be copied and reused on another page when the
+              same document requires signatures in several locations. You can
+              also paste a copied signature onto all pages, then review the
+              placement before downloading the finished PDF.
+            </p>
+          </div>
+
+          <div className="bg-purple-50 border border-purple-100 rounded-xl p-7">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Electronic signature vs digital signature
+            </h2>
+            <p className="text-gray-700 leading-7">
+              This tool places a drawn or image-based electronic signature on
+              a PDF. It does not create a certificate-based cryptographic
+              digital signature. If a document requires identity verification,
+              certificate validation, or a specific legally regulated signing
+              process, confirm the recipient&apos;s requirements before using
+              an image-based signature.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Tips for signing PDFs accurately
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                'Review the document before adding your signature.',
+                'Zoom the PDF when you need more precise placement.',
+                'Use a clear signature image with minimal unnecessary background.',
+                'Check the correct page before copying a signature to other pages.',
+                'Review every signature position before downloading the final PDF.',
+                'Keep the original unsigned PDF when you may need it later.',
+              ].map((tip) => (
+                <div
+                  key={tip}
+                  className="flex gap-3 border border-gray-200 rounded-lg p-4"
+                >
+                  <span className="text-purple-600 font-bold">✓</span>
+                  <p className="text-gray-600">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              E-Sign PDF FAQ
+            </h2>
+
+            <div className="space-y-4">
+              {[
+                {
+                  q: 'Can I draw my signature directly on the PDF?',
+                  a: 'Yes. Click the desired position on the PDF to open the signature pad, draw your signature, and add it to the page.',
+                },
+                {
+                  q: 'Can I upload an existing signature image?',
+                  a: 'Yes. The signature uploader accepts JPG, PNG, GIF, and WebP images up to the supported upload limit.',
+                },
+                {
+                  q: 'Can I move the signature after adding it?',
+                  a: 'Yes. Select and drag the signature to reposition it before downloading the PDF.',
+                },
+                {
+                  q: 'Can I use the same signature on several pages?',
+                  a: 'Yes. Copy an existing signature and paste it onto a selected page or across all pages when appropriate.',
+                },
+                {
+                  q: 'Does this create a certificate-based digital signature?',
+                  a: 'No. The tool adds a visual electronic signature. It does not create a certificate-backed cryptographic PDF signature.',
+                },
+                {
+                  q: 'Should I review the PDF before sending it?',
+                  a: 'Yes. Check the document, signature placement, page selection, names, dates, and other important information before sharing the completed PDF.',
+                },
+              ].map((item) => (
+                <div key={item.q} className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">{item.q}</h3>
+                  <p className="text-gray-600 leading-7">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Related PDF tools
+            </h2>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link
+                href="/all-tools/pdf/edit-pdf"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-sm transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">Edit PDF</h3>
+                <p className="text-sm text-gray-600">
+                  Make changes to your PDF document.
+                </p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/annotate-pdf"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-sm transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">Annotate PDF</h3>
+                <p className="text-sm text-gray-600">
+                  Add annotations and notes to PDF pages.
+                </p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/merge-pdf"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-sm transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">Merge PDF</h3>
+                <p className="text-sm text-gray-600">
+                  Combine multiple PDF files into one document.
+                </p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/compress-pdf"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-sm transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">Compress PDF</h3>
+                <p className="text-sm text-gray-600">
+                  Reduce PDF file size for easier sharing.
+                </p>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
       </main>
 
       <Footer />
