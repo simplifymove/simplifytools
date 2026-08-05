@@ -201,6 +201,109 @@ export default function TiffToPngPage() {
             </div>
           </div>
         </div>
+
+        <section className="px-4 md:px-8 pb-16">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                How to convert TIFF to PNG online
+              </h2>
+              <p className="text-gray-600 leading-7 mb-5">
+                Use this converter when you need a PNG version of a TIFF or TIF
+                image for easier viewing, sharing, or use in applications that
+                support PNG more widely.
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  ['1', 'Upload TIFF', 'Select the TIFF or TIF image you want to convert.'],
+                  ['2', 'Convert', 'Start the conversion and wait while the image is processed.'],
+                  ['3', 'Download PNG', 'Continue to the download page when the PNG output is ready.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="bg-white border border-gray-200 rounded-xl p-5">
+                    <div className="font-bold text-orange-500 mb-2">{number}</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600">{description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  TIFF vs PNG
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  TIFF is commonly used for high-quality image storage,
+                  scanning, publishing, and archival workflows. PNG is a
+                  lossless raster format commonly supported by browsers,
+                  image editors, documents, and web applications.
+                </p>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Why convert TIFF to PNG?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  Converting to PNG can make an image easier to preview or use
+                  in software that does not conveniently handle TIFF files.
+                  PNG also uses lossless image encoding.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Tips for TIFF to PNG conversion
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Use the original TIFF file when possible rather than a previously compressed copy.</li>
+                <li>Check the resulting PNG dimensions after conversion.</li>
+                <li>Remember that converting formats does not improve the detail of the original image.</li>
+                <li>For very large TIFF files, processing time can depend on file size and image complexity.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                TIFF to PNG FAQ
+              </h2>
+              <div className="space-y-4">
+                {[
+                  ['Does PNG use lossless compression?', 'Yes. PNG uses lossless image compression, so its encoding does not intentionally discard image information in the way lossy formats such as JPEG can.'],
+                  ['Can I upload .tif files?', 'Yes. The converter is intended for TIFF images, including files that use the .tif extension.'],
+                  ['Will converting increase image resolution?', 'No. Format conversion does not create additional detail or resolution that was not present in the source image.'],
+                  ['Why use PNG instead of TIFF?', 'PNG is widely supported in browsers and many everyday image workflows, which can make it more convenient for viewing and sharing.'],
+                ].map(([q, a]) => (
+                  <div key={q} className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
+                    <p className="text-gray-600">{a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Related image tools
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/all-tools/tiff-to-jpg" className="text-orange-600 hover:underline">
+                  TIFF to JPG
+                </Link>
+                <Link href="/all-tools/tiff-to-avif" className="text-orange-600 hover:underline">
+                  TIFF to AVIF
+                </Link>
+                <Link href="/all-tools/image-tools" className="text-orange-600 hover:underline">
+                  More image tools
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
       <Footer />
     </>

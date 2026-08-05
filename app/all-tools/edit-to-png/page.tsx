@@ -187,6 +187,109 @@ export default function EditToPngPage() {
             </div>
           </div>
         </div>
+
+        <section className="px-4 md:px-8 pb-16">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                How to convert an image to PNG
+              </h2>
+              <p className="text-gray-600 leading-7 mb-5">
+                This tool converts a supported image into PNG format. Select
+                your source image, run the conversion, preview the result, and
+                continue to the download page when the PNG is ready.
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  ['1', 'Upload image', 'Choose a supported image file from your device.'],
+                  ['2', 'Convert to PNG', 'Select Convert to PNG and wait for the browser conversion to finish.'],
+                  ['3', 'Download', 'Continue to the download page to save the resulting PNG.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="bg-white border border-gray-200 rounded-xl p-5">
+                    <div className="font-bold text-orange-500 mb-2">{number}</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600">{description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Why convert an image to PNG?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  PNG is widely supported and uses lossless image encoding.
+                  It is commonly used for graphics, screenshots, interface
+                  assets, illustrations, and images that need a broadly
+                  compatible PNG output.
+                </p>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Is this an image editor?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  No. Despite the legacy URL name, this page performs image
+                  format conversion to PNG. It does not currently provide
+                  cropping, drawing, filters, or other image-editing controls.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Before converting to PNG
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Start with the best-quality source image available.</li>
+                <li>Check the preview to make sure the browser can decode the selected file.</li>
+                <li>Remember that converting to PNG does not increase the original image resolution.</li>
+                <li>PNG files can be larger than equivalent lossy image formats depending on the source image.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                Convert to PNG FAQ
+              </h2>
+              <div className="space-y-4">
+                {[
+                  ['What does this tool create?', 'It creates a PNG version of a supported source image.'],
+                  ['Does PNG use lossless encoding?', 'Yes. PNG uses lossless image compression.'],
+                  ['Will converting to PNG improve image quality?', 'No. Conversion can change the file format, but it cannot restore detail that is missing from the original image.'],
+                  ['Can this tool crop or resize my image?', 'No. This page currently performs format conversion only. Use the dedicated crop or resize tools when you need those operations.'],
+                ].map(([q, a]) => (
+                  <div key={q} className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
+                    <p className="text-gray-600">{a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Related image tools
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/all-tools/resize-image" className="text-orange-600 hover:underline">
+                  Resize Image
+                </Link>
+                <Link href="/all-tools/crop-image" className="text-orange-600 hover:underline">
+                  Crop Image
+                </Link>
+                <Link href="/all-tools/image-tools" className="text-orange-600 hover:underline">
+                  More image tools
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
       <Footer />
     </>

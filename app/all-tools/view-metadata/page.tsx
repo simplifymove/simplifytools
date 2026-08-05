@@ -228,6 +228,110 @@ export default function ViewMetadataPage() {
             </div>
           </div>
         </div>
+
+        <section className="px-4 md:px-8 pb-16">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                How to view image properties online
+              </h2>
+              <p className="text-gray-600 leading-7 mb-5">
+                Select an image to inspect basic file and image properties
+                directly in your browser. The tool displays information such
+                as the file name, size, type, pixel dimensions, aspect ratio,
+                last-modified time, and the time the image was selected.
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  ['1', 'Choose an image', 'Select an image file from your device.'],
+                  ['2', 'View properties', 'The browser reads the image and displays its available basic properties.'],
+                  ['3', 'Copy the details', 'Use Copy Metadata to copy the displayed property list to your clipboard.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="bg-white border border-gray-200 rounded-xl p-5">
+                    <div className="font-bold text-orange-500 mb-2">{number}</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600">{description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  What information does this tool show?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  The viewer reports basic properties available from the
+                  selected file and decoded image: file name, file size, MIME
+                  type, width, height, aspect ratio, last-modified time, and
+                  selection time.
+                </p>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Does it read EXIF or GPS metadata?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  No. This viewer is designed for basic image and file
+                  properties. It does not currently extract embedded EXIF,
+                  camera, GPS, IPTC, or other advanced metadata fields.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Useful reasons to inspect image properties
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Check image width and height before uploading it to a website.</li>
+                <li>Confirm the file type and approximate file size.</li>
+                <li>Calculate or verify an image&apos;s aspect ratio.</li>
+                <li>Copy basic image information for documentation or troubleshooting.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                Image Metadata Viewer FAQ
+              </h2>
+              <div className="space-y-4">
+                {[
+                  ['Is my image uploaded to a conversion server?', 'The property-reading logic on this page uses browser FileReader and Image APIs to inspect the selected image locally.'],
+                  ['Can I see image dimensions?', 'Yes. The tool displays the decoded image width and height in pixels.'],
+                  ['Can I copy the displayed properties?', 'Yes. Use the Copy Metadata button after selecting a supported image.'],
+                  ['Does the tool show camera model or GPS location?', 'No. Embedded EXIF and GPS fields are not extracted by the current viewer.'],
+                ].map(([q, a]) => (
+                  <div key={q} className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
+                    <p className="text-gray-600">{a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Related image tools
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/all-tools/image-to-text" className="text-orange-600 hover:underline">
+                  Image to Text
+                </Link>
+                <Link href="/all-tools/resize-image" className="text-orange-600 hover:underline">
+                  Resize Image
+                </Link>
+                <Link href="/all-tools/image-tools" className="text-orange-600 hover:underline">
+                  More image tools
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       {/* FOOTER */}
