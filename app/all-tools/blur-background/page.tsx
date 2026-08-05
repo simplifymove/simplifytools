@@ -152,7 +152,7 @@ export default function BlurBackgroundPage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Header */}
         <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -186,7 +186,7 @@ export default function BlurBackgroundPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <div className="relative mb-6">
                     <input
                       type="file"
@@ -247,7 +247,7 @@ export default function BlurBackgroundPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Blur Settings</h3>
-                    
+
                     {/* Blur Strength */}
                     <div className="mb-4">
                       <div className="flex justify-between items-center mb-2">
@@ -362,7 +362,179 @@ export default function BlurBackgroundPage() {
             </div>
           </div>
         </div>
-      </main>
+
+          {/* Supporting content */}
+          <section className="max-w-6xl mx-auto px-4 md:px-8 pb-16">
+            <div className="space-y-12">
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How to Blur an Image Background
+                </h2>
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">1. Upload your image</h3>
+                    <p className="text-gray-700">
+                      Choose a JPG, PNG, or WebP image. Photos with a clearly separated subject
+                      usually produce cleaner foreground edges.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">2. Adjust blur strength</h3>
+                    <p className="text-gray-700">
+                      Use the blur control from 15 to 51. Higher values apply a stronger
+                      Gaussian blur to the original background.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">3. Refine subject edges</h3>
+                    <p className="text-gray-700">
+                      Edge feathering from 3 to 7 pixels softens the transition between the
+                      extracted foreground and the blurred background.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">4. Process and download</h3>
+                    <p className="text-gray-700">
+                      The tool keeps the subject sharp, blurs the background, composites both
+                      layers together, and returns a JPEG result at the original image dimensions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How Background Blur Processing Works
+                </h2>
+                <div className="space-y-3 text-gray-700">
+                  <p>
+                    Blur Background first separates the foreground subject from the original
+                    image. It then cleans the subject mask and applies the selected feathering
+                    amount to soften the transition around the edges.
+                  </p>
+                  <p>
+                    A blurred copy of the original photo is created using Gaussian blur. The
+                    sharp foreground is then composited back over that blurred copy, which
+                    creates the final subject-in-focus and background-out-of-focus effect.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Blur Strength and Edge Feathering
+                </h2>
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Blur strength: 15–51</h3>
+                    <p className="text-gray-700">
+                      Lower values create a lighter background blur, while higher values make
+                      background detail softer and less distinct. The default setting is 35.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Feathering: 3–7 px</h3>
+                    <p className="text-gray-700">
+                      Feathering smooths the subject-mask boundary. A larger value creates a
+                      softer transition, while a smaller value keeps the edge tighter.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  What Portrait Mode Does
+                </h2>
+                <p className="text-gray-700">
+                  Portrait Mode keeps the same blur workflow but slightly darkens the blurred
+                  background before compositing the sharp subject. This can create a little more
+                  visual separation between the subject and the surrounding scene.
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Tips for Better Background Blur
+                  </h2>
+                  <ul className="space-y-3 text-gray-700">
+                    <li>• Use a clear image where the main subject is easy to distinguish from the background.</li>
+                    <li>• Try a lower blur value first if you want a more natural-looking result.</li>
+                    <li>• Increase feathering if the subject edge looks too abrupt.</li>
+                    <li>• Check hair, transparent objects, and fine details carefully in the result preview.</li>
+                    <li>• Portrait Mode is optional and only changes the background brightness slightly.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Automatic Processing Limitations
+                  </h2>
+                  <div className="space-y-3 text-gray-700">
+                    <p>
+                      Foreground extraction is automatic, so edge quality depends on the source
+                      photo. Fine hair, motion blur, transparent materials, low contrast, or
+                      overlapping foreground and background colors can make the mask less precise.
+                    </p>
+                    <p>
+                      The tool does not recreate true camera depth data. It separates the subject
+                      and applies image processing to the background to simulate a depth-of-field
+                      style effect.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                  Blur Background FAQ
+                </h2>
+                <div className="space-y-4">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Does the tool blur the whole image?
+                    </h3>
+                    <p className="text-gray-700">
+                      No. It attempts to keep the extracted foreground subject sharp while
+                      applying the blur to the background copy of the original photo.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      What does edge feathering change?
+                    </h3>
+                    <p className="text-gray-700">
+                      Edge feathering softens the boundary of the foreground mask so the sharp
+                      subject blends more gradually into the blurred background.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Does Portrait Mode increase the blur?
+                    </h3>
+                    <p className="text-gray-700">
+                      No. Portrait Mode does not change the selected blur strength. It slightly
+                      darkens the blurred background before the final composite is created.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      What file format is the result?
+                    </h3>
+                    <p className="text-gray-700">
+                      The processed image is returned and downloaded as a JPEG while retaining
+                      the original image dimensions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+</main>
       <Footer />
     </>
   );
