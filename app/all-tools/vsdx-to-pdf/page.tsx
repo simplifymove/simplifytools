@@ -189,6 +189,92 @@ export default function VsdxToPdfPage() {
             </div>
           </div>
         </div>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert VSDX to PDF online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a VSDX diagram, start the conversion, wait for the
+                server-assisted document conversion to finish, and download
+                the resulting PDF from the download page.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  VSDX vs PDF
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  VSDX is commonly used for editable Visio diagrams. PDF is
+                  designed for consistent viewing and sharing across many
+                  devices and applications. Converting is useful when the
+                  recipient needs to view a diagram rather than edit its
+                  original Visio structure.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Useful for sharing diagrams
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  PDF output can make flowcharts, process diagrams, network
+                  diagrams, and other Visio documents easier to distribute,
+                  review, print, or archive without requiring the recipient to
+                  work directly with the VSDX source.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What should you check after conversion?
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Review page size and orientation.</li>
+                <li>Check text, connectors, shapes, and diagram labels.</li>
+                <li>Inspect fonts and spacing on important pages.</li>
+                <li>Verify that large diagrams remain readable.</li>
+                <li>Keep the original VSDX when future editing may be required.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                When should you keep the VSDX file?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                PDF is useful for viewing and distribution, but it is not a
+                replacement for the editable source document. Keep the VSDX
+                file when you may need to modify shapes, connectors, text,
+                layers, or diagram structure later.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                VSDX to PDF FAQ
+              </h2>
+              <div className="space-y-4">
+                {[
+                  ['What does this tool convert?', 'It accepts a VSDX diagram and produces PDF output through server-assisted document conversion.'],
+                  ['Why convert a Visio diagram to PDF?', 'PDF is convenient for sharing, reviewing, printing, and archiving diagrams when editing the original VSDX is not required.'],
+                  ['Can the PDF replace my original VSDX?', 'Keep the VSDX if you need future diagram editing. PDF is primarily useful as a viewing and distribution format.'],
+                  ['Should I inspect the converted PDF?', 'Yes. Review text, shapes, connectors, page layout, and other important diagram details after conversion.'],
+                ].map(([q, a]) => (
+                  <div key={q} className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
+                    <p className="text-sm text-gray-600">{a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

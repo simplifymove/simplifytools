@@ -199,6 +199,89 @@ export default function WebpToGifPage() {
             </div>
           </div>
         </div>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert WebP to GIF online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a WebP image, start the conversion, preview the result,
+                and download the generated GIF. This tool converts the uploaded
+                image into a static GIF file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  WebP vs GIF
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  WebP is a modern image format used for efficient web images.
+                  GIF is an older and widely recognized image format with a
+                  limited color palette. Converting can help when a workflow
+                  specifically requires GIF output.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Static GIF output
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  This converter creates a static GIF from the uploaded WebP.
+                  It is not an animation creator and does not combine multiple
+                  images into an animated sequence.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What changes when converting to GIF?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                GIF has different color and compression characteristics from
+                WebP. Images containing gradients, photographs, or many colors
+                may look different after conversion. Review the preview before
+                downloading the result.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for WebP to GIF conversion
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Use the original WebP when possible.</li>
+                <li>Preview the converted image before downloading.</li>
+                <li>Check colors and transparent areas carefully.</li>
+                <li>Use GIF when the destination specifically needs that format.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                WebP to GIF FAQ
+              </h2>
+              <div className="space-y-4">
+                {[
+                  ['Does this create an animated GIF?', 'No. This tool creates a static GIF image from the uploaded WebP file.'],
+                  ['Can I preview the result?', 'Yes. The converted image is displayed on the page after successful processing.'],
+                  ['Why can colors look different?', 'GIF uses a more limited color palette than formats such as WebP, so some images can change during conversion.'],
+                  ['When is GIF useful?', 'GIF can be useful when a website, application, or older workflow specifically expects GIF images.'],
+                ].map(([q, a]) => (
+                  <div key={q} className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
+                    <p className="text-sm text-gray-600">{a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

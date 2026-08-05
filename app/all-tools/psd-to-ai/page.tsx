@@ -104,7 +104,7 @@ export default function PsdToAiPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to AI</h1>
-                <p className="text-lg text-white/90">Convert Photoshop files to Adobe Illustrator format. Preserve layers and vector elements.</p>
+                <p className="text-lg text-white/90">Convert Photoshop PSD files to AI output for use in compatible design workflows.</p>
               </div>
             </div>
           </div>
@@ -190,6 +190,93 @@ export default function PsdToAiPage() {
             </div>
           </div>
         </div>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert PSD to AI online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a Photoshop PSD file, choose the available conversion
+                quality, and start the conversion. When processing finishes,
+                download the generated AI file from the download page.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  PSD and AI serve different workflows
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  PSD is commonly associated with Photoshop documents and
+                  image-based design work, while AI files are associated with
+                  Illustrator workflows. Conversion can be useful when you
+                  need an AI-format output for another design application or
+                  workflow.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Check the converted design
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  PSD and AI use different document structures. After
+                  conversion, review text, effects, transparency, positioning,
+                  colors, and other important visual details in compatible
+                  software before continuing production work.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What does the quality setting do?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The converter provides Low, Medium, and High quality choices.
+                Use the setting that best matches your workflow and review the
+                resulting file after conversion. A higher setting may require
+                more processing than a lower setting.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Before using the converted AI file
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Keep the original PSD as your source file.</li>
+                <li>Open the AI output in compatible software and inspect it.</li>
+                <li>Check fonts, colors, effects, transparency, and alignment.</li>
+                <li>Do not assume every PSD-specific feature will translate identically.</li>
+                <li>Verify the final design before printing or publishing it.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                PSD to AI FAQ
+              </h2>
+              <div className="space-y-4">
+                {[
+                  ['What file do I upload?', 'Upload a PSD file using the file selector on this page.'],
+                  ['What output does the tool create?', 'The converter returns an AI file when conversion completes successfully.'],
+                  ['Can I choose conversion quality?', 'Yes. Low, Medium, and High quality options are available on the page.'],
+                  ['Will every PSD feature remain identical?', 'Not necessarily. PSD and AI use different document structures, so review the converted file in compatible software.'],
+                  ['Should I keep my original PSD?', 'Yes. Keep the original source file so you can return to it if the converted result needs adjustment.'],
+                ].map(([q, a]) => (
+                  <div key={q} className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
+                    <p className="text-sm text-gray-600">{a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>
