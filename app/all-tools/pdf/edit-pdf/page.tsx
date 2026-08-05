@@ -181,7 +181,172 @@ export default function EditPdfPage() {
             </div>
           )}
         </div>
-      </main>
+
+      <section className="bg-white border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-16 space-y-12">
+
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              How to edit PDF text online
+            </h2>
+            <p className="text-gray-600 leading-7 mb-6">
+              Upload a PDF to open it in the visual editor. Review the document,
+              select editable text, make the required changes, and export the
+              updated PDF when you are finished.
+            </p>
+
+            <div className="grid md:grid-cols-4 gap-4">
+              {[
+                ['1', 'Upload PDF', 'Choose the PDF document you want to edit.'],
+                ['2', 'Review content', 'Use the preview to locate the text you need to change.'],
+                ['3', 'Edit text', 'Select supported text content and make your changes.'],
+                ['4', 'Save PDF', 'Review the edited document and download the result.'],
+              ].map(([number, title, text]) => (
+                <div key={number} className="border border-gray-200 rounded-xl p-5">
+                  <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold mb-3">
+                    {number}
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                  <p className="text-sm text-gray-600 leading-6">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                What can you edit in a PDF?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                This editor is intended for text content that can be identified
+                inside the PDF. The visual preview helps you locate editable
+                content and review changes before downloading the updated file.
+              </p>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                What about scanned PDFs?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                A scanned PDF may contain page images rather than selectable
+                text. If visible words cannot be selected or edited normally,
+                use PDF OCR first to recognize the text.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Edit PDF vs other PDF tools
+            </h2>
+            <p className="text-gray-600 leading-7">
+              Use Edit PDF when you need to change existing editable text.
+              Use Add Text when you want to place new text on a document,
+              Annotate PDF for markup and notes, PDF OCR for scanned pages,
+              and E-Sign PDF when you need to place an electronic signature.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Tips before editing a PDF
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                'Keep the original PDF before making important changes.',
+                'Check names, dates, amounts, and other important details after editing.',
+                'Use the visual preview to confirm that you selected the correct text.',
+                'Review every edited page before downloading the final PDF.',
+                'Use OCR when the document contains scanned page images.',
+                'Use dedicated annotation or signing tools when you do not need to edit existing text.',
+              ].map((tip) => (
+                <div key={tip} className="flex gap-3 border border-gray-200 rounded-lg p-4">
+                  <span className="text-purple-600 font-bold">✓</span>
+                  <p className="text-gray-600">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Edit PDF FAQ
+            </h2>
+
+            <div className="space-y-4">
+              {[
+                {
+                  q: 'Can I edit PDF text online?',
+                  a: 'Yes. Upload a supported PDF and use the visual editor to change text content that the editor can identify.',
+                },
+                {
+                  q: 'Why can I see text but cannot edit it?',
+                  a: 'The words may be part of a scanned image rather than selectable PDF text. PDF OCR is more appropriate for scanned documents.',
+                },
+                {
+                  q: 'Can I preview my changes before downloading?',
+                  a: 'Yes. The editor provides a visual document preview so you can inspect the document while making changes.',
+                },
+                {
+                  q: 'Is Edit PDF the same as Annotate PDF?',
+                  a: 'No. Edit PDF focuses on changing editable text, while Annotate PDF is intended for markup, notes, and annotations.',
+                },
+              ].map((item) => (
+                <div key={item.q} className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">{item.q}</h3>
+                  <p className="text-gray-600 leading-7">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Related PDF tools
+            </h2>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link
+                href="/all-tools/pdf/pdf-ocr"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">PDF OCR</h3>
+                <p className="text-sm text-gray-600">Recognize text in scanned PDFs.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/annotate-pdf"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">Annotate PDF</h3>
+                <p className="text-sm text-gray-600">Add markup and annotations.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/esign-pdf"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">E-Sign PDF</h3>
+                <p className="text-sm text-gray-600">Add an electronic signature.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/add-text"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">Add Text</h3>
+                <p className="text-sm text-gray-600">Place new text on PDF pages.</p>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+</main>
       <Footer />
     </>
   );
