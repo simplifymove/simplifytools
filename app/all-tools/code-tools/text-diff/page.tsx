@@ -644,6 +644,130 @@ export default function TextDiffPage() {
                 </motion.div>
               )}
             </motion.div>
+
+            {/* Supporting content */}
+            <section className="max-w-7xl mx-auto mt-14 space-y-10">
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How to compare two texts
+                </h2>
+                <ol className="space-y-3 text-gray-700 list-decimal pl-5">
+                  <li>Paste your original text into the first text box or open a supported text file.</li>
+                  <li>Paste the revised version into the changed-text box.</li>
+                  <li>Select <strong>Find difference</strong> to compare the two versions.</li>
+                  <li>Review added, removed, and modified lines in the comparison results.</li>
+                  <li>Export the comparison as PDF or CSV when you need a copy of the results.</li>
+                </ol>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">
+                    What is a text diff checker?
+                  </h2>
+                  <p className="text-gray-700 leading-7">
+                    A text diff checker compares two versions of text and identifies where
+                    they differ. It can help you spot lines that were added, removed, or
+                    changed without manually reading both versions from beginning to end.
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">
+                    When is text comparison useful?
+                  </h2>
+                  <p className="text-gray-700 leading-7">
+                    Text comparison is useful when reviewing edited documents, configuration
+                    files, source code, JSON, CSV data, notes, drafts, or other plain-text
+                    content. It provides a quick way to check what changed between versions.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                  Understanding the comparison results
+                </h2>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="rounded-xl bg-green-50 border border-green-100 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Added lines</h3>
+                    <p className="text-sm text-gray-700 leading-6">
+                      Added content identifies lines that appear in the changed version.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-red-50 border border-red-100 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Removed lines</h3>
+                    <p className="text-sm text-gray-700 leading-6">
+                      Removed content identifies lines from the original version that are
+                      no longer present.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-yellow-50 border border-yellow-100 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Modified lines</h3>
+                    <p className="text-sm text-gray-700 leading-6">
+                      Modified content highlights lines whose text differs between the two
+                      versions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                  Text Diff Checker FAQ
+                </h2>
+
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Can I compare files instead of pasting text?
+                    </h3>
+                    <p className="text-gray-700 leading-7">
+                      Yes. You can open supported text-based files in either comparison
+                      field, including formats such as TXT, Markdown, CSV, JSON, XML,
+                      HTML, JavaScript, TypeScript, Python, Java, C++, and C#.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Can I export the comparison?
+                    </h3>
+                    <p className="text-gray-700 leading-7">
+                      Yes. After running a comparison, you can export a PDF report or
+                      create a CSV file that can be opened in spreadsheet applications.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      What kinds of changes does the tool show?
+                    </h3>
+                    <p className="text-gray-700 leading-7">
+                      The comparison summary reports added, removed, and modified lines,
+                      while the detailed view highlights the differences between the
+                      original and changed text.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 rounded-2xl border border-blue-100 p-6 md:p-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Tips for accurate text comparison
+                </h2>
+                <p className="text-gray-700 leading-7">
+                  Compare versions that use similar formatting when possible. Changes in
+                  line breaks, spacing, or formatting can appear as differences even when
+                  the underlying wording is similar. For structured files such as JSON or
+                  source code, formatting both versions consistently can make the results
+                  easier to review.
+                </p>
+              </div>
+            </section>
           </div>
         </div>
       </main>
