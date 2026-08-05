@@ -84,7 +84,6 @@ const MP4_POLICY: BrowserResultToolPolicy = {
 };
 
 const TEXT_BROWSER_TOOLS = [
-  'image-to-text',
   'ocr-to-text',
   ...Object.keys(aiWriteTools),
   ...Object.keys(codeTools),
@@ -173,6 +172,14 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
   ...Object.fromEntries(PNG_BROWSER_TOOLS.map((toolSlug) => [toolSlug, PNG_POLICY])),
   ...Object.fromEntries(JPEG_BROWSER_TOOLS.map((toolSlug) => [toolSlug, JPEG_POLICY])),
   ...Object.fromEntries(TEXT_BROWSER_TOOLS.map((toolSlug) => [toolSlug, TEXT_POLICY])),
+  'image-to-text': {
+    extensions: ['.txt', '.pdf'],
+    mimeTypes: [
+      'text/plain',
+      'text/plain;charset=utf-8',
+      'application/pdf',
+    ],
+  },
   'jpg-to-avif': {
     extensions: ['.avif'],
     mimeTypes: ['image/avif'],
