@@ -158,6 +158,12 @@ const nextConfig = {
         destination: '/all-tools/:path*',
         permanent: true, // 301 redirect
       },
+      // Standalone Code Minifier -> canonical Code Tools route
+      {
+        source: '/all-tools/code-minifier',
+        destination: '/all-tools/code-tools/code-minifier',
+        permanent: true,
+      },
       // /all-tools/code -> /all-tools/code-tools (canonical code tools route)
       {
         source: '/all-tools/code',
