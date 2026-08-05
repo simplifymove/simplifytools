@@ -139,7 +139,7 @@ export default function GifToJpgPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
+
                     {/* Quality */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -192,7 +192,7 @@ export default function GifToJpgPage() {
                       <li>• Instant conversion in your browser</li>
                       <li>• Uses first frame of animated GIFs</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Conversion happens in your browser</li>
                     </ul>
                   </div>
                 </div>
@@ -200,7 +200,143 @@ export default function GifToJpgPage() {
             </div>
           </div>
         </div>
-      </main>
+
+          {/* Supporting Content */}
+          <section className="max-w-6xl mx-auto w-full px-4 md:px-8 pb-16 space-y-12">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-5">
+                How to Convert GIF to JPG
+              </h2>
+              <p className="text-gray-700 leading-7 mb-4">
+                Use the GIF to JPG converter when you need a static JPEG image
+                from a GIF file. Upload your GIF, choose the JPG quality level,
+                and select Convert to JPG. The conversion takes place directly
+                in your browser using the browser&apos;s image and Canvas
+                capabilities.
+              </p>
+              <p className="text-gray-700 leading-7">
+                After conversion, continue to the download page to retrieve the
+                generated JPG. The converted JPG is prepared for the download
+                flow only after you choose to continue.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-5">
+                What Happens to Animated GIFs?
+              </h2>
+              <p className="text-gray-700 leading-7 mb-4">
+                JPG is a static image format and cannot preserve GIF animation.
+                When an animated GIF is converted, the browser-decoded first
+                frame is rendered to a Canvas and encoded as a JPG image. The
+                remaining animation frames are not included in the JPG output.
+              </p>
+              <p className="text-gray-700 leading-7">
+                This makes the tool useful when you want a still image from the
+                beginning of an animated GIF for documents, thumbnails,
+                previews, uploads, or other places where a JPG file is more
+                convenient than an animation.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-5">
+                Choosing JPG Quality
+              </h2>
+              <p className="text-gray-700 leading-7 mb-4">
+                The quality control lets you choose a JPEG output quality from
+                60% to 95%. Higher settings generally retain more visual detail
+                but can produce a larger file. Lower settings can reduce the
+                output size by applying stronger JPEG compression.
+              </p>
+              <p className="text-gray-700 leading-7">
+                The default 85% setting provides a practical starting point for
+                many images. If fine details or text look too compressed, try a
+                higher value. If reducing file size matters more, try a lower
+                setting and compare the result.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  When GIF to JPG Is Useful
+                </h2>
+                <ul className="space-y-3 text-gray-700 leading-6">
+                  <li>• Create a static JPG from an animated GIF.</li>
+                  <li>• Use a GIF frame in documents or presentations.</li>
+                  <li>• Prepare a JPEG for services that require JPG uploads.</li>
+                  <li>• Adjust JPEG quality to balance detail and file size.</li>
+                  <li>• Convert without installing desktop image software.</li>
+                </ul>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Conversion and Download
+                </h2>
+                <ul className="space-y-3 text-gray-700 leading-6">
+                  <li>• The GIF is read and converted in your browser.</li>
+                  <li>• Animated GIF output becomes a single static JPG.</li>
+                  <li>• Your selected quality is used for JPEG encoding.</li>
+                  <li>• The generated JPG is uploaded when you continue to the download page.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-5">
+                GIF to JPG FAQ
+              </h2>
+
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Will the JPG remain animated?
+                  </h3>
+                  <p className="text-gray-700 leading-7">
+                    No. JPG does not support animation. The converter creates a
+                    static JPG from the browser-decoded first frame of the GIF.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Can I choose a different GIF frame?
+                  </h3>
+                  <p className="text-gray-700 leading-7">
+                    No. This converter does not currently provide manual frame
+                    selection. It creates the JPG from the first frame used by
+                    the browser image decoder.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Does the quality setting affect the JPG?
+                  </h3>
+                  <p className="text-gray-700 leading-7">
+                    Yes. The selected quality value is used when the browser
+                    encodes the Canvas image as JPEG. Higher quality can retain
+                    more detail while typically increasing file size.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Is my GIF uploaded for conversion?
+                  </h3>
+                  <p className="text-gray-700 leading-7">
+                    The GIF-to-JPG conversion itself happens in your browser.
+                    When you continue to the download page, the generated JPG
+                    is uploaded so the download result can be prepared.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+</main>
       <Footer />
     </>
   );
