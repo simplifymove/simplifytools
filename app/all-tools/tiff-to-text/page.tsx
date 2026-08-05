@@ -36,18 +36,24 @@ export default function TiffToTextPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     try {
       const formData = new FormData();
-      formData.append('tool', 'tiff-to-text');
-      formData.append('file', file);
-      formData.append('options', JSON.stringify({ 
-        language,
-        output_format: outputFormat 
-      }));
 
-      const response = await fetch('/api/pdf', {
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'tiff',
+          to_format: outputFormat,
+          options: {
+            language,
+          },
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
       });
@@ -57,6 +63,20 @@ export default function TiffToTextPage() {
       }
 
       const blob = await response.blob();
+
+      const isExpectedOutput =
+        outputFormat === 'pdf'
+          ? blob.type === 'application/pdf'
+          : blob.type.startsWith('text/plain');
+
+      if (!isExpectedOutput) {
+        throw new Error(
+          `Unexpected ${outputFormat.toUpperCase()} output type: ${
+            blob.type || 'unknown'
+          }`,
+        );
+      }
+
       const url = URL.createObjectURL(blob);
       setResult(url);
       setResultFileName(`extracted-text.${outputFormat}`);
@@ -106,7 +126,7 @@ export default function TiffToTextPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">TIFF to Text</h1>
-                <p className="text-lg text-white/90">Extract text from TIFF images with advanced OCR technology. Supports multiple languages.</p>
+                <p className="text-lg text-white/90">Extract text from TIFF images using OCR. Supports multiple languages and TXT or searchable PDF output.</p>
               </div>
             </div>
           </div>

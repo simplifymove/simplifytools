@@ -273,6 +273,14 @@ const ALLOWED_BROWSER_RESULT_TOOLS: Record<
     extensions: ['.tiff', '.tif'],
     mimeTypes: ['image/tiff'],
   },
+  'tiff-to-text': {
+    extensions: ['.txt', '.pdf'],
+    mimeTypes: [
+      'text/plain',
+      'text/plain;charset=utf-8',
+      'application/pdf',
+    ],
+  },
   'tiff-to-jpg': {
     extensions: ['.jpg', '.jpeg'],
     mimeTypes: ['image/jpeg'],
