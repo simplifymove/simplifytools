@@ -156,7 +156,7 @@ export default function PricingPage() {
                 disabled
                 className="w-full mt-8 bg-gray-300 text-gray-600 px-6 py-3 rounded-lg font-semibold cursor-not-allowed"
               >
-                Coming Soon
+                Currently Unavailable
               </button>
             </div>
           </div>
@@ -287,7 +287,7 @@ export default function PricingPage() {
               },
               {
                 q: "Is there a free trial?",
-                a: "Starter plan (free) with 10 credits is coming soon. For now, try our API with a monthly subscription.",
+                a: "The Starter plan is not currently available. The monthly subscription is the available option for accessing AI Code Assistant features.",
               },
               {
                 q: "What if I run out of credits?",
