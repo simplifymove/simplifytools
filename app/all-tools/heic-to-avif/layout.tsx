@@ -1,14 +1,27 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'HEIC to AVIF - Free Image Converter | SimplifyConvert',
-  description: 'Convert HEIC images to modern AVIF format. Reduce file size while maintaining excellent quality. Fast, free online conversion.',
-  keywords: ['HEIC to AVIF', 'image converter', 'HEIC converter', 'AVIF converter', 'free converter'],
+  title: 'HEIC to AVIF Converter - Convert HEIC Images Online | SimplifyConvert',
+  description:
+    'Convert HEIC and HEIF images to AVIF online with adjustable quality. Create AVIF images from HEIC photos and download the converted result.',
+  keywords: [
+    'HEIC to AVIF',
+    'convert HEIC to AVIF',
+    'HEIC AVIF converter',
+    'HEIF to AVIF',
+    'AVIF image converter',
+  ],
+  alternates: {
+    canonical: 'https://simplifyconvert.com/all-tools/heic-to-avif',
+  },
   openGraph: {
-    title: 'HEIC to AVIF Converter - SimplifyConvert',
-    description: 'Convert HEIC images to AVIF format online. Reduce file size while maintaining quality.',
     type: 'website',
+    locale: 'en_US',
     url: 'https://simplifyconvert.com/all-tools/heic-to-avif',
+    siteName: 'SimplifyConvert',
+    title: 'HEIC to AVIF Converter',
+    description:
+      'Convert HEIC and HEIF images to AVIF online with adjustable output quality.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -18,11 +31,19 @@ export const metadata: Metadata = {
       },
     ],
   },
-  alternates: {
-    canonical: 'https://simplifyconvert.com/all-tools/heic-to-avif',
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HEIC to AVIF Converter | SimplifyConvert',
+    description:
+      'Convert HEIC and HEIF images to AVIF online with adjustable output quality.',
+    images: ['https://simplifyconvert.com/og-image.jpg'],
   },
 };
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+export default function HeicToAvifLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
 }
