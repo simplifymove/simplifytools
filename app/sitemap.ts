@@ -32,8 +32,6 @@ const EXCLUDED_PATTERNS = [
 ];
 
 const UNFINISHED_TOOL_IDS = new Set([
-  'ai-image-gen',
-  'ai-image-generator',
   'webp-to-tiff',
 ]);
 

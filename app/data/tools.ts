@@ -43,15 +43,6 @@ export interface Tool {
 
 const aiEditingTools: Tool[] = [
   {
-    id: 'ai-image-gen',
-    title: 'AI Image Generator',
-    description: 'Generate images from text descriptions using AI',
-    category: 'Image',
-    icon: Wand2,
-    route: '/all-tools/ai-image-generator',
-    headerColor: 'from-purple-400 via-indigo-400 to-purple-500',
-  },
-  {
     id: 'remove-bg',
     title: 'Remove Background',
     description: 'Remove backgrounds from images automatically',

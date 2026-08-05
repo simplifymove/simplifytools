@@ -404,7 +404,6 @@ export const IMAGE_TOOL_FILE_SIZE_LIMITS: Record<string, number> = {
   // AI tools
   'background-remover': 50,
   'ai-image-upscaler': 50,
-  'ai-image-generator': 50,
   'remove-background': 50,
   
   // GIF tools

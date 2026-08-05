@@ -100,8 +100,6 @@ const fallbackIds: Record<RelatedToolFamily, string[]> = {
 };
 
 const UNAVAILABLE_RELATED_TOOL_IDS = new Set([
-  'ai-image-gen',
-  'ai-image-generator',
   'webp-to-tiff',
 ]);
 

@@ -207,7 +207,7 @@ function mapImageTools(): AuditToolTarget[] {
       const outputExtension = conversion ? `.${conversion[2] === 'jpeg' ? 'jpg' : conversion[2] === 'tif' ? 'tiff' : conversion[2]}`
         : routeSlug === 'compress-image' ? '.jpg' : '.png';
       const renderedOutput = ['image-to-text', 'pdf-to-text', 'tiff-to-text', 'view-metadata'].includes(routeSlug);
-      const noFileInput = ['ai-image-generator', 'chart-maker', 'font-awesome-to-png'].includes(routeSlug);
+      const noFileInput = ['chart-maker', 'font-awesome-to-png'].includes(routeSlug);
       return {
         slug: tool.id,
         title: tool.title,
@@ -223,9 +223,8 @@ function mapImageTools(): AuditToolTarget[] {
             apiEndpoint: '/api/convert',
             noTextSuccessMessages: ['No text was detected in this image.'],
           } : undefined,
-          executionClass: routeSlug === 'ai-image-generator' ? externalClass(['OPENROUTER_API_KEY']) : 'LOCAL_DETERMINISTIC',
-          externalProvider: routeSlug === 'ai-image-generator' ? 'OpenRouter' : undefined,
-          rateSensitive: routeSlug === 'ai-image-generator',
+          executionClass: 'LOCAL_DETERMINISTIC',
+          rateSensitive: false,
         },
       };
     });

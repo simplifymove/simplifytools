@@ -22,7 +22,6 @@ import {
   Sparkles,
   TrendingUp,
   Video,
-  Wand2,
   Zap,
 } from 'lucide-react';
 import { Footer } from './components/Footer';
@@ -124,13 +123,6 @@ const popularTasks = [
     icon: FileText,
     accent: 'bg-rose-100 text-rose-700',
     link: '/all-tools/pdf/compress-pdf',
-  },
-  {
-    title: 'AI Image Generator',
-    description: 'Create an image from a text prompt.',
-    icon: Wand2,
-    accent: 'bg-blue-100 text-blue-700',
-    link: '/all-tools/ai-image-generator',
   },
 ];
 

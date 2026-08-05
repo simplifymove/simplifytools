@@ -235,6 +235,11 @@ const nextConfig = {
         statusCode: 301,
       },
       {
+        source: '/all-tools/ai-image-generator',
+        destination: '/ai-studio',
+        statusCode: 301,
+      },
+      {
         source: '/all-tools/ai-write',
         destination: '/all-tools/ai-tools',
         statusCode: 301,
