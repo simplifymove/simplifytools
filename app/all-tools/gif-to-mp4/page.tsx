@@ -252,6 +252,152 @@ export default function GifToMp4Page() {
             </div>
           </div>
         </div>
+
+        {/* Supporting Content */}
+        <section className="px-4 md:px-8 pb-16">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                How to convert GIF to MP4 online
+              </h2>
+              <p className="text-gray-700 leading-7 mb-6">
+                SimplifyConvert converts an animated GIF into an MP4 video.
+                Upload your GIF, choose the output frame rate, run the
+                conversion, and download the resulting MP4 file.
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  ['1', 'Upload your GIF', 'Choose the animated GIF file you want to convert.'],
+                  ['2', 'Choose the frame rate', 'Set the MP4 frame rate anywhere from 15 to 60 frames per second.'],
+                  ['3', 'Convert to MP4', 'Start the server-assisted conversion and wait for the video to be prepared.'],
+                  ['4', 'Download the video', 'Download the converted MP4 when processing is complete.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="border border-gray-200 rounded-lg p-4">
+                    <div className="font-semibold text-gray-900 mb-1">
+                      {number}. {title}
+                    </div>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Why convert GIF to MP4?
+                </h2>
+                <p className="text-gray-700 leading-7">
+                  GIF is commonly used for short looping animations, while MP4
+                  is a standard video format supported by many media players,
+                  websites, presentations, messaging platforms, and video
+                  workflows. Converting an animation to MP4 can make it easier
+                  to use where a video file is preferred.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  How does the FPS setting work?
+                </h2>
+                <p className="text-gray-700 leading-7">
+                  The converter provides an output frame-rate control from
+                  15 to 60 FPS. A higher setting produces more video frames
+                  per second, while a lower setting uses fewer frames. Choose
+                  the value that best suits how you intend to use the MP4.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                GIF vs MP4
+              </h2>
+              <div className="grid md:grid-cols-2 gap-6 text-gray-700">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">GIF</h3>
+                  <p className="leading-7">
+                    GIF is an image format that can contain multiple frames to
+                    create an animation. It is widely used for short visual
+                    loops and simple animated graphics.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">MP4</h3>
+                  <p className="leading-7">
+                    MP4 is a video container commonly used for video playback
+                    and distribution. It is useful when an animated GIF needs
+                    to be handled as a conventional video file.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Tips for converting GIF animations
+              </h2>
+              <ul className="space-y-3 text-gray-700">
+                <li>• Preview the source GIF and make sure the animation is correct before conversion.</li>
+                <li>• Use the FPS control to select an appropriate output frame rate.</li>
+                <li>• Allow the conversion to finish before starting the download.</li>
+                <li>• Preview the resulting MP4 after downloading it, especially when timing is important.</li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                GIF to MP4 FAQ
+              </h2>
+              <div className="space-y-5">
+                {[
+                  ['What file does this tool accept?', 'This converter is designed for GIF input and produces an MP4 video.'],
+                  ['Can I change the output frame rate?', 'Yes. The page provides an FPS control ranging from 15 to 60 frames per second.'],
+                  ['Does converting a GIF add audio?', 'No audio source is supplied by this GIF conversion workflow, so the tool should be used for converting the visual animation to video.'],
+                  ['Why would I use MP4 instead of GIF?', 'MP4 can be useful when a website, application, presentation, or other workflow expects a video file rather than an animated image.'],
+                  ['Should I check the MP4 after conversion?', 'Yes. Preview the downloaded video to confirm that its animation and playback meet your needs.'],
+                ].map(([question, answer]) => (
+                  <div key={question}>
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      {question}
+                    </h3>
+                    <p className="text-gray-700 leading-7">{answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-orange-50 rounded-xl border border-orange-100 p-6 md:p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Related media tools
+              </h2>
+              <p className="text-gray-700 leading-7">
+                Explore SimplifyConvert&apos;s Image and Video tool categories
+                for other media conversion and editing utilities.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-4">
+                <Link
+                  href="/all-tools/image-tools"
+                  className="text-orange-700 font-semibold hover:underline"
+                >
+                  Image Tools
+                </Link>
+                <Link
+                  href="/all-tools/video-tools"
+                  className="text-orange-700 font-semibold hover:underline"
+                >
+                  Video Tools
+                </Link>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
       </main>
       <Footer />
     </>
