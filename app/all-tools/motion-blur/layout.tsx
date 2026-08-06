@@ -1,8 +1,8 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Motion Blur - Free Online Motion Effect Tool',
-  description: 'Apply dynamic motion blur effects to your images. Create stunning motion-blurred photos with directional blur control.',
+  title: 'Motion Blur - Create a Directional Blur Effect | SimplifyConvert',
+  description: 'Apply a directional motion-blur effect to JPG, PNG, or WebP images in your browser and adjust the effect before downloading.',
   keywords: ['motion blur', 'blur effect', 'dynamic blur', 'image effect', 'photo editor', 'online tool'],
   openGraph: {
     title: 'Motion Blur - Free Online Motion Effect Tool',

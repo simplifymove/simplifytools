@@ -1,8 +1,8 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Histogram Equalization - Auto Contrast Enhancer',
-  description: 'Automatically enhance image contrast using histogram equalization. Improve visibility and detail in dark or overexposed photos.',
+  title: 'Histogram Equalization - Improve Image Contrast | SimplifyConvert',
+  description: 'Apply histogram equalization in your browser to redistribute tonal values and improve contrast in suitable JPG, PNG, or WebP images.',
   keywords: [
     'histogram equalization',
     'contrast enhancement',
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Histogram Equalize',
-    description: 'Auto-enhance contrast with advanced histogram equalization',
+    description: 'Redistribute tonal values with histogram equalization to improve contrast in suitable images.',
     url: 'https://simplifyconvert.com/all-tools/histogram-equalize',
     type: 'website',
   },

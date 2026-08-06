@@ -109,7 +109,7 @@ export default function HueSaturationPage() {
             const newS = Math.max(0, Math.min(100, s + saturation));
             const newL = Math.max(0, Math.min(100, l + lightness));
             const [r, g, b] = hslToRgb(newH, newS, newL);
-            
+
             data[i] = r;
             data[i + 1] = g;
             data[i + 2] = b;
@@ -144,7 +144,7 @@ export default function HueSaturationPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -196,7 +196,7 @@ export default function HueSaturationPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Adjust Colors</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -294,7 +294,7 @@ export default function HueSaturationPage() {
                   <p className="text-gray-700">Adjust hue, saturation, and lightness separately for precision.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-violet-600 mb-2">Professional Results</h3>
+                  <h3 className="font-bold text-lg text-violet-600 mb-2">Adjustable Results</h3>
                   <p className="text-gray-700">Achieve color grading quality without expensive software.</p>
                 </div>
                 <div>
@@ -345,7 +345,7 @@ export default function HueSaturationPage() {
               <div className="grid md:grid-cols-3 gap-4">
                 <Link href="/all-tools/color-grader" className="p-4 border-2 border-violet-200 rounded-lg hover:bg-violet-50 transition">
                   <h3 className="font-bold text-gray-800">Color Grader</h3>
-                  <p className="text-sm text-gray-600">Professional color grading</p>
+                  <p className="text-sm text-gray-600">Color adjustment controls</p>
                 </Link>
                 <Link href="/all-tools/image-enhancer" className="p-4 border-2 border-violet-200 rounded-lg hover:bg-violet-50 transition">
                   <h3 className="font-bold text-gray-800">Image Enhancer</h3>
@@ -361,7 +361,86 @@ export default function HueSaturationPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How hue and saturation adjustment works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Upload an image and adjust hue, saturation, and lightness.
+                The browser recalculates image color values according to the
+                selected controls and updates the preview before download.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The preview lets you compare the result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Hue shifts colors around the color spectrum, saturation changes color intensity, and lightness adjusts overall tonal brightness.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                hue and saturation adjustment works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview changes before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the preview and available controls to review the
+                    result before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

@@ -1,6 +1,6 @@
 ﻿export const metadata = {
-  title: 'Free Color Grader - Professional Photo Color Grading Tool',
-  description: 'Grade your photos like a professional. Adjust hue, saturation, and color balance with intuitive controls for stunning visual results.',
+  title: 'Color Grader - Adjust Image Color Balance | SimplifyConvert',
+  description: 'Adjust image color balance, hue, and saturation with browser-based controls and preview the result before downloading.',
   keywords: 'color grader, color grading, photo editor, hue adjustment, saturation, color correction',
   openGraph: {
     title: 'Free Color Grader - Professional Photo Color Grading Tool',

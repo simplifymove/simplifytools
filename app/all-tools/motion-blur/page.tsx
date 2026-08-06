@@ -116,7 +116,7 @@ export default function MotionBlurPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -157,7 +157,7 @@ export default function MotionBlurPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">💨 Motion Blur</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Apply dynamic motion blur effects. Create stunning motion-blurred photos with directional control.
+              Apply dynamic motion blur effects. Create a directional motion-blur effect with adjustable controls.
             </p>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function MotionBlurPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Motion Blur</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -253,7 +253,7 @@ export default function MotionBlurPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-blue-600 mb-2">Dynamic Effect</h3>
-                  <p className="text-gray-700">Create stunning motion effects.</p>
+                  <p className="text-gray-700">Create a directional motion effect.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-blue-600 mb-2">Directional Control</h3>
@@ -323,7 +323,88 @@ export default function MotionBlurPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Motion Blur effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Motion blur blends pixel information along a selected
+                direction to create the appearance of movement. The browser
+                processes the source image and updates the result according to
+                the available blur controls.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect is generated with browser image and Canvas
+                  processing. No separate server conversion step is used for
+                  the visual effect itself.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Directional blur deliberately reduces fine detail along the blur path; it simulates motion rather than recovering or sharpening the source.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and use moderate settings
+                before increasing the effect. Compare the preview with the
+                original because stronger processing can intentionally reduce
+                or exaggerate visible detail.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Motion Blur effect works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. The tool changes or overlays existing image pixels and
+                    does not reconstruct missing source detail.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview the effect before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the available controls and preview to inspect the
+                    result before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

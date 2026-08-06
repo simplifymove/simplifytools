@@ -95,7 +95,7 @@ export default function SepiaFilterPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -136,10 +136,10 @@ export default function SepiaFilterPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎂 Sepia Filter</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Convert your photos to classic sepia tones instantly. Transform modern images into warm, vintage memories with authentic sepia color grading.
+              Convert your photos to warm sepia-style tones. Transform modern images into warm, vintage memories with authentic sepia color grading.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Perfect for creating nostalgic and classic photo effects online, completely free.
+              Create a warm, vintage-style color treatment.
             </p>
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function SepiaFilterPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Sepia Filter</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -277,7 +277,7 @@ export default function SepiaFilterPage() {
                 </Link>
                 <Link href="/all-tools/color-grader" className="p-4 border-2 border-amber-200 rounded-lg hover:bg-amber-50 transition">
                   <h3 className="font-bold text-gray-800">Color Grader</h3>
-                  <p className="text-sm text-gray-600">Professional color control</p>
+                  <p className="text-sm text-gray-600">Color controls</p>
                 </Link>
               </div>
             </div>
@@ -285,7 +285,86 @@ export default function SepiaFilterPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Sepia Filter works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The sepia filter recalculates image color channels to produce
+                warm brown and muted tonal values associated with a sepia-style
+                photographic effect.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The preview lets you compare the result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect changes existing pixel colors; it does not recreate historical film characteristics or add missing source detail.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Sepia Filter works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview changes before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the preview and available controls to review the
+                    result before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

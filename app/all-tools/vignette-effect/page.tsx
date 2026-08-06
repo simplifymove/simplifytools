@@ -51,7 +51,7 @@ export default function VignetteEffectPage() {
           }
 
           ctx.drawImage(img, 0, 0);
-          
+
           const radialGradient = ctx.createRadialGradient(
             canvas.width / 2, canvas.height / 2, 0,
             canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height)
@@ -59,7 +59,7 @@ export default function VignetteEffectPage() {
           const strength = vignetteStrength / 100;
           radialGradient.addColorStop(0, `rgba(0, 0, 0, 0)`);
           radialGradient.addColorStop(1, `rgba(0, 0, 0, ${strength})`);
-          
+
           ctx.fillStyle = radialGradient;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -91,7 +91,7 @@ export default function VignetteEffectPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -132,10 +132,10 @@ export default function VignetteEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎬 Vignette Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Add professional vignette borders to your photos instantly. Darken the edges to create a focal point effect and draw attention to the center of your images.
+              Add an adjustable vignette-style edge-darkening effect to your photos. Darken the edges to create a focal point effect and draw attention to the center of your images.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Perfect for creating professional-looking photos with enhanced visual impact.
+              Use the vignette effect to visually emphasize the center of an image.
             </p>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function VignetteEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Vignette Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -214,15 +214,15 @@ export default function VignetteEffectPage() {
                   <p className="text-gray-700">Draw viewer attention to the center of your image with darkened edges.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-700 mb-2">Professional Look</h3>
-                  <p className="text-gray-700">Add a polished, cinema-quality effect to your photos instantly.</p>
+                  <h3 className="font-bold text-lg text-slate-700 mb-2">Vignette Styling</h3>
+                  <p className="text-gray-700">Add a gradual edge-darkening effect to the image.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-700 mb-2">Adjustable Intensity</h3>
                   <p className="text-gray-700">Control vignette strength from subtle to dramatic for any photo.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-700 mb-2">Instant Processing</h3>
+                  <h3 className="font-bold text-lg text-slate-700 mb-2">Interactive Preview</h3>
                   <p className="text-gray-700">See results immediately with our fast, browser-based processing.</p>
                 </div>
               </div>
@@ -281,7 +281,86 @@ export default function VignetteEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Vignette Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tool adds a gradual darkening effect around the outer
+                portions of the image while leaving more of the center visible.
+                The vignette is rendered as a browser Canvas overlay.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The preview lets you compare the result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  A vignette changes edge brightness to emphasize the center visually; it does not detect the subject or automatically determine composition.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Vignette Effect works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview changes before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the preview and available controls to review the
+                    result before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

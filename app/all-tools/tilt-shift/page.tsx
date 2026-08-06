@@ -325,7 +325,86 @@ export default function TiltShiftPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Tilt-Shift Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tilt-shift effect keeps a selected region comparatively
+                sharper while applying stronger blur to surrounding portions
+                of the image. This can create a stylized shallow-focus look.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The preview lets you compare the result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  This is a simulated selective-blur effect; it does not recreate optical depth data or true camera tilt-shift behavior.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Tilt-Shift Effect works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview changes before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the preview and available controls to review the
+                    result before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

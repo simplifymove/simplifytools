@@ -106,7 +106,7 @@ export default function SunburstPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -147,7 +147,7 @@ export default function SunburstPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">☀️ Sunburst Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Add radial sunburst and light ray effects. Create stunning sunburst lighting instantly.
+              Add a stylized radial sunburst and light-ray effect to an image.
             </p>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function SunburstPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Add Sunburst Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -324,7 +324,88 @@ export default function SunburstPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Sunburst Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The Sunburst tool draws radial light-ray graphics over the
+                source image using browser Canvas rendering. The effect is
+                composited with the original image to create a stylized burst
+                of light.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect is generated with browser image and Canvas
+                  processing. No separate server conversion step is used for
+                  the visual effect itself.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Sunburst is a decorative overlay effect; it does not detect real light sources or physically simulate scene lighting.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and use moderate settings
+                before increasing the effect. Compare the preview with the
+                original because stronger processing can intentionally reduce
+                or exaggerate visible detail.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Sunburst Effect works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. The tool changes or overlays existing image pixels and
+                    does not reconstruct missing source detail.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview the effect before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the available controls and preview to inspect the
+                    result before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

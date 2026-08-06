@@ -53,7 +53,7 @@ export default function LensFlarePage() {
           }
 
           ctx.drawImage(img, 0, 0);
-          
+
           const flareX = (posX / 100) * canvas.width;
           const flareY = (posY / 100) * canvas.height;
           const scale = (intensity / 50) * 2;
@@ -63,7 +63,7 @@ export default function LensFlarePage() {
           mainGradient.addColorStop(0, `rgba(255, 255, 200, ${0.6 * (intensity / 100)})`);
           mainGradient.addColorStop(0.5, `rgba(255, 200, 100, ${0.3 * (intensity / 100)})`);
           mainGradient.addColorStop(1, 'rgba(255, 150, 50, 0)');
-          
+
           ctx.fillStyle = mainGradient;
           ctx.fillRect(flareX - 150 * scale, flareY - 150 * scale, 300 * scale, 300 * scale);
 
@@ -71,7 +71,7 @@ export default function LensFlarePage() {
           const secondaryGradient = ctx.createRadialGradient(flareX, flareY, 0, flareX, flareY, 100 * scale);
           secondaryGradient.addColorStop(0, `rgba(200, 220, 255, ${0.4 * (intensity / 100)})`);
           secondaryGradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
-          
+
           ctx.fillStyle = secondaryGradient;
           ctx.fillRect(flareX - 100 * scale, flareY - 100 * scale, 200 * scale, 200 * scale);
 
@@ -109,7 +109,7 @@ export default function LensFlarePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -150,7 +150,7 @@ export default function LensFlarePage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">✨ Lens Flare</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Add optical lens flare effects to photos. Create stunning lens flare artifacts with customizable positioning.
+              Add a stylized lens-flare effect with customizable positioning.
             </p>
           </div>
         </div>
@@ -161,7 +161,7 @@ export default function LensFlarePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Add Lens Flare Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -257,7 +257,7 @@ export default function LensFlarePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Optical Effects</h3>
-                  <p className="text-gray-700">Create professional lens flare artifacts.</p>
+                  <p className="text-gray-700">Create customizable lens-flare-style overlays.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Custom Position</h3>
@@ -327,7 +327,87 @@ export default function LensFlarePage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Lens Flare effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tool draws stylized flare elements over the uploaded image
+                using browser Canvas graphics. Position and other available
+                controls determine where the simulated light artifacts appear.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect is generated with browser image and Canvas
+                  processing. No separate server conversion step is used for
+                  the visual effect itself.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The flare is a visual overlay effect; it does not analyze the camera lens or recreate optical flare from real scene data.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and use moderate settings
+                before increasing the effect. Compare the preview with the
+                original because stronger processing can intentionally reduce
+                or exaggerate visible detail.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Lens Flare effect works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. The tool changes or overlays existing image pixels and
+                    does not reconstruct missing source detail.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview the effect before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the available controls and preview to inspect the
+                    result before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

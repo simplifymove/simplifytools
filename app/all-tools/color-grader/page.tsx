@@ -137,10 +137,10 @@ export default function ColorGraderPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Color Grader</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Grade and adjust colors in your photos like a professional. Control hue, saturation, and color balance to achieve the perfect look.
+              Adjust hue, saturation, and color balance in your photos. Control hue, saturation, and color balance to achieve the perfect look.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Professional-grade color correction tools, completely free and easy to use.
+              Use browser-based controls for image color adjustments.
             </p>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function ColorGraderPage() {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Why Use Color Grading</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-bold text-lg text-purple-600 mb-2">Professional Results</h3>
+                  <h3 className="font-bold text-lg text-purple-600 mb-2">Adjustable Results</h3>
                   <p className="text-gray-700">Achieve studio-quality color correction without expensive software.</p>
                 </div>
                 <div>
@@ -226,7 +226,7 @@ export default function ColorGraderPage() {
                   <p className="text-gray-700">Fine-tune hue, saturation, and balance for exact color preferences.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-purple-600 mb-2">Instant Adjustments</h3>
+                  <h3 className="font-bold text-lg text-purple-600 mb-2">Interactive Adjustments</h3>
                   <p className="text-gray-700">See changes in real-time as you adjust the sliders.</p>
                 </div>
                 <div>
@@ -289,7 +289,86 @@ export default function ColorGraderPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Color Grader works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Use the available color controls to change hue, saturation,
+                and color balance. The browser processes the image and updates
+                the preview as the selected color adjustments are applied.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The preview lets you compare the result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Color grading changes the appearance of existing image colors; it does not recover clipped highlights, missing detail, or unavailable source color information.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Color Grader works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview changes before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the preview and available controls to review the
+                    result before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
@@ -298,7 +377,7 @@ export default function ColorGraderPage() {
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
           name: 'Color Grader',
-          description: 'Professional color grading and adjustment tool',
+          description: 'Color adjustment controls and adjustment tool',
           url: 'https://simplifyconvert.com/all-tools/color-grader',
           applicationCategory: 'MultimediaApplication',
           offers: {
