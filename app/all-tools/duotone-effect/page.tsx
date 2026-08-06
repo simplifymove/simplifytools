@@ -300,7 +300,84 @@ export default function DuotoneEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Duotone Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Upload an image and choose the available duotone controls.
+                The browser processes the image pixels and maps tonal values
+                into a two-color style. Preview the result before downloading
+                the processed image.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The image effect is produced with browser image and Canvas
+                  processing. The preview lets you inspect the result before
+                  using the available download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Duotone processing remaps image tones for a stylized color treatment; it does not add detail that is missing from the source.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and compare the preview with
+                the original before downloading. Stronger effect settings can
+                intentionally remove or alter visible detail, so choose the
+                setting according to the result you need.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Duotone Effect works FAQ
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does the effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. The tool changes the appearance of existing image
+                    pixels; it does not reconstruct missing source detail.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview the result before downloading?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Use the on-page preview and available controls to
+                    inspect the processed image before downloading it.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

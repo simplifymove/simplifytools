@@ -306,7 +306,88 @@ export default function CartoonEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Cartoon Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The cartoon effect processes image pixels to simplify tonal
+                regions and emphasize visible boundaries. This creates a
+                stylized illustration-like appearance while retaining the
+                basic structure of the source image.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual effect is generated with browser image and
+                  Canvas processing. The source image is rendered, pixel
+                  values are adjusted, and the result is prepared for
+                  download through the existing image workflow.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The result is a pixel-based visual effect; it does not redraw the source with a generative illustration model.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Use a clear source image and compare the processed preview
+                with the original. Strong effect settings can intentionally
+                remove subtle detail or exaggerate edges and tonal changes.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                the Cartoon Effect works FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Does this effect increase image resolution?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    No. It changes existing pixel values and does not recreate
+                    missing detail or increase the source resolution.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    Can I preview the effect first?
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                    Yes. Review the available preview before downloading the
+                    processed result.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

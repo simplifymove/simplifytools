@@ -1,6 +1,6 @@
 ﻿export const metadata = {
-  title: 'Free Invert Colors Tool - Create Negative Effects',
-  description: 'Invert colors in your images for creative and artistic effects. Create negative color photos instantly.',
+  title: 'Invert Colors - Create a Negative Image Effect | SimplifyConvert',
+  description: 'Invert RGB color values in JPG, PNG, or WebP images directly in your browser and download the processed result.',
   keywords: 'invert colors, negative, color inversion, photo effect, artistic',
   openGraph: {
     title: 'Free Invert Colors Tool - Negative Effects',

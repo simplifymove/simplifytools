@@ -1,8 +1,8 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Edge Detection Tool - Free Online Image Processor',
-  description: 'Detect and highlight edges in images with advanced edge detection algorithms. Find boundaries and contours automatically.',
+  title: 'Edge Detection - Highlight Image Boundaries | SimplifyConvert',
+  description: 'Highlight visible image edges with browser-based pixel processing and download the resulting edge-detection image.',
   keywords: [
     'edge detection',
     'edge finding',
