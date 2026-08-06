@@ -573,16 +573,6 @@ const converterTools: Tool[] = [
     icon: RefreshCw,
     route: '/all-tools/jpg-to-tiff',
   },
-
-  {
-    id: 'psd-ai',
-    title: 'PSD to AI',
-    description: 'Convert Photoshop to Illustrator format',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/psd-to-ai',
-    headerColor: 'from-violet-400 via-purple-400 to-violet-500',
-  },
   {
     id: 'psd-jpg',
     title: 'PSD to JPG',

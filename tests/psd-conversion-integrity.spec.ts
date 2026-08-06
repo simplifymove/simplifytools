@@ -89,3 +89,21 @@ test('PSD browser-download policies require genuine output types', async () => {
   expect(source).toContain(`extension === '.png'`);
   expect(source).toContain(`extension === '.svg'`);
 });
+
+test('unsupported PSD to AI route is retired', async () => {
+  const page = read('app/all-tools/psd-to-ai/page.tsx');
+  const layout = read('app/all-tools/psd-to-ai/layout.tsx');
+  const tools = read('app/data/tools.ts');
+  const convert = read('python/convert.py');
+
+  expect(page).toContain(
+    `permanentRedirect('/all-tools/psd-to-svg')`,
+  );
+
+  expect(layout).toContain('index: false');
+
+  expect(tools).not.toContain(`route: '/all-tools/psd-to-ai'`);
+  expect(tools).not.toContain(`id: 'psd-ai'`);
+
+  expect(convert).not.toContain(`('psd', 'ai')`);
+});

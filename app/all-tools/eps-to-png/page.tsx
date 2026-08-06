@@ -293,10 +293,7 @@ export default function EpsToPngPage() {
                 Related image converters
               </h2>
               <div className="flex flex-wrap gap-3">
-                <Link href="/all-tools/psd-to-ai" className="text-orange-600 hover:underline">
-                  PSD to AI
-                </Link>
-                <Link href="/all-tools/edit-to-png" className="text-orange-600 hover:underline">
+<Link href="/all-tools/edit-to-png" className="text-orange-600 hover:underline">
                   Convert to PNG
                 </Link>
                 <Link href="/all-tools/image-tools" className="text-orange-600 hover:underline">
