@@ -185,7 +185,7 @@ export default function ResizeImagePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -268,7 +268,7 @@ export default function ResizeImagePage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Resize Settings</h3>
-                    
+
                     {/* Width Input */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -394,11 +394,11 @@ export default function ResizeImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Click Resize Image:</strong> Processing happens instantly</p></div>
+              <div><p className="text-gray-700"><strong>Click Resize Image:</strong> Process the image using the selected dimensions</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">5</div>
-              <div><p className="text-gray-700"><strong>Download your resized image:</strong> Save the file in your original format</p></div>
+              <div><p className="text-gray-700"><strong>Download your resized image:</strong> Prepare the resized image for download</p></div>
             </div>
           </div>
         </div>
@@ -475,7 +475,7 @@ export default function ResizeImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes. Completely free with no signup required. Resizing happens in your browser - images are never uploaded or stored on our servers. Complete privacy guaranteed.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can resize an image without creating an account. Resizing is performed in the browser, and the generated result is passed through the site's download-result flow when you continue to download.</p>
             </details>
           </div>
         </div>
@@ -531,7 +531,7 @@ export default function ResizeImagePage() {
             "name": "Is the resizer free and private?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, completely free with no signup. Processing happens in your browser - images never uploaded to servers."
+              "text": "You can resize an image without creating an account. Processing is performed in the browser, and the generated result uses the site's download-result flow."
             }
           }
         ]

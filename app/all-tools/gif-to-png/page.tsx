@@ -167,7 +167,7 @@ export default function GifToPngPage() {
                       <li>• Instant conversion in your browser</li>
                       <li>• Preserves transparency</li>
                       <li>• Uses first frame of animated GIFs</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Browser-based image conversion</li>
                     </ul>
                   </div>
                 </div>
@@ -214,7 +214,7 @@ export default function GifToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download PNG File</h3>
-                <p className="text-gray-600 mt-2">Download your converted PNG file instantly. Conversion happens locally - no signup required.</p>
+                <p className="text-gray-600 mt-2">Prepare the converted PNG result for download. The image conversion itself is performed in the browser.</p>
               </div>
             </div>
           </div>
@@ -274,7 +274,7 @@ export default function GifToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen entirely in your browser. Your GIF files are never uploaded to any server. Your privacy is completely protected.</p>
+              <p className="text-gray-700">Image conversion is performed in the browser. When you continue to download, the generated PNG result is passed through the site's download-result flow.</p>
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Which GIF types are supported?</h3>
@@ -327,7 +327,7 @@ export default function GifToPngPage() {
               "name": "Is the conversion process secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen entirely in your browser. Your GIF files are never uploaded to any server. Your privacy is completely protected."
+                "text": "Image conversion is performed in the browser. When you continue to download, the generated PNG result is passed through the site's download-result flow."
               }
             },
             {

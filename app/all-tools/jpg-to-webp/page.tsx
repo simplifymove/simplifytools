@@ -38,7 +38,7 @@ export default function JpgToWebpPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     setError(null);
     try {
@@ -237,7 +237,7 @@ export default function JpgToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Convert to WebP</h3>
-                <p className="text-gray-600 mt-2">Click the "Convert to WebP" button to start the conversion. Processing happens in your browser instantly.</p>
+                <p className="text-gray-600 mt-2">Click the "Convert to WebP" button to start the conversion. Image encoding is performed in the browser.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -246,7 +246,7 @@ export default function JpgToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download WebP File</h3>
-                <p className="text-gray-600 mt-2">Once complete, download your optimized WebP file. No signup required - completely free and secure.</p>
+                <p className="text-gray-600 mt-2">Once conversion is complete, prepare the WebP result for download. No signup is required to use the converter.</p>
               </div>
             </div>
           </div>
@@ -306,7 +306,7 @@ export default function JpgToWebpPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is conversion secure and private?</h3>
-              <p className="text-gray-700">Yes, all conversions happen entirely in your browser. Your JPG files are never uploaded to any server and remain completely private. No data is stored after conversion.</p>
+              <p className="text-gray-700">Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow.</p>
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple JPG files?</h3>
@@ -359,7 +359,7 @@ export default function JpgToWebpPage() {
               "name": "Is conversion secure and private?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen entirely in your browser. Your JPG files are never uploaded to any server and remain completely private. No data is stored after conversion."
+                "text": "Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow."
               }
             },
             {

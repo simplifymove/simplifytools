@@ -41,7 +41,7 @@ export default function BatchCompressImagesPage() {
 
   const handleCompress = async () => {
     if (files.length === 0) return;
-    
+
     setProcessing(true);
     try {
       // Simulate batch compression with mock results
@@ -50,7 +50,7 @@ export default function BatchCompressImagesPage() {
         original: file.size,
         compressed: Math.floor(file.size * (1 - quality * 0.5))
       }));
-      
+
       await new Promise(resolve => setTimeout(resolve, 2000));
       setResults(compressionResults);
       setCompleted(true);
@@ -107,7 +107,7 @@ export default function BatchCompressImagesPage() {
           { filename: file.name, size: file.size, mimeType: file.type }
         );
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, 150));
     }
 
@@ -129,7 +129,7 @@ export default function BatchCompressImagesPage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-green-600 via-green-700 to-green-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -163,7 +163,7 @@ export default function BatchCompressImagesPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Images</h2>
-                  
+
                   {/* File Upload Area */}
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-400 transition cursor-pointer mb-6">
                     <input
@@ -217,7 +217,7 @@ export default function BatchCompressImagesPage() {
                   {/* Compression Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Compression Settings</h3>
-                    
+
                     {/* Quality Slider */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -296,7 +296,7 @@ export default function BatchCompressImagesPage() {
                       <li>• Compress up to 100 images</li>
                       <li>• Process in your browser</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Browser-based compression</li>
                     </ul>
                   </div>
                 </div>
@@ -321,11 +321,11 @@ export default function BatchCompressImagesPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Compress:</strong> Processing happens instantly in your browser with all images at once</p></div>
+              <div><p className="text-gray-700"><strong>Click Compress:</strong> Compress the selected images using the chosen quality setting</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download results:</strong> Save your compressed images as a batch in one click</p></div>
+              <div><p className="text-gray-700"><strong>Download results:</strong> Prepare the compressed images for download</p></div>
             </div>
           </div>
         </div>
@@ -356,7 +356,7 @@ export default function BatchCompressImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can compress up to 100 images in a single batch operation. Processing happens instantly in your browser, so larger batches may take slightly longer depending on image sizes.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can compress up to 100 images in a single batch operation. Processing time depends on the number, dimensions, and sizes of the selected images.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -401,7 +401,7 @@ export default function BatchCompressImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Compress as many image batches as you want, no signup required, no watermarks, no hidden costs.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can compress multiple supported images using the available batch controls without creating an account.</p>
             </details>
           </div>
         </div>
@@ -457,7 +457,7 @@ export default function BatchCompressImagesPage() {
             "name": "Is batch image compression really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can compress multiple supported images using the available batch controls without creating an account."
             }
           }
         ]

@@ -80,7 +80,7 @@ export default function SharpenImagePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -140,7 +140,7 @@ export default function SharpenImagePage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-amber-400 transition cursor-pointer mb-6">
                     <input
                       type="file"
@@ -173,7 +173,7 @@ export default function SharpenImagePage() {
                   {/* Sharpen Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Sharpen Settings</h3>
-                    
+
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
                         Sharpness: {sharpenAmount}
@@ -257,7 +257,7 @@ export default function SharpenImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download sharpened image:</strong> Save your enhanced image immediately</p></div>
+              <div><p className="text-gray-700"><strong>Download sharpened image:</strong> Prepare the processed image for download</p></div>
             </div>
           </div>
         </div>
@@ -315,7 +315,7 @@ export default function SharpenImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">All common formats: JPG, PNG, WebP, GIF, BMP and more. Output is always JPG at 90% quality for best results.</p>
+              <p className="text-gray-700 mt-3 text-sm">Supported browser-readable images can be processed by the tool. The generated result is encoded as JPG at 90% quality.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -333,7 +333,7 @@ export default function SharpenImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Sharpen as many images as you want, no signup required, no watermarks, no hidden costs.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can use the available sharpening controls without creating an account.</p>
             </details>
           </div>
         </div>
@@ -373,7 +373,7 @@ export default function SharpenImagePage() {
             "name": "What formats are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "All common formats: JPG, PNG, WebP, GIF, BMP and more. Output is always JPG at 90% quality."
+              "text": "Supported browser-readable images can be processed by the tool. The generated result is encoded as JPG at 90% quality."
             }
           },
           {
@@ -389,7 +389,7 @@ export default function SharpenImagePage() {
             "name": "Is the sharpen tool really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can use the available sharpening controls without creating an account."
             }
           }
         ]

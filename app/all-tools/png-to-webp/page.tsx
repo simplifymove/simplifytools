@@ -38,7 +38,7 @@ export default function PngToWebpPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     setError(null);
     try {
@@ -220,7 +220,7 @@ export default function PngToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Select Quality Level</h3>
-                <p className="text-gray-600 mt-2">Adjust the quality slider to find the perfect balance between file size and image clarity.</p>
+                <p className="text-gray-600 mt-2">Adjust the quality slider to choose a balance between file size and image clarity.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -229,7 +229,7 @@ export default function PngToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Convert to WebP</h3>
-                <p className="text-gray-600 mt-2">Click the "Convert to WebP" button to start the conversion process instantly.</p>
+                <p className="text-gray-600 mt-2">Click the "Convert to WebP" button to start the browser-based conversion.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -238,7 +238,7 @@ export default function PngToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download Your WebP</h3>
-                <p className="text-gray-600 mt-2">Download your optimized WebP file instantly. No signup required and completely free.</p>
+                <p className="text-gray-600 mt-2">Prepare the converted WebP file for download. No signup is required to use the converter.</p>
               </div>
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function PngToWebpPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my conversion data kept private?</h3>
-              <p className="text-gray-700">Yes, complete privacy is guaranteed. All conversions happen locally in your browser. Your PNG files are never uploaded to any server and no data is retained.</p>
+              <p className="text-gray-700">Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow.</p>
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple PNG files at once?</h3>
@@ -351,7 +351,7 @@ export default function PngToWebpPage() {
               "name": "Is my conversion data kept private?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, complete privacy is guaranteed. All conversions happen locally in your browser. Your PNG files are never uploaded to any server and no data is retained."
+                "text": "Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow."
               }
             },
             {

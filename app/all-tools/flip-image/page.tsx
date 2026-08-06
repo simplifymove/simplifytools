@@ -220,7 +220,7 @@ export default function FlipImagePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -377,7 +377,7 @@ export default function FlipImagePage() {
                 <li>• Flip horizontally (mirror left-right)</li>
                 <li>• Flip vertically (mirror up-down)</li>
                 <li>• Combine both for 180° rotation</li>
-                <li>• Supports all image formats</li>
+                <li>• Processes supported browser-readable image files</li>
               </ul>
             </div>
           </div>
@@ -402,7 +402,7 @@ export default function FlipImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Flip Image:</strong> Process instantly, preview updates in real-time</p></div>
+              <div><p className="text-gray-700"><strong>Click Flip Image:</strong> Process the image and review the updated preview</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -421,7 +421,7 @@ export default function FlipImagePage() {
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Fix text direction - reverse text images for clarity or specific layouts</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Perfect symmetry - create mirror images for design and artistic work</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Logo adjustments - flip logos and graphics to match design requirements</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> No quality loss - flipping preserves full image resolution and clarity</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Flipping preserves the working image dimensions before PNG encoding</li>
           </ul>
         </div>
       </div>
@@ -455,7 +455,7 @@ export default function FlipImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">All formats: JPG, PNG, WebP, GIF, BMP. Output is always PNG format.</p>
+              <p className="text-gray-700 mt-3 text-sm">Supported browser-readable image files can be flipped. The processed result is exported as PNG.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -473,7 +473,7 @@ export default function FlipImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, flipping is lossless. Your image quality remains exactly the same.</p>
+              <p className="text-gray-700 mt-3 text-sm">The flip operation changes orientation without intentionally resizing the image. The processed result is exported as PNG.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -482,7 +482,7 @@ export default function FlipImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Flip unlimited images, no signup required.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can use the available flip controls without creating an account.</p>
             </details>
           </div>
         </div>
@@ -494,10 +494,10 @@ export default function FlipImagePage() {
         "mainEntity": [
           { "@type": "Question", "name": "What's the difference between horizontal and vertical flip?", "acceptedAnswer": { "@type": "Answer", "text": "Horizontal flips left-right, vertical flips up-down. Combine both for 180° rotation." } },
           { "@type": "Question", "name": "Can I flip specific parts of an image?", "acceptedAnswer": { "@type": "Answer", "text": "No, this tool flips the entire image." } },
-          { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is PNG." } },
+          { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Supported browser-readable image files can be flipped and the processed result is exported as PNG." } },
           { "@type": "Question", "name": "Is there a file size limit?", "acceptedAnswer": { "@type": "Answer", "text": "No size limits. Processing happens locally." } },
           { "@type": "Question", "name": "Does flipping reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, flipping is lossless and preserves quality." } },
-          { "@type": "Question", "name": "Is the flip image tool free to use?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+          { "@type": "Question", "name": "Is the flip image tool free to use?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the available flip controls without creating an account." } }
         ]
       })}</script>
 

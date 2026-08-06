@@ -618,11 +618,11 @@ export default function CropImagePage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Fast Processing</h3>
-              <p className="text-gray-700">Optimized crop engine processes images instantly. Download within seconds.</p>
+              <p className="text-gray-700">The crop tool updates the selected image region in the browser before the result is prepared for download.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
-              <p className="text-gray-700">No registration required. All processing happens securely on your device.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Browser-Based Editing</h3>
+              <p className="text-gray-700">Cropping and preview generation are performed in the browser. The generated result is prepared for the site's download flow when you continue to download.</p>
             </div>
           </div>
         </div>
@@ -647,7 +647,7 @@ export default function CropImagePage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">How fast is the processing?</summary>
-              <p className="text-gray-700 mt-2">Cropping is extremely fast! Most images process in under 1 second. Download starts immediately after clicking "Crop Now".</p>
+              <p className="text-gray-700 mt-2">Processing time depends on the image and device. After cropping, the generated result can be prepared for download.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">What output formats are supported?</summary>
@@ -655,7 +655,7 @@ export default function CropImagePage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Absolutely! All processing happens locally in your browser. Images are never uploaded or stored anywhere.</p>
+              <p className="text-gray-700 mt-2">The crop operation itself is performed in your browser. When you continue to download, the generated result is passed through the site's download-result flow.</p>
             </details>
           </div>
         </div>
@@ -676,7 +676,7 @@ export default function CropImagePage() {
             </Link>
             <Link href="/all-tools/compress-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Compress Image</h3>
-              <p className="text-sm text-gray-600">Reduce file size without quality loss</p>
+              <p className="text-sm text-gray-600">Reduce image dimensions or file size when appropriate</p>
             </Link>
           </div>
         </div>

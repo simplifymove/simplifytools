@@ -144,7 +144,7 @@ export default function WatermarkImagePage() {
         const img = new Image();
         img.onload = () => {
           const canvas = canvasRef.current!;
-          
+
           // Validate canvas dimensions
           if (img.width > 16384 || img.height > 16384) {
             reject(new Error('Image dimensions exceed maximum allowed size (16384x16384px)'));
@@ -256,7 +256,7 @@ export default function WatermarkImagePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -334,7 +334,7 @@ export default function WatermarkImagePage() {
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <ImageUploader
                     onFileSelect={handleFileSelect}
                     preview={preview}
@@ -360,7 +360,7 @@ export default function WatermarkImagePage() {
                   {/* Watermark Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Watermark Settings</h3>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <label className="text-sm font-medium text-gray-700 block mb-2">Text</label>
@@ -492,7 +492,7 @@ export default function WatermarkImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download watermarked image:</strong> Save your protected image instantly</p></div>
+              <div><p className="text-gray-700"><strong>Download watermarked image:</strong> Prepare the watermarked image for download</p></div>
             </div>
           </div>
         </div>
@@ -541,7 +541,7 @@ export default function WatermarkImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, the underlying image quality is preserved. Output is JPG at 90% quality with the watermark overlaid.</p>
+              <p className="text-gray-700 mt-3 text-sm">The watermark is applied to the image and the result is encoded as JPG at 90% quality, so some JPEG compression can occur.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -568,7 +568,7 @@ export default function WatermarkImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Watermark as many images as you want, no signup required, no watermarks on output, no hidden costs.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can add a text watermark using the available controls without creating an account.</p>
             </details>
           </div>
         </div>
@@ -600,7 +600,7 @@ export default function WatermarkImagePage() {
             "name": "Will watermarking affect image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No, the underlying image quality is preserved at 90% JPG quality."
+              "text": "The result is encoded as JPG at 90% quality, so some JPEG compression can occur."
             }
           },
           {
@@ -624,7 +624,7 @@ export default function WatermarkImagePage() {
             "name": "Is the watermark tool really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no hidden costs."
+              "text": "You can add a text watermark using the available controls without creating an account."
             }
           }
         ]

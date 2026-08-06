@@ -40,7 +40,7 @@ export default function BatchResizeImagesPage() {
 
   const handleResize = async () => {
     if (files.length === 0) return;
-    
+
     setProcessing(true);
     try {
       // Simulate batch processing
@@ -68,16 +68,16 @@ export default function BatchResizeImagesPage() {
           const canvas = document.createElement('canvas');
           canvas.width = targetWidth;
           canvas.height = targetHeight;
-          
+
           const ctx = canvas.getContext('2d');
           if (!ctx) {
             reject(new Error('Could not get canvas context'));
             return;
           }
-          
+
           // Draw resized image on canvas
           ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-          
+
           // Convert canvas to blob
           canvas.toBlob(
             (blob) => {
@@ -126,7 +126,7 @@ export default function BatchResizeImagesPage() {
             resultWindow.location.href = downloadResult.downloadPageUrl;
           }
         }
-        
+
         // Add slight delay between downloads to avoid browser blocking
         await new Promise(resolve => setTimeout(resolve, 150));
       }
@@ -154,7 +154,7 @@ export default function BatchResizeImagesPage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -188,7 +188,7 @@ export default function BatchResizeImagesPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Images</h2>
-                  
+
                   {/* File Upload Area */}
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition cursor-pointer mb-6">
                     <input
@@ -236,7 +236,7 @@ export default function BatchResizeImagesPage() {
                   {/* Resize Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Resize Settings</h3>
-                    
+
                     {/* Width */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">Width (pixels)</label>
@@ -314,7 +314,7 @@ export default function BatchResizeImagesPage() {
                       <li>• Resize up to 100 images</li>
                       <li>• Process in your browser</li>
                       <li>• Maintain aspect ratio option</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Browser-based resizing</li>
                     </ul>
                   </div>
                 </div>
@@ -339,11 +339,11 @@ export default function BatchResizeImagesPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Resize:</strong> Processing happens instantly in your browser with all images at once</p></div>
+              <div><p className="text-gray-700"><strong>Click Resize:</strong> Resize the selected images using the chosen dimensions</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download results:</strong> Save your resized images as a batch in one click</p></div>
+              <div><p className="text-gray-700"><strong>Download results:</strong> Prepare the resized images for download</p></div>
             </div>
           </div>
         </div>
@@ -410,7 +410,7 @@ export default function BatchResizeImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Resize as many image batches as you want, no signup required, no watermarks, no hidden costs ever.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can resize multiple supported images using the available batch controls without creating an account.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -419,7 +419,7 @@ export default function BatchResizeImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. All batch resizing happens entirely in your browser. Your images are never uploaded to or stored on our servers. Complete privacy guaranteed.</p>
+              <p className="text-gray-700 mt-3 text-sm">Batch resizing is performed in the browser. When you download the generated results, the files are passed through the site's download-result flow.</p>
             </details>
           </div>
         </div>
@@ -467,7 +467,7 @@ export default function BatchResizeImagesPage() {
             "name": "Is batch resizing really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can resize multiple supported images using the available batch controls without creating an account."
             }
           },
           {
@@ -475,7 +475,7 @@ export default function BatchResizeImagesPage() {
             "name": "Are my images stored on your servers?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. All resizing happens in your browser. Images are never uploaded or stored on our servers."
+              "text": "Batch resizing is performed in the browser. Generated files are passed through the site's download-result flow when you download them."
             }
           }
         ]
