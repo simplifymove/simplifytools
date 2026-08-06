@@ -225,13 +225,13 @@ export default function EpsToJpgPage() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">About EPS Format</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  EPS (Encapsulated PostScript) is a vector graphics format commonly used in professional design and printing. It's ideal for logos, illustrations, and designs that need to scale without losing quality.
+                  EPS (Encapsulated PostScript) is a vector graphics format commonly used in professional design and printing. It is commonly used for logos, illustrations, and artwork that may need to be scaled or prepared for print.
                 </p>
               </div>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">About JPG Format</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  JPG (JPEG) is a widely-used raster image format perfect for photographs and web use. It offers excellent compression, making files smaller while maintaining reasonable quality for digital viewing.
+                  JPG (JPEG) is a widely used raster image format commonly used for photographs and web images. It offers excellent compression, making files smaller while maintaining reasonable quality for digital viewing.
                 </p>
               </div>
             </div>
@@ -246,11 +246,11 @@ export default function EpsToJpgPage() {
                 </details>
                 <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
                   <summary className="font-semibold text-gray-900">Why convert EPS to JPG?</summary>
-                  <p className="mt-2 text-gray-700">JPG is more widely compatible with web browsers and digital devices. Converting EPS to JPG makes your files viewable on any device without special software.</p>
+                  <p className="mt-2 text-gray-700">JPG is more widely compatible with web browsers and digital devices. Converting EPS to JPG can make the artwork easier to view in software and browsers that support JPEG images.</p>
                 </details>
                 <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
                   <summary className="font-semibold text-gray-900">Does the conversion preserve quality?</summary>
-                  <p className="mt-2 text-gray-700">EPS vector artwork is rendered to a JPG image at high resolution. Because JPG is a raster format, the result no longer has the unlimited scalability of the original EPS file.</p>
+                  <p className="mt-2 text-gray-700">EPS vector artwork is rasterized to create the JPG output. Because JPG is a raster format, the result no longer has the unlimited scalability of the original EPS file.</p>
                 </details>
                 <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
                   <summary className="font-semibold text-gray-900">Is my file secure?</summary>

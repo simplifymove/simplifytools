@@ -130,7 +130,7 @@ export default function EpsToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">EPS to PNG Converter</h1>
-                <p className="text-lg text-white/90">Convert EPS vector graphics to PNG format for web use and easy display across all platforms.</p>
+                <p className="text-lg text-white/90">Convert EPS vector graphics to PNG raster images for browsers, documents, presentations, and other compatible applications.</p>
               </div>
             </div>
           </div>
@@ -194,7 +194,7 @@ export default function EpsToPngPage() {
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Server-assisted EPS rendering</li>
                       <li>• Converts vector to raster format</li>
-                      <li>• Perfect for web sharing</li>
+                      <li>• PNG output for common digital workflows</li>
                       <li>• High-resolution 300 DPI rendering</li>
                       <li>• File is processed only as needed for conversion</li>
                     </ul>

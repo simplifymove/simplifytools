@@ -128,7 +128,7 @@ export default function TiffToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">TIFF to PNG Converter</h1>
-                <p className="text-lg text-white/90">Convert TIFF images to PNG format with lossless compression and transparency support.</p>
+                <p className="text-lg text-white/90">Convert TIFF or TIF images to PNG format using server-assisted image conversion.</p>
               </div>
             </div>
           </div>

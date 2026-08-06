@@ -168,7 +168,7 @@ export default function EditToPngPage() {
                       <li>• BMP, GIF</li>
                       <li>• TIFF, WebP</li>
                       <li>• And more...</li>
-                      <li>• Instant conversion</li>
+                      <li>• Browser-based image conversion</li>
                     </ul>
                   </div>
 
