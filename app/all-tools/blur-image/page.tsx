@@ -118,7 +118,7 @@ export default function BlurImagePage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-cyan-600 via-cyan-700 to-cyan-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -150,7 +150,7 @@ export default function BlurImagePage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-cyan-400 transition cursor-pointer mb-6">
                     <input
                       type="file"
@@ -183,7 +183,7 @@ export default function BlurImagePage() {
                   {/* Blur Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Blur Settings</h3>
-                    
+
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
                         Blur Amount: {blurAmount}px
@@ -396,7 +396,7 @@ export default function BlurImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Blur as many images as you want, no signup required, no watermarks, no hidden costs.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can use the available blur controls without creating an account.</p>
             </details>
           </div>
         </div>
@@ -452,7 +452,7 @@ export default function BlurImagePage() {
             "name": "Is the blur tool really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can use the available blur controls without creating an account."
             }
           }
         ]

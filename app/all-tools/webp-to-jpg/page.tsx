@@ -139,7 +139,7 @@ export default function WebpToJpgPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
+
                     {/* Quality */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -300,7 +300,7 @@ export default function WebpToJpgPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. Completely free with no limits, no signup required, and no hidden costs. Convert as many WebP files as you want.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can use the WebP-to-JPG converter without creating an account.</p>
             </details>
           </div>
         </div>
@@ -356,7 +356,7 @@ export default function WebpToJpgPage() {
             "name": "Do I need to pay or sign up?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Completely free with no limits, no signup, no hidden costs."
+              "text": "You can use the WebP-to-JPG converter without creating an account."
             }
           }
         ]

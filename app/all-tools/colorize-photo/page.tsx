@@ -581,7 +581,7 @@ export default function ColorizePhotoPage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Can I use colorized photos commercially?</summary>
-              <p className="text-gray-700 mt-2">Yes, colorized photos can be used for personal or commercial purposes without any restrictions.</p>
+              <p className="text-gray-700 mt-2">Colorizing an image does not change its ownership or licensing rights. Use the processed image only when you own the source image or have the necessary permission.</p>
             </details>
           </div>
         </div>

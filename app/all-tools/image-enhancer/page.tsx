@@ -394,7 +394,7 @@ export default function ImageEnhancerPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Enhance as many images as you want, no signup required, no watermarks, no hidden costs.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can use the available image-enhancement controls without creating an account.</p>
             </details>
           </div>
         </div>
@@ -450,7 +450,7 @@ export default function ImageEnhancerPage() {
             "name": "Is the enhancer tool really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can use the available image-enhancement controls without creating an account."
             }
           }
         ]

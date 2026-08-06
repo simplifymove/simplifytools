@@ -35,7 +35,7 @@ export default function RemoveBackgroundPage() {
 
   const handleFileSelect = (selectedFile: File) => {
     clearError();
-    
+
     // Validate file
     const emptyCheck = validateImageNotEmpty(selectedFile);
     if (!emptyCheck.valid) {
@@ -244,7 +244,7 @@ export default function RemoveBackgroundPage() {
                 {!preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                    
+
                     <ImageUploader
                       onFileSelect={handleFileSelect}
                       preview={preview}
@@ -521,7 +521,7 @@ export default function RemoveBackgroundPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No signup or payment required. Our background remover is completely free, with no limits on the number of images you can process.</p>
+              <p className="text-gray-700 mt-3 text-sm">No signup is required to use the available background-removal controls.</p>
             </details>
           </div>
         </div>
@@ -577,7 +577,7 @@ export default function RemoveBackgroundPage() {
             "name": "Do I need to sign up or pay to use this tool?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No signup or payment required. Completely free with no limits on the number of images."
+              "text": "No signup is required to use the available background-removal controls."
             }
           }
         ]

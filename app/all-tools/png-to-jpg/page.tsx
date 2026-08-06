@@ -219,7 +219,7 @@ export default function PngToJpgPage() {
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-12">
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
 
-        <motion.div 
+        <motion.div
           className="grid md:grid-cols-2 gap-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -460,7 +460,7 @@ export default function PngToJpgPage() {
               <span className="text-gray-500 group-open:hidden">+</span>
               <span className="text-gray-500 hidden group-open:inline">−</span>
             </summary>
-            <p className="text-gray-700 mt-3 text-sm">File size reduction depends on your image content. Typically, JPG files are 30-70% smaller than PNG files. Graphics with solid colors may compress less than photos.</p>
+            <p className="text-gray-700 mt-3 text-sm">File-size differences depend on the image content and selected JPG quality. Photographs and graphics can produce different results.</p>
           </details>
 
           <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -487,7 +487,7 @@ export default function PngToJpgPage() {
               <span className="text-gray-500 group-open:hidden">+</span>
               <span className="text-gray-500 hidden group-open:inline">−</span>
             </summary>
-            <p className="text-gray-700 mt-3 text-sm">Yes, completely free with no limits. No signup required, no hidden costs, no watermarks on your converted images.</p>
+            <p className="text-gray-700 mt-3 text-sm">You can use the available PNG-to-JPG conversion controls without creating an account.</p>
           </details>
         </div>
       </div>
@@ -519,7 +519,7 @@ export default function PngToJpgPage() {
           "name": "How much smaller will my file be?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "File size reduction depends on your image content. Typically, JPG files are 30-70% smaller than PNG files. Graphics with solid colors may compress less than photos."
+            "text": "File-size differences depend on the image content and selected JPG quality. Photographs and graphics can produce different results."
           }
         },
         {
@@ -543,7 +543,7 @@ export default function PngToJpgPage() {
           "name": "Is this converter really free?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, completely free with no limits. No signup required, no hidden costs, no watermarks on your converted images."
+            "text": "You can use the available PNG-to-JPG conversion controls without creating an account."
           }
         }
       ]

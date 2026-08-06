@@ -262,7 +262,7 @@ export default function JpgToWebpPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Significantly Smaller File Size</h3>
-                <p className="text-gray-600 text-sm">WebP provides 25-35% better compression than JPG, reducing file sizes and improving website load times.</p>
+                <p className="text-gray-600 text-sm">WebP can produce smaller files than JPG for many images, depending on image content and the selected quality setting.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -294,7 +294,7 @@ export default function JpgToWebpPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is WebP compared to JPG?</h3>
-              <p className="text-gray-700">WebP files are typically 25-35% smaller than equivalent JPG files while maintaining the same visual quality. This varies depending on image content and quality settings.</p>
+              <p className="text-gray-700">WebP file size and visual quality depend on the source image and selected encoding settings.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will I lose quality when converting to WebP?</h3>
@@ -335,7 +335,7 @@ export default function JpgToWebpPage() {
               "name": "How much smaller is WebP compared to JPG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "WebP files are typically 25-35% smaller than equivalent JPG files while maintaining the same visual quality. This varies depending on image content and quality settings."
+                "text": "WebP file size and visual quality depend on the source image and selected encoding settings."
               }
             },
             {
