@@ -121,7 +121,7 @@ export default function PngToAvifPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to AVIF Converter</h1>
-                <p className="text-lg text-white/90">Convert PNG images to AVIF format for superior compression with transparency support and faster web delivery.</p>
+                <p className="text-lg text-white/90">Convert PNG images to AVIF format with adjustable quality settings and server-assisted processing.</p>
               </div>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function PngToAvifPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
+
                     {/* Quality */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -206,7 +206,7 @@ export default function PngToAvifPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Server-assisted AVIF conversion</li>
-                      <li>• Superior compression ratio</li>
+                      <li>• Adjustable AVIF quality</li>
                       <li>• Supports PNG transparency</li>
                       <li>• Files are temporarily processed for conversion</li>
                     </ul>
@@ -246,7 +246,7 @@ export default function PngToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Start Conversion</h3>
-                <p className="text-gray-600 mt-2">Click "Convert to AVIF" to instantly transform your PNG using advanced compression algorithms.</p>
+                <p className="text-gray-600 mt-2">Click "Convert to AVIF" to start the server-assisted conversion.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -255,7 +255,7 @@ export default function PngToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download Your File</h3>
-                <p className="text-gray-600 mt-2">Download the converted AVIF file instantly. No signup required for this conversion.</p>
+                <p className="text-gray-600 mt-2">Download the converted AVIF file after processing is complete.</p>
               </div>
             </div>
           </div>
@@ -271,7 +271,7 @@ export default function PngToAvifPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Significantly Smaller Files</h3>
-                <p className="text-gray-600 text-sm">AVIF provides 40-60% better compression than PNG while preserving superior transparency and quality.</p>
+                <p className="text-gray-600 text-sm">AVIF can produce smaller files than PNG for some images. File size and visual quality depend on the image and selected quality setting.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -303,7 +303,7 @@ export default function PngToAvifPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than PNG?</h3>
-              <p className="text-gray-700">AVIF files are typically 40-60% smaller than PNG files while maintaining the same transparency and image quality.</p>
+              <p className="text-gray-700">AVIF and PNG use different encoding methods, so file-size differences depend on image content and conversion settings.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF supported by modern browsers?</h3>
@@ -311,7 +311,7 @@ export default function PngToAvifPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is this suitable for web graphics and logos?</h3>
-              <p className="text-gray-700">Absolutely! AVIF is perfect for logos, icons, and web graphics. It provides excellent compression while preserving transparency and quality.</p>
+              <p className="text-gray-700">AVIF can be used for web graphics when the required browser and application support is available. Conversion results depend on the source image and settings.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my data kept private?</h3>
@@ -344,7 +344,7 @@ export default function PngToAvifPage() {
               "name": "How much smaller is AVIF than PNG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "AVIF files are typically 40-60% smaller than PNG files while maintaining the same transparency and image quality."
+                "text": "AVIF and PNG use different encoding methods, so file-size differences depend on image content and conversion settings."
               }
             },
             {
@@ -360,7 +360,7 @@ export default function PngToAvifPage() {
               "name": "Is this suitable for web graphics and logos?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Absolutely! AVIF is perfect for logos, icons, and web graphics. It provides excellent compression while preserving transparency and quality."
+                "text": "AVIF can be used for web graphics when the required browser and application support is available. Conversion results depend on the source image and settings."
               }
             },
             {
@@ -398,7 +398,7 @@ export default function PngToAvifPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with adjustable compression</p>
             </Link>
             <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>

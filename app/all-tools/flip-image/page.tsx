@@ -464,7 +464,7 @@ export default function FlipImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No size limits. Flip any image no matter how large. Processing happens locally in your browser.</p>
+              <p className="text-gray-700 mt-3 text-sm">Processing capacity depends on the browser, available device memory, and the dimensions of the uploaded image.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -495,8 +495,8 @@ export default function FlipImagePage() {
           { "@type": "Question", "name": "What's the difference between horizontal and vertical flip?", "acceptedAnswer": { "@type": "Answer", "text": "Horizontal flips left-right, vertical flips up-down. Combine both for 180° rotation." } },
           { "@type": "Question", "name": "Can I flip specific parts of an image?", "acceptedAnswer": { "@type": "Answer", "text": "No, this tool flips the entire image." } },
           { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Supported browser-readable image files can be flipped and the processed result is exported as PNG." } },
-          { "@type": "Question", "name": "Is there a file size limit?", "acceptedAnswer": { "@type": "Answer", "text": "No size limits. Processing happens locally." } },
-          { "@type": "Question", "name": "Does flipping reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, flipping is lossless and preserves quality." } },
+          { "@type": "Question", "name": "Is there a file size limit?", "acceptedAnswer": { "@type": "Answer", "text": "Processing capacity depends on the browser, device memory, and image dimensions." } },
+          { "@type": "Question", "name": "Does flipping reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "The flip operation keeps the source dimensions, but the generated image is exported again as PNG." } },
           { "@type": "Question", "name": "Is the flip image tool free to use?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the available flip controls without creating an account." } }
         ]
       })}</script>

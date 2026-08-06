@@ -95,7 +95,7 @@ export default function VintageFilterPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -136,10 +136,10 @@ export default function VintageFilterPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎞️ Vintage Filter</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Add classic vintage and retro effects to your photos instantly. Transform modern photos into nostalgic memories with our free online vintage filter tool.
+              Apply vintage and retro-style effects to supported images using adjustable browser-based controls.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Apply authentic vintage looks with adjustable intensity. No signup required, completely free.
+              Choose a vintage-style effect and adjust its intensity before exporting the result.
             </p>
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function VintageFilterPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Vintage Filter</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -223,8 +223,8 @@ export default function VintageFilterPage() {
                   <p className="text-gray-700">Control how strong the vintage effect is to match your style preferences.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-yellow-600 mb-2">100% Free & Private</h3>
-                  <p className="text-gray-700">No registration needed, images processed locally, complete privacy guaranteed.</p>
+                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Browser-Based Processing</h3>
+                  <p className="text-gray-700">Vintage filtering is performed locally in the browser using canvas.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Professional Results</h3>
@@ -272,11 +272,11 @@ export default function VintageFilterPage() {
               <div className="space-y-4">
                 <details className="border-l-4 border-yellow-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What file formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, BMP, and TIFF formats. Upload any of these and we'll process them instantly.</p>
+                  <p className="text-gray-700 mt-2">The tool accepts supported browser-readable image files and processes the selected effect locally.</p>
                 </details>
                 <details className="border-l-4 border-yellow-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is my image data stored?</summary>
-                  <p className="text-gray-700 mt-2">No, your images are processed locally in your browser and never stored on our servers.</p>
+                  <p className="text-gray-700 mt-2">The vintage-filter processing shown here runs locally in your browser using canvas.</p>
                 </details>
                 <details className="border-l-4 border-yellow-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I adjust the vintage effect after applying it?</summary>

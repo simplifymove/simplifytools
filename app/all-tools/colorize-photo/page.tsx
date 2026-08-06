@@ -532,7 +532,7 @@ export default function ColorizePhotoPage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-Time Preview</h3>
-              <p className="text-gray-700">See changes instantly as you adjust tone, color, and intensity without applying.</p>
+              <p className="text-gray-700">Preview changes as you adjust tone, color, and intensity.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Restore Vintage Photos</h3>
@@ -543,12 +543,12 @@ export default function ColorizePhotoPage() {
               <p className="text-gray-700">Adjust intensity from subtle to vibrant to get exactly the look you want.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ High Quality Output</h3>
-              <p className="text-gray-700">Exports as PNG with full quality preservation. No compression or loss of detail.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ PNG Output</h3>
+              <p className="text-gray-700">Exports the processed result as PNG while retaining the selected output dimensions.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
-              <p className="text-gray-700">No sign-up required. All processing happens locally. Your photos stay completely private.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Browser-Based Processing</h3>
+              <p className="text-gray-700">The colorization effect is processed locally in the browser using canvas.</p>
             </div>
           </div>
         </div>
@@ -561,7 +561,7 @@ export default function ColorizePhotoPage() {
           <div className="space-y-4">
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-              <p className="text-gray-700 mt-2">Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The output is always PNG format for maximum quality.</p>
+              <p className="text-gray-700 mt-2">The tool accepts supported browser-readable image files and exports the processed result as PNG.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Can I colorize a color photo?</summary>
@@ -573,11 +573,11 @@ export default function ColorizePhotoPage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Does colorization affect photo quality?</summary>
-              <p className="text-gray-700 mt-2">No, colorization preserves all original quality. The output PNG maintains the same resolution and detail as your input image.</p>
+              <p className="text-gray-700 mt-2">The tool keeps the source image dimensions for processing, but applying the effect changes pixel values and the result is exported again as PNG.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Is my photo data secure?</summary>
-              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally in your browser. Your photos are never uploaded to any server and remain completely private.</p>
+              <p className="text-gray-700 mt-2">The colorization effect is processed locally in the browser using canvas.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Can I use colorized photos commercially?</summary>
@@ -640,9 +640,9 @@ export default function ColorizePhotoPage() {
           'Custom color selection',
           'Intensity control slider',
           'Real-time preview',
-          'High quality PNG export',
+          'PNG export',
           'No sign-up required',
-          'Privacy-focused local processing',
+          'Browser-based local processing',
         ],
       })}} />
     </div>

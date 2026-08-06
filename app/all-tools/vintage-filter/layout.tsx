@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Free Vintage Filter - Apply Retro Effects to Photos Online',
-  description: 'Add vintage and retro effects to your photos instantly. Apply classic film looks, warm tones, and nostalgic effects with our free online vintage filter tool.',
+  description: 'Apply vintage and retro-style effects to supported images with adjustable browser-based controls.',
   keywords: 'vintage filter, retro effect, old photo effect, vintage photo editor, film effect',
   openGraph: {
     title: 'Free Vintage Filter - Apply Retro Effects to Photos Online',

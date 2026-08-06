@@ -120,7 +120,7 @@ export default function WebpToAvifPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">WebP to AVIF Converter</h1>
-                <p className="text-lg text-white/90">Convert WebP images to AVIF format for maximum compression and superior quality at smaller file sizes.</p>
+                <p className="text-lg text-white/90">Convert WebP images to AVIF format with server-assisted processing and download the converted result.</p>
               </div>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function WebpToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Click Convert Button</h3>
-                <p className="text-gray-600 mt-2">Press "Convert to AVIF" to instantly transform your WebP using next-generation compression algorithms.</p>
+                <p className="text-gray-600 mt-2">Press "Convert to AVIF" to start the server-assisted conversion.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -223,7 +223,7 @@ export default function WebpToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download AVIF File</h3>
-                <p className="text-gray-600 mt-2">Download your converted AVIF file instantly with superior compression compared to WebP.</p>
+                <p className="text-gray-600 mt-2">Download the converted AVIF file after processing is complete.</p>
               </div>
             </div>
           </div>
@@ -239,14 +239,14 @@ export default function WebpToAvifPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Even Better Compression</h3>
-                <p className="text-gray-600 text-sm">AVIF provides 30-40% better compression than WebP while maintaining superior image quality for optimal web performance.</p>
+                <p className="text-gray-600 text-sm">AVIF supports efficient image compression, although resulting file size and visual quality depend on the source image and conversion settings.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Future-Proof Format</h3>
-                <p className="text-gray-600 text-sm">AVIF is the next-generation standard for web images, offering superior compression and quality for the future of web.</p>
+                <p className="text-gray-600 text-sm">AVIF is a modern image format designed for efficient compression and web delivery.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -267,11 +267,11 @@ export default function WebpToAvifPage() {
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than WebP?</h3>
-              <p className="text-gray-700">AVIF files are typically 30-40% smaller than equivalent WebP files while maintaining or exceeding image quality, depending on content and settings.</p>
+              <p className="text-gray-700">File-size differences between AVIF and WebP depend on the source image, encoder, and conversion settings.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF better than WebP?</h3>
-              <p className="text-gray-700">Yes, AVIF offers superior compression compared to WebP with excellent quality. It's the next-generation image format for modern web use.</p>
+              <p className="text-gray-700">AVIF is a modern image format that can provide efficient compression. Results vary depending on image content and encoding settings.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Are both formats supported by browsers?</h3>
@@ -279,7 +279,7 @@ export default function WebpToAvifPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will quality be lost in conversion?</h3>
-              <p className="text-gray-700">No. AVIF maintains excellent quality during conversion from WebP, often with improved efficiency due to better compression algorithms.</p>
+              <p className="text-gray-700">AVIF conversion can change image data because the source is decoded and encoded again. Visual quality depends on the source image and conversion settings.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
@@ -304,7 +304,7 @@ export default function WebpToAvifPage() {
               "name": "How much smaller is AVIF than WebP?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "AVIF files are typically 30-40% smaller than equivalent WebP files while maintaining or exceeding image quality, depending on content and settings."
+                "text": "File-size differences between AVIF and WebP depend on the source image, encoder, and conversion settings."
               }
             },
             {
@@ -312,7 +312,7 @@ export default function WebpToAvifPage() {
               "name": "Is AVIF better than WebP?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, AVIF offers superior compression compared to WebP with excellent quality. It's the next-generation image format for modern web use."
+                "text": "AVIF is a modern image format that can provide efficient compression. Results vary depending on image content and encoding settings."
               }
             },
             {
@@ -328,7 +328,7 @@ export default function WebpToAvifPage() {
               "name": "Will quality be lost in conversion?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. AVIF maintains excellent quality during conversion from WebP, often with improved efficiency due to better compression algorithms."
+                "text": "AVIF conversion can change image data because the source is decoded and encoded again. Visual quality depends on the source image and conversion settings."
               }
             },
             {

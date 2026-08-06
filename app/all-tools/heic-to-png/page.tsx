@@ -127,7 +127,7 @@ export default function HeicToPngPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">HEIC to PNG Converter</h1>
-              <p className="text-lg text-white/90">Convert HEIC images to PNG format with transparency support and lossless quality.</p>
+              <p className="text-lg text-white/90">Convert HEIC images to PNG format with server-assisted processing.</p>
             </div>
           </div>
         </div>
@@ -224,7 +224,7 @@ export default function HeicToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Click Convert Button</h3>
-                <p className="text-gray-600 mt-2">Press "Convert to PNG" to instantly transform your HEIC image to the widely compatible PNG format.</p>
+                <p className="text-gray-600 mt-2">Press "Convert to PNG" to start the conversion to PNG format.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -233,7 +233,7 @@ export default function HeicToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download PNG File</h3>
-                <p className="text-gray-600 mt-2">Download your converted PNG instantly. No signup required and completely secure.</p>
+                <p className="text-gray-600 mt-2">Download the converted PNG after processing is complete.</p>
               </div>
             </div>
           </div>
@@ -255,8 +255,8 @@ export default function HeicToPngPage() {
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Lossless Quality</h3>
-                <p className="text-gray-600 text-sm">PNG uses lossless compression to preserve every detail of your image. Perfect for maintaining image quality across platforms.</p>
+                <h3 className="text-lg font-semibold text-gray-900">PNG Output</h3>
+                <p className="text-gray-600 text-sm">PNG uses lossless compression for the generated output, although converting from HEIC does not restore information already absent from the source.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -297,7 +297,7 @@ export default function HeicToPngPage() {
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I edit the PNG after conversion?</h3>
-              <p className="text-gray-700">Yes, PNG files can be edited with any image editor. PNG's lossless format makes it perfect for both viewing and further editing.</p>
+              <p className="text-gray-700">PNG files are supported by many image editors, and PNG uses lossless compression for subsequent storage.</p>
             </div>
           </div>
         </div>
@@ -354,7 +354,7 @@ export default function HeicToPngPage() {
               "name": "Can I edit the PNG after conversion?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, PNG files can be edited with any image editor. PNG's lossless format makes it perfect for both viewing and further editing."
+                "text": "PNG files are supported by many image editors, and PNG uses lossless compression for subsequent storage."
               }
             }
           ]
@@ -376,7 +376,7 @@ export default function HeicToPngPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with adjustable compression</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

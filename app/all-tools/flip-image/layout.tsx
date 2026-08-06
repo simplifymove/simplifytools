@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Flip Image - Free Online Mirror & Flip Tool | SimplifyConvert',
-  description: 'Flip images horizontally and vertically. Create mirror effects and rotations instantly.',
+  description: 'Flip supported images horizontally or vertically in your browser and export the processed result.',
   keywords: ['flip image', 'mirror image', 'rotate image', 'free tool'],
   openGraph: {
     type: 'website',

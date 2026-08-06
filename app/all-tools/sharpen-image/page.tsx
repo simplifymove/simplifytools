@@ -253,7 +253,7 @@ export default function SharpenImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Sharpen Image:</strong> Sharpening happens instantly in your browser</p></div>
+              <div><p className="text-gray-700"><strong>Click Sharpen Image:</strong> Apply the sharpening adjustment in your browser</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -306,7 +306,7 @@ export default function SharpenImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, file size remains similar. Sharpening is applied during compression at 90% quality JPG standard.</p>
+              <p className="text-gray-700 mt-3 text-sm">File size can change because the processed image is encoded again as JPG at 90% quality.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -365,7 +365,7 @@ export default function SharpenImagePage() {
             "name": "Does sharpening increase file size?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No, file size remains similar as sharpening is applied during JPG compression at 90% quality."
+              "text": "File size can change because the processed image is encoded again as JPG at 90% quality."
             }
           },
           {

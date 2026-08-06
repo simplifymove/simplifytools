@@ -221,7 +221,7 @@ export default function ImageCompressorPage() {
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Browser-based image compression</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Maintains visual quality</li>
+                      <li>• Adjustable output quality</li>
                       <li>• Compression processing runs in the browser</li>
                     </ul>
                   </div>
@@ -282,7 +282,7 @@ export default function ImageCompressorPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, but intelligently. Using quality settings 75-85%, you'll see minimal quality loss while achieving significant file size reduction. Our compression algorithm uses smart techniques to preserve important details.</p>
+              <p className="text-gray-700 mt-3 text-sm">Compression can reduce image quality. Lower settings generally reduce file size more, while higher settings usually retain more visible detail.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -300,7 +300,7 @@ export default function ImageCompressorPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support JPG, PNG, WebP, GIF, and most common image formats. Maximum file size is 50MB. All formats are compressed in your browser.</p>
+              <p className="text-gray-700 mt-3 text-sm">The tool accepts supported browser-readable image files up to 50MB and performs the compression step in the browser.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -318,7 +318,7 @@ export default function ImageCompressorPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">The image compression step itself is performed with browser-based processing. Complete privacy guaranteed.</p>
+              <p className="text-gray-700 mt-3 text-sm">The image compression step itself is performed with browser-based processing.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -343,7 +343,7 @@ export default function ImageCompressorPage() {
             "name": "Will compression reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, but intelligently using smart compression techniques to preserve important details. Quality settings 75-85% provide minimal visible loss."
+              "text": "Compression can reduce image quality. Lower settings generally reduce file size more, while higher settings usually retain more visible detail."
             }
           },
           {

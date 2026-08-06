@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Colorize Photo - Free Online Photo Colorization Tool | Convert B&W to Color',
-  description: 'Add colors to black and white photos instantly. Restore vintage photographs with sepia, warm, cool, or custom color tones. Free online tool with no registration required.',
+  description: 'Apply sepia, warm, cool, or custom color tones to supported images with browser-based processing.',
   keywords: [
     'colorize photo',
     'colorize image',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Colorize Photo - Free Online Photo Colorization Tool',
-    description: 'Convert black and white photos to color. Restore vintage and old photographs instantly.',
+    description: 'Apply selectable color tones to black-and-white or other supported images in your browser.',
     images: ['https://simplifyconvert.com/og-image.jpg']
   },
   alternates: { canonical: 'https://simplifyconvert.com/all-tools/colorize-photo' },
