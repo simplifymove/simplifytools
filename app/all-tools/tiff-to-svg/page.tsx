@@ -165,7 +165,7 @@ export default function TiffToSvgPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
+
                     {/* Corner Threshold */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -241,7 +241,179 @@ export default function TiffToSvgPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert TIFF to SVG online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a TIFF or TIF image, adjust the tracing controls if needed,
+                and click Convert to SVG. The image is processed using vector
+                tracing to identify raster shapes and create SVG paths. When the
+                conversion finishes, use the download button to save the SVG file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What happens during TIFF to SVG conversion?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  TIFF is a raster image format made from pixels, while SVG
+                  represents graphics using scalable paths and shapes. This tool
+                  traces visible shapes in the TIFF image and generates SVG path
+                  data rather than simply placing the original raster image inside
+                  an SVG container.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Which TIFF images trace best?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Logos, icons, line art, diagrams, signatures, illustrations,
+                  and other images with clear edges and strong contrast generally
+                  produce cleaner vector traces. Photographs and highly detailed
+                  textures can create much more complex SVG paths.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                TIFF vs SVG
+              </h2>
+              <p className="text-gray-600 leading-7">
+                TIFF stores pixel-based image information and is commonly used
+                for scans, publishing workflows, archival images, and high-quality
+                raster graphics. SVG is a vector format whose paths can scale
+                without the normal pixelation associated with enlarging raster
+                images. Converting is useful when the shapes in a TIFF image need
+                to be reused in a scalable vector workflow.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Corner Threshold
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The Corner Threshold control influences how the tracing process
+                  identifies corners and details in the source artwork. Different
+                  images may benefit from different values, so compare the output
+                  when tracing artwork with sharp geometric edges or fine details.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Curve Optimization
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Curve Optimization controls how strongly traced curves are
+                  simplified and optimized. Lower settings retain less
+                  optimization, while higher settings apply more optimization.
+                  The best setting depends on the complexity of the source image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Check the SVG after tracing
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Raster-to-vector tracing is an interpretation of the source
+                image, so the resulting paths may not reproduce every pixel-level
+                detail exactly. Inspect important edges, curves, small text, and
+                intricate shapes after conversion. A cleaner or higher-contrast
+                source image can often produce a simpler and more useful SVG.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Common uses for TIFF to SVG conversion
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  'Tracing logos and simple artwork',
+                  'Converting line drawings into scalable graphics',
+                  'Preparing shapes for vector editing',
+                  'Reusing diagram elements in SVG workflows',
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="border border-gray-200 rounded-lg p-4 text-sm text-gray-700"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                TIFF to SVG FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Does converting TIFF to SVG make the image vector?
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    The tool performs vector tracing and creates SVG paths from
+                    shapes detected in the raster TIFF image. The quality and
+                    complexity of those paths depend on the source artwork.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Can I upload both .tif and .tiff files?
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Yes. The uploader accepts both .tif and .tiff filename
+                    extensions.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Will a photograph become a simple vector illustration?
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Not necessarily. Photographs contain many colors, edges, and
+                    fine details, which can result in complex traces. Simple,
+                    high-contrast artwork is generally better suited to clean
+                    vector tracing.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Can I enlarge the resulting SVG?
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    SVG paths are scalable, but scaling does not improve tracing
+                    inaccuracies inherited from the original raster image. Review
+                    the converted paths before using them at large sizes.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );
