@@ -105,7 +105,7 @@ export default function PngToWebpPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to WebP Converter</h1>
-              <p className="text-lg text-white/90">Convert PNG images to WebP format for smaller file sizes with superior compression. Perfect for web optimization.</p>
+              <p className="text-lg text-white/90">Convert PNG images to WebP format with adjustable quality settings for web and image workflows.</p>
             </div>
           </div>
         </div>
@@ -254,7 +254,7 @@ export default function PngToWebpPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Better Compression for PNG</h3>
-                <p className="text-gray-600 text-sm">WebP provides superior compression for PNG files, reducing file sizes by up to 26% compared to PNG while maintaining transparency.</p>
+                <p className="text-gray-600 text-sm">WebP can produce smaller files than PNG for many images while supporting transparency.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -268,7 +268,7 @@ export default function PngToWebpPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Faster Web Performance</h3>
-                <p className="text-gray-600 text-sm">Smaller file sizes mean faster page load times, improved SEO rankings, and better user experience on all devices.</p>
+                <p className="text-gray-600 text-sm">Smaller image files can help reduce transfer size and improve page-loading performance.</p>
               </div>
             </div>
           </div>
@@ -282,11 +282,11 @@ export default function PngToWebpPage() {
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Does WebP preserve PNG transparency?</h3>
-              <p className="text-gray-700">Yes, WebP fully supports alpha channel transparency. If your PNG has a transparent background, it will remain transparent in the converted WebP file, often with even better quality.</p>
+              <p className="text-gray-700">Yes, WebP supports alpha channel transparency, so transparent areas can be preserved during conversion.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is WebP compared to PNG?</h3>
-              <p className="text-gray-700">WebP files are typically 20-26% smaller than equivalent PNG files. For photographs and complex images, the savings can be even more significant.</p>
+              <p className="text-gray-700">File-size differences vary by image content and encoding settings. You can compare the converted WebP result with the original PNG to see the difference.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the image quality be affected?</h3>
@@ -294,7 +294,7 @@ export default function PngToWebpPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is WebP suitable for web graphics and logos?</h3>
-              <p className="text-gray-700">Absolutely! WebP is ideal for graphics, logos, and images with transparency. It provides better compression than PNG while maintaining superior quality.</p>
+              <p className="text-gray-700">WebP supports transparency and can be useful for web graphics, logos, and other images where reducing file size is helpful.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my conversion data kept private?</h3>
@@ -319,7 +319,7 @@ export default function PngToWebpPage() {
               "name": "Does WebP preserve PNG transparency?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, WebP fully supports alpha channel transparency. If your PNG has a transparent background, it will remain transparent in the converted WebP file, often with even better quality."
+                "text": "Yes, WebP supports alpha channel transparency, so transparent areas can be preserved during conversion."
               }
             },
             {
@@ -327,7 +327,7 @@ export default function PngToWebpPage() {
               "name": "How much smaller is WebP compared to PNG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "WebP files are typically 20-26% smaller than equivalent PNG files. For photographs and complex images, the savings can be even more significant."
+                "text": "File-size differences vary by image content and encoding settings. You can compare the converted WebP result with the original PNG to see the difference."
               }
             },
             {
@@ -343,7 +343,7 @@ export default function PngToWebpPage() {
               "name": "Is WebP suitable for web graphics and logos?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Absolutely! WebP is ideal for graphics, logos, and images with transparency. It provides better compression than PNG while maintaining superior quality."
+                "text": "WebP supports transparency and can be useful for web graphics, logos, and other images where reducing file size is helpful."
               }
             },
             {

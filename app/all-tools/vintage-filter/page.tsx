@@ -227,8 +227,8 @@ export default function VintageFilterPage() {
                   <p className="text-gray-700">Vintage filtering is performed locally in the browser using canvas.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Professional Results</h3>
-                  <p className="text-gray-700">Achieve authentic vintage effects that rival professional editing software.</p>
+                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Customizable Vintage Effects</h3>
+                  <p className="text-gray-700">Apply adjustable vintage effects to create a retro, film-inspired appearance.</p>
                 </div>
               </div>
             </div>

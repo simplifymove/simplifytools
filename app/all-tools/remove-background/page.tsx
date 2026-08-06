@@ -503,7 +503,7 @@ export default function RemoveBackgroundPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. Processing happens on our servers for AI analysis, but images are never stored or viewed by anyone. They're automatically deleted after processing completes.</p>
+              <p className="text-gray-700 mt-3 text-sm">Processing happens on our servers for AI analysis. Uploaded images are used to perform the requested background-removal operation.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">

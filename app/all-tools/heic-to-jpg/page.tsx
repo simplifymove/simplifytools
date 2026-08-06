@@ -362,7 +362,7 @@ export default function HeicToJpgPage() {
               </Link>
               <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-                <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+                <p className="text-gray-600 text-sm mt-2">Reduce image file size</p>
               </Link>
             </div>
           </div>

@@ -90,12 +90,12 @@ export default function RemoveWatermarkPage() {
 
       setImageReady(true);
     };
-    
+
     img.onerror = () => {
       setError('Failed to load image');
       setImageReady(true);
     };
-    
+
     img.src = preview;
 
     return () => {
@@ -124,7 +124,7 @@ export default function RemoveWatermarkPage() {
     const canvas = canvasRef.current;
     const maskCanvas = maskCanvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    
+
     // Map screen coordinates to canvas coordinates, accounting for scaling
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -191,7 +191,7 @@ export default function RemoveWatermarkPage() {
 
   const removeObjects = async () => {
     console.log('removeObjects called');
-    
+
     if (!file) {
       setError('Please upload an image first');
       return;
@@ -208,7 +208,7 @@ export default function RemoveWatermarkPage() {
     try {
       const maskCanvas = maskCanvasRef.current;
       console.log('maskCanvas ref:', maskCanvas);
-      
+
       if (!maskCanvas) throw new Error('Mask canvas not found');
 
       // Debug: Check if mask canvas has any white pixels
@@ -237,7 +237,7 @@ export default function RemoveWatermarkPage() {
       // Convert mask canvas directly to PNG blob
       maskCanvas.toBlob(async (maskBlob) => {
         console.log('toBlob callback fired, maskBlob:', maskBlob);
-        
+
         if (!maskBlob) {
           setError('Failed to create mask');
           setProcessing(false);
@@ -278,7 +278,7 @@ export default function RemoveWatermarkPage() {
 
           const blob = await response.blob();
           console.log('Result blob size:', blob.size);
-          
+
           if (blob.size === 0) {
             throw new Error('Empty response from server');
           }
@@ -368,7 +368,7 @@ export default function RemoveWatermarkPage() {
                 {!preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                    <ImageUploader 
+                    <ImageUploader
                       onFileSelect={handleFileSelect}
                       preview={preview}
                       onClearPreview={handleClearPreview}
@@ -380,7 +380,7 @@ export default function RemoveWatermarkPage() {
                 {preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 2: Mark Areas</h2>
-                    
+
                     {!imageReady && (
                       <div className="text-center py-12">
                         <Loader className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-3" />
@@ -689,7 +689,7 @@ export default function RemoveWatermarkPage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Fast & Quality Modes</h3>
-              <p className="text-gray-700">Choose fast mode for quick results or quality mode for superior inpainting. Perfect for any use case.</p>
+              <p className="text-gray-700">Choose fast mode for quicker processing or quality mode for more detailed inpainting.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Output Formats</h3>
@@ -700,8 +700,8 @@ export default function RemoveWatermarkPage() {
               <p className="text-gray-700">Full undo/redo history lets you fine-tune your selections. Revert marks with a single click.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
-              <p className="text-gray-700">No sign-up required. All processing happens securely. Your images are completely private and never stored.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Simple Processing</h3>
+              <p className="text-gray-700">No sign-up is required to use the available watermark-removal controls.</p>
             </div>
           </div>
         </div>
@@ -718,7 +718,7 @@ export default function RemoveWatermarkPage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between Fast and Quality modes?</summary>
-              <p className="text-gray-700 mt-2">Fast mode processes quickly with basic inpainting. Quality mode uses advanced AI algorithms for superior results with better blending. Quality mode takes longer but produces better outcomes for complex watermarks.</p>
+              <p className="text-gray-700 mt-2">Fast mode uses quicker inpainting, while Quality mode applies more detailed processing that may improve blending for complex areas. Quality mode generally takes longer.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">How accurate is the watermark removal?</summary>
@@ -730,11 +730,11 @@ export default function RemoveWatermarkPage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally or on secure servers. Your images are never stored, shared, or used for any purpose. Complete privacy guaranteed.</p>
+              <p className="text-gray-700 mt-2">Images are processed as needed to perform the requested watermark-removal operation.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Can I use the edited images commercially?</summary>
-              <p className="text-gray-700 mt-2">Yes, images processed with our tool can be used for personal or commercial purposes without any restrictions or attribution required.</p>
+              <p className="text-gray-700 mt-2">Using this tool does not grant rights to an image. Only edit or use images when you own them or have the necessary permission, and follow any applicable copyright or licensing terms.</p>
             </details>
           </div>
         </div>
@@ -767,7 +767,7 @@ export default function RemoveWatermarkPage() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'Remove Watermark - Free Online Watermark & Logo Remover Tool',
-        description: 'Remove watermarks, logos, timestamps, and text from images instantly using AI inpainting technology.',
+        description: 'Remove marked watermarks, logos, timestamps, text, and unwanted objects from images using AI inpainting technology.',
         url: 'https://simplifyconvert.com/all-tools/remove-watermark',
         applicationCategory: 'Multimedia',
         offers: {

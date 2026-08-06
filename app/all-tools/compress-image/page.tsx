@@ -440,7 +440,7 @@ export default function CompressImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">The image compression step itself is performed with browser-based processing. Complete privacy guaranteed.</p>
+              <p className="text-gray-700 mt-3 text-sm">The image compression step itself is performed with browser-based processing.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">

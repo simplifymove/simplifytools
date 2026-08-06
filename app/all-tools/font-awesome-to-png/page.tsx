@@ -672,7 +672,7 @@ export default function FontAwesomeToPngPage() {
                       <div className="text-orange-500 text-2xl">✓</div>
                       <div>
                         <h4 className="font-semibold text-gray-900">Any Size</h4>
-                        <p className="text-sm text-gray-600">Generate from 64px to 512px without quality loss</p>
+                        <p className="text-sm text-gray-600">Generate icons from 64px to 512px</p>
                       </div>
                     </div>
                     <div className="flex gap-3">

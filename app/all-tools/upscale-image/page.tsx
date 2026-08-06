@@ -44,13 +44,13 @@ export default function UpscaleImagePage() {
   const [resultDataUrl, setResultDataUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [useDataUrl, setUseDataUrl] = useState(false);
-  
+
   // Upscale options
   const [scale, setScale] = useState<2 | 3 | 4>(4);
   const [mode, setMode] = useState<'auto' | 'photo' | 'anime'>('auto');
   const [faceEnhance, setFaceEnhance] = useState(false);
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
-  
+
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const [metadata, setMetadata] = useState<UpscaleMetadata | null>(null);
   const { error, clearError, createError } = useImageToolErrors();
@@ -175,15 +175,15 @@ export default function UpscaleImagePage() {
       }
 
       const contentType = response.headers.get('Content-Type');
-      console.log('📥 Response received:', { 
+      console.log('📥 Response received:', {
         status: response.status,
         contentType,
         contentLength: response.headers.get('Content-Length')
       });
 
       const blob = await response.blob();
-      console.log('✓ Response blob received:', { 
-        size: blob.size, 
+      console.log('✓ Response blob received:', {
+        size: blob.size,
         type: blob.type,
         contentType
       });
@@ -232,26 +232,26 @@ export default function UpscaleImagePage() {
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
-        console.log('✓ Data URL created:', { 
+        console.log('✓ Data URL created:', {
           urlLength: dataUrl.length,
           blobSize: blob.size,
           blobType: blob.type,
           sizeMB: (blob.size / (1024*1024)).toFixed(1)
         });
-        
+
         // Store blob reference in state to prevent garbage collection
         setResultBlob(blob);
-        
+
         // Set result and start loading
         setResult(dataUrl);
         setImageLoading(true);
         console.log('🖼️ Image loading started from data URL');
       };
-      
+
       reader.onerror = () => {
         throw new Error('Failed to convert image blob to data URL');
       };
-      
+
       reader.readAsDataURL(blob);
     } catch (err) {
       createError(
@@ -336,7 +336,7 @@ export default function UpscaleImagePage() {
                 {!preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                    <ImageUploader 
+                    <ImageUploader
                       onFileSelect={handleFileSelect}
                       preview={preview}
                       onClearPreview={handleClearPreview}
@@ -677,8 +677,8 @@ export default function UpscaleImagePage() {
               <p className="text-gray-700">Export as PNG (lossless), WebP (balanced), or JPG (compressed) based on your needs.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
-              <p className="text-gray-700">No sign-up required. All processing happens securely. Your images are completely private.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Simple Image Upscaling</h3>
+              <p className="text-gray-700">No sign-up is required to use the available image upscaling controls.</p>
             </div>
           </div>
         </div>
@@ -695,7 +695,7 @@ export default function UpscaleImagePage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Does upscaling reduce image quality?</summary>
-              <p className="text-gray-700 mt-2">No, Real-ESRGAN AI actually enhances quality by reconstructing detail and sharpness. Results look clearer and more detailed than simply enlarging.</p>
+              <p className="text-gray-700 mt-2">AI upscaling attempts to reconstruct additional visual detail while increasing image dimensions. Results can vary depending on the source image, scale, and content.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
@@ -707,11 +707,11 @@ export default function UpscaleImagePage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally in your browser or on secure servers. Your images are never stored or shared with third parties.</p>
+              <p className="text-gray-700 mt-2">Images may be processed locally or by the tool's server-side processing workflow depending on the selected operation.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Can I use upscaled images commercially?</summary>
-              <p className="text-gray-700 mt-2">Yes, upscaled images can be used for personal or commercial purposes without any restrictions or attribution required.</p>
+              <p className="text-gray-700 mt-2">Upscaling does not change ownership or licensing rights. Use the processed image only when you own the source image or have the necessary permission, and follow any applicable copyright or licensing terms.</p>
             </details>
           </div>
         </div>
@@ -732,7 +732,7 @@ export default function UpscaleImagePage() {
             </Link>
             <Link href="/all-tools/compress-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Compress Image</h3>
-              <p className="text-sm text-gray-600">Reduce file size without quality loss</p>
+              <p className="text-sm text-gray-600">Reduce image file size</p>
             </Link>
           </div>
         </div>
@@ -744,7 +744,7 @@ export default function UpscaleImagePage() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'AI Image Upscaler - Free Online Image Enlargement Tool',
-        description: 'Upscale images 2×, 3×, or 4× without quality loss using Real-ESRGAN AI technology.',
+        description: 'Upscale images 2×, 3×, or 4× using Real-ESRGAN AI technology.',
         url: 'https://simplifyconvert.com/all-tools/upscale-image',
         applicationCategory: 'Multimedia',
         offers: {

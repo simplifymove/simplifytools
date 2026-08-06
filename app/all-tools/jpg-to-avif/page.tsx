@@ -121,7 +121,7 @@ export default function JpgToAvifPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to AVIF Converter</h1>
-                <p className="text-lg text-white/90">Convert JPG images to AVIF format for next-generation compression and superior quality with faster web delivery.</p>
+                <p className="text-lg text-white/90">Convert JPG images to AVIF format with adjustable quality settings for modern web and image workflows.</p>
               </div>
             </div>
           </div>
@@ -206,7 +206,7 @@ export default function JpgToAvifPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Server-assisted AVIF conversion</li>
-                      <li>• Superior compression ratio</li>
+                      <li>• Modern image compression</li>
                       <li>• Next-gen image format</li>
                       <li>• Files are temporarily processed for conversion</li>
                     </ul>
@@ -246,7 +246,7 @@ export default function JpgToAvifPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Convert to AVIF</h3>
-                  <p className="text-gray-600 mt-2">Click "Convert to AVIF" to instantly process your image using advanced compression algorithms.</p>
+                  <p className="text-gray-600 mt-2">Click "Convert to AVIF" to process your image using the selected quality setting.</p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -270,22 +270,22 @@ export default function JpgToAvifPage() {
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Superior Compression</h3>
-                  <p className="text-gray-600 text-sm">AVIF provides 50-80% better compression than JPG, resulting in much smaller file sizes at equal or better quality levels.</p>
+                  <h3 className="text-lg font-semibold text-gray-900">Efficient Compression</h3>
+                  <p className="text-gray-600 text-sm">AVIF can provide smaller file sizes than JPG for many images, depending on image content and encoding settings.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Next-Generation Standard</h3>
-                  <p className="text-gray-600 text-sm">AVIF is the modern image format for the future web, offering the best compression and quality of any current format.</p>
+                  <p className="text-gray-600 text-sm">AVIF is a modern image format designed to support efficient compression and high-quality image encoding.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Faster Web Performance</h3>
-                  <p className="text-gray-600 text-sm">Significantly smaller files mean faster page loads, better SEO rankings, and improved user experience across all devices.</p>
+                  <p className="text-gray-600 text-sm">Smaller image files can reduce transfer size and help improve page-loading performance.</p>
                 </div>
               </div>
             </div>
@@ -303,7 +303,7 @@ export default function JpgToAvifPage() {
               </div>
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than JPG?</h3>
-                <p className="text-gray-700">AVIF files are typically 50-80% smaller than equivalent JPG files while maintaining superior image quality, depending on image content and quality settings.</p>
+                <p className="text-gray-700">AVIF file size and visual quality depend on the source image and selected encoding settings.</p>
               </div>
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Will quality be compromised?</h3>
@@ -344,7 +344,7 @@ export default function JpgToAvifPage() {
                 "name": "How much smaller is AVIF than JPG?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "AVIF files are typically 50-80% smaller than equivalent JPG files while maintaining superior image quality, depending on image content and quality settings."
+                  "text": "AVIF file size and visual quality depend on the source image and selected encoding settings."
                 }
               },
               {
@@ -398,7 +398,7 @@ export default function JpgToAvifPage() {
               </Link>
               <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-                <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+                <p className="text-gray-600 text-sm mt-2">Reduce image file size</p>
               </Link>
               <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>

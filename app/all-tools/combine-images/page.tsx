@@ -523,15 +523,15 @@ export default function CombineImagesPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-orange-500 mb-2">✓ High Quality Output</h3>
-                <p className="text-gray-700">Exports as PNG with full quality preservation. No compression or loss of detail.</p>
+                <p className="text-gray-700">Exports the combined result as a PNG image.</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
+                <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Browser-Based Processing</h3>
                 <p className="text-gray-700">No sign-up required. All processing happens locally in your browser. Your data stays private.</p>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Batch Processing</h3>
-                <p className="text-gray-700">Combine unlimited images in one session. Perfect for creating multi-image collages and compositions.</p>
+                <p className="text-gray-700">Combine multiple images in one session to create collages and compositions.</p>
               </div>
             </div>
           </div>
@@ -544,11 +544,11 @@ export default function CombineImagesPage() {
             <div className="space-y-4">
               <details className="border-l-4 border-orange-500 pl-4 py-2">
                 <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-                <p className="text-gray-700 mt-2">Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The output is always PNG format for maximum quality.</p>
+                <p className="text-gray-700 mt-2">Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The combined output is generated in PNG format.</p>
               </details>
               <details className="border-l-4 border-orange-500 pl-4 py-2">
                 <summary className="font-bold text-gray-800 cursor-pointer">How many images can I combine?</summary>
-                <p className="text-gray-700 mt-2">You can combine as many images as you want. Upload 2 or 100+ images - the tool handles any number. Just note that very large numbers may take longer to process.</p>
+                <p className="text-gray-700 mt-2">You can combine multiple images in one session. The practical limit depends on image dimensions, file sizes, and available browser memory.</p>
               </details>
               <details className="border-l-4 border-orange-500 pl-4 py-2">
                 <summary className="font-bold text-gray-800 cursor-pointer">Can I change the layout after uploading?</summary>
@@ -556,11 +556,11 @@ export default function CombineImagesPage() {
               </details>
               <details className="border-l-4 border-orange-500 pl-4 py-2">
                 <summary className="font-bold text-gray-800 cursor-pointer">Is my data safe and private?</summary>
-                <p className="text-gray-700 mt-2">Absolutely. All processing happens locally in your browser. Your images are never uploaded to any server. They are completely private and secure.</p>
+                <p className="text-gray-700 mt-2">The image-combining operation is performed locally in your browser.</p>
               </details>
               <details className="border-l-4 border-orange-500 pl-4 py-2">
                 <summary className="font-bold text-gray-800 cursor-pointer">What size images does it support?</summary>
-                <p className="text-gray-700 mt-2">The tool can handle images up to your browser's memory limit. Typically this allows files up to several hundred megapixels combined. For very large images, consider resizing first.</p>
+                <p className="text-gray-700 mt-2">The practical image-size limit depends on your browser and available device memory. Very large images may need to be resized before combining.</p>
               </details>
               <details className="border-l-4 border-orange-500 pl-4 py-2">
                 <summary className="font-bold text-gray-800 cursor-pointer">Can I reorder images?</summary>
