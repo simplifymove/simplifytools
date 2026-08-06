@@ -29,7 +29,7 @@ export default function RemoveObjectPage() {
     reader.onload = (e) => {
       const imgUrl = e.target?.result as string;
       setImagePreview(imgUrl);
-      
+
       // Get image dimensions
       const img = new Image();
       img.onload = () => {
@@ -157,7 +157,7 @@ export default function RemoveObjectPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Remove Objects</h1>
-                <p className="text-lg text-white/90">Remove unwanted objects from images using AI-powered inpainting.</p>
+                <p className="text-lg text-white/90">Remove unwanted objects from images using Mask-based image inpainting.</p>
               </div>
             </div>
           </div>
@@ -261,7 +261,7 @@ export default function RemoveObjectPage() {
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <h3 className="font-semibold text-blue-900 mb-3">Features</h3>
                       <ul className="text-sm text-blue-800 space-y-1">
-                        <li>• Smart inpainting algorithms</li>
+                        <li>• Telea and Navier-Stokes inpainting methods</li>
                         <li>• Multiple removing methods</li>
                         <li>• Adjustable parameters</li>
                         <li>• Real-time preview</li>
@@ -367,14 +367,224 @@ export default function RemoveObjectPage() {
                   {/* Supported Formats */}
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                     <h3 className="font-semibold text-amber-900 mb-2">Supported Formats</h3>
-                    <p className="text-sm text-amber-800">JPG, PNG, WebP and all common image formats</p>
+                    <p className="text-sm text-amber-800">Common browser-supported image formats</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to remove an object from an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image, paint over the area you want to remove, and
+                confirm the mask. Choose an inpainting method and radius, then
+                start processing. The image and mask are sent to the server,
+                where OpenCV fills the painted region using surrounding image
+                information.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  How the painted mask works
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The mask tells the processor exactly which pixels should be
+                  replaced. White painted areas mark regions to remove, while
+                  black areas are kept. The mask is generated at the original
+                  image dimensions before it is sent for processing.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Paint slightly beyond the object edge
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Cover the complete object and a small amount of its boundary.
+                  The backend expands and smooths the mask before inpainting,
+                  which helps avoid leaving thin fragments of the selected
+                  object around its edges.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Telea vs Navier-Stokes inpainting
+              </h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-2">
+                    Telea
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Telea is the default method. It fills the masked region by
+                    propagating nearby image information inward from the mask
+                    boundary. It is generally a practical first choice for
+                    relatively small unwanted areas.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-2">
+                    Navier-Stokes
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Navier-Stokes inpainting uses a different OpenCV method for
+                    continuing nearby image structure into the selected region.
+                    If Telea leaves an obvious artifact, compare the
+                    Navier-Stokes result on the same mask.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What the inpaint radius controls
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The radius determines how far around each masked pixel OpenCV
+                looks for neighboring image information. The current tool
+                accepts values from 1 to 20 pixels. A small radius may work well
+                around fine details, while a larger radius uses a wider
+                neighborhood. Bigger values do not automatically produce a
+                better result.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Best suited to smaller removal areas
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Classical inpainting works best when the masked region is
+                  reasonably small and surrounded by useful nearby texture.
+                  Small blemishes, wires, marks, isolated objects, and simple
+                  background interruptions are generally easier than large
+                  complex subjects.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Large or complex objects can be difficult
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The processor does not invent a new scene or understand hidden
+                  background content. Large masks, faces, detailed architecture,
+                  repeated patterns, or objects covering important structures
+                  may produce visible smearing or reconstructed textures that do
+                  not match the original scene.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the mask is prepared before removal
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Before inpainting, the server converts the mask to a binary
+                image, performs morphological closing and opening, expands the
+                selected region, smooths mask edges, and thresholds it again.
+                This preprocessing helps create a cleaner removal boundary before
+                the selected inpainting algorithm runs.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better object removal
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  'Keep the painted area as small as practical',
+                  'Cover the entire unwanted object',
+                  'Include a small margin around difficult edges',
+                  'Try Telea first and compare Navier-Stokes if needed',
+                  'Use a moderate radius before increasing it',
+                  'Inspect patterns, edges, faces, and text after processing',
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="border border-gray-200 rounded-lg p-4 text-sm text-gray-600"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Output and processing details
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The image and mask are processed on the server. The current
+                backend returns the finished result as a JPEG image. Temporary
+                input, mask, and output files used by the API are deleted after
+                processing completes.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Remove Object FAQ
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  [
+                    'Does the tool automatically detect the object?',
+                    'No. You manually paint a mask over the area you want removed, giving you direct control over which part of the image is processed.',
+                  ],
+                  [
+                    'Is this AI object removal?',
+                    'The current implementation uses classical OpenCV inpainting rather than an object-detection or generative AI model.',
+                  ],
+                  [
+                    'Which inpainting method should I choose?',
+                    'Telea is a good first choice. If the result is not satisfactory, compare Navier-Stokes using the same mask and radius.',
+                  ],
+                  [
+                    'What radius should I use?',
+                    'Start with a moderate value. The radius controls the neighboring area used during inpainting, and values from 1 to 20 pixels are supported.',
+                  ],
+                  [
+                    'Can it remove a very large object?',
+                    'It may process the mask, but large removal areas are more likely to show artifacts because classical inpainting depends on nearby visible image information.',
+                  ],
+                  [
+                    'What format is the result?',
+                    'The current server route returns the processed image as JPEG.',
+                  ],
+                ].map(([question, answer]) => (
+                  <div
+                    key={question}
+                    className="border border-gray-200 rounded-xl p-5"
+                  >
+                    <h3 className="font-bold text-gray-900 mb-2">{question}</h3>
+                    <p className="text-sm text-gray-600 leading-6">{answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );
