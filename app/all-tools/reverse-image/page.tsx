@@ -301,7 +301,7 @@ export default function ReverseImagePage() {
                 <li>• Invert colors for negative effect</li>
                 <li>• Flip horizontally (mirror left-right)</li>
                 <li>• Flip vertically (mirror up-down)</li>
-                <li>• Works with all image formats</li>
+                <li>• Works with common browser-supported image formats</li>
               </ul>
             </div>
           </div>
@@ -310,7 +310,171 @@ export default function ReverseImagePage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to reverse, invert, or flip an image online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image, choose Invert Colors, Flip Horizontally, or
+                Flip Vertically, and click Reverse Image. The selected effect
+                is applied in your browser using an image canvas. Preview the
+                result and use Download PNG to save the processed image.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Invert image colors
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Invert Colors creates a negative-style effect by reversing
+                  the red, green, and blue values of each pixel. Dark areas
+                  become light, light areas become dark, and colors shift to
+                  their inverted RGB values. Image transparency is preserved
+                  during this operation.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Flip an image horizontally
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  A horizontal flip mirrors the image from left to right.
+                  Objects originally on the left move to the right and objects
+                  on the right move to the left. This is useful for creating a
+                  mirror image or changing the direction a subject faces.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Flip an image vertically
+              </h2>
+              <p className="text-gray-600 leading-7">
+                A vertical flip mirrors the image from top to bottom. Content
+                near the top moves to the bottom while content near the bottom
+                moves to the top. Unlike rotation, the image is reflected
+                across a horizontal axis without turning it 180 degrees.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Flip vs rotate: what is the difference?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Flipping reflects an image across an axis, while rotation
+                  turns the entire image around a point. A horizontal flip
+                  creates a left-to-right mirror. A vertical flip creates a
+                  top-to-bottom mirror. Neither operation is the same as
+                  rotating the image by 90 or 180 degrees.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What happens to the output format?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The processed result is exported as a PNG image. This means
+                  an uploaded image may have a different file format from the
+                  downloaded result. The canvas keeps the original image
+                  dimensions while applying the selected reversal effect.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Browser-based image processing
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The inversion and flip operations are performed with the
+                browser&apos;s Canvas API. The uploaded image is loaded into a
+                canvas, the selected transformation is applied, and the
+                processed canvas is converted to a PNG result. Supported input
+                formats therefore depend on formats your browser can decode.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Common uses for reversing and flipping images
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  'Create a left-to-right mirror image',
+                  'Reverse the direction of a subject',
+                  'Create a photographic negative-style effect',
+                  'Flip scanned or captured images',
+                  'Prepare mirrored graphics for design work',
+                  'Correct images that appear reversed',
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="border border-gray-200 rounded-lg p-4 text-sm text-gray-600"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Reverse Image FAQ
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  [
+                    'Can I mirror an image from left to right?',
+                    'Yes. Choose Flip Horizontally to create a left-to-right mirror of the uploaded image.',
+                  ],
+                  [
+                    'Can I flip an image upside down?',
+                    'Choose Flip Vertically to reflect the image from top to bottom.',
+                  ],
+                  [
+                    'What does Invert Colors do?',
+                    'It reverses the RGB color values of the pixels to create a negative-style color effect while leaving the alpha channel unchanged.',
+                  ],
+                  [
+                    'Does reversing an image change its dimensions?',
+                    'No. The canvas uses the original image width and height, so the processed image keeps the same pixel dimensions.',
+                  ],
+                  [
+                    'What format is the downloaded image?',
+                    'The processed result is exported and downloaded as a PNG file.',
+                  ],
+                  [
+                    'Are the image effects processed on the server?',
+                    'The actual color inversion and flip transformations are performed in your browser using a canvas.',
+                  ],
+                ].map(([question, answer]) => (
+                  <div
+                    key={question}
+                    className="border border-gray-200 rounded-xl p-5"
+                  >
+                    <h3 className="font-bold text-gray-900 mb-2">{question}</h3>
+                    <p className="text-sm text-gray-600 leading-6">{answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <Footer />
     </div>
