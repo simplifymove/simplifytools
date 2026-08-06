@@ -136,7 +136,7 @@ export default function EditPdfPage() {
                       Your PDF is processed securely
                     </p>
                     <p className="text-xs text-gray-600">
-                      No account needed • Files never stored • Encrypted transmission
+                      No account needed • Encrypted transmission
                     </p>
                   </div>
                 </div>

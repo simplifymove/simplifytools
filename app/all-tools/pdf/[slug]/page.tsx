@@ -384,7 +384,7 @@ export default function PdfToolPage({ params }: PageProps) {
                             <Suspense fallback={
                               <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-center">
                                 <p className="text-gray-600 font-medium">Visual PDF Crop Editor</p>
-                                <p className="text-sm text-gray-500 mt-2">Upload your PDF to see the visual crop editor and select areas to crop. Use the editor to remove margins, trim pages, and extract specific regions from your PDF document.</p>
+                                <p className="text-sm text-gray-500 mt-2">Upload your PDF to see the visual crop editor and select areas to crop. Use the editor to adjust page boundaries and hide margins, whitespace, or unwanted outer areas.</p>
                               </div>
                             }>
                               <PdfCropEditor
@@ -1340,7 +1340,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Will converting PDF to JPG reduce image quality?',
-                    a: 'PDF pages are rasterized at the selected DPI and then encoded as JPG images. Because JPG uses lossy compression, the generated image may not preserve every detail of the original PDF. Higher DPI provides more raster detail but also creates larger images.'
+                    a: 'PDF pages are rasterized at the selected DPI and then encoded as JPG images. Because JPG uses lossy compression, some source detail can change during image encoding. Higher DPI provides more raster detail but also creates larger images.'
                   },
                   {
                     q: 'Can I convert all pages or just specific pages?',
@@ -1451,7 +1451,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Will converting PDF to JPG reduce image quality?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'PDF pages are rasterized at the selected DPI and then encoded as JPG images. Because JPG uses lossy compression, the generated image may not preserve every detail of the original PDF. Higher DPI provides more raster detail but also creates larger images.'
+                    text: 'PDF pages are rasterized at the selected DPI and then encoded as JPG images. Because JPG uses lossy compression, some source detail can change during image encoding. Higher DPI provides more raster detail but also creates larger images.'
                   }
                 },
                 {
@@ -3951,7 +3951,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   </thead>
                   <tbody>
                     {[
-                      { feature: 'Vector Quality', eps: 'Fully scalable without quality loss', pdf: 'Vector preserved in PDF (scalable)' },
+                      { feature: 'Vector Quality', eps: 'Scales as vector artwork', pdf: 'Vector preserved in PDF (scalable)' },
                       { feature: 'Device Compatibility', eps: 'Limited (mainly design software)', pdf: 'Works on all devices and platforms' },
                       { feature: 'Shareability', eps: 'Not easily shareable', pdf: 'Universally shareable via email, messaging' },
                       { feature: 'Printing Quality', eps: 'Professional print quality', pdf: 'Excellent print quality' },
