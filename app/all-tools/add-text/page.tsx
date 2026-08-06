@@ -611,6 +611,135 @@ export default function AddTextPage() {
           </div>
         </div>
 
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to add text to an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image, enter the text you want to place on it, and
+                customize the appearance before creating the final image. The
+                preview helps you adjust the text while the finished image is
+                rendered at the uploaded image&apos;s dimensions and exported
+                as PNG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Customize the text overlay
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  Choose the font family, font size, text color, opacity and
+                  alignment. Horizontal and vertical position controls let you
+                  move the text to a suitable area of the image.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Optional text shadow
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  Enable a shadow when the text needs more separation from a
+                  detailed background. You can choose the shadow color and
+                  adjust its blur amount.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Browser-based text rendering
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The image and text overlay are rendered with the browser&apos;s
+                Canvas API. The tool draws the uploaded image first and then
+                places your configured text over it. The generated result is
+                encoded as a PNG before it is prepared for download.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Common uses for image text
+              </h2>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">Captions</h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Add short captions, labels or descriptive text directly to
+                    a photo or graphic.
+                  </p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">Titles</h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Place a heading over an image for simple promotional,
+                    presentation or social graphics.
+                  </p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">Labels</h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Mark images with names, categories, dates or other short
+                    identifying information.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for readable text overlays
+              </h2>
+              <ul className="text-gray-600 leading-7 space-y-2">
+                <li>• Use a text color that contrasts with the image background.</li>
+                <li>• Keep important text away from visually busy areas when possible.</li>
+                <li>• Use the shadow option when foreground and background colors are similar.</li>
+                <li>• Check the preview after changing size, alignment or position.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Add Text to Image FAQ
+              </h2>
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    What format is the finished image?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    The generated image is encoded and downloaded as PNG.
+                  </p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Can I change the position of the text?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    Yes. Horizontal and vertical position controls determine
+                    where the text is drawn on the image.
+                  </p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Can I make the text partially transparent?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    Yes. The text opacity control changes the alpha value used
+                    when the text is rendered.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Hidden Canvas */}
         <canvas ref={canvasRef} style={{ display: 'none' }} />
 

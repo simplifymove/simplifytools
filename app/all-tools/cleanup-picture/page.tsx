@@ -531,7 +531,7 @@ export default function CleanupPicturePage() {
               <ul className="text-sm text-purple-800 space-y-1">
                 <li>• Use noise reduction for grainy photos</li>
                 <li>• Smooth blur gently cleans edges</li>
-                <li>• Combine all three for best results</li>
+                <li>• Compare individual and combined settings</li>
                 <li>• Adjust strength for subtle effects</li>
               </ul>
             </div>
@@ -548,7 +548,131 @@ export default function CleanupPicturePage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How Cleanup Picture processes an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image and choose noise reduction, smooth blur,
+                clarity enhancement, or a combination of these controls.
+                Adjust the available settings while checking the preview,
+                then process the image and download the generated PNG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-5">
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Noise reduction
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Denoising blends each pixel toward nearby median color
+                  values. Higher strength increases the smoothing effect and
+                  can also reduce some fine image detail.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Smooth blur
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Smooth blur uses weighted neighboring pixels to soften local
+                  detail. Increasing the radius creates stronger smoothing.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Clarity enhancement
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Enhancement increases tonal contrast around the image
+                  midtones. It changes contrast rather than recreating detail
+                  that is missing from the source image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What Cleanup Picture does not do
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Cleanup Picture performs pixel-level filtering. It does not
+                detect or remove selected objects, perform content-aware
+                filling, or reconstruct missing parts of an image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing cleanup settings
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong denoising or blur can remove useful fine
+                detail, while stronger enhancement can make highlights and
+                shadows appear more pronounced.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Browser-based image filtering
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The cleanup effects are applied with browser-side Canvas and
+                pixel processing. The processed canvas is then encoded as PNG
+                for the result.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Cleanup Picture FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Does Cleanup Picture remove objects?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    No. It provides denoise, smoothing, and contrast
+                    adjustments rather than object-removal processing.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Should every cleanup option be enabled?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    No. Use the controls that match the visible issue and
+                    compare the preview before processing.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    What output format is generated?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    The processed result is generated as PNG.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <Footer />
     </div>

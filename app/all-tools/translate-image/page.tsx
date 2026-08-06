@@ -110,7 +110,7 @@ export default function TranslateImagePage() {
       }
 
       const data = await response.json();
-      
+
       // Convert API response to DetectedText format
       const detectedItems: DetectedText[] = (data.translations || []).map(
         (translation: any, index: number) => ({
@@ -175,13 +175,13 @@ export default function TranslateImagePage() {
       overlays.forEach((overlay) => {
         ctx.font = `${overlay.fontSize}px Arial`;
         ctx.fillStyle = overlay.color;
-        
+
         // Add text shadow for better visibility
         ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
         ctx.shadowBlur = 3;
         ctx.shadowOffsetX = 1;
         ctx.shadowOffsetY = 1;
-        
+
         ctx.fillText(overlay.text, overlay.x, overlay.y);
         ctx.shadowColor = 'transparent';
 
@@ -224,13 +224,13 @@ export default function TranslateImagePage() {
         overlays.forEach((overlay) => {
           ctx.font = `${overlay.fontSize}px Arial`;
           ctx.fillStyle = overlay.color;
-          
+
           // Add text shadow
           ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
           ctx.shadowBlur = 3;
           ctx.shadowOffsetX = 1;
           ctx.shadowOffsetY = 1;
-          
+
           ctx.fillText(overlay.text, overlay.x, overlay.y);
           ctx.shadowColor = 'transparent';
         });
@@ -324,11 +324,11 @@ export default function TranslateImagePage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 mb-4">1. Upload Image</h2>
-              <ImageUploader 
-                onFileSelect={handleFileSelect} 
-                preview={preview} 
-                onClearPreview={handleClearPreview} 
-                accept="image/*" 
+              <ImageUploader
+                onFileSelect={handleFileSelect}
+                preview={preview}
+                onClearPreview={handleClearPreview}
+                accept="image/*"
               />
               {file && (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -545,7 +545,121 @@ export default function TranslateImagePage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to translate text in an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image, choose the source and target languages, and
+                run Detect &amp; Translate. The image is analyzed for text and
+                translated entries are returned for review before generating
+                the final image.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Server-assisted OCR and translation
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  OCR and translation use the SimplifyConvert server-side
+                  translation endpoint. The uploaded image and selected
+                  source and target languages are submitted for processing.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Editable translated overlays
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  Returned translations become editable text overlays. You
+                  can correct translated wording or remove overlays before
+                  generating the final image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the translated image is generated
+              </h2>
+              <p className="text-gray-600 leading-7">
+                After translation, the source image is drawn to a browser
+                Canvas and the translated text overlays are rendered on top.
+                The completed canvas is encoded as PNG.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Review OCR results before exporting
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Small text, unusual fonts, low contrast, blur, and complex
+                backgrounds can affect OCR recognition. Review detected and
+                translated text and edit it when necessary.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Common image translation uses
+              </h2>
+              <ul className="text-gray-600 leading-7 space-y-2">
+                <li>• Translate readable text captured in screenshots.</li>
+                <li>• Review text detected from posters and graphics.</li>
+                <li>• Translate legible text from scanned visual material.</li>
+                <li>• Correct translated wording before generating the PNG.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Translate Image FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Is OCR performed entirely in the browser?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    No. OCR and translation use a server-side processing
+                    endpoint.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Can translated text be edited?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    Yes. Returned overlays can be edited before the final
+                    image is generated.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    What output format is generated?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    The translated image is generated as PNG.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <Footer />
     </div>

@@ -213,7 +213,7 @@ export default function AddImagesPage() {
       const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: false });
       if (!ctx) return;
 
-      // High DPI rendering for crisp output (4K quality)
+      // Use a larger internal canvas for final rendering
       const dpi = 300;
       const scale = dpi / 96; // Standard screen DPI is 96
 
@@ -283,7 +283,7 @@ export default function AddImagesPage() {
       // Wait for all images to load and draw
       await Promise.all(imagePromises);
 
-      // Convert to blob with maximum quality
+      // Encode the generated canvas as PNG
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -539,13 +539,13 @@ export default function AddImagesPage() {
               </div>
 
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-                <h3 className="font-bold text-purple-900 mb-3">🎨 Industry Standards</h3>
+                <h3 className="font-bold text-purple-900 mb-3">🎨 Composition Details</h3>
                 <ul className="text-sm text-purple-800 space-y-2">
                   <li>• Each image: 320×320px (maintains aspect ratio)</li>
-                  <li>• 4K quality output (300 DPI / 3.13x scale)</li>
-                  <li>• Professional spacing: 40px gaps between images</li>
-                  <li>• Grid auto-arranges to prevent overlaps</li>
-                  <li>• Borders for clean, professional look</li>
+                  <li>• Canvas is internally scaled during final rendering</li>
+                  <li>• Initial placement uses 40px spacing</li>
+                  <li>• New images receive automatic starting positions</li>
+                  <li>• Placement areas include a visible border</li>
                   <li>• Default canvas: 1600×1200px (16:12 aspect)</li>
                   <li>• Maximum 10 images per collage</li>
                 </ul>
@@ -553,7 +553,120 @@ export default function AddImagesPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to combine multiple images
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Add up to 10 images, choose the canvas width, height, and
+                background color, and arrange the images in the preview.
+                Generate the composition when the layout is ready, then
+                download the finished result as PNG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Automatic starting positions
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  Newly added images receive initial grid-style positions
+                  based on the current canvas width. These provide a starting
+                  layout for the composition.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Canvas and background controls
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  Choose the output canvas dimensions and background color
+                  before generating the final image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Image sizing and aspect ratio
+              </h2>
+              <p className="text-gray-600 leading-7">
+                During final generation each source image is fitted inside a
+                320 × 320 pixel placement area while preserving its aspect
+                ratio and centering it within that area.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                PNG composition output
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The final composition is rendered with the browser Canvas API
+                and encoded as PNG. Internal canvas scaling affects rendering
+                dimensions but does not recreate detail missing from a
+                low-resolution source image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for arranging images
+              </h2>
+              <ul className="text-gray-600 leading-7 space-y-2">
+                <li>• Choose canvas dimensions that leave enough room for all images.</li>
+                <li>• Review automatic starting positions before generating.</li>
+                <li>• Select a background color that works with the source images.</li>
+                <li>• Check the preview before exporting the composition.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Add Images FAQ
+              </h2>
+
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    How many images can I add?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    The current interface supports up to 10 images.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Are images stretched into squares?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    No. Images are fitted inside their placement areas while
+                    preserving the source aspect ratio.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-5">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    What output format is generated?
+                  </h3>
+                  <p className="text-gray-600 leading-7">
+                    The completed composition is generated as PNG.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
 
       {/* Hidden Canvas */}

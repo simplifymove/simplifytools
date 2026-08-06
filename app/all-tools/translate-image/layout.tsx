@@ -1,19 +1,19 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Translate Image - Free Online Tool | SimplifyConvert',
-  description: 'Convert and edit translate image online instantly. Free tool without signup required.',
-  keywords: ['translate image', 'free tool', 'online converter'],
+  title: 'Translate Image - OCR & Image Text Translation | SimplifyConvert',
+  description: 'Detect and translate text in images, edit translated overlays, customize their appearance, and generate the translated result as PNG.',
+  keywords: ['translate image', 'image translator', 'OCR translation', 'translate text in image', 'image OCR', 'photo translator'],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://simplifyconvert.com/all-tools/translate-image',
     siteName: 'SimplifyConvert',
-    title: 'Translate Image - Free Online Tool',
-    description: 'Convert and edit translate image online instantly. Free tool without signup required.',
+    title: 'Translate Image - OCR & Image Text Translation',
+    description: 'Detect and translate image text, edit translated overlays, and generate a PNG result.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'Translate Image' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Translate Image', description: 'Convert and edit translate image online instantly. Free tool without signup required.', images: ['https://simplifyconvert.com/og-image.jpg'] },
+  twitter: { card: 'summary_large_image', title: 'Translate Image', description: 'Detect and translate image text, edit translated overlays, and generate a PNG result.', images: ['https://simplifyconvert.com/og-image.jpg'] },
   alternates: { canonical: 'https://simplifyconvert.com/all-tools/translate-image' },
 };
 
