@@ -133,36 +133,6 @@ const trustItems = [
   'AI-powered productivity tools',
 ];
 
-const transformationExamples = [
-  {
-    from: 'PDF',
-    to: 'Word',
-    label: 'Document',
-    icon: FileText,
-    accent: 'bg-rose-100 text-rose-700',
-  },
-  {
-    from: 'JPG',
-    to: 'PNG',
-    label: 'Image',
-    icon: Image,
-    accent: 'bg-orange-100 text-orange-700',
-  },
-  {
-    from: 'Video',
-    to: 'MP4',
-    label: 'Media',
-    icon: Video,
-    accent: 'bg-violet-100 text-violet-700',
-  },
-  {
-    from: 'CSV',
-    to: 'Excel',
-    label: 'Data',
-    icon: Database,
-    accent: 'bg-emerald-100 text-emerald-700',
-  },
-];
 
 const studioTools = [
   {
@@ -315,39 +285,45 @@ export default function Home() {
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] sm:p-7">
               <div className="flex items-center justify-between border-b border-slate-100 pb-5">
                 <div>
-                  <p className="text-sm font-semibold text-orange-600">Transform your files</p>
-                  <p className="mt-1 text-xl font-bold text-slate-900">From one format to another</p>
+                  <p className="text-sm font-semibold text-orange-600">Explore our tools</p>
+                  <p className="mt-1 text-xl font-bold text-slate-900">Everything you need in one place</p>
                 </div>
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 text-orange-700">
                   <Zap aria-hidden="true" size={22} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 py-5">
-                {transformationExamples.map((example) => {
-                  const Icon = example.icon;
+                {categories.slice(0, 4).map((category) => {
+                  const Icon = category.icon;
                   return (
-                    <div
-                      key={`${example.from}-${example.to}`}
-                      className="rounded-2xl border border-slate-100 bg-slate-50 p-3.5"
+                    <Link
+                      key={category.id}
+                      href={category.link}
+                      className="group rounded-2xl border border-slate-100 bg-slate-50 p-3.5 transition hover:border-orange-200 hover:bg-orange-50/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
                     >
                       <div className="flex items-center gap-2.5">
                         <span
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${example.accent}`}
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${category.accent}`}
                         >
                           <Icon aria-hidden="true" size={18} />
                         </span>
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                            {example.label}
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-slate-800 transition group-hover:text-orange-700">
+                            {category.title}
                           </p>
-                          <div className="mt-0.5 flex items-center gap-1.5 text-sm font-bold text-slate-800">
-                            <span>{example.from}</span>
-                            <ArrowRight aria-hidden="true" className="text-orange-500" size={14} />
-                            <span>{example.to}</span>
-                          </div>
+                          <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-slate-500">
+                            {category.description}
+                          </p>
                         </div>
+
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-orange-600"
+                          size={14}
+                        />
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
