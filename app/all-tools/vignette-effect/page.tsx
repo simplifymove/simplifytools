@@ -238,7 +238,7 @@ export default function VignetteEffectPage() {
                 </details>
                 <details className="border-l-4 border-slate-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Why use vignettes in photography?</summary>
-                  <p className="text-gray-700 mt-2">Vignettes improve composition by directing viewer focus to the subject, add emotional depth, and create professional, polished results.</p>
+                  <p className="text-gray-700 mt-2">Vignettes darken image edges and can visually draw attention toward the central area of a photo.</p>
                 </details>
                 <details className="border-l-4 border-slate-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What vignette strength should I use?</summary>

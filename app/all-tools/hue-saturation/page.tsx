@@ -298,7 +298,7 @@ export default function HueSaturationPage() {
                   <p className="text-gray-700">Achieve color grading quality without expensive software.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-violet-600 mb-2">Instant Preview</h3>
+                  <h3 className="font-bold text-lg text-violet-600 mb-2">Interactive Preview</h3>
                   <p className="text-gray-700">See changes in real-time as you adjust sliders.</p>
                 </div>
                 <div>

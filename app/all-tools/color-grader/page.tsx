@@ -137,7 +137,7 @@ export default function ColorGraderPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Color Grader</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Adjust hue, saturation, and color balance in your photos. Control hue, saturation, and color balance to achieve the perfect look.
+              Adjust hue, saturation, and color balance in your photos using the available controls.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
               Use browser-based controls for image color adjustments.
