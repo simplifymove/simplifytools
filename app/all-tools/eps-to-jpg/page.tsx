@@ -262,7 +262,54 @@ export default function EpsToJpgPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How EPS to JPG conversion works
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an EPS file and start the conversion. The EPS artwork
+                is rasterized on the server to produce a JPG image that can
+                be opened in applications that support standard raster image
+                formats.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5">
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Understanding the output
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  EPS can contain vector artwork, while JPG stores a fixed grid
+                of pixels. Converting EPS to JPG therefore rasterizes the
+                artwork at the conversion resolution. The resulting JPG no
+                longer retains editable vector paths.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Before converting
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Check the source file and choose settings appropriate for
+                  how you plan to use the converted image. Conversion changes
+                  the file format and may also change file size and image
+                  characteristics.
+                </p>
+              </div>
+            </div>
+
+
+
+          </div>
+        </section>
+
+</main>
     </>
   );
 }

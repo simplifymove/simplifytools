@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'EPS to JPG - Free Vector to Image Converter | SimplifyConvert',
-  description: 'Convert EPS vector graphics to JPG images using server-assisted rasterization for easier viewing and sharing.',
+  title: 'EPS to JPG - Convert Vector Artwork to JPEG | SimplifyConvert',
+  description: 'Convert EPS vector artwork to JPG using server-assisted rasterization and download the generated raster image.',
   keywords: ['eps to jpg', 'convert eps', 'vector to jpg', 'eps converter', 'free tool'],
   openGraph: {
     type: 'website',

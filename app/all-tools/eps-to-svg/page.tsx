@@ -43,7 +43,7 @@ export default function EpsToSvgPage() {
     setProcessing(true);
     setError(null);
     setConversionTip('Converting EPS to SVG... This may take a moment depending on file complexity.');
-    
+
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -301,7 +301,7 @@ export default function EpsToSvgPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Is the conversion lossless?</h3>
-                  <p className="text-gray-600">Yes! Since both EPS and SVG are vector-based formats, the conversion is completely lossless. All vector data, paths, and design elements are preserved exactly as they were in the original EPS file.</p>
+                  <p className="text-gray-600">EPS and SVG can both represent vector artwork, but they support different features. Simple vector paths may transfer well, while unsupported EPS features can be simplified or changed during conversion.</p>
                 </div>
               </div>
             </div>

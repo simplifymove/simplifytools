@@ -47,7 +47,7 @@ export default function PsdToJpgPage() {
     setProcessing(true);
     setError(null);
     setConversionTip('Converting PSD to JPG... This may take a moment depending on file complexity and layers.');
-    
+
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -128,7 +128,7 @@ export default function PsdToJpgPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to JPG Converter</h1>
-                <p className="text-lg text-white/90">Convert Photoshop PSD files to JPG format instantly. Flatten layers, merge all elements, and export in a universally compatible format.</p>
+                <p className="text-lg text-white/90">Convert Photoshop PSD files to JPG format. Flatten layers, merge all elements, and export in a universally compatible format.</p>
               </div>
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function PsdToJpgPage() {
                   <ul className="space-y-2 text-gray-600 text-sm">
                     <li>• Compact file sizes</li>
                     <li>• Universal software support</li>
-                    <li>• Perfect for web and sharing</li>
+                    <li>• Suitable for common web and sharing workflows</li>
                     <li>• Fast loading times</li>
                   </ul>
                 </div>
@@ -328,7 +328,7 @@ export default function PsdToJpgPage() {
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <h3 className="font-semibold text-green-900 mb-2">High Quality (90-100%)</h3>
                   <p className="text-sm text-green-800 mb-3">
-                    Best for artwork, photography, and professional use. Larger file size but excellent quality.
+                    Higher quality settings retain more visible detail but generally produce larger JPG files.
                   </p>
                   <p className="text-xs text-green-700">Recommended for: Print, digital art, archives</p>
                 </div>

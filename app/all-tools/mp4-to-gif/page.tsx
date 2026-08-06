@@ -51,7 +51,7 @@ export default function Mp4ToGifPage() {
     setProcessing(true);
     setError(null);
     setConversionTip('Converting video to GIF... This may take a moment depending on video length and resolution.');
-    
+
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -132,7 +132,7 @@ export default function Mp4ToGifPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">MP4 to GIF Converter</h1>
-              <p className="text-lg text-white/90">Convert MP4 videos to animated GIF format. Perfect for creating shareable animations from short video clips.</p>
+              <p className="text-lg text-white/90">Convert MP4 videos to animated GIF format. Useful for creating short animated images from MP4 video clips.</p>
             </div>
           </div>
         </div>
@@ -252,8 +252,8 @@ export default function Mp4ToGifPage() {
                   <ul className="text-xs text-purple-700 space-y-1">
                     <li>• No sound needed (silent animation)</li>
                     <li>• Works on all platforms & browsers</li>
-                    <li>• Perfect for social media</li>
-                    <li>• Instant playback, no controls needed</li>
+                    <li>• Useful for short web and messaging animations</li>
+                    <li>• GIF playback does not use video playback controls</li>
                   </ul>
                 </div>
               </div>
@@ -303,7 +303,7 @@ export default function Mp4ToGifPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Why convert MP4 to GIF?</h3>
-                <p className="text-gray-600">GIFs are perfect for sharing short video clips on social media, messaging apps, and websites. They autoplay, don't require plugins, and work everywhere. Plus, they're silent, so they're great for meme-worthy moments.</p>
+                <p className="text-gray-600">GIFs can be useful for sharing short visual animations on websites, messaging apps, and other compatible platforms. They autoplay, don't require plugins, and work everywhere. Plus, they're silent, so they're great for meme-worthy moments.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">What's the file size of the resulting GIF?</h3>
