@@ -150,7 +150,7 @@ export default function RotateImagePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -241,7 +241,7 @@ export default function RotateImagePage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Rotation Settings</h3>
-                    
+
                     {/* Quick Rotate Buttons */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -364,7 +364,78 @@ export default function RotateImagePage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-9">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to rotate an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+
+                Upload an image and choose the required rotation angle. The
+                tool changes the orientation of the image and provides a
+                preview so you can check the result before downloading it.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the tool changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Rotation changes image orientation. Depending on the angle and output encoding, the processed file may differ from the original in dimensions, file size, or encoded pixel values.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Check the preview
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Review the processed image before downloading it. The final
+                  appearance depends on the source image and the settings you
+                  select.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Rotate Image FAQ
+              </h2>
+
+              <div className="space-y-3">
+                <details className="border border-gray-200 rounded-lg p-4">
+                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                    Does processing improve the original image quality?
+                  </summary>
+                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                    The tool applies the selected transformation to the source
+                    image. It does not recreate resolution or image detail
+                    that is absent from the original file.
+                  </p>
+                </details>
+
+                <details className="border border-gray-200 rounded-lg p-4">
+                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                    Should I check the result before downloading?
+                  </summary>
+                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                    Yes. Previewing the result helps you confirm that the
+                    selected settings are appropriate for the particular
+                    image you uploaded.
+                  </p>
+                </details>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       {/* How To Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
@@ -400,7 +471,7 @@ export default function RotateImagePage() {
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Adjust composition - rotate any angle (not just 90°) for perfect framing</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Prepare for printing - get images to the right orientation before printing</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Align graphics - rotate logos and designs to match your layout</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> No quality loss - rotation preserves full image quality</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Rotation changes image orientation while retaining the visible source content</li>
           </ul>
         </div>
       </div>
@@ -461,7 +532,7 @@ export default function RotateImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Rotate unlimited images, no signup or hidden costs.</p>
+              <p className="text-gray-700 mt-3 text-sm">Yes, You can use the tool to rotate supported images to the required orientation.</p>
             </details>
           </div>
         </div>
@@ -476,7 +547,7 @@ export default function RotateImagePage() {
           { "@type": "Question", "name": "Will my image quality be affected by rotation?", "acceptedAnswer": { "@type": "Answer", "text": "No, rotation doesn't reduce quality. Full resolution maintained." } },
           { "@type": "Question", "name": "How do I rotate an image 45 degrees?", "acceptedAnswer": { "@type": "Answer", "text": "Use the custom angle slider or enter 45 in the degree input field." } },
           { "@type": "Question", "name": "Can I preview before downloading?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, after clicking Rotate Image, you'll see the success message." } },
-          { "@type": "Question", "name": "Is image rotation completely free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+          { "@type": "Question", "name": "Is image rotation completely free?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the tool to rotate supported images." } }
         ]
       })}</script>
 

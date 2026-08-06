@@ -249,7 +249,7 @@ export default function MakeBackgroundTransparentPage() {
 
       // Use stricter threshold near edges to preserve object boundaries
       let effectiveThreshold = thresh * 2.55;
-      
+
       if (preserveEdges && edgeMap) {
         const edgeStrength = edgeMap[y * width + x];
         // If pixel is on an edge, dramatically reduce removal threshold
@@ -311,7 +311,7 @@ export default function MakeBackgroundTransparentPage() {
 
       // Use stricter threshold near edges
       let effectiveThreshold = threshold * 2.55;
-      
+
       if (edgePreservation && edgeMap) {
         const edgeStrength = edgeMap[y * width + x];
         if (edgeStrength > 10) {
@@ -450,7 +450,7 @@ export default function MakeBackgroundTransparentPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -488,7 +488,7 @@ export default function MakeBackgroundTransparentPage() {
 
       <main>
       {/* Hero Section with Breadcrumb */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
@@ -508,7 +508,7 @@ export default function MakeBackgroundTransparentPage() {
           </div>
 
           <div className="flex items-center gap-4 mb-4">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.1, rotate: 10 }}
               className="bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur"
             >
@@ -517,7 +517,7 @@ export default function MakeBackgroundTransparentPage() {
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-2">Background Transparency</h1>
               <p className="text-lg text-orange-50">
-                Remove backgrounds instantly with clean edges and transparency
+                Make selected background areas transparent using adjustable controls
               </p>
             </div>
           </div>
@@ -532,7 +532,7 @@ export default function MakeBackgroundTransparentPage() {
           {/* Left Column - Upload & Preview */}
           <div className="lg:col-span-2 space-y-6">
             {/* Upload Section */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-xl border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow"
@@ -555,7 +555,7 @@ export default function MakeBackgroundTransparentPage() {
 
             {/* Preview & Results Section */}
             {preview && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
@@ -648,7 +648,7 @@ export default function MakeBackgroundTransparentPage() {
           </div>
 
           {/* Right Column - Controls */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="lg:sticky lg:top-4 h-fit space-y-6"
@@ -804,7 +804,7 @@ export default function MakeBackgroundTransparentPage() {
             </div>
 
             {/* How to Use */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -836,7 +836,7 @@ export default function MakeBackgroundTransparentPage() {
             </motion.div>
 
             {/* Pro Tips */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -848,7 +848,7 @@ export default function MakeBackgroundTransparentPage() {
                 <li>✓ Use <strong>auto-detect</strong> for accurate background color</li>
                 <li>✓ <strong>Lower sensitivity</strong> for precise results (doesn't remove objects)</li>
                 <li>✓ <strong>Feather edges</strong> for smooth, professional look</li>
-                <li>✓ PNG format preserves transparency perfectly</li>
+                <li>✓ PNG output supports transparent pixels</li>
               </ul>
             </motion.div>
           </motion.div>
@@ -857,7 +857,79 @@ export default function MakeBackgroundTransparentPage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-9">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How background transparency is created
+              </h2>
+              <p className="text-gray-600 leading-7">
+
+                The tool examines image pixel colors and changes matching
+                background pixels to transparent values according to the
+                selected settings. Tolerance and edge controls help determine
+                which pixels are affected.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the tool changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Color-based transparency works best when the background is visually distinct from the subject. Complex backgrounds, shadows, hair, or similar foreground and background colors can require additional adjustment.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Check the preview
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Review the processed image before downloading it. The final
+                  appearance depends on the source image and the settings you
+                  select.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Make Background Transparent FAQ
+              </h2>
+
+              <div className="space-y-3">
+                <details className="border border-gray-200 rounded-lg p-4">
+                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                    Does processing improve the original image quality?
+                  </summary>
+                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                    The tool applies the selected transformation to the source
+                    image. It does not recreate resolution or image detail
+                    that is absent from the original file.
+                  </p>
+                </details>
+
+                <details className="border border-gray-200 rounded-lg p-4">
+                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                    Should I check the result before downloading?
+                  </summary>
+                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                    Yes. Previewing the result helps you confirm that the
+                    selected settings are appropriate for the particular
+                    image you uploaded.
+                  </p>
+                </details>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-12 mt-20">

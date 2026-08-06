@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'BMP to PNG - Free Online Tool | SimplifyConvert',
-  description: 'Convert and edit bmp to png online instantly. Free tool without signup required.',
+  title: 'BMP to PNG Converter - Lossless PNG Output | SimplifyConvert',
+  description: 'Convert BMP images to PNG format using server-side conversion and lossless PNG encoding.',
   keywords: ['bmp to png', 'free tool', 'online converter'],
   openGraph: {
     type: 'website',

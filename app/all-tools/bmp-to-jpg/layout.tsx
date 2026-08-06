@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'BMP to JPG - Free Image Converter | SimplifyConvert',
-  description: 'Convert BMP images to JPG format instantly. Free online BMP to JPEG converter without signup.',
+  title: 'BMP to JPG Converter - Convert BMP to JPEG | SimplifyConvert',
+  description: 'Convert BMP images to JPG format with server-side image conversion and JPEG output.',
   keywords: ['bmp to jpg', 'bmp to jpeg', 'convert bmp', 'image converter'],
   openGraph: {
     type: 'website',

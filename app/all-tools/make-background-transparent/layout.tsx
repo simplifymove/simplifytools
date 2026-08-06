@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Make Background Transparent - Free Tool | SimplifyConvert',
-  description: 'Make image backgrounds transparent with one click. Perfect for logos and product photos.',
+  title: 'Make Background Transparent - Create Transparent Images | SimplifyConvert',
+  description: 'Make selected background colors transparent with browser-based image processing, adjust tolerance and edge controls, and download the result.',
   keywords: ['transparent background', 'remove background', 'image editor', 'free tool'],
   openGraph: {
     type: 'website',

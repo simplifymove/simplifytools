@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Grayscale Image - Free Image Converter to Black & White | SimplifyConvert',
-  description: 'Convert color images to beautiful grayscale. Transform images to black and white instantly.',
+  title: 'Grayscale Image - Convert Images to Black & White | SimplifyConvert',
+  description: 'Convert a color image to grayscale, preview the monochrome result, and download the processed image.',
   keywords: ['grayscale image', 'black and white', 'image converter', 'free tool'],
   openGraph: {
     type: 'website',

@@ -476,7 +476,7 @@ export default function MakeRoundImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Create unlimited round images with no signup required.</p>
+              <p className="text-gray-700 mt-3 text-sm">Yes, You can use the available tool controls to create and download rounded images.</p>
             </details>
           </div>
         </div>
@@ -491,7 +491,7 @@ export default function MakeRoundImagePage() {
           { "@type": "Question", "name": "Can I add transparent backgrounds?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, set background opacity or use a transparent color." } },
           { "@type": "Question", "name": "How do I add a border to the rounded image?", "acceptedAnswer": { "@type": "Answer", "text": "Use the border width slider and choose a color with the color picker." } },
           { "@type": "Question", "name": "Does rounding reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, rounding preserves full image quality." } },
-          { "@type": "Question", "name": "Is this round image tool free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+          { "@type": "Question", "name": "Is this round image tool free?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the available tool controls to create rounded images." } }
         ]
       })}</script>
 
@@ -520,7 +520,79 @@ export default function MakeRoundImagePage() {
         </div>
       </div>
 
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-9">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to make an image round
+              </h2>
+              <p className="text-gray-600 leading-7">
+
+                Upload an image and adjust the roundness control to change the
+                shape of its corners. The browser draws the image onto a
+                Canvas using the selected radius and prepares the processed
+                result for download.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the tool changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  A fully rounded setting creates a circular appearance when the working image area has equal width and height. Other aspect ratios produce rounded or elliptical results.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Check the preview
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Review the processed image before downloading it. The final
+                  appearance depends on the source image and the settings you
+                  select.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Make Round Image FAQ
+              </h2>
+
+              <div className="space-y-3">
+                <details className="border border-gray-200 rounded-lg p-4">
+                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                    Does processing improve the original image quality?
+                  </summary>
+                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                    The tool applies the selected transformation to the source
+                    image. It does not recreate resolution or image detail
+                    that is absent from the original file.
+                  </p>
+                </details>
+
+                <details className="border border-gray-200 rounded-lg p-4">
+                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                    Should I check the result before downloading?
+                  </summary>
+                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                    Yes. Previewing the result helps you confirm that the
+                    selected settings are appropriate for the particular
+                    image you uploaded.
+                  </p>
+                </details>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <Footer />
     </div>

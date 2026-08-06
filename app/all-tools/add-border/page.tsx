@@ -278,13 +278,85 @@ export default function AddBorderPage() {
                   <li>• Use contrasting colors for better visual impact</li>
                   <li>• Larger borders work best for small images</li>
                   <li>• Try white or black borders for classic look</li>
-                  <li>• Works with all image formats (PNG, JPG, WebP, etc.)</li>
+                  <li>• Works with supported image formats</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-9">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to add a border to an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+
+                Upload an image and configure the available border controls.
+                The browser draws the source image and its border onto a
+                Canvas, allowing you to preview the framed result before
+                downloading it.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the tool changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Adding a border increases the visual area around the source image. Border settings affect the generated composition rather than modifying objects inside the image.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Check the preview
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Review the processed image before downloading it. The final
+                  appearance depends on the source image and the settings you
+                  select.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Add Border FAQ
+              </h2>
+
+              <div className="space-y-3">
+                <details className="border border-gray-200 rounded-lg p-4">
+                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                    Does processing improve the original image quality?
+                  </summary>
+                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                    The tool applies the selected transformation to the source
+                    image. It does not recreate resolution or image detail
+                    that is absent from the original file.
+                  </p>
+                </details>
+
+                <details className="border border-gray-200 rounded-lg p-4">
+                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                    Should I check the result before downloading?
+                  </summary>
+                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                    Yes. Previewing the result helps you confirm that the
+                    selected settings are appropriate for the particular
+                    image you uploaded.
+                  </p>
+                </details>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       {/* Benefits Section */}
       <div className="py-12 px-4 md:px-8 bg-gray-50">
@@ -356,7 +428,7 @@ export default function AddBorderPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Add borders to unlimited images with no signup.</p>
+              <p className="text-gray-700 mt-3 text-sm">Yes, You can use the tool to add borders to supported images.</p>
             </details>
           </div>
         </div>
@@ -371,7 +443,7 @@ export default function AddBorderPage() {
           { "@type": "Question", "name": "What file formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is PNG." } },
           { "@type": "Question", "name": "Can I add borders only on specific sides?", "acceptedAnswer": { "@type": "Answer", "text": "This tool adds borders on all sides equally." } },
           { "@type": "Question", "name": "Does adding borders reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, adding borders doesn't affect original image quality." } },
-          { "@type": "Question", "name": "Is this border tool completely free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+          { "@type": "Question", "name": "Is this border tool completely free?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the tool to add borders to supported images." } }
         ]
       })}</script>
 

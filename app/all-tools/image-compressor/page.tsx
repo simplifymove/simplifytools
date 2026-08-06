@@ -219,10 +219,10 @@ export default function ImageCompressorPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant compression in your browser</li>
+                      <li>• Browser-based image compression</li>
                       <li>• Adjustable quality settings</li>
                       <li>• Maintains visual quality</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Compression processing runs in the browser</li>
                     </ul>
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export default function ImageCompressorPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Compress Image:</strong> Processing happens instantly in your browser</p></div>
+              <div><p className="text-gray-700"><strong>Click Compress Image:</strong> Apply the selected browser encoding settings</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -264,7 +264,7 @@ export default function ImageCompressorPage() {
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Faster website loading - compressed images load 50% faster</li>
             <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Save storage space - reduce backup and cloud storage needs</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Better for email - smaller attachments that send instantly</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Better for email - smaller files can be easier to attach and send</li>
             <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Social media optimization - upload faster on Instagram, Facebook, Twitter</li>
             <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Mobile friendly - reduce data usage for users on limited connections</li>
           </ul>
@@ -291,7 +291,7 @@ export default function ImageCompressorPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">For web use and social media: 70-75%. For professional use or printing: 85-90%. For maximum compression with acceptable quality: 60-70%. Start with 75% and adjust based on your needs.</p>
+              <p className="text-gray-700 mt-3 text-sm">For web use and social media: 70-75%. For higher visual fidelity: consider a higher quality setting. For stronger compression with acceptable quality: 60-70%. Start with 75% and adjust based on your needs.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -318,7 +318,7 @@ export default function ImageCompressorPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. Compression happens entirely in your browser. Your images are never uploaded to or stored on our servers. Complete privacy guaranteed.</p>
+              <p className="text-gray-700 mt-3 text-sm">The image compression step itself is performed with browser-based processing. Complete privacy guaranteed.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -327,7 +327,7 @@ export default function ImageCompressorPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Compress as many images as you want, no signup required, no watermarks, no hidden costs.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can use the compression controls to process supported images and compare the resulting file size.</p>
             </details>
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function ImageCompressorPage() {
             "name": "What quality setting should I use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "For web/social: 70-75%. For professional/printing: 85-90%. For maximum compression: 60-70%."
+              "text": "Lower quality settings usually reduce file size more, while higher settings generally retain more visible detail."
             }
           },
           {
@@ -375,7 +375,7 @@ export default function ImageCompressorPage() {
             "name": "Are my images stored on your servers?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Compression happens in your browser. Images are never uploaded or stored on our servers."
+              "text": "The image compression step itself uses browser-based processing."
             }
           },
           {
@@ -383,7 +383,7 @@ export default function ImageCompressorPage() {
             "name": "Is image compression really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup, no watermarks, no hidden costs."
+              "text": "You can use the compression controls to process supported images and compare the resulting file size."
             }
           }
         ]
