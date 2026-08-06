@@ -27,19 +27,6 @@ export default function BlogPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8">
-          <Link href="/" className="flex items-center gap-2 rounded-sm text-2xl font-bold text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-sm text-white">SC</span>
-            <span className="hidden sm:inline">SimplifyConvert</span>
-          </Link>
-          <nav aria-label="Primary" className="flex items-center gap-5 text-sm font-semibold text-gray-700">
-            <Link href="/all-tools" className="rounded-sm hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600">All tools</Link>
-            <Link href="/blog" aria-current="page" className="rounded-sm text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600">Guides</Link>
-          </nav>
-        </div>
-      </header>
-
       <section className="bg-orange-500 px-4 py-16 md:px-8">
         <div className="mx-auto max-w-7xl">
           <h1 className="text-4xl font-bold text-white md:text-5xl">SimplifyConvert Guides</h1>

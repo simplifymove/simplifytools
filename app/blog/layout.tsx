@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { HomeHeader } from '@/app/components/HomeHeader';
 
 export const metadata: Metadata = {
   title: 'SimplifyConvert Blog - Practical File and Format Guides',
@@ -48,5 +49,10 @@ export default function BlogLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <HomeHeader />
+      {children}
+    </>
+  );
 }
