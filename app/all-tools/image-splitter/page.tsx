@@ -56,7 +56,7 @@ export default function ImageSplitterPage() {
     img.onload = () => {
       const maxWidth = 400;
       const scale = Math.min(1, maxWidth / img.width);
-      
+
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
 
@@ -362,12 +362,238 @@ export default function ImageSplitterPage() {
                   <li>• Preview shows where segments will be cut</li>
                   <li>• Up to 6×6 (36 segments) supported</li>
                   <li>• Each segment downloads as PNG</li>
-                  <li>• Works with all image formats</li>
+                  <li>• Works with common browser-supported image formats</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to split an image into a grid
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image, choose the number of rows and columns, and
+                check the preview grid before splitting. Click Split Image to
+                divide the source into individual tiles. You can create grids
+                from 1 to 6 rows and 1 to 6 columns, for a maximum of 36
+                segments.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Rows and columns explained
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Rows divide the image horizontally, while columns divide it
+                  vertically. For example, a 2 × 3 grid produces six segments,
+                  while a 3 × 3 grid produces nine. The total number of tiles
+                  is the selected row count multiplied by the column count.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Preview the grid before splitting
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The preview canvas draws the selected grid over the uploaded
+                  image so you can see approximately where each cut will occur.
+                  Changing the row or column setting automatically redraws the
+                  preview.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Browser-based image splitting
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The actual splitting step runs in your browser using the HTML
+                canvas. Each region of the source image is drawn onto a
+                separate canvas and encoded as a PNG segment. The source image
+                does not need to be sent to a dedicated image-splitting API for
+                the grid operation itself.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  PNG output for every segment
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Generated segments are encoded as PNG regardless of the
+                  uploaded image format. This gives every tile a consistent
+                  output format and allows compatible transparency from the
+                  decoded source image to be represented in the PNG result.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Download segments individually
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  After splitting, each tile appears separately with its row
+                  and column position. Choose Download on the segment you want.
+                  That PNG is then prepared through the SimplifyConvert
+                  download-result flow so you can save the selected tile.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How segment dimensions are determined
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The splitter divides the source width by the selected number of
+                columns and the source height by the selected number of rows.
+                Images whose dimensions divide evenly by the chosen grid are
+                the simplest case. When dimensions are not evenly divisible,
+                canvas pixel rounding can affect the exact boundaries of the
+                generated tiles.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Common image grid examples
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  ['1 × 2', 'Split an image into two side-by-side tiles'],
+                  ['2 × 1', 'Split an image into a top and bottom section'],
+                  ['2 × 2', 'Create four image tiles'],
+                  ['3 × 3', 'Create a nine-tile image grid'],
+                ].map(([title, text]) => (
+                  <div
+                    key={title}
+                    className="border border-gray-200 rounded-xl p-5"
+                  >
+                    <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600 leading-6">{text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                When an image splitter is useful
+              </h2>
+              <p className="text-gray-600 leading-7 mb-4">
+                Grid splitting is useful whenever one image needs to be divided
+                into separate rectangular files while keeping their positions
+                relative to the original image.
+              </p>
+              <ul className="grid md:grid-cols-2 gap-3 text-sm text-gray-600">
+                {[
+                  'Preparing image tiles for grid-based layouts',
+                  'Separating a composite graphic into individual panels',
+                  'Creating smaller sections from a large reference image',
+                  'Dividing artwork into rows and columns for separate use',
+                  'Extracting individual pieces from a contact-sheet style image',
+                  'Creating multiple PNG files from one source image',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="border border-gray-200 rounded-lg px-4 py-3"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for cleaner image tiles
+              </h2>
+              <ul className="space-y-3 text-gray-600">
+                {[
+                  'Choose a grid that matches the composition of the source image.',
+                  'Use the preview lines to check whether important subjects cross a tile boundary.',
+                  'For predictable tile dimensions, source dimensions that divide evenly by the chosen rows and columns are preferable.',
+                  'Use fewer rows or columns when you need larger individual segments.',
+                  'Remember that every generated segment is downloaded as PNG.',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="border border-gray-200 rounded-lg px-4 py-3"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Image Splitter FAQ
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  [
+                    'How many pieces can I split an image into?',
+                    'The controls support 1 to 6 rows and 1 to 6 columns, allowing up to 36 generated segments.',
+                  ],
+                  [
+                    'What format are the split images?',
+                    'Each generated segment is encoded and downloaded as a PNG file.',
+                  ],
+                  [
+                    'Does the splitting happen on the server?',
+                    'The grid splitting itself happens in the browser with HTML canvas. A selected PNG segment is sent through the download-result service when you choose to download it.',
+                  ],
+                  [
+                    'Can I split an image only vertically?',
+                    'Yes. Set Rows to 1 and choose two or more Columns to create vertical sections.',
+                  ],
+                  [
+                    'Can I split an image only horizontally?',
+                    'Yes. Set Columns to 1 and increase Rows to create horizontal sections.',
+                  ],
+                  [
+                    'Why might tile dimensions differ from an exact fraction?',
+                    'If the source width or height is not evenly divisible by the selected grid, canvas pixel rounding can affect exact segment boundaries.',
+                  ],
+                  [
+                    'Can I download every segment separately?',
+                    'Yes. Each generated tile has its own Download button.',
+                  ],
+                  [
+                    'Which image formats can I upload?',
+                    'The uploader accepts image files, but successful decoding depends on the image formats supported by your browser.',
+                  ],
+                ].map(([question, answer]) => (
+                  <div
+                    key={question}
+                    className="border border-gray-200 rounded-xl p-5"
+                  >
+                    <h3 className="font-bold text-gray-900 mb-2">
+                      {question}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
       </main>
       <Footer />
 
