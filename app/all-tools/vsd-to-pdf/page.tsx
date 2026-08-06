@@ -33,13 +33,13 @@ export default function VsdToPdfPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     setError(null);
     try {
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('config', JSON.stringify({ 
+      formData.append('config', JSON.stringify({
         from_format: 'vsd',
         to_format: 'pdf',
         options: {}
@@ -126,7 +126,7 @@ export default function VsdToPdfPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Visio File</h2>
-                  
+
                   {!file ? (
                     <ImageUploader
                       onFileSelect={handleFileSelect}
@@ -156,7 +156,7 @@ export default function VsdToPdfPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Industry Info */}
                   <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -181,7 +181,7 @@ export default function VsdToPdfPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
-                    
+
                     <p className="text-sm text-gray-600 mb-6">
                       Your VSD diagram is rendered to PDF using server-assisted
                       document conversion.
@@ -230,7 +230,170 @@ export default function VsdToPdfPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert VSD to PDF online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Select your Visio VSD file, click Convert to PDF, and wait while
+                the document is processed on the server. When conversion is
+                complete, use the download button to continue to the PDF download
+                page and save the converted file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What is a VSD file?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  VSD is an older Microsoft Visio drawing format used for
+                  flowcharts, process maps, network diagrams, organizational
+                  charts, technical drawings, and other structured diagrams.
+                  Keep the source file when the diagram may still need editing
+                  in compatible diagram software.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Why convert VSD to PDF?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  PDF is easier to distribute when recipients only need to view,
+                  review, print, or archive a diagram. Converting a VSD drawing
+                  to PDF can reduce the need for recipients to open the original
+                  Visio source file.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens during VSD to PDF conversion?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                SimplifyConvert sends the uploaded VSD document to its
+                server-assisted document conversion process and renders the
+                diagram into PDF output. The resulting PDF is intended for
+                viewing and distribution rather than continued editing of the
+                original Visio diagram structure.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Common uses for a converted Visio PDF
+              </h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                  <li>Share flowcharts with colleagues or clients.</li>
+                  <li>Distribute process and workflow diagrams.</li>
+                  <li>Prepare diagrams for printing or review.</li>
+                </ul>
+                <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                  <li>Archive a viewable copy of an older VSD drawing.</li>
+                  <li>Share network or organizational diagrams.</li>
+                  <li>Provide a reference copy of a drawing.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                VSD vs PDF: which file should you keep?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Keep the original VSD file when you may need to edit shapes,
+                connectors, labels, pages, or other diagram elements later.
+                Keep the PDF when you need a convenient copy for viewing,
+                sharing, printing, or archiving. Converting to PDF does not make
+                the PDF a replacement for the editable Visio source.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Check your diagram after conversion
+              </h2>
+              <p className="text-gray-600 leading-7 mb-4">
+                Older Visio documents can contain fonts, shapes, connectors,
+                page settings, and other elements that depend on the original
+                document environment. After converting an important drawing,
+                review the PDF before distributing it.
+              </p>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Check that text and labels are readable.</li>
+                <li>Review shapes, connectors, and their positions.</li>
+                <li>Confirm page size, orientation, and page breaks.</li>
+                <li>Inspect fonts and spacing in important sections.</li>
+                <li>Make sure large diagrams remain readable in the PDF.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                VSD and VSDX are different Visio formats
+              </h2>
+              <p className="text-gray-600 leading-7">
+                VSD is associated with older Visio drawings, while VSDX is the
+                newer XML-based Visio drawing format. If your file uses the
+                .vsdx extension, you can use the dedicated{' '}
+                <Link
+                  href="/all-tools/vsdx-to-pdf"
+                  className="text-red-600 hover:text-red-700 font-medium"
+                >
+                  VSDX to PDF converter
+                </Link>
+                {' '}instead.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                VSD to PDF FAQ
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  [
+                    'What does the VSD to PDF converter do?',
+                    'It takes a Visio VSD drawing and produces a PDF through server-assisted document conversion.',
+                  ],
+                  [
+                    'Why would I convert an older VSD file to PDF?',
+                    'PDF is useful when you need to share, review, print, or archive a drawing without requiring the recipient to work with the editable VSD source.',
+                  ],
+                  [
+                    'Can I edit the resulting PDF like the original VSD?',
+                    'The PDF is intended primarily for viewing and distribution. Keep the original VSD file if you need to continue editing the diagram structure.',
+                  ],
+                  [
+                    'Should I check the PDF after conversion?',
+                    'Yes. For important diagrams, review text, fonts, shapes, connectors, page layout, and other details before sharing or printing the PDF.',
+                  ],
+                  [
+                    'Is VSD the same as VSDX?',
+                    'No. They are different Visio file formats. VSD is an older drawing format, while VSDX is a newer XML-based format.',
+                  ],
+                ].map(([q, a]) => (
+                  <div key={q} className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
+                    <p className="text-sm text-gray-600 leading-6">{a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );
