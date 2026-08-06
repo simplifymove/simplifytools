@@ -42,7 +42,7 @@ export default function JpgToTiffPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     clearError();
     try {
@@ -115,7 +115,7 @@ export default function JpgToTiffPage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
       {/* Error Display */}
       {error && <ErrorAlert error={error} onDismiss={clearError} />}
-      
+
       {/* Hero Header */}
       <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
         <div className="max-w-6xl mx-auto relative z-10">
@@ -225,7 +225,7 @@ export default function JpgToTiffPage() {
                   <ul className="text-xs text-blue-700 space-y-1">
                     <li>• Lossless compression for archival</li>
                     <li>• Professional quality for printing</li>
-                    <li>• Support for multiple layers</li>
+                    <li>• Lossless LZW compression for the TIFF output</li>
                     <li>• Wide compatibility with design tools</li>
                   </ul>
                 </div>
@@ -243,7 +243,7 @@ export default function JpgToTiffPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Why convert JPG to TIFF?</h3>
-                <p className="text-gray-600">TIFF provides lossless compression, making it ideal for archival, professional printing, and quality-sensitive applications. JPG uses lossy compression which can degrade image quality.</p>
+                <p className="text-gray-600">TIFF supports lossless storage and is commonly used in workflows where avoiding additional lossy compression is useful. The converted TIFF preserves the pixels decoded from the JPG, but it cannot restore detail already removed by JPEG compression.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Will my image lose quality?</h3>
@@ -251,13 +251,198 @@ export default function JpgToTiffPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
-                <p className="text-gray-600">You can convert files up to 500MB in size. For best performance, we recommend keeping files under 100MB.</p>
+                <p className="text-gray-600">Conversion time and memory use depend on the image dimensions and file size. Very large images can require more processing resources than smaller photographs.</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert JPG to TIFF online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a JPG image and click Convert to TIFF. The image is sent
+                to the server and converted into TIFF format using lossless LZW
+                compression. When conversion finishes, use Download TIFF to
+                continue to the download page and save the converted file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What happens during JPG to TIFF conversion?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The JPG is decoded into image pixels and then written as a
+                  TIFF file. The current converter uses LZW compression for
+                  TIFF output, which is lossless. This means the TIFF encoding
+                  does not introduce another JPEG-style lossy compression step.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Can TIFF restore quality lost from JPG?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  No. JPEG compression can permanently discard image detail.
+                  Converting the decoded JPG into a losslessly compressed TIFF
+                  prevents another lossy TIFF encoding step, but it cannot
+                  reconstruct information that is already missing from the
+                  source JPG.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                JPG vs TIFF
+              </h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-slate-50 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-2">JPG</h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    JPG uses lossy compression to create relatively compact
+                    image files. It is widely used for photographs, websites,
+                    email attachments, and general image sharing where smaller
+                    files are useful.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-2">TIFF</h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    TIFF is a flexible raster image format commonly used in
+                    scanning, publishing, print, imaging, and archival
+                    workflows. This converter writes TIFF output with lossless
+                    LZW compression.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Why use LZW compression?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  LZW is a lossless compression method supported by TIFF. It
+                  reduces storage requirements when possible without changing
+                  the decoded pixel values simply to achieve a smaller file.
+                  Compression effectiveness varies with image content.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Will the TIFF always be smaller than the JPG?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  No. A TIFF created with lossless compression can be larger
+                  than the original JPG because JPEG achieves small files by
+                  discarding some image information. TIFF and JPG optimize for
+                  different storage requirements.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                When is JPG to TIFF conversion useful?
+              </h2>
+              <p className="text-gray-600 leading-7 mb-4">
+                Converting to TIFF can be useful when another application,
+                document workflow, print process, or image archive expects TIFF
+                rather than JPEG. It can also provide a losslessly compressed
+                working copy of the pixels decoded from an existing JPG.
+              </p>
+
+              <ul className="grid md:grid-cols-2 gap-3 text-sm text-gray-600">
+                {[
+                  'Preparing an image for a TIFF-based workflow',
+                  'Creating a losslessly compressed TIFF working copy',
+                  'Using software that expects TIFF input',
+                  'Moving JPEG photographs into imaging or publishing workflows',
+                  'Preparing raster images for compatible print applications',
+                  'Standardizing image files around TIFF output',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="bg-slate-50 rounded-lg px-4 py-3"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What the conversion does not change
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Changing the file container from JPG to TIFF does not
+                automatically improve focus, increase real image detail, or
+                reverse JPEG artifacts already present in the source. The
+                purpose of this tool is format conversion with lossless TIFF
+                output compression, not image restoration.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                JPG to TIFF FAQ
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  [
+                    'Does the converter use lossless TIFF compression?',
+                    'Yes. The current TIFF conversion path uses LZW compression, which is lossless.',
+                  ],
+                  [
+                    'Does converting JPG to TIFF improve the original image?',
+                    'No. The TIFF preserves the image produced by decoding the JPG, but details previously lost through JPEG compression cannot be recovered simply by changing formats.',
+                  ],
+                  [
+                    'Why can the TIFF file be larger?',
+                    'JPEG uses lossy compression designed to reduce file size aggressively. A losslessly compressed TIFF may therefore require considerably more storage.',
+                  ],
+                  [
+                    'Is the conversion processed in my browser?',
+                    'The preview is displayed in the browser, but the actual JPG to TIFF conversion is performed through the server conversion endpoint.',
+                  ],
+                  [
+                    'What format will I download?',
+                    'The converter returns a TIFF image with the image/tiff MIME type and the download flow saves the result with a TIFF filename.',
+                  ],
+                ].map(([question, answer]) => (
+                  <div
+                    key={question}
+                    className="border border-gray-200 rounded-xl p-5"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {question}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );
