@@ -14,11 +14,11 @@ export default function UnblurImagePage() {
   const [originalName, setOriginalName] = useState('image.jpg');
   const [preview, setPreview] = useState<string | null>(null);
   const [mode, setMode] = useState<'motion' | 'defocus'>('motion');
-  
-  // Deblurring parameters (Restormer SOTA)
+
+  // Deblurring parameters
   const [strength, setStrength] = useState(1.0);
   const [iterations, setIterations] = useState(1);
-  
+
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -140,7 +140,7 @@ export default function UnblurImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Unblur Image</h1>
-                <p className="text-lg text-white/90">Restormer-based deblurring (CVPR 2022). State-of-the-art Transformer restoration for motion blur, defocus blur, and general image enhancement.</p>
+                <p className="text-lg text-white/90">Reduce the appearance of motion blur or defocus blur with adjustable image restoration and sharpening controls.</p>
               </div>
             </div>
           </div>
@@ -154,7 +154,7 @@ export default function UnblurImagePage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <div className="relative mb-6">
                     <input
                       type="file"
@@ -221,7 +221,7 @@ export default function UnblurImagePage() {
                   {/* Mode Selection */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Deblurring Mode</h3>
-                    
+
                     <label className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer mb-3 border-2 border-gray-200 hover:border-orange-300 transition">
                       <input
                         type="radio"
@@ -258,7 +258,7 @@ export default function UnblurImagePage() {
                   {/* Deblurring Parameters */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
                     <h3 className="font-semibold text-gray-900">Restoration Strength</h3>
-                    
+
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <label className="text-sm font-medium text-gray-700">Deblur Strength</label>
@@ -306,10 +306,10 @@ export default function UnblurImagePage() {
                       {processing ? (
                         <>
                           <Loader size={20} className="animate-spin" />
-                          Restormer Processing...
+                          Processing Image...
                         </>
                       ) : (
-                        `Deblur with ${mode === 'motion' ? 'Motion' : 'Defocus'} Restormer`
+                        `Deblur ${mode === 'motion' ? 'Motion' : 'Defocus'} Blur`
                       )}
                     </button>
                   </form>
@@ -329,11 +329,11 @@ export default function UnblurImagePage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">Technology</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• <span className="font-semibold">SOTA:</span> Restormer (CVPR 2022 Oral)</li>
-                      <li>• <span className="font-semibold">Architecture:</span> Transformer-based restoration</li>
-                      <li>• <span className="font-semibold">Motion Mode:</span> Advanced multi-scale Wiener filtering</li>
-                      <li>• <span className="font-semibold">Defocus Mode:</span> Laplacian pyramid decomposition</li>
-                      <li>• Professional-grade GPU/CPU processing</li>
+                      <li>• <span className="font-semibold">Processing:</span> Server-assisted image restoration</li>
+                      <li>• <span className="font-semibold">Enhancement:</span> Edge-preserving filtering and controlled sharpening</li>
+                      <li>• <span className="font-semibold">Motion Mode:</span> Edge-preserving filtering with conservative sharpening</li>
+                      <li>• <span className="font-semibold">Defocus Mode:</span> Smoothing and controlled edge enhancement</li>
+                      <li>• Server-side image processing</li>
                     </ul>
                   </div>
                 </div>
@@ -341,7 +341,185 @@ export default function UnblurImagePage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to reduce blur in an image online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image, choose Motion Blur or Defocus Blur, adjust the
+                restoration strength and refinement passes, and start processing.
+                The image is sent to the server, where edge-preserving filtering
+                and controlled sharpening are applied. Review the result before
+                continuing to the download page.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Motion Blur mode
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Motion mode applies bilateral filtering to reduce noise while
+                  retaining stronger edges, followed by conservative unsharp
+                  masking. This can make blurred edges look clearer, but it
+                  cannot reconstruct detail that was never captured in the
+                  original image.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Defocus Blur mode
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Defocus mode uses a similar edge-preserving filtering process
+                  with a slightly broader sharpening comparison. It is intended
+                  for images that look generally soft or out of focus rather
+                  than images affected mainly by directional camera movement.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What the Strength control does
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Strength controls how strongly the sharpening stage is blended
+                into the processed image. Higher values can make edges appear
+                more pronounced, but excessive sharpening may introduce halos,
+                harsh transitions, or visible noise. Start with a moderate value
+                and compare the result before increasing it.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What refinement passes do
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Each refinement pass repeats the filtering and sharpening
+                process. Additional passes can increase the visible effect, but
+                they do not guarantee more recovered detail. Too many passes may
+                exaggerate noise or edge artifacts, especially in already
+                compressed or low-resolution images.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What this tool can improve
+                </h3>
+                <ul className="text-sm text-gray-600 leading-6 space-y-2">
+                  <li>• Soft-looking edges in mildly blurred photos</li>
+                  <li>• Moderate motion-related softness</li>
+                  <li>• Slight defocus blur</li>
+                  <li>• Images that benefit from controlled edge enhancement</li>
+                </ul>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What it cannot reliably recover
+                </h3>
+                <ul className="text-sm text-gray-600 leading-6 space-y-2">
+                  <li>• Detail completely lost to severe blur</li>
+                  <li>• Unreadable text that was never captured clearly</li>
+                  <li>• Missing facial or object detail</li>
+                  <li>• Information removed by heavy compression or clipping</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Why sharpening is not the same as restoring lost detail
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Sharpening increases local contrast around edges, which can make
+                an image appear clearer. It does not recreate exact information
+                that was lost when the photo became blurred. Results therefore
+                depend heavily on the original image, blur severity, noise,
+                compression, and the selected settings.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better unblur results
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  'Start with a moderate strength setting',
+                  'Use Motion mode for directional blur',
+                  'Use Defocus mode for general softness',
+                  'Compare one refinement pass before increasing it',
+                  'Avoid excessive sharpening on noisy images',
+                  'Check fine edges, text, hair, and high-contrast areas',
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="border border-gray-200 rounded-lg p-4 text-sm text-gray-600"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Unblur Image FAQ
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  [
+                    'Can this tool completely fix a blurry photo?',
+                    'Not always. It can reduce the appearance of moderate blur and strengthen edges, but severely lost image detail cannot be reliably reconstructed.',
+                  ],
+                  [
+                    'What is the difference between Motion and Defocus mode?',
+                    'Motion mode is intended for motion-related softness, while Defocus mode is intended for more general out-of-focus blur. Both use edge-preserving filtering and controlled sharpening with slightly different settings.',
+                  ],
+                  [
+                    'Should I use the highest strength?',
+                    'Not necessarily. Higher strength increases sharpening and can also increase halos, noise, or harsh edges. Moderate settings are usually a better starting point.',
+                  ],
+                  [
+                    'Do more refinement passes always improve the result?',
+                    'No. Additional passes repeat the restoration process, but excessive processing can introduce artifacts. Compare each result rather than assuming more passes are better.',
+                  ],
+                  [
+                    'Is the image processed in my browser?',
+                    'No. The selected image and settings are sent to the server for processing.',
+                  ],
+                  [
+                    'What format is produced?',
+                    'The current processing route creates a JPEG output image.',
+                  ],
+                ].map(([question, answer]) => (
+                  <div
+                    key={question}
+                    className="border border-gray-200 rounded-xl p-5"
+                  >
+                    <h3 className="font-bold text-gray-900 mb-2">{question}</h3>
+                    <p className="text-sm text-gray-600 leading-6">{answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );

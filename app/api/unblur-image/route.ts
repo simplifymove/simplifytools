@@ -17,7 +17,7 @@ export async function POST(request: Request): Promise<Response> {
   const iterations = parseInt((formData.get("iterations") as string) || "1");
 
   console.log(
-    `[API] Restormer deblurring: mode=${mode}, strength=${strength}, iterations=${iterations}`
+    `[API] Image deblurring: mode=${mode}, strength=${strength}, iterations=${iterations}`
   );
 
   if (!imageFile) {
@@ -53,10 +53,10 @@ export async function POST(request: Request): Promise<Response> {
     const scriptPath = path.join(process.cwd(), "unblur_img.py");
     const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
     
-    // Restormer-based deblurring command
+    // Image deblurring command
     const command = `${pythonExe} "${scriptPath}" --input "${inputFile}" --output "${outputFile}" --mode ${mode} --strength ${strength} --iterations ${iterations}`;
 
-    console.log(`[API] Executing: Restormer deblurring engine (SOTA CVPR2022)`);
+    console.log(`[API] Executing image deblurring engine`);
     console.log(`[API] Script path exists: ${fs.existsSync(scriptPath)}`);
 
     // Execute Python script
