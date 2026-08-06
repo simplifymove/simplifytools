@@ -149,7 +149,7 @@ export default function EmbossEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">⛰️ Emboss Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Apply 3D embossing and relief effects to images. Create stunning embossed artwork with depth.
+              Apply an emboss-style relief effect that emphasizes image edges and tonal differences.
             </p>
           </div>
         </div>

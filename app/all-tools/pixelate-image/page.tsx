@@ -257,7 +257,7 @@ export default function PixelateImagePage() {
                 </details>
                 <details className="border-l-4 border-indigo-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is my image kept private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser. Images are never uploaded to servers.</p>
+                  <p className="text-gray-700 mt-2">The pixelation effect itself is produced with browser-based image processing.</p>
                 </details>
                 <details className="border-l-4 border-indigo-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What formats are supported?</summary>
