@@ -1336,11 +1336,11 @@ export default function PdfToolPage({ params }: PageProps) {
                 {[
                   {
                     q: 'What DPI setting should I choose?',
-                    a: 'DPI (dots per inch) controls image quality and file size. Choose 72 DPI for screen viewing and small files, 150 DPI for balanced quality, 300 DPI for high-quality prints, or 600 DPI for professional use. Higher DPI creates larger files but better quality.'
+                    a: 'DPI (dots per inch) controls the raster resolution of each generated image. Higher DPI settings produce more pixels and can retain more visible page detail, but they also increase image dimensions, file size, and processing requirements.'
                   },
                   {
                     q: 'Will converting PDF to JPG reduce image quality?',
-                    a: 'No, our converter maintains high quality at all DPI levels. The conversion process preserves image clarity, colors, and details. Quality depends on your chosen DPI setting—higher DPI means better quality but larger files.'
+                    a: 'PDF pages are rasterized at the selected DPI and then encoded as JPG images. Because JPG uses lossy compression, the generated image may not preserve every detail of the original PDF. Higher DPI provides more raster detail but also creates larger images.'
                   },
                   {
                     q: 'Can I convert all pages or just specific pages?',
@@ -1443,7 +1443,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'What DPI setting should I choose?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'DPI (dots per inch) controls image quality and file size. Choose 72 DPI for screen viewing and small files, 150 DPI for balanced quality, 300 DPI for high-quality prints, or 600 DPI for professional use. Higher DPI creates larger files but better quality.'
+                    text: 'DPI (dots per inch) controls the raster resolution of each generated image. Higher DPI settings produce more pixels and can retain more visible page detail, but they also increase image dimensions, file size, and processing requirements.'
                   }
                 },
                 {
@@ -1451,7 +1451,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Will converting PDF to JPG reduce image quality?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'No, our converter maintains high quality at all DPI levels. The conversion process preserves image clarity, colors, and details. Quality depends on your chosen DPI setting—higher DPI means better quality but larger files.'
+                    text: 'PDF pages are rasterized at the selected DPI and then encoded as JPG images. Because JPG uses lossy compression, the generated image may not preserve every detail of the original PDF. Higher DPI provides more raster detail but also creates larger images.'
                   }
                 },
                 {
@@ -1575,7 +1575,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Lossless Compression',
-                    description: 'PNG uses lossless compression to maintain perfect quality. No image degradation, perfect for graphics and text.'
+                    description: 'PNG uses lossless compression for the generated raster image. The visible detail depends on the DPI selected when the PDF page is rendered.'
                   },
                   {
                     title: 'No Installation',
@@ -1612,7 +1612,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 {[
                   'Converting PDFs for web use with transparent backgrounds for professional websites',
                   'Creating PNG graphics from PDF documents for presentations and marketing materials',
-                  'Converting scanned documents to lossless PNG format for perfect archival storage',
+                  'Converting scanned document pages to PNG images for image-based storage or editing',
                   'Preparing PDF pages as individual PNG files for graphic design and editing in Photoshop',
                   'Extracting specific pages from PDFs (try splitting PDFs first with split PDF tool)',
                   'Converting and combining multiple PDFs to PNG for easy browsing and organization'
@@ -1639,7 +1639,7 @@ export default function PdfToolPage({ params }: PageProps) {
                     icon: '🎨',
                     best: 'Best for',
                     features: ['Transparent backgrounds', 'Graphics & logos', 'Web design', 'Lossless quality'],
-                    pros: ['Perfect quality', 'Supports transparency', 'No quality loss'],
+                    pros: ['Lossless PNG encoding', 'Supports transparency', 'Useful for graphics'],
                     cons: ['Larger file size', 'Less compression']
                   },
                   {
@@ -1784,7 +1784,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 {[
                   {
                     q: 'What is the difference between PNG and JPG?',
-                    a: 'PNG uses lossless compression and supports transparency, making it ideal for graphics, logos, and web design. JPG uses lossy compression and is better for photographs. PNG files are typically larger but maintain perfect quality.'
+                    a: 'PNG uses lossless compression and supports transparency, while JPG uses lossy compression. When a PDF page is converted to PNG, the page is first rendered at the selected DPI, so output detail depends on that rendering resolution.'
                   },
                   {
                     q: 'Will converting PDF to PNG preserve transparency?',
@@ -1834,7 +1834,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'What is the difference between PNG and JPG?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'PNG uses lossless compression and supports transparency, making it ideal for graphics, logos, and web design. JPG uses lossy compression and is better for photographs. PNG files are typically larger but maintain perfect quality.'
+                    text: 'PNG uses lossless compression and supports transparency, while JPG uses lossy compression. When a PDF page is converted to PNG, the page is first rendered at the selected DPI, so output detail depends on that rendering resolution.'
                   }
                 },
                 {
@@ -1966,7 +1966,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Lossless Compression',
-                    description: 'TIFF uses lossless compression to maintain perfect quality. No image degradation, ideal for legal, medical, and archival documents.'
+                    description: 'TIFF supports lossless image compression for the generated raster output. Visible detail depends on the DPI used when rendering each PDF page.'
                   },
                   {
                     title: 'No Installation',
@@ -2038,7 +2038,7 @@ export default function PdfToolPage({ params }: PageProps) {
                     icon: '📋',
                     best: 'Best for',
                     features: ['Archival storage', 'Professional printing', 'Document preservation', 'Lossless quality'],
-                    pros: ['Perfect quality', 'Industry standard', 'No quality loss', 'Multi-page support'],
+                    pros: ['Lossless image encoding', 'Widely used format', 'High-resolution output', 'Multi-page support'],
                     cons: ['Larger file size', 'More storage needed']
                   },
                   {
@@ -2183,11 +2183,11 @@ export default function PdfToolPage({ params }: PageProps) {
                 {[
                   {
                     q: 'What is TIFF format and why should I use it?',
-                    a: 'TIFF (Tagged Image File Format) is an industry-standard image format designed for professional use, archival storage, and high-quality printing. Unlike lossy formats like JPG, TIFF maintains perfect image quality without compression, making it ideal for legal documents, medical records, and long-term storage.'
+                    a: 'TIFF (Tagged Image File Format) supports high-resolution raster images and lossless compression options. It is commonly used in document imaging, publishing, scanning, and archival workflows.'
                   },
                   {
                     q: 'Will converting PDF to TIFF preserve quality?',
-                    a: 'Yes, absolutely. Our converter uses lossless conversion that preserves every detail of your original PDF. The resulting TIFF images maintain perfect quality at all DPI levels. This makes TIFF ideal for professional documents, legal archives, and compliance-sensitive records.'
+                    a: 'PDF pages are rasterized to TIFF at the selected DPI. Higher DPI settings retain more visible page detail but also create larger files. TIFF encoding can be lossless, but rasterization does not preserve PDF vector content as vectors.'
                   },
                   {
                     q: 'Can I convert all pages or just specific pages?',
@@ -2233,7 +2233,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'What is TIFF format and why should I use it?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'TIFF (Tagged Image File Format) is an industry-standard image format designed for professional use, archival storage, and high-quality printing. Unlike lossy formats like JPG, TIFF maintains perfect image quality without compression, making it ideal for legal documents, medical records, and long-term storage.'
+                    text: 'TIFF (Tagged Image File Format) supports high-resolution raster images and lossless compression options. It is commonly used in document imaging, publishing, scanning, and archival workflows.'
                   }
                 },
                 {
@@ -2241,7 +2241,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Will converting PDF to TIFF preserve quality?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes, absolutely. Our converter uses lossless conversion that preserves every detail of your original PDF. The resulting TIFF images maintain perfect quality at all DPI levels. This makes TIFF ideal for professional documents, legal archives, and compliance-sensitive records.'
+                    text: 'PDF pages are rasterized to TIFF at the selected DPI. Higher DPI settings retain more visible page detail but also create larger files. TIFF encoding can be lossless, but rasterization does not preserve PDF vector content as vectors.'
                   }
                 },
                 {
@@ -2438,8 +2438,8 @@ export default function PdfToolPage({ params }: PageProps) {
                     format: 'PNG',
                     icon: '🎨',
                     best: 'Best for',
-                    features: ['Graphics & logos', 'Transparency support', 'Lossless quality', 'Web design'],
-                    pros: ['Perfect quality', 'Supports transparency', 'No quality loss'],
+                    features: ['Graphics & logos', 'Transparency support', 'Lossless PNG encoding', 'Web design'],
+                    pros: ['Lossless PNG encoding', 'Supports transparency', 'Useful for graphics'],
                     cons: ['Larger file size', 'Single image format', 'Less compression']
                   },
                   {
@@ -5092,7 +5092,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Preserve Quality',
-                    description: 'Split PDFs while maintaining original formatting, fonts, images, and document structure. No quality loss during splitting.'
+                    description: 'Splitting copies the selected PDF pages into new files without rasterizing the page content.'
                   },
                   {
                     title: 'Completely Free',
@@ -5591,7 +5591,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   {
                     step: '3',
                     title: 'Download Rotated PDF',
-                    description: 'Your rotated PDF is ready instantly. Download and save your file. No watermarks, no quality loss, completely free.'
+                    description: 'Download the rotated PDF after processing. Page rotation changes orientation without rasterizing the existing PDF page content.'
                   }
                 ].map((item, idx) => (
                   <motion.div
@@ -5743,7 +5743,7 @@ export default function PdfToolPage({ params }: PageProps) {
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Free Online PDF Rotator - No Installation Needed</h2>
               <p className="text-lg leading-relaxed text-gray-700">
-                Rotate PDF pages online instantly using our fast, free, and secure PDF rotation tool. Whether you need to fix document orientation, rotate scanned images, or adjust page angles for printing, our PDF rotator delivers results in seconds. No signup, no installation, no quality loss—just simple, effective PDF page rotation.
+                Rotate PDF pages online to change page orientation without rasterizing the existing PDF page content. Choose 90°, 180°, or 270° rotation and download the processed PDF when it is ready.
               </p>
             </div>
           </div>
@@ -5754,7 +5754,7 @@ export default function PdfToolPage({ params }: PageProps) {
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Crop PDF pages online with our free visual PDF cropper tool. Remove unnecessary margins, trim blank areas, resize pages, and extract specific regions from your PDFs instantly. No software installation required—just upload, select crop areas visually, and download your optimized PDF in seconds. Perfect for scanners, presentations, documents, and images.
+                Crop the visible area of PDF pages with the visual crop controls. Adjust page boundaries to hide margins or unwanted outer areas, then download the processed PDF.
               </p>
             </div>
 
@@ -5764,8 +5764,8 @@ export default function PdfToolPage({ params }: PageProps) {
                 {[
                   { step: '1', title: 'Upload Your PDF', description: 'Select the PDF file you want to crop. We support files up to 100MB. No account or registration needed.' },
                   { step: '2', title: 'Select Pages to Crop', description: 'Choose which pages to crop. Crop all pages, a single page, or specific page ranges like 1-5 or 1,3,5.' },
-                  { step: '3', title: 'Set Crop Area', description: 'Use the visual editor to select the crop area on your pages. Adjust margins, trim whitespace, or extract specific regions.' },
-                  { step: '4', title: 'Download Cropped PDF', description: 'Your cropped PDF is ready instantly. Download your optimized document with removed margins and unnecessary space.' }
+                  { step: '3', title: 'Set Crop Area', description: 'Use the visual editor to select the visible crop area on your pages. Adjust page boundaries to hide margins, whitespace, or unwanted outer areas.' },
+                  { step: '4', title: 'Download Cropped PDF', description: 'Download the cropped PDF after the selected page boundaries have been applied.' }
                 ].map((item, idx) => (
                   <motion.div key={idx} className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all" whileHover={{ y: -5 }}>
                     <div className="flex items-start gap-4">
@@ -5782,11 +5782,11 @@ export default function PdfToolPage({ params }: PageProps) {
               <div className="grid md:grid-cols-2 gap-6">
                 {[
                   { title: 'Remove Unnecessary Margins', description: 'Eliminate white space and unwanted borders to create professional-looking documents.' },
-                  { title: 'Reduce File Size', description: 'Cropping can significantly reduce PDF file size, making it easier to email and share.' },
+                  { title: 'Reduce File Size', description: 'Cropping changes the visible page area but may not significantly reduce file size because underlying PDF page content can remain in the document.' },
                   { title: 'Improve Readability', description: 'Zoom in on important content by removing distracting margins and whitespace.' },
                   { title: 'Prepare for Print', description: 'Crop to standard paper sizes (letter, A4) for proper printing and professional output.' },
-                  { title: 'Extract Specific Content', description: 'Isolate and extract specific regions or text areas from multi-content pages.' },
-                  { title: 'Preserves Quality', description: 'Cropping preserves PDF quality—it\'s lossless editing without compression artifacts.' }
+                  { title: 'Focus the Visible Page Area', description: 'Adjust the visible page bounds around the region you want to keep in view.' },
+                  { title: 'Preserves Quality', description: 'Cropping changes PDF page boundaries without rasterizing or recompressing the existing page content.' }
                 ].map((item, idx) => (
                   <motion.div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all" whileHover={{ x: 5 }}>
                     <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
@@ -5811,10 +5811,10 @@ export default function PdfToolPage({ params }: PageProps) {
             <div className="mb-16">
               <FAQSection title="Crop PDF - Frequently Asked Questions" faqs={[
                 { question: 'Can I crop specific pages in my PDF?', answer: 'Yes, absolutely! You can choose to crop all pages uniformly, crop a single page, or select specific page ranges such as pages 1-5 or 10-15. Our tool lets you leave other pages completely unchanged while only cropping the specific pages you need. This gives you precise control over which pages get cropped and which remain untouched.' },
-                { question: 'Will cropping a PDF reduce file size?', answer: 'Yes, cropping typically reduces PDF file size because you are removing content and whitespace from your document. When you trim margins, remove blank areas, or extract specific regions, you are eliminating unnecessary data that contributes to file size. The exact amount of file size reduction depends on how much content you crop from your PDF pages. Removing large whitespace areas or blank sections can result in significantly smaller files, making them easier to email and share.' },
-                { question: 'Does PDF cropping lose image quality?', answer: 'No, PDF cropping does not lose image quality because it is a lossless editing process. Unlike compression or re-encoding, cropping simply removes the areas you don\'t need without modifying or re-compressing the remaining content. Your PDF quality is preserved as much as possible throughout the cropping process. The text, images, and formatting in the cropped area remain intact and unchanged. No quality loss, compression artifacts, or degradation occurs—we are simply extracting the portions of the document you want to keep.' },
+                { question: 'Will cropping a PDF reduce file size?', answer: 'Not necessarily. This crop operation changes the visible page boundaries. Content outside the visible crop area may remain in the PDF, so cropping should not be relied on as a file-size reduction or content-removal method.' },
+                { question: 'Does PDF cropping lose image quality?', answer: 'The crop operation changes page boundaries rather than rasterizing or recompressing the existing PDF page content. This avoids image re-encoding, although content outside the visible crop area may still remain in the PDF file.' },
                 { question: 'Can I adjust crop areas manually?', answer: 'Yes, you can adjust crop areas manually with complete precision! Our visual PDF crop editor displays your pages and lets you select crop areas by dragging and adjusting borders directly on the preview. You can click and drag to define exact crop boundaries, resize the crop box as needed, and see real-time previews of your changes. This gives you full control over which parts of each page to keep and which areas to remove.' },
-                { question: 'What if I make a mistake while cropping?', answer: 'No problem! If you make a mistake or are unhappy with your crop, simply re-upload your original PDF file and crop it again. Your original file remains completely untouched and safe—we never modify your uploaded files. You can crop the same PDF multiple times until you get the exact result you want, trying different crop areas each time. This risk-free approach means you can experiment and refine your cropping without any consequences.' },
+                { question: 'What if I make a mistake while cropping?', answer: 'If you want a different crop, upload the original PDF again and choose new page boundaries. The crop operation creates a processed output PDF rather than replacing your local source file.' },
                 { question: 'Is my PDF data secure when cropping?', answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>

@@ -494,7 +494,7 @@ export default function TextToSpeech() {
               </div>
               <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
-                <p className="text-gray-700 text-sm">No hidden fees, no premium tiers, no signup required. Convert unlimited text to speech without payment. Always free, always accessible.</p>
+                <p className="text-gray-700 text-sm">No signup is required to use the available text-to-speech controls.</p>
               </div>
             </div>
 
@@ -541,7 +541,7 @@ export default function TextToSpeech() {
             name: 'Is text to speech really free?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! Our text to speech converter is completely free with no hidden costs, signup requirements, or premium features. Convert unlimited text to speech without payment. We believe everyone deserves access to professional voice generation tools.'
+              text: 'You can use the available text-to-speech controls without creating an account.'
             }
           },
           {
@@ -569,7 +569,7 @@ export default function TextToSpeech() {
             name: 'Can I use generated audio commercially?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! Audio generated from our text to speech tool can be used commercially in videos, podcasts, e-learning courses, business presentations, and other projects. No attribution required, though appreciated. Respect copyright for any text you use.'
+              text: 'Usage rights for generated speech can depend on the speech provider and the content being synthesized. Review the applicable provider terms and make sure you have the necessary rights to the source text before publishing or using generated audio commercially.'
             }
           },
           {
