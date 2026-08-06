@@ -207,7 +207,7 @@ export default function WebpToTiffPage() {
                     <ul className="text-xs text-green-700 space-y-1">
                       <li>• Lossless compression for archival</li>
                       <li>• Professional quality for printing</li>
-                      <li>• Support for multiple layers</li>
+                      <li>• Lossless LZW compression for TIFF output</li>
                       <li>• Wide compatibility with design tools</li>
                     </ul>
                   </div>
@@ -225,7 +225,7 @@ export default function WebpToTiffPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Why convert WebP to TIFF?</h3>
-                  <p className="text-gray-600">TIFF provides lossless compression and is the industry standard for archival and professional printing. If you need maximum compatibility with professional design and printing workflows, TIFF is the ideal choice.</p>
+                  <p className="text-gray-600">TIFF supports lossless storage and is widely used in imaging, publishing, print, and archival workflows. Converting WebP to TIFF can be useful when a workflow or application specifically requires TIFF input.</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Will my image lose quality?</h3>
@@ -233,7 +233,7 @@ export default function WebpToTiffPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
-                  <p className="text-gray-600">You can convert files up to 500MB in size. For best performance, we recommend keeping files under 100MB.</p>
+                  <p className="text-gray-600">Processing time and memory use depend on the WebP dimensions, file size, and image complexity. Larger images generally require more processing resources.</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">How is WebP to TIFF different from other conversions?</h3>
@@ -243,7 +243,189 @@ export default function WebpToTiffPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert WebP to TIFF online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a WebP image and click Convert to TIFF. The image is sent
+                to the server and decoded before being written as a TIFF image
+                using lossless LZW compression. When conversion finishes, click
+                Download TIFF to continue to the download page and save the
+                converted file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  What happens during WebP to TIFF conversion?
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The server uses the raster conversion engine to decode the
+                  WebP image and save the resulting pixels in TIFF format. The
+                  TIFF writer uses LZW compression, which is lossless.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Can converting to TIFF restore WebP quality?
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  No. Lossless TIFF compression avoids introducing another
+                  lossy encoding stage, but it cannot reconstruct image detail
+                  that was already discarded if the source WebP was encoded
+                  using lossy compression.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                WebP vs TIFF
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="rounded-xl bg-green-50 border border-green-100 p-6">
+                  <h3 className="font-semibold text-gray-900 mb-3">WebP</h3>
+                  <ul className="space-y-2 text-gray-600">
+                    <li>• Designed for efficient image delivery</li>
+                    <li>• Can use lossy or lossless compression</li>
+                    <li>• Can contain transparency</li>
+                    <li>• Commonly used for web images</li>
+                  </ul>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-6">
+                  <h3 className="font-semibold text-gray-900 mb-3">TIFF</h3>
+                  <ul className="space-y-2 text-gray-600">
+                    <li>• Common in imaging and publishing workflows</li>
+                    <li>• Supports several compression methods</li>
+                    <li>• This converter writes TIFF with LZW compression</li>
+                    <li>• Useful when TIFF input is specifically required</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  What about WebP transparency?
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  WebP can contain an alpha channel for transparent pixels.
+                  Whether transparency is present depends on the source image.
+                  The raster conversion pipeline can carry compatible image
+                  modes into TIFF, although format-specific features and
+                  metadata should not be assumed to transfer identically.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Why use LZW compression?
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  LZW reduces TIFF storage without intentionally discarding
+                  pixel information. This makes it useful when you want TIFF
+                  output without adding another lossy image-compression stage.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                When is WebP to TIFF conversion useful?
+              </h2>
+              <p className="text-gray-600 leading-7 mb-4">
+                WebP is efficient for browsers and websites, while some desktop,
+                imaging, publishing, print, or document workflows may expect
+                TIFF files. Conversion is useful when the receiving software or
+                workflow specifically asks for TIFF rather than WebP.
+              </p>
+
+              <ul className="grid sm:grid-cols-2 gap-3 text-gray-600">
+                {[
+                  'Preparing a WebP image for software that expects TIFF',
+                  'Moving a web image into an imaging or publishing workflow',
+                  'Creating losslessly compressed TIFF output from decoded WebP pixels',
+                  'Converting before importing into a TIFF-based workflow',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-lg border border-gray-200 px-4 py-3"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                What the conversion does not guarantee
+              </h2>
+              <p className="text-gray-700 leading-7">
+                Changing the container format does not increase the original
+                image resolution or recreate detail lost through earlier lossy
+                compression. File size may also increase because WebP and TIFF
+                use different compression approaches. Format-specific metadata,
+                animation, and other WebP features should not be assumed to
+                transfer to a static TIFF output.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                WebP to TIFF FAQ
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  [
+                    'Is the TIFF output lossless?',
+                    'The TIFF writer uses LZW compression, which is lossless. This prevents an additional lossy TIFF compression stage after the WebP has been decoded.',
+                  ],
+                  [
+                    'Will a lossy WebP become higher quality after conversion?',
+                    'No. TIFF can store the decoded image without additional lossy compression, but it cannot restore information already removed from a lossy WebP source.',
+                  ],
+                  [
+                    'Will the TIFF file be larger than the WebP?',
+                    'It can be. WebP is designed for compact image delivery, while TIFF with LZW uses a different lossless compression approach. Final size depends on the source image and its pixel content.',
+                  ],
+                  [
+                    'Does conversion resize my image?',
+                    'The page does not provide resize controls. The conversion is intended to change the raster file format rather than deliberately change the image dimensions.',
+                  ],
+                  [
+                    'How do I download the converted TIFF?',
+                    'After conversion completes, click Download TIFF. The converted image is registered with the SimplifyConvert download-result flow and you are taken to its download page.',
+                  ],
+                ].map(([question, answer]) => (
+                  <div
+                    key={question}
+                    className="rounded-xl border border-gray-200 p-5"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {question}
+                    </h3>
+                    <p className="text-gray-600 leading-7">{answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );

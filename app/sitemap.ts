@@ -31,9 +31,7 @@ const EXCLUDED_PATTERNS = [
   'tiktok-watermark',
 ];
 
-const UNFINISHED_TOOL_IDS = new Set([
-  'webp-to-tiff',
-]);
+const UNFINISHED_TOOL_IDS = new Set<string>([]);
 
 // Redirect-only aliases must never compete with their canonical destinations.
 const REDIRECT_ONLY_TOOL_ROUTES = new Set([
