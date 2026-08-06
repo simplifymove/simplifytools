@@ -86,7 +86,7 @@ export default function MirrorImagePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -138,7 +138,7 @@ export default function MirrorImagePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Flip & Mirror Image</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -224,7 +224,7 @@ export default function MirrorImagePage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-teal-600 mb-2">Instant Processing</h3>
-                  <p className="text-gray-700">Apply mirror effects in seconds.</p>
+                  <p className="text-gray-700">Apply horizontal or vertical mirroring in your browser.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-teal-600 mb-2">100% Free</h3>
@@ -247,15 +247,15 @@ export default function MirrorImagePage() {
                 </details>
                 <details className="border-l-4 border-teal-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Does quality change when flipping?</summary>
-                  <p className="text-gray-700 mt-2">No, flipping preserves 100% of the original quality.</p>
+                  <p className="text-gray-700 mt-2">The image dimensions are retained during the flip, and the downloaded result is encoded as a JPEG.</p>
                 </details>
                 <details className="border-l-4 border-teal-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">JPG, PNG, WebP, BMP, TIFF and most image formats.</p>
+                  <p className="text-gray-700 mt-2">The upload control supports JPG, PNG, and WebP images.</p>
                 </details>
                 <details className="border-l-4 border-teal-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is my image stored?</summary>
-                  <p className="text-gray-700 mt-2">No, all processing happens locally in your browser.</p>
+                  <p className="text-gray-700 mt-2">The image flip itself happens in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
                 </details>
                 <details className="border-l-4 border-teal-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I flip multiple times?</summary>
@@ -286,7 +286,85 @@ export default function MirrorImagePage() {
         </div>
 
         <Footer />
-      </main>
+
+        {/* Batch supporting content: mirror-image */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Horizontal and vertical image mirroring
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Horizontal mirroring reverses the image from left to right, while vertical mirroring reverses it from top to bottom. The tool performs the transformation on a browser canvas while keeping the canvas dimensions equal to the loaded image dimensions. The downloaded result is encoded as JPEG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  The downloaded file is JPEG encoded, so its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
+                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

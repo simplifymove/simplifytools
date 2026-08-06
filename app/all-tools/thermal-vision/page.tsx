@@ -278,7 +278,7 @@ export default function ThermalVisionPage() {
                 </details>
                 <details className="border-l-4 border-red-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
+                  <p className="text-gray-700 mt-2">The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
                 </details>
                 <details className="border-l-4 border-red-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Real thermal imaging?</summary>
@@ -309,7 +309,85 @@ export default function ThermalVisionPage() {
         </div>
 
         <Footer />
-      </main>
+
+        {/* Batch supporting content: thermal-vision */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Understanding the thermal vision effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The Thermal Vision tool processes image pixels in your browser to create a heat-map-style visual effect. It changes the appearance of the uploaded image rather than performing real thermal or infrared measurement. The processed result is exported as a JPEG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  The downloaded file is JPEG encoded, so its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
+                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

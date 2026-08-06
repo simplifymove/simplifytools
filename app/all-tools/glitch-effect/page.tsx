@@ -102,7 +102,7 @@ export default function GlitchEffectPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -154,7 +154,7 @@ export default function GlitchEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Glitch Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -229,7 +229,7 @@ export default function GlitchEffectPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-red-600 mb-2">Instant Results</h3>
-                  <p className="text-gray-700">Apply glitch effects in seconds.</p>
+                  <p className="text-gray-700">Apply the effect directly after choosing your settings.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-red-600 mb-2">100% Free</h3>
@@ -248,7 +248,7 @@ export default function GlitchEffectPage() {
                 </details>
                 <details className="border-l-4 border-red-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Results vary by content.</p>
+                  <p className="text-gray-700 mt-2">JPG, PNG, and WebP images are supported by the upload control. Results vary by image content.</p>
                 </details>
                 <details className="border-l-4 border-red-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
@@ -256,11 +256,11 @@ export default function GlitchEffectPage() {
                 </details>
                 <details className="border-l-4 border-red-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with glitch effects.</p>
+                  <p className="text-gray-700 mt-2">The processed result is exported as a JPEG with the glitch effect.</p>
                 </details>
                 <details className="border-l-4 border-red-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
+                  <p className="text-gray-700 mt-2">The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
                 </details>
                 <details className="border-l-4 border-red-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Different each time?</summary>
@@ -291,7 +291,85 @@ export default function GlitchEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        {/* Batch supporting content: glitch-effect */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the digital glitch effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The Glitch Effect selects randomized horizontal regions of the image and shifts pixel data to create digital-looking distortions. Increasing the intensity produces additional glitch operations, so repeated processing can create different-looking results even when the same source image is used.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  The downloaded file is JPEG encoded, so its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
+                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

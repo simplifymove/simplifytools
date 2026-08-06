@@ -1,12 +1,12 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Kaleidoscope Effect - Free Online Symmetrical Pattern Creator',
-  description: 'Generate beautiful kaleidoscope and symmetrical pattern effects. Create stunning symmetrical artwork from your photos.',
+  title: 'Kaleidoscope Effect - Symmetrical Image Patterns | SimplifyConvert',
+  description: 'Transform JPG, PNG, or WebP images into kaleidoscope-style patterns by adjusting the number of segments and downloading a JPEG.',
   keywords: ['kaleidoscope', 'symmetrical patterns', 'pattern effect', 'art effect', 'image effect', 'online tool'],
   openGraph: {
-    title: 'Kaleidoscope Effect - Free Online Symmetrical Pattern Creator',
-    description: 'Generate beautiful kaleidoscope and symmetrical patterns instantly.',
+    title: 'Kaleidoscope Effect - Symmetrical Image Patterns',
+    description: 'Transform JPG, PNG, or WebP images into kaleidoscope-style patterns by adjusting the number of segments and downloading a JPEG.',
     url: 'https://simplifyconvert.com/all-tools/kaleidoscope',
     type: 'website',
   },

@@ -115,7 +115,7 @@ export default function MosaicTilePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -167,7 +167,7 @@ export default function MosaicTilePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Mosaic Tile Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -261,7 +261,7 @@ export default function MosaicTilePage() {
                 </details>
                 <details className="border-l-4 border-purple-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Colored images look better.</p>
+                  <p className="text-gray-700 mt-2">JPG, PNG, and WebP images are supported. Color-rich images can produce more visible mosaic variation.</p>
                 </details>
                 <details className="border-l-4 border-purple-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
@@ -269,11 +269,11 @@ export default function MosaicTilePage() {
                 </details>
                 <details className="border-l-4 border-purple-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with mosaic effect.</p>
+                  <p className="text-gray-700 mt-2">The processed result is exported as a JPEG with the mosaic effect.</p>
                 </details>
                 <details className="border-l-4 border-purple-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
+                  <p className="text-gray-700 mt-2">The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
                 </details>
                 <details className="border-l-4 border-purple-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Smooth blending?</summary>
@@ -304,7 +304,85 @@ export default function MosaicTilePage() {
         </div>
 
         <Footer />
-      </main>
+
+        {/* Batch supporting content: mosaic-tile */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How mosaic tiles are generated
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The Mosaic Tile tool divides the image into blocks and calculates representative color values for each tile. Smaller tile sizes retain more recognizable image detail, while larger tiles create a stronger block-based mosaic appearance. The resulting image is exported as JPEG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  The downloaded file is JPEG encoded, so its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
+                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

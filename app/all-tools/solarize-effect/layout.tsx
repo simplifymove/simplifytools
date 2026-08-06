@@ -1,8 +1,8 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Solarize Effect - Free Online Photo Editor',
-  description: 'Create photographic solarization effects with free online tool. Transform images with inverted tone curves and artistic effects.',
+  title: 'Solarize Effect - Create Solarized Image Effects | SimplifyConvert',
+  description: 'Apply a solarization-style tonal effect to JPG, PNG, or WebP images, adjust its intensity, and download the processed JPEG.',
   keywords: [
     'solarize effect',
     'solarization',
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     'photo manipulation',
   ],
   openGraph: {
-    title: 'Solarize Effect',
-    description: 'Create stunning photographic solarization effects instantly',
+    title: 'Solarize Effect - Create Solarized Image Effects',
+    description: 'Apply a solarization-style tonal effect to JPG, PNG, or WebP images, adjust its intensity, and download the processed JPEG.',
     url: 'https://simplifyconvert.com/all-tools/solarize-effect',
     type: 'website',
   },
