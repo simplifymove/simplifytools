@@ -32,7 +32,7 @@ const sections = [
   },
   {
     title: '7. Cookies and Local Storage',
-    content: 'We use authentication cookies, an AI Studio pricing-region preference cookie, and browser storage for features such as recent search suggestions. Google Analytics, Google AdSense, payment, and authentication integrations may also use cookies or similar storage. See the Cookie Policy for more detail and use your browser controls to manage stored data.',
+    content: 'We use authentication cookies and browser storage for features such as recent search suggestions. Google Analytics, Google AdSense, payment, and authentication integrations may also use cookies or similar storage. See the Cookie Policy for more detail and use your browser controls to manage stored data.',
   },
   {
     title: '8. Security and Retention',

@@ -16,7 +16,7 @@ const sections = [
   },
   {
     title: '3. Preference Storage',
-    content: 'AI Studio can store an ai_studio_pricing_region preference cookie for up to one year so regional pricing and currency choices can persist. The site also uses local browser storage for features such as recent search suggestions. Clearing site data removes these saved preferences.',
+    content: 'The site uses local browser storage for features such as recent search suggestions. Clearing site data removes these saved preferences.',
   },
   {
     title: '4. Analytics',

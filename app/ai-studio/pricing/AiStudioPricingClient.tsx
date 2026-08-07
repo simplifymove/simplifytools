@@ -10,10 +10,6 @@ import { canStartAiStudioCheckout } from '@/lib/ai-studio/checkout-access';
 import { getSignInPath } from '@/lib/auth/redirect';
 import {
   getAiStudioPlansForPricingRegion,
-  getAiStudioPricingCurrency,
-  getAiStudioPricingRegionForCurrency,
-  serializeAiStudioPricingRegionCookie,
-  type AiStudioPricingCurrency,
   type AiStudioPricingRegion,
 } from '@/lib/ai-studio/pricing-region';
 
@@ -386,36 +382,15 @@ export function AiStudioPricingClient({
   const router = useRouter();
   const { status: sessionStatus } = useSession();
   const paypalCheckoutLock = useRef<string | null>(null);
-  const [selectedRegion, setSelectedRegion] =
-    useState<AiStudioPricingRegion>(initialRegion);
+  const selectedRegion = initialRegion;
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({ status: 'idle', message: '' });
-  const selectedCurrency = getAiStudioPricingCurrency(selectedRegion);
   const canStartCheckout = canStartAiStudioCheckout(sessionStatus);
   const visiblePlans = getAiStudioPlansForPricingRegion(
     plans,
     selectedRegion,
   );
   const signInHref = getSignInPath('/ai-studio/pricing');
-
-  function handleCurrencyChange(currency: AiStudioPricingCurrency) {
-    if (loadingPlanId) {
-      return;
-    }
-
-    const nextRegion = getAiStudioPricingRegionForCurrency(currency);
-
-    if (nextRegion === selectedRegion) {
-      return;
-    }
-
-    document.cookie = serializeAiStudioPricingRegionCookie(
-      nextRegion,
-      window.location.protocol === 'https:',
-    );
-    setSelectedRegion(nextRegion);
-    setCheckoutState({ status: 'idle', message: '' });
-  }
 
   async function handleBuyPlan(plan: AiStudioPlanConfig) {
     if (plan.provider === 'razorpay' && plan.currency === 'INR') {
@@ -534,33 +509,11 @@ export function AiStudioPricingClient({
   return (
     <>
       <div className="mb-6 flex justify-center">
-        <fieldset className="w-full max-w-sm">
-          <legend className="mb-2 w-full text-center text-sm font-semibold text-slate-700">
-            Choose your currency
-          </legend>
-          <div className="grid grid-cols-2 gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1">
-            {(['INR', 'USD'] as const).map((currency) => {
-              const isSelected = selectedCurrency === currency;
-
-              return (
-                <button
-                  key={currency}
-                  type="button"
-                  onClick={() => handleCurrencyChange(currency)}
-                  disabled={Boolean(loadingPlanId)}
-                  aria-pressed={isSelected}
-                  className={`min-h-11 rounded-lg px-4 py-2.5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 ${
-                    isSelected
-                      ? 'bg-slate-950 text-white shadow-sm'
-                      : 'bg-transparent text-slate-700 hover:bg-white'
-                  }`}
-                >
-                  {currency}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
+        <div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+          {selectedRegion === 'india'
+            ? 'India pricing · INR'
+            : 'International pricing · USD'}
+        </div>
       </div>
 
       {checkoutState.status !== 'idle' && (

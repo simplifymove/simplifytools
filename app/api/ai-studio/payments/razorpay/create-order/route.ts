@@ -5,6 +5,7 @@ import { getAiStudioPlan } from '@/lib/ai-studio/plans';
 import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import { createRazorpayOrder } from '@/lib/billing/razorpay';
 import { prisma } from '@/lib/prisma';
+import { getAiStudioRequestRegion } from '@/lib/ai-studio/region';
 
 interface CreateAiStudioRazorpayOrderRequest {
   planId?: unknown;
@@ -31,6 +32,28 @@ export async function POST(request: NextRequest) {
     if (!plan || plan.provider !== 'razorpay' || plan.currency !== 'INR') {
       return NextResponse.json({ error: 'Razorpay is available for India plans only' }, { status: 400 });
     }
+
+    const requestRegion = await getAiStudioRequestRegion();
+
+
+    if (requestRegion !== 'india') {
+
+      return NextResponse.json(
+
+        {
+
+          error:
+
+            'INR pricing and Razorpay checkout are available for customers in India only',
+
+        },
+
+        { status: 403 },
+
+      );
+
+    }
+
 
     const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
 

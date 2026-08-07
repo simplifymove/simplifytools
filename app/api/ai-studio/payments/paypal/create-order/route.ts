@@ -8,6 +8,7 @@ import {
 import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import { createPayPalOrder, getPayPalConfig } from '@/lib/billing/paypal';
 import { prisma } from '@/lib/prisma';
+import { getAiStudioRequestRegion } from '@/lib/ai-studio/region';
 
 interface CreateAiStudioPayPalOrderRequest {
   planId?: unknown;
@@ -37,6 +38,28 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    const requestRegion = await getAiStudioRequestRegion();
+
+
+    if (requestRegion === 'india') {
+
+      return NextResponse.json(
+
+        {
+
+          error:
+
+            'USD pricing and PayPal checkout are available outside India only',
+
+        },
+
+        { status: 403 },
+
+      );
+
+    }
+
 
     getPayPalConfig();
 

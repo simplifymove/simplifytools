@@ -35,7 +35,7 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     grossAmountMinor: 19900,
     aiUsageValueMinor: 10000,
     platformRevenueMinor: 9900,
-    creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_INDIA_STARTER', 1000),
+    creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_INDIA_STARTER', 3000),
   },
   {
     id: 'india-pro',
@@ -46,7 +46,7 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     grossAmountMinor: 49900,
     aiUsageValueMinor: 30000,
     platformRevenueMinor: 19900,
-    creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_INDIA_PRO', 3000),
+    creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_INDIA_PRO', 8000),
   },
   {
     id: 'global-starter',
@@ -54,9 +54,9 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     region: 'global',
     provider: 'paypal',
     currency: 'USD',
-    grossAmountMinor: 599,
-    aiUsageValueMinor: 300,
-    platformRevenueMinor: 299,
+    grossAmountMinor: 299,
+    aiUsageValueMinor: 150,
+    platformRevenueMinor: 149,
     creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_GLOBAL_STARTER', 3000),
   },
   {
@@ -65,9 +65,9 @@ export const AI_STUDIO_PLANS: AiStudioPlanConfig[] = [
     region: 'global',
     provider: 'paypal',
     currency: 'USD',
-    grossAmountMinor: 1299,
-    aiUsageValueMinor: 800,
-    platformRevenueMinor: 499,
+    grossAmountMinor: 699,
+    aiUsageValueMinor: 400,
+    platformRevenueMinor: 299,
     creditsGranted: getConfiguredCredits('AI_STUDIO_CREDITS_GLOBAL_PRO', 8000),
   },
 ];

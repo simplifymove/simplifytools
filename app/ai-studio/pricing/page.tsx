@@ -15,7 +15,7 @@ import { AiStudioPricingClient } from './AiStudioPricingClient';
 export const metadata: Metadata = {
   title: 'AI Studio Pricing | SimplifyConvert',
   description:
-    'Compare one-time AI Studio credit packs in INR or USD for editable presentations, documents, and spreadsheets.',
+    'Compare one-time AI Studio credit packs for editable presentations, documents, and spreadsheets.',
   alternates: {
     canonical: 'https://simplifyconvert.com/ai-studio/pricing',
   },
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'AI Studio Pricing | SimplifyConvert',
-    description: 'Choose one-time AI Studio credits in INR or USD.',
+    description: 'Choose one-time AI Studio credits for presentations, documents, and spreadsheets.',
   },
 };
 
@@ -84,8 +84,7 @@ export default async function AiStudioPricingPage() {
                 Simple, one-time AI Studio credits
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                Choose a credit pack in INR or USD. Use credits across presentations,
-                documents, and spreadsheets without starting a recurring subscription.
+                Choose a one-time credit pack for presentations, documents, and spreadsheets without starting a recurring subscription.
               </p>
               <div className="mt-7">
                 <ProtectedAiStudioLink
@@ -111,7 +110,9 @@ export default async function AiStudioPricingPage() {
 
             <div className="mt-8 rounded-lg border border-slate-200 bg-white p-5 text-center text-sm leading-6 text-slate-600 shadow-sm">
               <p className="font-semibold text-slate-900">
-                INR payments use Razorpay. USD payments use PayPal.
+                {initialRegion === 'india'
+                    ? 'Payments are processed securely through Razorpay.'
+                    : 'Payments are processed securely through PayPal.'}
               </p>
               <p className="mt-1">
                 Credits are added after payment confirmation. Actual generation
