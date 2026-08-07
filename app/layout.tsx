@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import AdSenseScript from "./components/AdSenseScript";
 import { generateOrganizationSchema, generateWebSiteSchema } from "./lib/seo";
 
 
@@ -131,12 +132,8 @@ export default function RootLayout({
         {/* PDF.js Library is imported directly in PdfPageReorderer component */}
 
 
-{/* Google AdSense */}
-<script
-  async
-  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4666093512004911"
-  crossOrigin="anonymous"
-></script>
+{/* Google AdSense — excluded from all AI Studio routes */}
+          <AdSenseScript />
 
 
       </head>
