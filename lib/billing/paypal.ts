@@ -229,7 +229,39 @@ async function paypalRequest(
   });
 
   if (!response.ok) {
-    throw new PayPalApiError('PayPal request was not accepted', response.status);
+    const errorPayload = (await response.json().catch(() => null)) as
+      | {
+          name?: unknown;
+          message?: unknown;
+          debug_id?: unknown;
+          details?: unknown;
+        }
+      | null;
+
+    console.error('[paypal-api] Request rejected', {
+      path,
+      status: response.status,
+      name:
+        typeof errorPayload?.name === 'string'
+          ? errorPayload.name
+          : null,
+      message:
+        typeof errorPayload?.message === 'string'
+          ? errorPayload.message
+          : null,
+      debugId:
+        typeof errorPayload?.debug_id === 'string'
+          ? errorPayload.debug_id
+          : null,
+      details: Array.isArray(errorPayload?.details)
+        ? errorPayload.details
+        : null,
+    });
+
+    throw new PayPalApiError(
+      'PayPal request was not accepted',
+      response.status,
+    );
   }
 
   const payload = (await response.json().catch(() => null)) as PayPalApiOrder | null;
