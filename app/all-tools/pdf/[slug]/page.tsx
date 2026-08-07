@@ -12,6 +12,7 @@ import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, 
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { FAQSection } from '@/app/components/FAQSection';
+import { PdfToolSupportingContent } from '@/app/components/PdfToolSupportingContent';
 import { readDownloadResultResponse } from '@/app/lib/download-result-client';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
@@ -6036,6 +6037,8 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
           </div>
         )}
+        <PdfToolSupportingContent toolId={tool.id} />
+
         {!PDF_TOOLS_WITH_EXISTING_RELATED_SECTIONS.has(tool.id) && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 pb-16">
             <RelatedToolsSection
