@@ -10,6 +10,10 @@ import { VideoToolErrorType, EmailErrorReport } from '@/app/utils/types/errors';
 import { sendErrorEmail } from '@/app/utils/error-reporting/send-error-email';
 import { parsePythonError, sanitizeErrorMessage } from '@/app/utils/error-handling/error-handler';
 import { isVerifiedAuditRequest } from '@/lib/security/audit-request';
+import {
+  createDownloadResult,
+  getAllowedDownloadDirectories,
+} from '@/lib/services/download-result';
 
 const exec = promisify(execCallback);
 const require = createRequire(import.meta.url);
@@ -416,7 +420,71 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle file output
+    // Resize Video uses the persistent temporary download-result page.
+    if (toolId === 'resize-video') {
+      try {
+        const { mkdir, rename } = await import('fs/promises');
+
+        const downloadDirectories = getAllowedDownloadDirectories();
+        const downloadDirectory = downloadDirectories[0];
+
+        if (!downloadDirectory) {
+          throw new Error('No download-result directory is configured');
+        }
+
+        await mkdir(downloadDirectory, { recursive: true });
+
+        const outputExtension = path.extname(outputPath) || '.mp4';
+        const storedFilename = `${uuidv4()}${outputExtension}`;
+        const storedPath = path.join(downloadDirectory, storedFilename);
+
+        await rename(outputPath, storedPath);
+
+        try {
+          const downloadResult = await createDownloadResult({
+            toolSlug: toolId,
+            originalName: fileMetadata?.filename,
+            outputName: `resized-video${outputExtension}`,
+            outputPath: storedPath,
+            mimeType: getContentType(storedPath),
+          });
+
+          // The generated result now belongs to the download-result cleanup
+          // service. Only clean up the original uploaded source here.
+          scheduleCleanup(uploadedFilePath);
+
+          return NextResponse.json(
+            {
+              success: true,
+              type: 'download-result',
+              resultId: downloadResult.id,
+              downloadPageUrl: downloadResult.downloadPageUrl,
+            },
+            { status: 200 }
+          );
+        } catch (error) {
+          // If database/result registration fails after the move, avoid
+          // leaving an untracked file behind.
+          await unlink(storedPath).catch(() => undefined);
+          throw error;
+        }
+      } catch (error) {
+        console.error('Failed to create Resize Video download result:', error);
+
+        scheduleCleanup(uploadedFilePath, outputPath);
+
+        return createErrorResponse(
+          'Failed to prepare download',
+          VideoToolErrorType.API_ERROR,
+          toolId,
+          toolName,
+          500,
+          fileMetadata
+        );
+      }
+    }
+
+    // Handle normal file output
     try {
       const fs = await import('fs');
       const fileStream = fs.createReadStream(outputPath);
