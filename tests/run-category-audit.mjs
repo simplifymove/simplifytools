@@ -62,29 +62,30 @@ function inspectOutput(chunk) {
   const lines = lineBuffer.split(/\r?\n/);
   lineBuffer = lines.pop() || '';
   for (const line of lines) {
-    const runningMatch = /Running\s+(\d+)\s+tests?/.exec(line);
+    const plainLine = line.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '');
+    const runningMatch = /Running\s+(\d+)\s+tests?/.exec(plainLine);
     if (runningMatch) expectedResultCount = Number(runningMatch[1]);
-    const resultMarker = line.indexOf('AUDIT_TOOL_RESULT:');
+    const resultMarker = plainLine.indexOf('AUDIT_TOOL_RESULT:');
     if (resultMarker >= 0) {
       try {
-        const result = JSON.parse(line.slice(resultMarker + 'AUDIT_TOOL_RESULT:'.length));
+        const result = JSON.parse(plainLine.slice(resultMarker + 'AUDIT_TOOL_RESULT:'.length));
         observedResultCount += 1;
         observedFailure ||= result.status === 'failed';
       } catch {
         // The Playwright exit code remains authoritative for malformed markers.
       }
     }
-    const categorySummaryIndex = line.indexOf('CATEGORY_AUDIT_SUMMARY ');
-    const finalPlaywrightSummary = /^\s*\d+\s+(?:failed|passed|skipped)(?:\s|,|\()/.test(line);
+    const categorySummaryIndex = plainLine.indexOf('CATEGORY_AUDIT_SUMMARY ');
+    const finalPlaywrightSummary = /^\s*\d+\s+(?:failed|passed|skipped)(?:\s|,|\()/.test(plainLine);
     const completeCategorySummary = categorySummaryIndex >= 0 && expectedResultCount > 0 && observedResultCount >= expectedResultCount;
     if ((!completeCategorySummary && !finalPlaywrightSummary) || settledFromSummary) continue;
     try {
       settledFromSummary = true;
       if (completeCategorySummary) {
-        const summary = JSON.parse(line.slice(categorySummaryIndex + 'CATEGORY_AUDIT_SUMMARY '.length));
+        const summary = JSON.parse(plainLine.slice(categorySummaryIndex + 'CATEGORY_AUDIT_SUMMARY '.length));
         summaryExitCode = observedFailure || Number(summary.failedCount || 0) > 0 ? 1 : 0;
       } else {
-        summaryExitCode = observedFailure || /\bfailed\b/.test(line) ? 1 : 0;
+        summaryExitCode = observedFailure || /\bfailed\b/.test(plainLine) ? 1 : 0;
       }
       postSummaryWatchdog = setTimeout(() => {
         console.error(`Category audit for ${category} did not exit within 15 seconds after its final summary; terminating owned process tree`);

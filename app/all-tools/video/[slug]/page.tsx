@@ -99,8 +99,8 @@ interface PageProps {
 }
 
 export default function VideoToolPage({ params }: PageProps) {
-  const resolvedParams = use(params);
   const router = useRouter();
+  const resolvedParams = use(params);
   const tool = getToolById(resolvedParams.slug);
   
   // Use centralized error handling
@@ -223,14 +223,10 @@ export default function VideoToolPage({ params }: PageProps) {
 
       if (contentType?.includes('application/json')) {
         const data = await response.json();
-
-          if (
-            data?.type === 'download-result' &&
-            typeof data.downloadPageUrl === 'string'
-          ) {
-            router.push(data.downloadPageUrl);
-            return;
-          }
+        if (data.type === 'download-result' && typeof data.downloadPageUrl === 'string') {
+          router.push(data.downloadPageUrl);
+          return;
+        }
         setResult(data);
       } else if (contentType?.includes('text')) {
         const text = await response.text();

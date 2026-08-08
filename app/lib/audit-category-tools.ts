@@ -3,7 +3,7 @@ import { allTools, financialTools, resumeTools, downloaderTools } from '@/app/da
 import { getAllTools as getAllCodeTools } from '@/app/lib/code-tools';
 import { dataTools } from '@/app/lib/data-tools';
 import { getAllPdfTools } from '@/app/lib/pdf-tools';
-import { getAllTools as getAllVideoTools } from '@/app/lib/video-tools';
+import { getAllTools as getAllVideoTools, type VideoTool } from '@/app/lib/video-tools';
 
 export type AuditCategoryId =
   | 'ai-writing-tools'
@@ -138,6 +138,21 @@ function externalClass(requiredEnvironmentVariables: string[], paidProvider = fa
     : 'EXTERNAL_NOT_CONFIGURED';
 }
 
+const auditVideoTools: VideoTool[] = [
+  ...getAllVideoTools(),
+  {
+    id: 'text-to-video',
+    title: 'AI Text to Video',
+    description: 'Generate a video from a text prompt with an external AI provider',
+    engine: 'edit',
+    category: 'editing',
+    accepts: [],
+    outputType: '.mp4',
+    inputMethod: 'file',
+    options: [],
+  },
+];
+
 function codeAuditInput(toolId: string): string {
   if (toolId === 'code-minifier' || toolId === 'code-beautifier') return 'const audit = { name: "SimplifyConvert", active: true }; console.log(audit.name);';
   if (toolId === 'json-to-csv') return '[{"name":"SimplifyConvert","active":true}]';
@@ -207,7 +222,7 @@ function mapImageTools(): AuditToolTarget[] {
       const outputExtension = conversion ? `.${conversion[2] === 'jpeg' ? 'jpg' : conversion[2] === 'tif' ? 'tiff' : conversion[2]}`
         : routeSlug === 'compress-image' ? '.jpg' : '.png';
       const renderedOutput = ['image-to-text', 'pdf-to-text', 'tiff-to-text', 'view-metadata'].includes(routeSlug);
-      const noFileInput = ['chart-maker', 'font-awesome-to-png'].includes(routeSlug);
+      const noFileInput = ['ai-image-generator', 'chart-maker', 'font-awesome-to-png'].includes(routeSlug);
       return {
         slug: tool.id,
         title: tool.title,
@@ -223,8 +238,9 @@ function mapImageTools(): AuditToolTarget[] {
             apiEndpoint: '/api/convert',
             noTextSuccessMessages: ['No text was detected in this image.'],
           } : undefined,
-          executionClass: 'LOCAL_DETERMINISTIC',
-          rateSensitive: false,
+          executionClass: routeSlug === 'ai-image-generator' ? externalClass(['OPENROUTER_API_KEY']) : 'LOCAL_DETERMINISTIC',
+          externalProvider: routeSlug === 'ai-image-generator' ? 'OpenRouter' : undefined,
+          rateSensitive: routeSlug === 'ai-image-generator',
         },
       };
     });
@@ -268,22 +284,21 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
   {
     id: 'video-tools',
     name: 'Video Tools',
-    tools: getAllVideoTools().map((tool) =>
+    tools: auditVideoTools.map((tool) =>
       withRoute(tool, tool.id === 'text-to-video' ? '/all-tools/video-tools/text-to-video' : `/all-tools/video/${tool.id}`, {
         strategy: tool.inputMethod === 'url' ? 'url' : tool.id === 'text-to-video' ? 'text' : 'file',
-        fixtures:
-          tool.id === 'audio-to-text' || tool.id === 'transcribe-podcast'
+        fixtures: tool.id === 'video-to-text'
+          ? ['tests/fixtures/video/sample-speech.mov']
+          : ['audio-to-text', 'transcribe-podcast'].includes(tool.id)
             ? ['tests/fixtures/audio/sample-speech.mp3']
-            : fixtureFor(tool.accepts)
-              ? [fixtureFor(tool.accepts)!]
-              : undefined,
+          : fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : undefined,
         textInput: 'A calm blue gradient with a centered title', urlInput: 'https://example.com/',
         optionValues: Object.fromEntries(tool.options.map((option) => [option.id, option.default
           ?? (tool.id === 'trim-video' ? (option.id === 'startTime' ? '00:00' : '00:01')
             : option.type === 'time' ? '00:01'
               : option.type === 'number' ? option.min ?? 1 : 'audit')])),
         resultFlow: tool.outputType === 'text' ? 'rendered-output' : 'download-page', expectedOutput: outputContract(tool.outputType),
-        renderedResult: tool.id === 'summarize-podcast'
+        renderedResult: tool.outputType === 'text'
           ? {
               selector: '[data-testid="podcast-summary-output"]',
               apiEndpoint: '/api/media',
@@ -291,11 +306,13 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
             }
           : undefined,
         executionClass: tool.id === 'text-to-video' ? externalClass(['PIKA_API_KEY'], true)
-          : /transcri|to-text|transcript/.test(tool.id) ? externalClass(['GROQ_API_KEY'])
+          : ['audio-to-text', 'video-to-text', 'transcribe-podcast'].includes(tool.id) ? 'LOCAL_DETERMINISTIC'
+          : /youtube.*(?:to-text|transcript)/.test(tool.id) ? externalClass(['DOWNLOADER_API_URL'])
           : /youtube|instagram|tiktok|twitter|facebook|download/.test(tool.id) ? externalClass(['DOWNLOADER_API_URL'])
           : 'LOCAL_DETERMINISTIC',
         externalProvider: tool.id === 'text-to-video' ? 'Pika'
-          : /transcri|to-text|transcript/.test(tool.id) ? 'Groq'
+          : ['audio-to-text', 'video-to-text', 'transcribe-podcast'].includes(tool.id) ? undefined
+          : /youtube.*(?:to-text|transcript)/.test(tool.id) ? 'Downloader provider + local Faster-Whisper'
           : /youtube|instagram|tiktok|twitter|facebook|download/.test(tool.id) ? 'Downloader provider'
           : undefined,
         rateSensitive: /text-to-video|transcri|to-text|transcript|youtube|instagram|tiktok|twitter|facebook|download/.test(tool.id),

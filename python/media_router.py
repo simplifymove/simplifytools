@@ -111,11 +111,7 @@ class MediaRouter:
             return self.download_engine.process(tool_id, input_path, options)
         
         elif engine == 'transcribe':
-            return self.transcription_engine.process(
-                tool_id,
-                input_path,
-                options
-            )
+            return self.transcription_engine.process(tool_id, input_path, options)
         
         elif engine == 'summarize':
             return self.summarization_engine.process(tool_id, input_path, options)

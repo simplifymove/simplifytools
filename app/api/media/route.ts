@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, unlink } from 'fs/promises';
+import { copyFile, mkdir, unlink, writeFile } from 'fs/promises';
+import { existsSync } from 'fs';
 import path from 'path';
 import { spawn, exec as execCallback } from 'child_process';
 import { createRequire } from 'module';
@@ -10,10 +11,7 @@ import { VideoToolErrorType, EmailErrorReport } from '@/app/utils/types/errors';
 import { sendErrorEmail } from '@/app/utils/error-reporting/send-error-email';
 import { parsePythonError, sanitizeErrorMessage } from '@/app/utils/error-handling/error-handler';
 import { isVerifiedAuditRequest } from '@/lib/security/audit-request';
-import {
-  createDownloadResult,
-  getAllowedDownloadDirectories,
-} from '@/lib/services/download-result';
+import { createDownloadResult } from '@/lib/services/download-result';
 
 const exec = promisify(execCallback);
 const require = createRequire(import.meta.url);
@@ -23,6 +21,7 @@ const bundledFfprobePath = (require('ffprobe-static') as { path: string }).path;
 // Temporary directory for processing
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 const OUTPUT_DIR = path.join(process.cwd(), 'tmp/output');
+const DOWNLOAD_RESULT_DIR = path.join(process.cwd(), 'tmp/download-results');
 
 // Max request execution time (seconds)
 export const maxDuration = 60;
@@ -35,11 +34,7 @@ async function runPythonEngine(
   toolId: string,
   inputPath: string,
   options: Record<string, any>
-): Promise<{
-  outputPath: string;
-  outputType: string;
-  content?: string;
-}> {
+): Promise<{ outputPath: string; outputType: string; content?: string }> {
   return new Promise((resolve, reject) => {
     const pythonScript = path.join(process.cwd(), 'python', 'media_router.py');
     const args = [
@@ -49,7 +44,10 @@ async function runPythonEngine(
       JSON.stringify(options),
     ];
 
-    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
+    const windowsVenvPython = path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
+    const pythonExe = process.platform === 'win32'
+      ? (existsSync(windowsVenvPython) ? windowsVenvPython : 'python')
+      : '/var/www/simplifyconvertapp/venv/bin/python';
     
     console.log(`[Python] Executing:`, {
       pythonExe,
@@ -393,156 +391,92 @@ export async function POST(request: NextRequest) {
       );
     }
 
-      // Validate output type first. Text-producing engines may return
-      // inline content without creating an output file.
-      const { outputPath, outputType, content } = result;
+    // Validate output
+    const { outputPath, outputType, content: inlineContent } = result;
+    const isTextOutput = outputType === 'text' || outputType.includes('text');
+    if (!outputType || (!outputPath && !(isTextOutput && typeof inlineContent === 'string'))) {
+      return createErrorResponse(
+        'Invalid processing output',
+        VideoToolErrorType.API_ERROR,
+        toolId,
+        toolName,
+        500,
+        fileMetadata
+      );
+    }
 
-      if (!outputType) {
-        return createErrorResponse(
-          'Invalid processing output',
-          VideoToolErrorType.API_ERROR,
-          toolId,
-          toolName,
-          500,
-          fileMetadata
-        );
-      }
-
-      // Handle text output.
-      if (outputType === 'text' || outputType.includes('text')) {
-        if (typeof content === 'string') {
-          scheduleCleanup(uploadedFilePath);
-
-          return NextResponse.json(
-            { content, type: 'text' },
-            { status: 200 }
-          );
-        }
-
-        if (!outputPath) {
-          scheduleCleanup(uploadedFilePath);
-
-          return createErrorResponse(
-            'Invalid text processing output',
-            VideoToolErrorType.API_ERROR,
-            toolId,
-            toolName,
-            500,
-            fileMetadata
-          );
-        }
-
-        try {
-          const fileContent = await import('fs/promises').then((m) =>
-            m.readFile(outputPath, 'utf-8')
-          );
-
-          scheduleCleanup(uploadedFilePath, outputPath);
-
-          return NextResponse.json(
-            { content: fileContent, type: 'text' },
-            { status: 200 }
-          );
-        } catch (error) {
-          console.error('Failed to read text output:', error);
-          scheduleCleanup(uploadedFilePath, outputPath);
-
-          return createErrorResponse(
-            'Failed to read processing result',
-            VideoToolErrorType.API_ERROR,
-            toolId,
-            toolName,
-            500,
-            fileMetadata
-          );
-        }
-      }
-
-      // Binary outputs must have a generated file.
-      if (!outputPath) {
-        return createErrorResponse(
-          'Invalid processing output',
-          VideoToolErrorType.API_ERROR,
-          toolId,
-          toolName,
-          500,
-          fileMetadata
-        );
-      }
-    // All binary media outputs use the persistent temporary
-    // download-result page. Text outputs are returned above.
-    try {
-      const { mkdir, rename } = await import('fs/promises');
-
-      const downloadDirectories = getAllowedDownloadDirectories();
-      const downloadDirectory = downloadDirectories[0];
-
-      if (!downloadDirectory) {
-        throw new Error('No download-result directory is configured');
-      }
-
-      await mkdir(downloadDirectory, { recursive: true });
-
-      const outputExtension =
-        path.extname(outputPath) ||
-        (typeof outputType === 'string' && outputType.startsWith('.')
-          ? outputType
-          : '');
-
-      if (!outputExtension) {
-        throw new Error('Binary media output has no file extension');
-      }
-
-      const storedFilename = `${uuidv4()}${outputExtension}`;
-      const storedPath = path.join(downloadDirectory, storedFilename);
-
-      await rename(outputPath, storedPath);
-
+    // Handle text output
+    if (isTextOutput) {
       try {
-        const originalBaseName = fileMetadata?.filename
-          ? path.parse(fileMetadata.filename).name
-          : toolId;
-
-        const cleanBaseName = originalBaseName.replace(
-          /(?:-converted)+$/i,
-          ''
-        );
-
-        const downloadResult = await createDownloadResult({
-          toolSlug: toolId,
-          originalName: fileMetadata?.filename,
-          outputName: `${cleanBaseName}-converted${outputExtension}`,
-          outputPath: storedPath,
-          mimeType: getContentType(storedPath),
-        });
-
-        // The generated result now belongs to the download-result cleanup
-        // service. Only clean up the original uploaded source here.
-        scheduleCleanup(uploadedFilePath);
-
-        return NextResponse.json(
-          {
-            success: true,
-            type: 'download-result',
-            resultId: downloadResult.id,
-            downloadPageUrl: downloadResult.downloadPageUrl,
-          },
-          { status: 200 }
-        );
+        const content = typeof inlineContent === 'string'
+          ? inlineContent
+          : await import('fs/promises').then((m) => m.readFile(outputPath, 'utf-8'));
+        if (!content.trim()) {
+          return createErrorResponse(
+            'Processing completed without meaningful text output',
+            VideoToolErrorType.API_ERROR,
+            toolId,
+            toolName,
+            500,
+            fileMetadata
+          );
+        }
+        scheduleCleanup(uploadedFilePath, outputPath || undefined);
+        return NextResponse.json({ content, type: 'text' }, { status: 200 });
       } catch (error) {
-        // Registration failed after the file was moved. Remove the
-        // untracked file so it cannot accumulate on disk.
-        await unlink(storedPath).catch(() => undefined);
+        console.error('Failed to read text output:', error);
+        return createErrorResponse(
+          'Failed to read processing result',
+          VideoToolErrorType.API_ERROR,
+          toolId,
+          toolName,
+          500,
+          fileMetadata
+        );
+      }
+    }
+
+    // Persist binary output for the dedicated download-result page.
+    try {
+      const contentType = getContentType(outputPath);
+      const outputExtension = path.extname(outputPath).toLowerCase()
+        || (outputType.startsWith('.') ? outputType.toLowerCase() : `.${outputType.toLowerCase()}`);
+      const originalName = fileMetadata?.filename;
+      const originalStem = originalName ? path.parse(originalName).name : toolId;
+      const normalizedStem = originalStem.replace(/(?:-converted)+$/i, '') || toolId;
+      const outputName = `${normalizedStem}-converted${outputExtension}`;
+      await mkdir(DOWNLOAD_RESULT_DIR, { recursive: true });
+      const retainedPath = path.join(DOWNLOAD_RESULT_DIR, `${uuidv4()}${outputExtension}`);
+      await copyFile(outputPath, retainedPath);
+
+      let downloadResult;
+      try {
+        downloadResult = await createDownloadResult({
+          toolSlug: toolId,
+          originalName,
+          outputName,
+          outputPath: retainedPath,
+          mimeType: contentType,
+        });
+      } catch (error) {
+        await unlink(retainedPath).catch(() => undefined);
         throw error;
       }
-    } catch (error) {
-      console.error('Failed to create media download result:', {
-        toolId,
-        error: error instanceof Error ? error.message : String(error),
-      });
 
       scheduleCleanup(uploadedFilePath, outputPath);
-
+      return NextResponse.json({
+        success: true,
+        type: 'download-result',
+        resultId: downloadResult.id,
+        downloadPageUrl: downloadResult.downloadPageUrl,
+        filename: downloadResult.outputName,
+        mimeType: downloadResult.mimeType,
+      });
+    } catch (error) {
+      console.error('Failed to send file:', error);
+      await cleanup(uploadedFilePath, outputPath).catch((cleanupError) => {
+        console.error('Failed to clean up after download-result registration error:', cleanupError);
+      });
       return createErrorResponse(
         'Failed to prepare download',
         VideoToolErrorType.API_ERROR,
@@ -552,7 +486,6 @@ export async function POST(request: NextRequest) {
         fileMetadata
       );
     }
-
   } catch (error) {
     // Unexpected errors
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
