@@ -110,7 +110,7 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
 
           <motion.h1 
             className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
@@ -121,7 +121,7 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
           </motion.h1>
           <motion.p 
             className="text-lg text-white/90 max-w-2xl"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
@@ -138,7 +138,7 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
         <div className="max-w-7xl mx-auto">
           <motion.div 
             className="space-y-6"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
@@ -146,7 +146,7 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
             <div className="flex gap-2 flex-col sm:flex-row">
               <div className="flex-1">
                 <SearchBox
-                  placeholder={categoryParam ? `Search ${categoryParam} tools...` : "Search 300+ tools..."}
+                  placeholder={categoryParam ? `Search ${categoryParam} tools...` : "Search all tools..."}
                   onSearch={(query) => setSearchTerm(query)}
                   variant="header"
                   showSuggestions={true}
@@ -158,6 +158,8 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
             <div className="flex gap-4 flex-wrap items-center justify-between">
               <div className="flex gap-2 flex-wrap">
                 <select
+                  id="tool-sort"
+                  aria-label="Sort tools"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="px-4 py-2 rounded-full border-2 border-gray-300 focus:outline-none focus:border-purple-500 bg-white font-medium transition-all"
@@ -177,7 +179,7 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
             <motion.nav
               aria-label="Tool categories"
               className="mt-8"
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
@@ -277,14 +279,14 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
           ) : (
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ staggerChildren: 0.05, delayChildren: 0.3 }}
             >
               {filteredTools.map((tool, idx) => (
                 <motion.div
                   key={tool.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                 >

@@ -127,7 +127,7 @@ export function generateOrganizationSchema() {
     name: 'SimplifyConvert',
     url: 'https://simplifyconvert.com',
     logo: 'https://simplifyconvert.com/favicon.png',
-    description: '200+ free online tools for image editing, video conversion, AI writing, PDF manipulation, and data transformation.',
+    description: 'Hundreds of free online tools for image editing, video conversion, AI writing, PDF manipulation, and data transformation.',
     sameAs: [
       'https://twitter.com/simplifyconvert',
       'https://facebook.com/simplifyconvert',

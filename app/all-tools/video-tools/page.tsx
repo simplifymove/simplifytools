@@ -71,7 +71,7 @@ export default function VideoToolsPage() {
               </div>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
@@ -88,7 +88,7 @@ export default function VideoToolsPage() {
             <div className="max-w-7xl mx-auto">
               <motion.div
                 className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
@@ -357,8 +357,6 @@ export default function VideoToolsPage() {
     </>
   );
 }
-
-
 
 
 

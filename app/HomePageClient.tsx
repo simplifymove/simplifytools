@@ -232,7 +232,7 @@ export default function Home() {
           <div>
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1.5 text-sm font-semibold text-orange-700 shadow-sm">
               <Sparkles aria-hidden="true" size={16} />
-              200+ tools, one simple workspace
+              Hundreds of tools, one simple workspace
             </div>
             <h1 className="max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
               Free online tools to{' '}

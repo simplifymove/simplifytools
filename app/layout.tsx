@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://simplifyconvert.com"),
   title: "Free Online Tools to Convert PDFs, Images & Videos",
-  description: "Use 200+ free online tools to convert PDFs, images, videos, and files instantly. No signup needed. Fast, secure, and free forever.",
+  description: "Use hundreds of free online tools to convert PDFs, images, videos, and files instantly. No signup needed. Fast, secure, and free forever.",
   keywords: [
     "free online tools",
     "online converter",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     url: "https://simplifyconvert.com",
     siteName: "SimplifyConvert",
     title: "Free Online Tools to Convert PDFs, Images & Videos",
-    description: "Convert images, videos, PDFs and more. 200+ free online tools, no signup required.",
+    description: "Convert images, videos, PDFs and more with hundreds of free online tools. No signup required.",
     images: [
       {
         url: "https://simplifyconvert.com/og-image.jpg",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Free Online Tools to Convert PDFs, Images & Videos",
-    description: "200+ free online tools for image, video, PDF, and file conversion.",
+    description: "Hundreds of free online tools for image, video, PDF, and file conversion.",
     images: ["https://simplifyconvert.com/og-image.jpg"],
     creator: "@simplifyconvert",
   },
@@ -147,4 +147,3 @@ export default function RootLayout({
     </html>
   );
 }
-

@@ -114,8 +114,9 @@ export default function ContactPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Name</label>
+                <label htmlFor="contact-name" className="block text-gray-700 font-semibold mb-2">Name</label>
                 <input
+                  id="contact-name"
                   type="text"
                   name="name"
                   value={formData.name}
@@ -126,8 +127,9 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Email</label>
+                <label htmlFor="contact-email" className="block text-gray-700 font-semibold mb-2">Email</label>
                 <input
+                  id="contact-email"
                   type="email"
                   name="email"
                   value={formData.email}
@@ -138,8 +140,9 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Subject</label>
+                <label htmlFor="contact-subject" className="block text-gray-700 font-semibold mb-2">Subject</label>
                 <input
+                  id="contact-subject"
                   type="text"
                   name="subject"
                   value={formData.subject}
@@ -150,8 +153,9 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Message</label>
+                <label htmlFor="contact-message" className="block text-gray-700 font-semibold mb-2">Message</label>
                 <textarea
+                  id="contact-message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
@@ -197,5 +201,4 @@ export default function ContactPage() {
     </main>
   );
 }
-
 

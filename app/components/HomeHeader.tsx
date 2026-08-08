@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { 
   FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
-  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle, ChevronDown, LogOut, Settings
+  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, ChevronDown, LogOut, Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -18,7 +18,6 @@ export function HomeHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [showNotification, setShowNotification] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
@@ -47,7 +46,6 @@ export function HomeHeader() {
       icon: FileText,
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
-      count: '55',
       link: '/all-tools/pdf-tools',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
@@ -58,7 +56,6 @@ export function HomeHeader() {
       icon: ImageIcon,
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
-      count: '100+',
       link: '/all-tools/image-tools',
       glowColor: 'group-hover:shadow-orange-500/20'
     },
@@ -69,7 +66,6 @@ export function HomeHeader() {
       icon: Video,
       color: 'from-pink-500 via-pink-600 to-pink-700',
       bgColor: 'bg-pink-50',
-      count: '50+',
       link: '/all-tools/video-tools',
       glowColor: 'group-hover:shadow-pink-500/20'
     },
@@ -80,7 +76,6 @@ export function HomeHeader() {
       icon: PenTool,
       color: 'from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-50',
-      count: '40+',
       link: '/all-tools/ai-tools',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
@@ -91,7 +86,6 @@ export function HomeHeader() {
       icon: Database,
       color: 'from-teal-500 via-teal-600 to-teal-700',
       bgColor: 'bg-teal-50',
-      count: '12',
       link: '/all-tools/data',
       glowColor: 'group-hover:shadow-teal-500/20'
     },
@@ -102,7 +96,6 @@ export function HomeHeader() {
       icon: Code2,
       color: 'from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-50',
-      count: '49',
       link: '/all-tools/code-tools',
       glowColor: 'group-hover:shadow-green-500/20'
     },
@@ -113,7 +106,6 @@ export function HomeHeader() {
       icon: Volume2,
       color: 'from-indigo-500 via-indigo-600 to-indigo-700',
       bgColor: 'bg-indigo-50',
-      count: 'Voice',
       link: '/all-tools/text-to-speech',
       glowColor: 'group-hover:shadow-indigo-500/20'
     },
@@ -124,7 +116,6 @@ export function HomeHeader() {
       icon: TrendingUp,
       color: 'from-emerald-500 via-emerald-600 to-emerald-700',
       bgColor: 'bg-emerald-50',
-      count: '4',
       link: '/all-tools/financial-calculators',
       glowColor: 'group-hover:shadow-emerald-500/20'
     },
@@ -135,7 +126,6 @@ export function HomeHeader() {
       icon: FileCheck,
       color: 'from-blue-500 via-cyan-600 to-teal-700',
       bgColor: 'bg-blue-50',
-      count: '1',
       link: '/all-tools/resume-maker',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
@@ -146,7 +136,6 @@ export function HomeHeader() {
       icon: Download,
       color: 'from-green-500 via-emerald-600 to-green-700',
       bgColor: 'bg-green-50',
-      count: 'Universal',
       link: '/all-tools/save-from-online',
       glowColor: 'group-hover:shadow-green-500/20'
     }
@@ -154,33 +143,6 @@ export function HomeHeader() {
 
   return (
     <>
-      {/* TOP NOTIFICATION BAR */}
-      {showNotification && (
-        <motion.div
-          initial={{ y: -20 }}
-          animate={{ y: 0 }}
-          exit={{ y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="bg-linear-to-r from-yellow-50 to-orange-50 border-b border-yellow-200 shadow-sm"
-        >
-          <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <AlertCircle size={20} className="text-orange-500 shrink-0" />
-              <p className="text-sm text-gray-700 text-center md:text-left">
-                We're currently improving some features. If you notice any issues, please report them - we appreciate your feedback!
-              </p>
-            </div>
-            <button
-              onClick={() => setShowNotification(false)}
-              className="shrink-0 p-1 hover:bg-white/50 rounded-md transition-colors"
-              aria-label="Close notification"
-            >
-              <X size={18} className="text-gray-600" />
-            </button>
-          </div>
-        </motion.div>
-      )}
-
       {/* NAVBAR */}
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${
@@ -267,7 +229,7 @@ export function HomeHeader() {
                             </div>
                             <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition">{cat.title}</p>
                           </div>
-                          <p className="text-xs text-gray-500">{cat.count} tools</p>
+                          <p className="text-xs text-gray-500">Explore tools</p>
                         </motion.div>
                       </Link>
                     );

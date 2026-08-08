@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'All Tools - Free Online Converters, Editors & AI Tools | SimplifyConvert',
-  description: 'Explore 100+ free online tools including image converters, video editors, PDF tools, AI writers, and data conversion utilities. No signup required.',
+  description: 'Explore hundreds of free online tools including image converters, video editors, PDF tools, AI writers, and data conversion utilities. No signup required.',
   keywords: ['online tools', 'converter', 'editor', 'free tools', 'image converter', 'video converter', 'pdf tools'],
   openGraph: {
     type: 'website',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools',
     siteName: 'SimplifyConvert',
     title: 'All Tools - Free Online Converters & Editors',
-    description: 'Explore 100+ free online tools for images, videos, PDFs, AI writing, and data conversion.',
+    description: 'Explore hundreds of free online tools for images, videos, PDFs, AI writing, and data conversion.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'All Tools - Free Online Converters & Editors',
-    description: 'Explore 100+ free online tools for images, videos, PDFs, AI writing, and data conversion.',
+    description: 'Explore hundreds of free online tools for images, videos, PDFs, AI writing, and data conversion.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
 };
@@ -35,4 +35,3 @@ export default function AllToolsLayout({
 }) {
   return <>{children}</>;
 }
-

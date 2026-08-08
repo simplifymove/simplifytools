@@ -29,7 +29,6 @@ export function Header() {
       title: 'PDF Tools',
       icon: FileText,
       color: 'from-purple-500 to-purple-700',
-      count: '55+',
       link: '/all-tools/pdf-tools',
     },
     {
@@ -37,7 +36,6 @@ export function Header() {
       title: 'Image Tools',
       icon: ImageIcon,
       color: 'from-orange-500 to-orange-700',
-      count: '80+',
       link: '/all-tools/image-tools',
     },
     {
@@ -45,7 +43,6 @@ export function Header() {
       title: 'Video Tools',
       icon: Video,
       color: 'from-pink-500 to-pink-700',
-      count: '58+',
       link: '/all-tools/video-tools',
     },
     {
@@ -53,7 +50,6 @@ export function Header() {
       title: 'AI Writing',
       icon: PenTool,
       color: 'from-blue-500 to-blue-700',
-      count: '60+',
       link: '/all-tools/ai-tools',
     },
     {
@@ -61,7 +57,6 @@ export function Header() {
       title: 'Data Tools',
       icon: Database,
       color: 'from-cyan-500 to-emerald-700',
-      count: '12',
       link: '/all-tools/data',
     },
     {
@@ -69,7 +64,6 @@ export function Header() {
       title: 'Code Tools',
       icon: Code2,
       color: 'from-green-500 to-green-700',
-      count: '44+',
       link: '/all-tools/code-tools',
     },
     {
@@ -77,7 +71,6 @@ export function Header() {
       title: 'Text to Speech',
       icon: Volume2,
       color: 'from-indigo-500 to-indigo-700',
-      count: 'Voice',
       link: '/all-tools/text-to-speech',
     },
   ];
@@ -134,7 +127,7 @@ export function Header() {
                             </div>
                             <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition whitespace-nowrap overflow-hidden text-ellipsis">{cat.title}</p>
                           </div>
-                          <p className="text-xs text-gray-500">{cat.count} tools</p>
+                          <p className="text-xs text-gray-500">Explore tools</p>
                         </div>
                       </Link>
                     );
