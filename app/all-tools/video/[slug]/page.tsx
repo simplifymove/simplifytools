@@ -14,7 +14,7 @@ import { validateFile } from '@/app/utils/validation/file-validation';
 import { ErrorAlert } from '@/app/components/error-components';
 import { VideoToolErrorType } from '@/app/utils/types/errors';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 // Action-specific CTA text for each tool
@@ -99,6 +99,7 @@ interface PageProps {
 }
 
 export default function VideoToolPage({ params }: PageProps) {
+  const router = useRouter();
   const resolvedParams = use(params);
   const tool = getToolById(resolvedParams.slug);
   
@@ -222,6 +223,10 @@ export default function VideoToolPage({ params }: PageProps) {
 
       if (contentType?.includes('application/json')) {
         const data = await response.json();
+        if (data.type === 'download-result' && typeof data.downloadPageUrl === 'string') {
+          router.push(data.downloadPageUrl);
+          return;
+        }
         setResult(data);
       } else if (contentType?.includes('text')) {
         const text = await response.text();
