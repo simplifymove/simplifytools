@@ -277,7 +277,7 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
           ?? (tool.id === 'trim-video' ? (option.id === 'startTime' ? '00:00' : '00:01')
             : option.type === 'time' ? '00:01'
               : option.type === 'number' ? option.min ?? 1 : 'audit')])),
-        resultFlow: tool.outputType === 'text' ? 'rendered-output' : 'download', expectedOutput: outputContract(tool.outputType),
+        resultFlow: tool.outputType === 'text' ? 'rendered-output' : 'download-page', expectedOutput: outputContract(tool.outputType),
         renderedResult: tool.id === 'summarize-podcast'
           ? {
               selector: '[data-testid="podcast-summary-output"]',

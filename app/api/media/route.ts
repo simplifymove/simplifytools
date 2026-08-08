@@ -420,93 +420,80 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Resize Video uses the persistent temporary download-result page.
-    if (toolId === 'resize-video') {
-      try {
-        const { mkdir, rename } = await import('fs/promises');
-
-        const downloadDirectories = getAllowedDownloadDirectories();
-        const downloadDirectory = downloadDirectories[0];
-
-        if (!downloadDirectory) {
-          throw new Error('No download-result directory is configured');
-        }
-
-        await mkdir(downloadDirectory, { recursive: true });
-
-        const outputExtension = path.extname(outputPath) || '.mp4';
-        const storedFilename = `${uuidv4()}${outputExtension}`;
-        const storedPath = path.join(downloadDirectory, storedFilename);
-
-        await rename(outputPath, storedPath);
-
-        try {
-          const downloadResult = await createDownloadResult({
-            toolSlug: toolId,
-            originalName: fileMetadata?.filename,
-            outputName: `resized-video${outputExtension}`,
-            outputPath: storedPath,
-            mimeType: getContentType(storedPath),
-          });
-
-          // The generated result now belongs to the download-result cleanup
-          // service. Only clean up the original uploaded source here.
-          scheduleCleanup(uploadedFilePath);
-
-          return NextResponse.json(
-            {
-              success: true,
-              type: 'download-result',
-              resultId: downloadResult.id,
-              downloadPageUrl: downloadResult.downloadPageUrl,
-            },
-            { status: 200 }
-          );
-        } catch (error) {
-          // If database/result registration fails after the move, avoid
-          // leaving an untracked file behind.
-          await unlink(storedPath).catch(() => undefined);
-          throw error;
-        }
-      } catch (error) {
-        console.error('Failed to create Resize Video download result:', error);
-
-        scheduleCleanup(uploadedFilePath, outputPath);
-
-        return createErrorResponse(
-          'Failed to prepare download',
-          VideoToolErrorType.API_ERROR,
-          toolId,
-          toolName,
-          500,
-          fileMetadata
-        );
-      }
-    }
-
-    // Handle normal file output
+    // All binary media outputs use the persistent temporary
+    // download-result page. Text outputs are returned above.
     try {
-      const fs = await import('fs');
-      const fileStream = fs.createReadStream(outputPath);
-      const contentType = getContentType(outputPath);
+      const { mkdir, rename } = await import('fs/promises');
 
-      // Create response with proper headers
-      const response = new NextResponse(fileStream as any, {
-        status: 200,
-        headers: {
-          'Content-Type': contentType,
-          'Content-Disposition': `attachment; filename="${path.basename(outputPath)}"`,
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        },
+      const downloadDirectories = getAllowedDownloadDirectories();
+      const downloadDirectory = downloadDirectories[0];
+
+      if (!downloadDirectory) {
+        throw new Error('No download-result directory is configured');
+      }
+
+      await mkdir(downloadDirectory, { recursive: true });
+
+      const outputExtension =
+        path.extname(outputPath) ||
+        (typeof outputType === 'string' && outputType.startsWith('.')
+          ? outputType
+          : '');
+
+      if (!outputExtension) {
+        throw new Error('Binary media output has no file extension');
+      }
+
+      const storedFilename = `${uuidv4()}${outputExtension}`;
+      const storedPath = path.join(downloadDirectory, storedFilename);
+
+      await rename(outputPath, storedPath);
+
+      try {
+        const originalBaseName = fileMetadata?.filename
+          ? path.parse(fileMetadata.filename).name
+          : toolId;
+
+        const cleanBaseName = originalBaseName.replace(
+          /(?:-converted)+$/i,
+          ''
+        );
+
+        const downloadResult = await createDownloadResult({
+          toolSlug: toolId,
+          originalName: fileMetadata?.filename,
+          outputName: `${cleanBaseName}-converted${outputExtension}`,
+          outputPath: storedPath,
+          mimeType: getContentType(storedPath),
+        });
+
+        // The generated result now belongs to the download-result cleanup
+        // service. Only clean up the original uploaded source here.
+        scheduleCleanup(uploadedFilePath);
+
+        return NextResponse.json(
+          {
+            success: true,
+            type: 'download-result',
+            resultId: downloadResult.id,
+            downloadPageUrl: downloadResult.downloadPageUrl,
+          },
+          { status: 200 }
+        );
+      } catch (error) {
+        // Registration failed after the file was moved. Remove the
+        // untracked file so it cannot accumulate on disk.
+        await unlink(storedPath).catch(() => undefined);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to create media download result:', {
+        toolId,
+        error: error instanceof Error ? error.message : String(error),
       });
 
-      // Schedule cleanup after response is sent
-      // In production, use a job queue or cleanup service
       scheduleCleanup(uploadedFilePath, outputPath);
 
-      return response;
-    } catch (error) {
-      console.error('Failed to send file:', error);
       return createErrorResponse(
         'Failed to prepare download',
         VideoToolErrorType.API_ERROR,
@@ -516,6 +503,7 @@ export async function POST(request: NextRequest) {
         fileMetadata
       );
     }
+
   } catch (error) {
     // Unexpected errors
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -655,6 +643,7 @@ function getContentType(filePath: string): string {
     '.aac': 'audio/aac',
     '.m4r': 'audio/mp4',
     '.flac': 'audio/flac',
+    '.ogg': 'audio/ogg',
     '.gif': 'image/gif',
     '.webp': 'image/webp',
     '.txt': 'text/plain',

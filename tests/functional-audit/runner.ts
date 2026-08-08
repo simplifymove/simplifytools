@@ -75,6 +75,7 @@ const RETAINED_RESULT_PROCESSING_ENDPOINTS = new Set([
   '/api/pdf/browser-result',
   '/api/pdf/edit-text',
   '/api/browser-download-result',
+  '/api/media',
 ]);
 
 function isRetainedResultProcessingPost(method: string, pathname: string): boolean {
