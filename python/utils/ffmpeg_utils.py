@@ -356,11 +356,18 @@ def resize_video(
     Returns:
         True if successful
     """
+    # H.264/yuv420p encoding requires dimensions divisible by 2.
+    # Normalize the requested bounding box first.
+    width = max(2, width if width % 2 == 0 else width - 1)
+    height = max(2, height if height % 2 == 0 else height - 1)
+
     if keep_aspect:
-        # Ensure dimensions are even (required for most codecs)
-        width = width if width % 2 == 0 else width - 1
-        height = height if height % 2 == 0 else height - 1
-        scale_filter = f'scale={width}:{height}:force_original_aspect_ratio=decrease'
+        # FFmpeg may recalculate one dimension while preserving aspect ratio,
+        # so force the resulting dimensions to remain divisible by 2 as well.
+        scale_filter = (
+            f'scale={width}:{height}:'
+            'force_original_aspect_ratio=decrease:force_divisible_by=2'
+        )
     else:
         scale_filter = f'scale={width}:{height}'
     
