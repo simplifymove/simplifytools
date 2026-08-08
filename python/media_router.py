@@ -74,6 +74,7 @@ _ensure_site_packages()
 from engines.media_convert import MediaConvertEngine
 from engines.media_edit import MediaEditEngine
 from engines.media_download import MediaDownloadEngine
+from engines.transcription import TranscriptionEngine
 from engines.summarization import SummarizationEngine
 
 
@@ -84,6 +85,7 @@ class MediaRouter:
         self.convert_engine = MediaConvertEngine()
         self.edit_engine = MediaEditEngine()
         self.download_engine = MediaDownloadEngine()
+        self.transcription_engine = TranscriptionEngine()
         self.summarization_engine = SummarizationEngine()
     
     def route_to_engine(self, engine: str, tool_id: str, input_path: str, options: Dict[str, Any]) -> Dict[str, str]:
@@ -109,8 +111,11 @@ class MediaRouter:
             return self.download_engine.process(tool_id, input_path, options)
         
         elif engine == 'transcribe':
-            # Placeholder for transcription engine
-            raise NotImplementedError('Transcription engine not yet implemented')
+            return self.transcription_engine.process(
+                tool_id,
+                input_path,
+                options
+            )
         
         elif engine == 'summarize':
             return self.summarization_engine.process(tool_id, input_path, options)

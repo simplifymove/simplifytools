@@ -271,7 +271,12 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
     tools: getAllVideoTools().map((tool) =>
       withRoute(tool, tool.id === 'text-to-video' ? '/all-tools/video-tools/text-to-video' : `/all-tools/video/${tool.id}`, {
         strategy: tool.inputMethod === 'url' ? 'url' : tool.id === 'text-to-video' ? 'text' : 'file',
-        fixtures: fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : undefined,
+        fixtures:
+          tool.id === 'audio-to-text' || tool.id === 'transcribe-podcast'
+            ? ['tests/fixtures/audio/sample-speech.mp3']
+            : fixtureFor(tool.accepts)
+              ? [fixtureFor(tool.accepts)!]
+              : undefined,
         textInput: 'A calm blue gradient with a centered title', urlInput: 'https://example.com/',
         optionValues: Object.fromEntries(tool.options.map((option) => [option.id, option.default
           ?? (tool.id === 'trim-video' ? (option.id === 'startTime' ? '00:00' : '00:01')

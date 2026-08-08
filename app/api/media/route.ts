@@ -35,7 +35,11 @@ async function runPythonEngine(
   toolId: string,
   inputPath: string,
   options: Record<string, any>
-): Promise<{ outputPath: string; outputType: string }> {
+): Promise<{
+  outputPath: string;
+  outputType: string;
+  content?: string;
+}> {
   return new Promise((resolve, reject) => {
     const pythonScript = path.join(process.cwd(), 'python', 'media_router.py');
     const args = [
@@ -389,28 +393,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate output
-    const { outputPath, outputType } = result;
-    if (!outputPath || !outputType) {
-      return createErrorResponse(
-        'Invalid processing output',
-        VideoToolErrorType.API_ERROR,
-        toolId,
-        toolName,
-        500,
-        fileMetadata
-      );
-    }
+      // Validate output type first. Text-producing engines may return
+      // inline content without creating an output file.
+      const { outputPath, outputType, content } = result;
 
-    // Handle text output
-    if (outputType === 'text' || outputType.includes('text')) {
-      try {
-        const content = await import('fs/promises').then((m) => m.readFile(outputPath, 'utf-8'));
-        return NextResponse.json({ content, type: 'text' }, { status: 200 });
-      } catch (error) {
-        console.error('Failed to read text output:', error);
+      if (!outputType) {
         return createErrorResponse(
-          'Failed to read processing result',
+          'Invalid processing output',
           VideoToolErrorType.API_ERROR,
           toolId,
           toolName,
@@ -418,8 +407,68 @@ export async function POST(request: NextRequest) {
           fileMetadata
         );
       }
-    }
 
+      // Handle text output.
+      if (outputType === 'text' || outputType.includes('text')) {
+        if (typeof content === 'string') {
+          scheduleCleanup(uploadedFilePath);
+
+          return NextResponse.json(
+            { content, type: 'text' },
+            { status: 200 }
+          );
+        }
+
+        if (!outputPath) {
+          scheduleCleanup(uploadedFilePath);
+
+          return createErrorResponse(
+            'Invalid text processing output',
+            VideoToolErrorType.API_ERROR,
+            toolId,
+            toolName,
+            500,
+            fileMetadata
+          );
+        }
+
+        try {
+          const fileContent = await import('fs/promises').then((m) =>
+            m.readFile(outputPath, 'utf-8')
+          );
+
+          scheduleCleanup(uploadedFilePath, outputPath);
+
+          return NextResponse.json(
+            { content: fileContent, type: 'text' },
+            { status: 200 }
+          );
+        } catch (error) {
+          console.error('Failed to read text output:', error);
+          scheduleCleanup(uploadedFilePath, outputPath);
+
+          return createErrorResponse(
+            'Failed to read processing result',
+            VideoToolErrorType.API_ERROR,
+            toolId,
+            toolName,
+            500,
+            fileMetadata
+          );
+        }
+      }
+
+      // Binary outputs must have a generated file.
+      if (!outputPath) {
+        return createErrorResponse(
+          'Invalid processing output',
+          VideoToolErrorType.API_ERROR,
+          toolId,
+          toolName,
+          500,
+          fileMetadata
+        );
+      }
     // All binary media outputs use the persistent temporary
     // download-result page. Text outputs are returned above.
     try {
