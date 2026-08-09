@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   Check,
-  CheckCircle2,
   Code2,
   Combine,
   Database,
@@ -14,11 +13,8 @@ import {
   FileSpreadsheet,
   FileText,
   Image,
-  Lock,
   PenTool,
   Presentation,
-  Search,
-  ShieldCheck,
   Sparkles,
   TrendingUp,
   Video,
@@ -149,24 +145,6 @@ const studioTools = [
     title: 'Spreadsheet Maker',
     description: 'Build useful spreadsheets from a simple description.',
     icon: FileSpreadsheet,
-  },
-];
-
-const steps = [
-  {
-    title: 'Find the right tool',
-    description: 'Search by task or browse a focused category.',
-    icon: Search,
-  },
-  {
-    title: 'Add your content',
-    description: 'Upload a supported file or enter the information the tool needs.',
-    icon: FileText,
-  },
-  {
-    title: 'Get your result',
-    description: 'Process, preview, and download the result from your browser.',
-    icon: CheckCircle2,
   },
 ];
 
@@ -413,18 +391,22 @@ export default function Home() {
       <section className="bg-white py-16 md:py-20" aria-labelledby="categories-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
-            <div className="max-w-2xl">
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-orange-600">
-                Browse by category
-              </p>
+            <div className="max-w-3xl space-y-4">
               <h2
                 id="categories-heading"
-                className="mt-3 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+                className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
               >
-                Find the right tool for your workflow
+                Find the Right Tool for Your Task
               </h2>
-              <p className="mt-4 text-lg leading-8 text-slate-600">
-                Explore a focused category or search for the exact task you need.
+              <p className="text-base leading-7 text-slate-600 md:text-lg md:leading-8">
+                Not every file problem needs complicated software. Sometimes you simply need to
+                turn a PDF into another format, reduce the size of an image before uploading it,
+                extract audio from a video, or convert data into a format another application can
+                understand.
+              </p>
+              <p className="text-base leading-7 text-slate-600 md:text-lg md:leading-8">
+                SimplifyConvert organizes these tasks into focused categories so you can start
+                with what you need instead of working through a complicated editor.
               </p>
             </div>
             <Link
@@ -436,29 +418,139 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <Link
-                  key={category.id}
-                  href={category.link}
-                  className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-orange-300 hover:bg-orange-50/40 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-                >
-                  <span
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${category.accent}`}
-                  >
-                    <Icon aria-hidden="true" size={23} />
-                  </span>
-                  <h3 className="mt-5 text-lg font-bold text-slate-900">{category.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{category.description}</p>
-                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 group-hover:text-orange-700">
-                    Explore category
-                    <ArrowRight aria-hidden="true" size={15} />
-                  </span>
-                </Link>
-              );
-            })}
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+                  <FileText aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/pdf-tools">PDF Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>
+                  Work with common PDF tasks such as converting, merging, splitting, compressing
+                  and organizing documents.
+                </p>
+                <p>
+                  Different PDF operations affect documents in different ways. A simple page
+                  operation may preserve most of the original document, while conversions to
+                  editable formats can change fonts, spacing, tables or complex layouts. Review
+                  important documents after conversion before relying on the output.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
+                  <Image aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/image-tools">Image Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>
+                  Convert image formats, resize or crop pictures, compress file sizes, remove
+                  backgrounds and make other common image adjustments.
+                </p>
+                <p>
+                  The best output depends on what you plan to do with the image. JPG is often
+                  practical for photographs and smaller files, while PNG is useful when you need
+                  lossless image storage or transparency support. Converting an already compressed
+                  image to another format cannot restore detail that was previously lost.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+                  <Video aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/video-tools">Video &amp; Audio Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>
+                  Handle practical media tasks including format conversion, compression, trimming,
+                  audio extraction and transcription.
+                </p>
+                <p>
+                  Video processing can take longer than image or document tasks because media files
+                  are usually larger and may need to be re-encoded. Output size and quality can also
+                  change depending on the source file, selected settings and type of processing.
+                </p>
+                <p>
+                  Some URL-based media tools depend on whether the source is publicly accessible and
+                  supported by the configured provider.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700">
+                  <Database aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/data">Data Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>
+                  Convert structured information between formats such as CSV, Excel, XML and JSON,
+                  or split larger datasets into more manageable outputs.
+                </p>
+                <p>
+                  A successful format conversion does not always mean two formats represent
+                  information in exactly the same way. Spreadsheet formatting, formulas, nested XML
+                  structures, column types and special characters can affect the result, so
+                  important datasets should be checked after conversion.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                  <Code2 aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/code-tools">Code Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>Use focused utilities for common development and text-processing tasks.</p>
+                <p>
+                  These tools are intended to make small, repetitive operations easier. For code or
+                  configuration that will be used in production, review generated or transformed
+                  output before deploying it.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                  <PenTool aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/ai-tools">AI Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>Use AI-assisted tools for writing, analysis and other supported content tasks.</p>
+                <p>
+                  AI output can be useful as a starting point, but it can also contain mistakes or
+                  unexpected results. Review generated content before publishing it or using it for
+                  decisions where accuracy matters.
+                </p>
+              </div>
+            </article>
           </div>
         </div>
       </section>
@@ -516,108 +608,121 @@ export default function Home() {
       </section>
 
       <section className="bg-slate-50 py-16 md:py-20" aria-labelledby="how-it-works-heading">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-orange-600">
-              Simple by design
-            </p>
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
             <h2
               id="how-it-works-heading"
-              className="mt-3 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+              className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
             >
-              From task to result in three clear steps
+              How SimplifyConvert Works
             </h2>
-            <p className="mt-4 text-lg leading-8 text-slate-600">
-              Use SimplifyConvert directly in your browser, without installing desktop software.
-            </p>
-          </div>
-          <ol className="mt-10 grid gap-5 md:grid-cols-3">
-            {steps.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <li key={step.title} className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <div className="flex items-center justify-between">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
-                      <Icon aria-hidden="true" size={21} />
-                    </span>
-                    <span className="text-sm font-bold text-slate-400">0{index + 1}</span>
-                  </div>
-                  <h3 className="mt-5 text-lg font-bold text-slate-900">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{step.description}</p>
-                </li>
-              );
-            })}
-          </ol>
-
-          <div className="mt-6 grid gap-5 rounded-2xl border border-slate-200 bg-white p-6 md:grid-cols-2 md:p-8">
-            <div className="flex gap-4">
-              <ShieldCheck aria-hidden="true" className="mt-1 shrink-0 text-orange-600" size={24} />
-              <div>
-                <h3 className="font-bold text-slate-900">Practical privacy information</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Some tools process files locally in your browser; others use temporary server
-                  processing. Details vary by tool.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <Lock aria-hidden="true" className="mt-1 shrink-0 text-orange-600" size={24} />
-              <div>
-                <h3 className="font-bold text-slate-900">Clear service boundaries</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Utility tools are free. Premium AI Studio is a separate, credit-based product.
-                  Read our{' '}
-                  <Link
-                    href="/privacy"
-                    className="font-semibold text-orange-700 underline underline-offset-2 hover:text-orange-800"
-                  >
-                    Privacy Policy
-                  </Link>
-                  .
-                </p>
-              </div>
+            <div className="mt-6 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                Start by choosing the tool that matches your task. The page will show the type of
+                input it accepts and any options available for that particular operation.
+              </p>
+              <p>
+                After processing, supported tools provide an output that you can review or
+                download. Because SimplifyConvert includes different types of tools, processing is
+                not identical across the entire website. Some operations can happen in the browser,
+                while file conversions, media processing and certain AI features may require
+                server-side or provider-based processing.
+              </p>
+              <p>
+                File-size limits, supported formats and processing requirements can also vary by
+                tool. Check the information shown on the individual tool page when working with an
+                important or unusually large file.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-white py-16 md:py-20" aria-labelledby="about-heading">
+      <section className="bg-white py-16 md:py-20" aria-labelledby="why-heading">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.7fr_1.3fr] lg:px-8">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-orange-600">
-              One practical toolkit
-            </p>
             <h2
-              id="about-heading"
-              className="mt-3 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+              id="why-heading"
+              className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
             >
-              What is SimplifyConvert?
+              Why We Built SimplifyConvert
             </h2>
           </div>
           <div className="max-w-3xl space-y-5 text-base leading-8 text-slate-600">
+            <p>Simple file tasks often become unnecessarily complicated.</p>
             <p>
-              SimplifyConvert brings common file and content tasks into one browser-based
-              workspace. Convert formats, edit images, process PDFs and videos, work with data and
-              code, or use AI-assisted writing tools without searching across separate apps.
+              You may need one website to convert a document, another to resize an image and another
+              to work with a video. Some services also make users navigate through features they
+              don&apos;t need before reaching a basic conversion.
             </p>
             <p>
-              Most utility tools can be used without an account. For larger creation workflows,
-              Premium AI Studio provides dedicated tools for presentations, documents, and
-              spreadsheets.
+              SimplifyConvert is built around smaller, task-focused tools. Instead of requiring you
+              to learn one large editing application, each page concentrates on a particular job and
+              provides the controls and information relevant to that task.
             </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-3 pt-1">
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={category.link}
-                  className="inline-flex items-center gap-1.5 font-semibold text-slate-800 underline decoration-slate-300 underline-offset-4 hover:text-orange-700"
-                >
-                  {category.title}
-                  <ArrowRight aria-hidden="true" size={14} />
-                </Link>
-              ))}
+            <p>
+              That also means we don&apos;t pretend every conversion is perfect. File formats work
+              differently, compression can affect quality, complex documents can change during
+              conversion, and AI-generated results need review. Where a tool has an important
+              limitation, we aim to explain it on the page so you can decide whether the result is
+              suitable for your use.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-16 md:py-20" aria-labelledby="important-file-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 rounded-3xl border border-orange-200 bg-orange-50/50 p-6 sm:p-8 lg:grid-cols-[0.75fr_1.25fr] lg:p-10">
+            <h2
+              id="important-file-heading"
+              className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+            >
+              Before You Process an Important File
+            </h2>
+            <div className="space-y-4 text-base leading-8 text-slate-600">
+              <p>Keep the original copy of any file that would be difficult to replace.</p>
+              <p>
+                After converting or editing a document, image, video or dataset, check the
+                downloaded result before deleting the source. Pay particular attention to complex
+                PDF layouts, spreadsheet formulas, image quality after compression, video
+                synchronization and structured-data formatting.
+              </p>
+              <p>
+                For sensitive or business-critical material, also review the processing information
+                and limitations provided for the specific tool before uploading the file.
+              </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16 md:py-20" aria-labelledby="explore-heading">
+        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+          <h2
+            id="explore-heading"
+            className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+          >
+            Explore SimplifyConvert
+          </h2>
+          <div className="mx-auto mt-5 max-w-3xl space-y-4 text-base leading-8 text-slate-600">
+            <p>
+              You don&apos;t need to know the technical name of every conversion before getting
+              started. Browse the available categories or search for the task you want to complete.
+            </p>
+            <p>
+              Whether you need to prepare an image for a website, change a document format, extract
+              audio from a video, reorganize data or try an AI-assisted workflow, start with the tool
+              designed for that specific job.
+            </p>
+          </div>
+          <Link
+            href="/all-tools"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-orange-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          >
+            Browse all tools
+            <ArrowRight aria-hidden="true" size={17} />
+          </Link>
         </div>
       </section>
 
