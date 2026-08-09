@@ -16,6 +16,7 @@ import { PdfToolSupportingContent } from '@/app/components/PdfToolSupportingCont
 import { readDownloadResultResponse } from '@/app/lib/download-result-client';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import { BATCH_ONE_PDF_TOOL_IDS, getBatchOnePdfHeroDescription, HumanizedPdfBatchOneContent } from '@/app/components/HumanizedPdfBatchOneContent';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -45,15 +46,12 @@ const PDF_TOOLS_WITH_EXISTING_RELATED_SECTIONS = new Set([
   'heic-to-pdf',
   'images-to-pdf',
   'jpg-to-pdf',
-  'merge-pdf',
   'pdf-to-jpg',
   'pdf-to-png',
   'pdf-to-tiff',
   'pdf-to-word',
   'pdf-watermark-remover',
   'png-to-pdf',
-  'rotate-pdf',
-  'split-pdf',
   'tiff-to-pdf',
   'unlock-pdf',
   'webp-to-pdf',
@@ -265,7 +263,7 @@ export default function PdfToolPage({ params }: PageProps) {
                    tool.title}
                 </h1>
                 <p className="text-lg text-white/90 max-w-2xl">
-                  {tool.description}
+                  {getBatchOnePdfHeroDescription(tool.id, tool.description)}
                 </p>
                 {tool.id === 'eps-to-pdf' && (
                   <p className="text-sm md:text-base text-yellow-200 font-semibold mt-3 max-w-2xl">
@@ -643,10 +641,8 @@ export default function PdfToolPage({ params }: PageProps) {
       </div>
       )}
 
-        {tool.id === 'merge-pdf' && <PriorityToolGuide toolId="merge-pdf" />}
         {tool.id === 'compress-pdf' && <PriorityToolGuide toolId="compress-pdf" />}
         {tool.id === 'pdf-to-word' && <PriorityToolGuide toolId="pdf-to-word" />}
-        {tool.id === 'split-pdf' && <PriorityToolGuide toolId="split-pdf" />}
         {tool.id === 'pdf-to-jpg' && <PriorityToolGuide toolId="pdf-to-jpg" />}
 
         {/* SEO Content for Unlock PDF */}
@@ -5548,7 +5544,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF Rotation Tool */}
-        {tool.id === 'rotate-pdf' && (
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'rotate-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section - Primary keyword in first 100 words */}
             <div className="mb-16">
@@ -5751,7 +5747,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Crop PDF */}
-        {tool.id === 'crop-pdf' && (
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'crop-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
@@ -5823,7 +5819,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF Page Deleter */}
-        {tool.id === 'pdf-page-deleter' && (
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'pdf-page-deleter' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
@@ -5895,7 +5891,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Create PDF */}
-        {tool.id === 'create-pdf' && (
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'create-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
@@ -6037,7 +6033,8 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
           </div>
         )}
-        <PdfToolSupportingContent toolId={tool.id} />
+        {BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchOneContent toolId={tool.id} />}
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && <PdfToolSupportingContent toolId={tool.id} />}
 
         {!PDF_TOOLS_WITH_EXISTING_RELATED_SECTIONS.has(tool.id) && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 pb-16">

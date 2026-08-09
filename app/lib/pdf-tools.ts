@@ -160,7 +160,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'rearrange-pdf': {
     id: 'rearrange-pdf',
     title: 'Rearrange PDF',
-    description: 'Easily rearrange PDF pages in any order using our free online tool. Upload your PDF, set the page sequence, and download instantly — no signup required.',
+    description: 'Reorder PDF pages into the sequence you need.',
     category: 'Core',
     engine: 'core',
     icon: Shuffle,
@@ -181,7 +181,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'crop-pdf': {
     id: 'crop-pdf',
     title: 'Crop PDF',
-    description: 'Crop PDF pages to exact dimensions with visual editor. Trim margins, resize pages, and extract specific areas instantly. Free online tool - no signup required.',
+    description: 'Adjust the visible area of selected PDF pages.',
     category: 'Core',
     engine: 'core',
     icon: Scissors,
@@ -206,7 +206,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-page-deleter': {
     id: 'pdf-page-deleter',
     title: 'PDF Page Deleter',
-    description: 'Remove unwanted pages from your PDF instantly. Upload your file, enter page numbers like 1,3,5, and download a clean PDF — free, online, and no signup required.',
+    description: 'Remove selected pages from a PDF and create a new document.',
     category: 'Core',
     engine: 'core',
     icon: Trash,
@@ -227,7 +227,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'create-pdf': {
     id: 'create-pdf',
     title: 'Create PDF',
-    description: 'Convert JPG, PNG, and TIFF images into a single PDF in seconds. Upload multiple images and download a high-quality PDF instantly — all in your browser. Images combine in the order you upload them.',
+    description: 'Create a PDF from uploaded images or blank pages.',
     category: 'Core',
     engine: 'core',
     icon: Plus,
