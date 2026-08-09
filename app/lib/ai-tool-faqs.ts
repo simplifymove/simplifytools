@@ -31,6 +31,13 @@ const defaultAiToolFaqs: AiToolFaq[] = [
 ];
 
 const toolSpecificAiFaqs: Record<string, AiToolFaq[]> = {
+  'ai-detector': [
+    { q: 'What does the AI Detector analyze?', a: 'It estimates patterns associated with AI-generated text using statistical and linguistic signals in the text you provide.' },
+    { q: 'Does a high score prove that AI wrote the text?', a: 'No. The result is probabilistic and cannot prove authorship. Human writing can be flagged, and AI-generated writing can be missed.' },
+    { q: 'Can the detector produce false positives or false negatives?', a: 'Yes. Results vary with text length, editing, writing style, language, subject matter, and the generation model involved.' },
+    { q: 'Can I use the result to make a disciplinary or legal decision?', a: 'Do not use detector output as the sole basis for academic, employment, disciplinary, legal, or other high-impact decisions. Review context and independent evidence.' },
+    { q: 'What input works best?', a: 'Provide a meaningful passage rather than a very short fragment. Even with longer text, treat the result as an estimate rather than a verdict.' },
+  ],
   'paragraph-writer': [
     { q: 'What should I enter in the Paragraph Writer?', a: 'Enter a clear topic, title, or short instruction. Adding tone, length, and language preferences helps the tool produce a more useful paragraph.' },
     { q: 'Can I use the paragraph in an essay or article?', a: 'Yes, but review it first. Add your own facts, examples, citations, and voice before publishing or submitting the content.' },

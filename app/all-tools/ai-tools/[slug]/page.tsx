@@ -48,6 +48,7 @@ function resolveToolId(slug: string): string {
 // Action-specific CTA text for each tool
 function getActionText(toolId: string): string {
   const actionMap: Record<string, string> = {
+    'ai-detector': 'Analyze Text',
     'paragraph-writer': 'Write Paragraph',
     'content-improver': 'Improve Content',
     'content-summarizer': 'Summarize Content',
@@ -91,6 +92,17 @@ type ToolSeoContent = {
 };
 
 const topToolSeoContent: Record<string, ToolSeoContent> = {
+  'ai-detector': {
+    introduction: 'The AI Detector examines text for statistical and linguistic characteristics associated with AI-generated writing. It returns an estimate, not proof of who or what authored the text.',
+    useCases: ['Review a passage for signals worth investigating further', 'Compare detector observations with independent context', 'Identify writing patterns that may merit a closer human review', 'Support a discussion without treating a score as a verdict'],
+    examples: [
+      {
+        label: 'Text analysis',
+        input: 'A meaningful passage supplied by the user for analysis.',
+        output: 'A probabilistic likelihood assessment with indicators and limitations, not a definitive authorship decision.',
+      },
+    ],
+  },
   'paragraph-writer': {
     introduction: 'The Paragraph Writer helps turn a topic, title, or rough idea into a clear paragraph that is ready to review and adapt. It is useful when you need a polished starting point for essays, articles, landing pages, reports, or everyday writing.',
     useCases: ['Draft essay body paragraphs from a topic sentence', 'Create article sections when you know the key idea', 'Write product, service, or feature explanations', 'Turn brief notes into readable prose'],
@@ -305,6 +317,7 @@ export default function AIWriteToolPage({ params }: PageProps) {
 
   const seoContent = topToolSeoContent[tool.id];
   const faqItems = getAiToolFaqs(tool.id);
+  const isAiDetector = tool.id === 'ai-detector';
 
   return (
     <>
@@ -563,8 +576,8 @@ export default function AIWriteToolPage({ params }: PageProps) {
                     <Zap size={32} className="text-blue-600" />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to generate</h3>
-                <p className="text-gray-600">Fill in the form and click Generate to see the result here</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{isAiDetector ? 'Ready to analyze' : 'Ready to generate'}</h3>
+                <p className="text-gray-600">{isAiDetector ? 'Provide text and click Analyze Text to see a probabilistic assessment.' : 'Fill in the form and click Generate to see the result here'}</p>
               </motion.div>
             )}
           </motion.div>
@@ -573,7 +586,23 @@ export default function AIWriteToolPage({ params }: PageProps) {
         {/* Footer Feature Cards */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-6xl mx-auto mt-20">
           <div className="grid md:grid-cols-3 gap-6">
-            {[
+            {(isAiDetector ? [
+              {
+                icon: Zap,
+                title: 'Pattern Analysis',
+                description: 'Examines statistical and linguistic characteristics in the text you provide',
+              },
+              {
+                icon: Shield,
+                title: 'Probabilistic Result',
+                description: 'The assessment is an estimate and cannot establish authorship',
+              },
+              {
+                icon: CheckCircle,
+                title: 'Human Review Required',
+                description: 'False positives and false negatives are possible, so context and independent evidence matter',
+              },
+            ] : [
               {
                 icon: Zap,
                 title: 'Instant Generation',
@@ -589,7 +618,7 @@ export default function AIWriteToolPage({ params }: PageProps) {
                 title: 'Professional Quality',
                 description: 'AI-assisted content designed to help with your writing workflow',
               },
-            ].map((feature, index) => (
+            ]).map((feature, index) => (
               <motion.div
                 key={index}
                 whileHover={{ y: -4 }}
@@ -658,27 +687,45 @@ export default function AIWriteToolPage({ params }: PageProps) {
           {/* How-To Guide Section */}
           <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">How to {getActionText(tool.id)}</h2>
-            <ol className="space-y-4 list-decimal list-inside">
-              <li className="text-gray-700">
-                <strong>Fill in your details:</strong> Enter the required information in the fields on the left. Be specific for better results.
-              </li>
-              <li className="text-gray-700">
-                <strong>Click {getActionText(tool.id)}:</strong> Hit the button to generate your content with AI assistance.
-              </li>
-              <li className="text-gray-700">
-                <strong>Review the output:</strong> Carefully read the generated content. AI output requires human review and editing.
-              </li>
-              <li className="text-gray-700">
-                <strong>Edit and refine:</strong> Make adjustments to match your exact needs and voice before using the final content.
-              </li>
-            </ol>
+            {isAiDetector ? (
+              <ol className="space-y-4 list-decimal list-inside">
+                <li className="text-gray-700"><strong>Provide text:</strong> Paste a meaningful passage into the text field.</li>
+                <li className="text-gray-700"><strong>Click Analyze Text:</strong> The tool evaluates statistical and linguistic characteristics associated with AI-generated writing.</li>
+                <li className="text-gray-700"><strong>Read the indicators:</strong> Review the likelihood estimate and the signals shown with it.</li>
+                <li className="text-gray-700"><strong>Apply context:</strong> Treat the result as one uncertain signal, not proof of authorship or misconduct.</li>
+              </ol>
+            ) : (
+              <ol className="space-y-4 list-decimal list-inside">
+                <li className="text-gray-700"><strong>Fill in your details:</strong> Enter the required information in the fields on the left. Be specific for better results.</li>
+                <li className="text-gray-700"><strong>Click {getActionText(tool.id)}:</strong> Hit the button to generate your content with AI assistance.</li>
+                <li className="text-gray-700"><strong>Review the output:</strong> Carefully read the generated content. AI output requires human review and editing.</li>
+                <li className="text-gray-700"><strong>Edit and refine:</strong> Make adjustments to match your exact needs and voice before using the final content.</li>
+              </ol>
+            )}
           </section>
 
           {/* Why Use Section */}
           <section className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200 p-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use {tool.title}?</h2>
             <div className="grid md:grid-cols-2 gap-6">
-              {[
+              {(isAiDetector ? [
+                {
+                  title: 'Evidence, Not a Verdict',
+                  description: 'Use the estimate as one limited signal alongside context and independent evidence.'
+                },
+                {
+                  title: 'False Results Are Possible',
+                  description: 'Human text can be flagged and AI-generated text can be missed.'
+                },
+                {
+                  title: 'Authorship Is Not Identified',
+                  description: 'A detector score cannot establish who wrote a passage or which system may have produced it.'
+                },
+                {
+                  title: 'High-Impact Use Warning',
+                  description: 'Never use this result alone for academic, employment, disciplinary, legal, or similar decisions.'
+                }
+              ] : [
                 {
                   title: 'Save Time',
                   description: 'Reduce time spent on initial drafts. AI assistance helps you work faster.'
@@ -695,7 +742,7 @@ export default function AIWriteToolPage({ params }: PageProps) {
                   title: 'Free to Use',
                   description: 'No credit card required. Test our AI writing tools completely free.'
                 }
-              ].map((benefit, idx) => (
+              ]).map((benefit, idx) => (
                 <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
                   <h3 className="font-semibold text-gray-900 mb-2">{benefit.title}</h3>
                   <p className="text-gray-700 text-sm">{benefit.description}</p>
@@ -722,7 +769,7 @@ export default function AIWriteToolPage({ params }: PageProps) {
             family="ai"
             toolId={tool.id}
             limit={8}
-            description="Explore other AI writing tools to complement your workflow:"
+            description={isAiDetector ? 'Explore related text analysis and writing tools:' : 'Explore other AI writing tools to complement your workflow:'}
           />
 
           {/* Important Notice - AI Trust & Usage Guidelines */}
@@ -730,15 +777,25 @@ export default function AIWriteToolPage({ params }: PageProps) {
             <div className="flex gap-3">
               <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="font-semibold text-amber-900 mb-2">Important: Using AI Writing Tools Responsibly</h3>
-                <ul className="text-amber-900 text-sm space-y-2 list-disc list-inside">
-                  <li>AI content requires human review and editing before publication or submission</li>
-                  <li>Do not claim AI-generated content as entirely your own without proper disclosure when required</li>
-                  <li>Verify facts and claims - AI can make mistakes or hallucinate information</li>
-                  <li>Follow your institution's or organization's AI usage policies</li>
-                  <li>For academic work, check guidelines on AI tool usage before using output</li>
-                  <li>Keep your original work and AI-generated versions distinct</li>
-                </ul>
+                <h3 className="font-semibold text-amber-900 mb-2">{isAiDetector ? 'Important: AI Detection Is Not Proof' : 'Important: Using AI Writing Tools Responsibly'}</h3>
+                {isAiDetector ? (
+                  <ul className="text-amber-900 text-sm space-y-2 list-disc list-inside">
+                    <li>The result is probabilistic and cannot prove authorship</li>
+                    <li>False positives and false negatives are possible</li>
+                    <li>Writing style, editing, subject matter, language, and text length can affect the estimate</li>
+                    <li>Do not use this output as the sole basis for academic, employment, disciplinary, legal, or other high-impact decisions</li>
+                    <li>Use qualified human review, relevant context, and independent evidence when decisions matter</li>
+                  </ul>
+                ) : (
+                  <ul className="text-amber-900 text-sm space-y-2 list-disc list-inside">
+                    <li>AI content requires human review and editing before publication or submission</li>
+                    <li>Do not claim AI-generated content as entirely your own without proper disclosure when required</li>
+                    <li>Verify facts and claims - AI can make mistakes or hallucinate information</li>
+                    <li>Follow your institution's or organization's AI usage policies</li>
+                    <li>For academic work, check guidelines on AI tool usage before using output</li>
+                    <li>Keep your original work and AI-generated versions distinct</li>
+                  </ul>
+                )}
               </div>
             </div>
           </section>

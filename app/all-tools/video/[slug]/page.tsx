@@ -16,6 +16,15 @@ import { VideoToolErrorType } from '@/app/utils/types/errors';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 import { notFound, useRouter } from 'next/navigation';
 import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import {
+  getVideoFaqs,
+  getVideoInputGuidance,
+  getVideoOutputGuidance,
+  getVideoOutputLabel,
+  getVideoProcessingGuidance,
+  getVideoQualityGuidance,
+  getVideoReadyGuidance,
+} from '@/app/lib/video-content-guidance';
 
 // Action-specific CTA text for each tool
 function getActionText(toolId: string): string {
@@ -119,6 +128,13 @@ export default function VideoToolPage({ params }: PageProps) {
   if (!tool) {
     notFound();
   }
+
+  const inputGuidance = getVideoInputGuidance(tool);
+  const outputGuidance = getVideoOutputGuidance(tool);
+  const outputLabel = getVideoOutputLabel(tool);
+  const processingGuidance = getVideoProcessingGuidance(tool);
+  const qualityGuidance = getVideoQualityGuidance(tool);
+  const faqItems = getVideoFaqs(tool);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -496,7 +512,7 @@ export default function VideoToolPage({ params }: PageProps) {
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">About this tool</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Process video and audio files with the options available for this tool. Files are uploaded to our server when processing is required, so avoid uploading sensitive content.
+                {inputGuidance.text} {processingGuidance}
               </p>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 text-gray-700">
@@ -505,7 +521,7 @@ export default function VideoToolPage({ params }: PageProps) {
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <CheckCircle size={16} className="text-pink-600 flex-shrink-0" />
-                  <span>Output: {tool.outputType.toUpperCase()}</span>
+                  <span>Result: {outputLabel}</span>
                 </div>
               </div>
             </motion.div>
@@ -572,7 +588,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to process</h3>
-                <p className="text-gray-600">Upload a file or enter a URL and click Process to get started</p>
+                <p className="text-gray-600">{getVideoReadyGuidance(tool)}</p>
               </motion.div>
             )}
           </motion.div>
@@ -590,9 +606,9 @@ export default function VideoToolPage({ params }: PageProps) {
             
             <div className="space-y-6 mb-12">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 1: Upload Your File</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 1: {inputGuidance.heading}</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Click the upload area above and select your {tool.accepts.join(', ')} file from your computer. Alternatively, you can paste a URL to process files from the web.
+                  {inputGuidance.text}
                 </p>
               </div>
               
@@ -600,8 +616,8 @@ export default function VideoToolPage({ params }: PageProps) {
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 2: Configure Options (if needed)</h3>
                 <p className="text-gray-700 leading-relaxed">
                   {tool.options.length > 0 
-                    ? `Choose your preferred settings from the available options such as quality, format, or dimensions to customize the output.`
-                    : `This tool works with default settings, but you can customize if needed.`
+                    ? 'Review the settings shown for this tool and choose the values that fit your intended result.'
+                    : 'This tool has no additional settings on this page.'
                   }
                 </p>
               </div>
@@ -609,14 +625,14 @@ export default function VideoToolPage({ params }: PageProps) {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 3: Click {getActionText(resolvedParams.slug)}</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Press the conversion button to start processing. The tool will process your file in seconds and provide you with the result.
+                  Submit the request to the server-side processing workflow. Completion time depends on the input, operation, and current service availability.
                 </p>
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 4: Download Your Result</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 4: Review Your Result</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Once processing is complete, download your converted file. No file limits, no watermarks, completely free.
+                  {outputGuidance}
                 </p>
               </div>
             </div>
@@ -658,8 +674,8 @@ export default function VideoToolPage({ params }: PageProps) {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Fast & Reliable</h3>
-                  <p className="text-gray-700 text-sm">Process files in seconds. Advanced engines handle large files with optimal speed and quality preservation.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">Result Expectations</h3>
+                  <p className="text-gray-700 text-sm">{qualityGuidance}</p>
                 </div>
               </div>
               
@@ -670,8 +686,8 @@ export default function VideoToolPage({ params }: PageProps) {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Secure & Private</h3>
-                  <p className="text-gray-700 text-sm">Files are uploaded to our server for processing over an HTTPS connection. Avoid uploading sensitive or confidential content.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">Server-Side Processing</h3>
+                  <p className="text-gray-700 text-sm">{processingGuidance}</p>
                 </div>
               </div>
             </div>
@@ -682,45 +698,15 @@ export default function VideoToolPage({ params }: PageProps) {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
             
             <div className="space-y-4">
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Is this tool really free?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">You can use {tool.title} without a subscription or credit card. Processing limits can vary by tool, file type, and file size.</p>
-              </details>
-              
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Do you store my files?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">Files are uploaded to our server when processing is required and may remain temporarily while the request and download are handled. Avoid uploading sensitive or confidential content.</p>
-              </details>
-              
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  What's the file size limit?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">We support files up to several hundred MB depending on your internet connection and browser capabilities. Larger files may take longer to process.</p>
-              </details>
-              
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Which browsers are supported?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge on desktop, tablet, and mobile devices.</p>
-              </details>
-              
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Is there a watermark on the output?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">No watermarks! Your converted files are clean and ready to use immediately. No branding or quality degradation.</p>
-              </details>
+              {faqItems.map((faq) => (
+                <details key={faq.q} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
+                  <summary className="font-semibold text-gray-900 flex items-center justify-between">
+                    {faq.q}
+                    <span className="text-pink-600">+</span>
+                  </summary>
+                  <p className="text-gray-700 mt-3 text-sm">{faq.a}</p>
+                </details>
+              ))}
             </div>
           </div>
 
@@ -738,18 +724,18 @@ export default function VideoToolPage({ params }: PageProps) {
             {[
               {
                 icon: Zap,
-                title: 'Fast Processing',
-                description: 'Optimized conversion engines for rapid video processing',
+                title: 'Tool-Specific Workflow',
+                description: inputGuidance.text,
               },
               {
                 icon: Shield,
-                title: 'Secure & Private',
-                description: 'Files are uploaded to our server when processing is required. Avoid uploading sensitive or confidential content.',
+                title: 'Processing Details',
+                description: processingGuidance,
               },
               {
                 icon: CheckCircle,
-                title: 'Multiple Formats',
-                description: 'Support for all major video and audio formats',
+                title: 'Clear Result Expectations',
+                description: qualityGuidance,
               },
             ].map((feature, index) => (
               <motion.div

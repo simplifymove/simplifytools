@@ -51,6 +51,11 @@ const toolSEODatabase: Record<string, {
   description: string;
   keywords: string[];
 }> = {
+  'ai-detector': {
+    title: 'AI Text Detector - Probabilistic Writing Analysis',
+    description: 'Analyze text for statistical and linguistic characteristics associated with AI generation. Results are estimates, not proof of authorship, and can be wrong.',
+    keywords: ['AI text detector', 'AI writing analysis', 'AI-generated text estimate', 'probabilistic text analysis']
+  },
   'paragraph-writer': {
     title: 'Paragraph Writer - AI Paragraph Generator & Creator',
     description: 'Write well-structured paragraphs instantly. Our AI paragraph generator helps you create engaging, professional paragraphs for essays, articles, and more.',

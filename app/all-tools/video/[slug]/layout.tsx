@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getToolById } from '@/app/lib/video-tools';
+import { getVideoFaqs, getVideoMetadataDescription } from '@/app/lib/video-content-guidance';
 import { generateSoftwareApplicationSchema } from '@/app/lib/seo';
 import { notFound } from 'next/navigation';
 
@@ -347,10 +348,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const canonicalUrl = `${baseUrl}/all-tools/video/${slug}`;
   
   // Get tool-specific SEO or use defaults
-  const seoData = toolSEODatabase[slug] || {
+  const configuredSeoData = toolSEODatabase[slug] || {
     title: `${tool.title} - Free Online Video Tool | SimplifyConvert`,
     description: tool.description.length > 160 ? tool.description.substring(0, 157) + '...' : tool.description,
     keywords: [tool.title, 'video tool', 'free converter']
+  };
+  const seoData = {
+    ...configuredSeoData,
+    description: getVideoMetadataDescription(tool),
   };
 
   return {
@@ -415,6 +420,7 @@ export default async function VideoSlugLayout({
         applicationCategory: 'MultimediaApplication',
       })
     : null;
+  const faqItems = getVideoFaqs(tool);
 
   return (
     <>
@@ -432,40 +438,14 @@ export default async function VideoSlugLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'FAQPage',
-            mainEntity: [
-              {
-                '@type': 'Question',
-                name: 'Is this tool really free?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'This tool can be used without a subscription or credit card. Processing limits can vary by tool, file type, and file size.'
-                }
+            mainEntity: faqItems.map((faq) => ({
+              '@type': 'Question',
+              name: faq.q,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: faq.a,
               },
-              {
-                '@type': 'Question',
-                name: 'Do you store my files?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Files are uploaded to our server when processing is required and may remain temporarily while the request and download are handled. Avoid uploading sensitive or confidential content.'
-                }
-              },
-              {
-                '@type': 'Question',
-                name: 'Which formats are supported?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'This tool supports multiple video and audio formats for maximum compatibility.'
-                }
-              },
-              {
-                '@type': 'Question',
-                name: 'Is there a watermark on the output?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'No, there are no watermarks. Your converted files are clean and ready to use.'
-                }
-              }
-            ]
+            }))
           })
         }}
       />}

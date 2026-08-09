@@ -12,6 +12,12 @@ import { createConvertedFilename, resolveDataOutputExtension } from '@/app/lib/d
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import {
+  formatDataExtension,
+  getDataToolContent,
+  getDataToolFaqs,
+  hasDataEncodingControl,
+} from '@/app/lib/data-content-guidance';
 
 interface FormData {
   [key: string]: string | number | boolean;
@@ -91,61 +97,21 @@ export default function DataToolPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [downloadPageUrl, setDownloadPageUrl] = useState<string | null>(null);
+  const dataContent = tool ? getDataToolContent(tool) : null;
+  const faqItems = tool ? getDataToolFaqs(tool) : [];
 
   // Generate FAQ schema for JSON-LD
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Is the conversion accurate?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, our conversion engines maintain data integrity and formatting. However, we recommend reviewing the output before using it in production."
-        }
+    "mainEntity": faqItems.map((faq) => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a,
       },
-      {
-        "@type": "Question",
-        "name": "What file size limits do you have?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Files up to 100MB can be converted. For larger files, please split them first using our file splitting tools or process them in batches."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is my data stored after conversion?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Files are sent to our server for conversion. Temporary conversion files are cleaned up after the request, and the generated result may be retained briefly to provide your download link. Avoid uploading sensitive data."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Which encoding formats are supported?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We support UTF-8, Latin-1, ISO-8859-1, and Windows-1252 encodings. Your file encoding is automatically detected when possible."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I convert multiple files at once?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Currently you can convert one file at a time. For batch conversions, you can repeat the process or use our split/merge tools to organize data."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What happens if conversion fails?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "If an error occurs, you'll see a detailed message. Common issues: unsupported file format, corrupted data, or encoding problems. Try checking your file structure."
-        }
-      }
-    ]
+    }))
   };
 
   // Generate Breadcrumb schema for JSON-LD
@@ -646,15 +612,26 @@ export default function DataToolPage({ params }: PageProps) {
                 <strong>Select your file:</strong> Click the upload area and choose the {tool.accepts.join(' or ')} file you want to convert.
               </li>
               <li className="text-gray-700">
-                <strong>Configure options (if needed):</strong> Adjust conversion settings like delimiter, encoding, or format preferences.
+                <strong>Configure the available options:</strong> Review only the settings shown for this tool{hasDataEncodingControl(tool) ? '; note that the current server engine does not consume the encoding selection' : ''}.
               </li>
               <li className="text-gray-700">
                 <strong>Click {getActionText(tool.id)}:</strong> Hit the button to start processing your file conversion.
               </li>
               <li className="text-gray-700">
-                <strong>Download your file:</strong> Once ready, download your converted .{tool.output} file directly to your computer.
+                <strong>Download your result:</strong> Once ready, download the {tool.category === 'split' ? 'ZIP containing the output parts' : `converted ${formatDataExtension(resolveDataOutputExtension(tool.id, tool.output, formData))} file`}.
               </li>
             </ol>
+            {dataContent && (
+              <div className="mt-6 border-t border-gray-200 pt-6 space-y-3 text-gray-700">
+                <p><strong>How it works:</strong> {dataContent.transformation}</p>
+                <div>
+                  <strong>Important limitations:</strong>
+                  <ul className="mt-2 list-disc list-inside space-y-1">
+                    {dataContent.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
+                  </ul>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Why Use This Tool Section */}
@@ -663,8 +640,8 @@ export default function DataToolPage({ params }: PageProps) {
             <div className="grid md:grid-cols-2 gap-6">
               {[
                 {
-                  title: 'Lightning Fast',
-                  description: 'Process your files instantly without slow uploads or complex software.'
+                  title: 'Server-Side Conversion',
+                  description: 'Upload one supported source file for processing by the server conversion workflow.'
                 },
                 {
                   title: 'No Sign-Up Required',
@@ -675,8 +652,10 @@ export default function DataToolPage({ params }: PageProps) {
                   description: 'Files are sent to our server for conversion, and temporary conversion files are cleaned up after the request.'
                 },
                 {
-                  title: 'Batch Ready',
-                  description: 'Handle large files efficiently with support for files up to 100MB in size.'
+                  title: tool.category === 'split' ? 'Multiple Output Parts' : 'Single-File Workflow',
+                  description: tool.category === 'split'
+                    ? 'One source file is divided into multiple output parts and returned as a ZIP.'
+                    : 'Convert one source file per request, up to the current 100 MB limit.'
                 }
               ].map((benefit, idx) => (
                 <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
@@ -691,32 +670,7 @@ export default function DataToolPage({ params }: PageProps) {
           <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
             <div className="space-y-6">
-              {[
-                {
-                  q: 'Is the conversion accurate?',
-                  a: 'Yes, our conversion engines maintain data integrity and formatting. However, we recommend reviewing the output before using it in production.'
-                },
-                {
-                  q: 'What file size limits do you have?',
-                  a: 'Files up to 100MB can be converted. For larger files, please split them first using our file splitting tools or process them in batches.'
-                },
-                {
-                  q: 'Is my data stored after conversion?',
-                  a: 'Files are sent to our server for conversion. Temporary conversion files are cleaned up after the request, and the generated result may be retained briefly to provide your download link. Avoid uploading sensitive data.'
-                },
-                {
-                  q: 'Which encoding formats are supported?',
-                  a: 'We support UTF-8, Latin-1, ISO-8859-1, and Windows-1252 encodings. Your file encoding is automatically detected when possible.'
-                },
-                {
-                  q: 'Can I convert multiple files at once?',
-                  a: 'Currently you can convert one file at a time. For batch conversions, you can repeat the process or use our split/merge tools to organize data.'
-                },
-                {
-                  q: 'What happens if conversion fails?',
-                  a: 'If an error occurs, you\'ll see a detailed message. Common issues: unsupported file format, corrupted data, or encoding problems. Try checking your file structure.'
-                }
-              ].map((faq, idx) => (
+              {faqItems.map((faq, idx) => (
                 <div key={idx} className="border-b border-gray-200 pb-6 last:border-0">
                   <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
                   <p className="text-gray-700">{faq.a}</p>
