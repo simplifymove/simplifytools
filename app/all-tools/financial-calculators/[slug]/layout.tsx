@@ -16,8 +16,8 @@ const calculatorMetadata: Record<string, { title: string; description: string }>
     description: 'Analyze loan terms, calculate monthly payments, and optimize your payment strategy to save money on interest.',
   },
   'india-tax': {
-    title: 'India Tax Estimator - FY 2024-25 Income Tax Calculator',
-    description: 'Calculate income tax with all deductions and exemptions for Indian taxpayers. Find tax optimization opportunities.',
+    title: 'India Tax Estimator Under Review | SimplifyConvert',
+    description: 'This India Tax Estimator is under review and should not be used for current tax filing calculations.',
   },
 };
 
@@ -62,6 +62,9 @@ export async function generateMetadata({
     alternates: {
       canonical: canonicalUrl,
     },
+    robots: slug === 'india-tax'
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
   };
 }
 

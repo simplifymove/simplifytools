@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'AI Text to Video Generator - Free Online | SimplifyConvert',
-  description: 'Generate AI videos from text prompts online. Create cinematic videos, animations, and visual content in minutes. Free, no watermarks, no signup required.',
-  keywords: ['text to video', 'AI video generator', 'video creation', 'AI video maker', 'generate videos from text', 'free video generator'],
+  title: 'AI Video Script Planner from Text | SimplifyConvert',
+  description: 'Turn a text prompt into a structured video plan with a title, voiceover, scenes, captions, timing, style, and aspect-ratio guidance. Video rendering is not currently available.',
+  keywords: ['video script generator', 'AI video planner', 'storyboard planner', 'video scene planner', 'voiceover script generator'],
   authors: [{ name: 'SimplifyConvert' }],
   creator: 'SimplifyConvert',
   robots: {
@@ -11,14 +11,14 @@ export const metadata: Metadata = {
     follow: true,
     'max-snippet': -1,
     'max-image-preview': 'large',
-    'max-video-preview': -1,
+    'max-video-preview': 0,
   },
   alternates: {
     canonical: 'https://simplifyconvert.com/all-tools/video-tools/text-to-video',
   },
   openGraph: {
-    title: 'AI Text to Video Generator - Create Professional Videos',
-    description: 'Transform text prompts into stunning AI videos. Modern styles, fast rendering, professional quality.',
+    title: 'AI Video Script Planner from Text',
+    description: 'Create a structured video script and scene plan from a text prompt. Video rendering is not currently available.',
     url: 'https://simplifyconvert.com/all-tools/video-tools/text-to-video',
     siteName: 'SimplifyConvert',
     images: [
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         url: 'https://simplifyconvert.com/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'AI Text to Video Generator',
+        alt: 'AI Video Script Planner',
         type: 'image/png',
       },
     ],
@@ -35,8 +35,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Text to Video Generator',
-    description: 'Generate professional videos from text in minutes with AI',
+    title: 'AI Video Script Planner',
+    description: 'Create a structured video script and scene plan from a text prompt.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
     creator: '@simplifyconvert',
   },
@@ -57,24 +57,18 @@ export default function TextToVideoLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
-            name: 'AI Text to Video Generator',
-            description: 'Generate professional videos from text prompts using artificial intelligence',
+            name: 'AI Video Script Planner',
+            description: 'Generate a structured video script and scene plan from a text prompt. Video rendering is not currently available.',
             url: 'https://simplifyconvert.com/all-tools/video-tools/text-to-video',
             applicationCategory: 'MediaApplication',
-            offers: {
-              '@type': 'Offer',
-              price: '0',
-              priceCurrency: 'USD',
-              availability: 'https://schema.org/InStock',
-            },
             operatingSystem: 'Web',
             featureList: [
               'AI Script Generation',
-              'Multiple Video Styles',
-              'Custom Durations',
-              'Aspect Ratio Options',
-              'Professional Quality Output',
-              'Free HD Download',
+              'Scene Planning',
+              'Voiceover Drafting',
+              'Timing Guidance',
+              'Style and Aspect Ratio Planning',
+              'Text Script Download',
             ],
             creator: {
               '@type': 'Organization',
@@ -112,7 +106,7 @@ export default function TextToVideoLayout({
               {
                 '@type': 'ListItem',
                 position: 4,
-                name: 'AI Text to Video',
+                name: 'AI Video Script Planner',
                 item: 'https://simplifyconvert.com/all-tools/video-tools/text-to-video',
               },
             ],

@@ -17,12 +17,10 @@ export default function TextToVideoPage() {
   const [ctaText, setCtaText] = useState('Learn More');
 
   // Processing state
-  const [step, setStep] = useState<'form' | 'generating' | 'preview' | 'rendering' | 'complete'>('form');
+  const [step, setStep] = useState<'form' | 'generating' | 'preview'>('form');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [generatedScript, setGeneratedScript] = useState<VideoScript | null>(null);
-  const [videoUrl, setVideoUrl] = useState('');
-  const [progress, setProgress] = useState(0);
 
   const handleGenerateScript = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,63 +70,35 @@ export default function TextToVideoPage() {
     }
   };
 
-  const handleRenderVideo = async () => {
+  const handleDownloadScript = () => {
     if (!generatedScript) return;
-    setError('');
-    setLoading(true);
-    setStep('rendering');
-    setProgress(0);
 
-    try {
-      const response = await fetch('/api/video/render', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script: generatedScript }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to render video');
-      }
-
-      if (data.videoUrl) {
-        setVideoUrl(data.videoUrl);
-        setProgress(100);
-        setStep('complete');
-      } else {
-        throw new Error('No video URL returned');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to render video');
-      setStep('preview');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDownloadVideo = async () => {
-    if (!videoUrl) return;
-
-    try {
-      // If URL is base64, convert to blob
-      if (videoUrl.startsWith('data:')) {
-        const link = document.createElement('a');
-        link.href = videoUrl;
-        link.download = `video-${Date.now()}.mp4`;
-        link.click();
-      } else {
-        // Fetch from URL
-        const response = await fetch(videoUrl);
-        const blob = await response.blob();
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `video-${Date.now()}.mp4`;
-        link.click();
-      }
-    } catch (err) {
-      setError('Failed to download video');
-    }
+    const scenes = generatedScript.scenes.map((scene, index) => [
+      `Scene ${index + 1} (${scene.duration}s)`,
+      `Headline: ${scene.headline}`,
+      `Subtext: ${scene.subtext}`,
+      `Visual direction: ${scene.visual}`,
+      `Caption: ${scene.caption}`,
+    ].join('\n')).join('\n\n');
+    const content = [
+      generatedScript.title,
+      `Style: ${generatedScript.style}`,
+      `Planned duration: ${generatedScript.duration} seconds`,
+      `Aspect ratio: ${generatedScript.aspectRatio}`,
+      `Tone: ${generatedScript.tone}`,
+      '',
+      'Voiceover',
+      generatedScript.voiceover,
+      '',
+      'Scene plan',
+      scenes,
+    ].join('\n');
+    const blobUrl = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `video-script-${Date.now()}.txt`;
+    link.click();
+    URL.revokeObjectURL(blobUrl);
   };
 
   const handleRestart = () => {
@@ -136,8 +106,6 @@ export default function TextToVideoPage() {
     setStep('form');
     setError('');
     setGeneratedScript(null);
-    setVideoUrl('');
-    setProgress(0);
   };
 
   return (
@@ -157,18 +125,18 @@ export default function TextToVideoPage() {
               <ChevronRight size={16} />
               <Link href="/all-tools/video-tools" className="hover:text-white transition">Video Tools</Link>
               <ChevronRight size={16} />
-              <span className="text-white">AI Text-to-Video</span>
+              <span className="text-white">AI Video Script Planner</span>
             </div>
 
             <div className="flex items-center gap-3 mb-4">
               <h1 className="text-4xl md:text-5xl font-bold text-white flex items-center gap-3">
                 <Film size={40} />
-                AI Text-to-Video
+                AI Video Script Planner
               </h1>
               <span className="inline-block bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold">Beta</span>
             </div>
             <p className="text-lg text-white/90 max-w-2xl">
-              Transform your ideas into professional videos with AI-powered script generation and cinematic rendering.
+              Turn an idea into a structured video script, voiceover, and scene plan. Video rendering is not currently available.
             </p>
           </div>
         </div>
@@ -189,7 +157,7 @@ export default function TextToVideoPage() {
 
             {step === 'form' && (
               <form onSubmit={handleGenerateScript} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Your Video</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Plan Your Video Script</h2>
 
                 {/* Prompt Input */}
                 <div className="mb-6">
@@ -378,12 +346,11 @@ export default function TextToVideoPage() {
                 {/* Action Buttons */}
                 <div className="flex gap-4">
                   <button
-                    onClick={handleRenderVideo}
-                    disabled={loading}
+                    onClick={handleDownloadScript}
                     className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
                   >
-                    {loading ? <Loader className="animate-spin" size={20} /> : <Film size={20} />}
-                    {loading ? 'Rendering...' : 'Render Video'}
+                    <Download size={20} />
+                    Download Script
                   </button>
                   <button
                     onClick={handleRestart}
@@ -396,72 +363,6 @@ export default function TextToVideoPage() {
               </div>
             )}
 
-            {step === 'rendering' && (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-                <div className="flex justify-center mb-6">
-                  <div className="relative w-20 h-20">
-                    <div className="absolute inset-0 bg-indigo-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                    <div className="relative bg-indigo-50 p-5 rounded-full flex items-center justify-center">
-                      <Film className="animate-spin text-indigo-600" size={32} />
-                    </div>
-                  </div>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">Rendering Video</h2>
-                <p className="text-gray-600 mb-6">Your video is being rendered... This may take a few minutes.</p>
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                  <div
-                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-500">{progress}% Complete</p>
-              </div>
-            )}
-
-            {step === 'complete' && videoUrl && (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Video Ready!</h2>
-                  <CheckCircle className="text-green-600" size={24} />
-                </div>
-
-                {/* Video Preview */}
-                {videoUrl && (
-                  <div className="mb-8 bg-black rounded-lg overflow-hidden">
-                    {videoUrl.startsWith('data:') ? (
-                      <video
-                        src={videoUrl}
-                        controls
-                        className="w-full max-h-96 object-contain"
-                      />
-                    ) : (
-                      <video
-                        src={videoUrl}
-                        controls
-                        className="w-full max-h-96 object-contain"
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* Download Button */}
-                <button
-                  onClick={handleDownloadVideo}
-                  className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all mb-4"
-                >
-                  <Download size={20} />
-                  Download Video
-                </button>
-
-                {/* Create Another */}
-                <button
-                  onClick={handleRestart}
-                  className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all"
-                >
-                  Create Another Video
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -471,24 +372,24 @@ export default function TextToVideoPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
             <div className="space-y-4">
               <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">How long does it take to generate a video?</summary>
-                <p className="text-gray-600 mt-3">Script generation usually takes 2-4 seconds. Video rendering depends on duration and style, typically 1-5 minutes.</p>
+                <summary className="font-semibold text-gray-900">What does this tool create?</summary>
+                <p className="text-gray-600 mt-3">It creates a text plan containing a title, voiceover, scene directions, captions, and timing. It does not currently render a video.</p>
               </details>
               <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">What video formats are supported?</summary>
-                <p className="text-gray-600 mt-3">Our tool generates MP4 files optimized for web, social media, and presentations. You can download and use them anywhere.</p>
+                <summary className="font-semibold text-gray-900">Can I download the plan?</summary>
+                <p className="text-gray-600 mt-3">Yes. After generating a plan, you can download the script and scene directions as a plain-text file.</p>
               </details>
               <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
                 <summary className="font-semibold text-gray-900">Can I edit the generated script?</summary>
                 <p className="text-gray-600 mt-3">Currently, you can preview and accept the script. In future updates, we'll add editing capabilities.</p>
               </details>
               <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">Is this feature free?</summary>
-                <p className="text-gray-600 mt-3">Yes! Text-to-Video is completely free to use during our beta period. No watermarks, no credit card required.</p>
+                <summary className="font-semibold text-gray-900">Does this page render or export video?</summary>
+                <p className="text-gray-600 mt-3">No. Video rendering and MP4 export are currently unavailable. The current output is a downloadable text plan.</p>
               </details>
               <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">What's the quality of generated videos?</summary>
-                <p className="text-gray-600 mt-3">Videos are rendered at HD quality (1080p or higher depending on aspect ratio). Perfect for web, social, and marketing.</p>
+                <summary className="font-semibold text-gray-900">What do the duration and aspect-ratio settings do?</summary>
+                <p className="text-gray-600 mt-3">They guide the structure and timing of the generated script. They do not create a media file.</p>
               </details>
             </div>
           </div>
@@ -497,9 +398,9 @@ export default function TextToVideoPage() {
         {/* Beta Info Section */}
         <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-t border-orange-200 py-12 px-4 md:px-8">
           <div className="max-w-4xl mx-auto">
-            <h3 className="text-lg font-semibold text-orange-900 mb-2">🧪 Beta Feature</h3>
+            <h3 className="text-lg font-semibold text-orange-900 mb-2">Current availability</h3>
             <p className="text-orange-800">
-              This is an early-access beta of our AI Text-to-Video tool. While fully functional, you may experience occasional delays or refinements. Your feedback helps us improve!
+              Script and scene-plan generation is available on this page. Video rendering, video preview, and MP4 export are currently unavailable.
             </p>
           </div>
         </div>

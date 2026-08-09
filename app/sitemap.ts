@@ -43,6 +43,11 @@ const REDIRECT_ONLY_TOOL_ROUTES = new Set([
   '/all-tools/ai-write',
 ]);
 
+// Temporarily excluded while its calculation model is under review.
+const NOINDEX_TOOL_ROUTES = new Set([
+  '/all-tools/financial-calculators/india-tax',
+]);
+
 function isExcludedTool(id: string, title = ''): boolean {
   const idLower = id.toLowerCase();
   const titleLower = title.toLowerCase();
@@ -186,7 +191,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const titleLower = tool.title.toLowerCase();
 
     return !isExcludedTool(toolIdLower, titleLower)
-      && !REDIRECT_ONLY_TOOL_ROUTES.has(tool.route);
+      && !REDIRECT_ONLY_TOOL_ROUTES.has(tool.route)
+      && !NOINDEX_TOOL_ROUTES.has(tool.route);
   });
 
   sitemapDebugLog('✓ Valid main tools (with routes, not excluded):', validMainTools.length);

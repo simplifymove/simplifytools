@@ -54,7 +54,10 @@ export default function DocsPage() {
         <section className="mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">Documentation</h1>
           <p className="text-xl text-gray-600">
-            Learn how to integrate SimplifyConvert AI Code Assistant into your workflow.
+            Learn how to call SimplifyConvert's server-side AI API. An internet connection, active API credentials, and sufficient credits are required.
+          </p>
+          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            This page documents the implemented API contract. Runtime access still depends on account status and current server/provider availability.
           </p>
         </section>
 
@@ -66,10 +69,10 @@ export default function DocsPage() {
           </h2>
           <ol className="space-y-4 text-gray-700 ml-6 list-decimal">
             <li>
-              <strong>Sign up:</strong> Create an account and purchase a monthly subscription
+              <strong>Review access:</strong> Sign in and check the current pricing page for available account options
             </li>
             <li>
-              <strong>Get API key:</strong> Your API key is displayed in your dashboard after purchase
+              <strong>Get API credentials:</strong> An API key is available in the dashboard after eligible paid access is successfully provisioned
             </li>
             <li>
               <strong>Use the API:</strong> Send requests to POST /api/ai/generate with your API key

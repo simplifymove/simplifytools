@@ -82,16 +82,16 @@ const calculatorConfig: Record<string, any> = {
   },
   'india-tax': {
     title: 'India Tax Estimator',
-    description: 'Calculate taxes and find optimization opportunities (FY 2024-25)',
+    description: 'Under review — not for current tax filing calculations',
     icon: '🇮🇳',
     isCurrencyINR: true,
     assumptions: [
-      'The estimate uses the FY 2024-25 inputs and deduction fields shown in this calculator.',
+      'The current calculation model is retained only while the calculator is reviewed.',
       'Amounts are treated as annual Indian-rupee values unless a field states otherwise.',
     ],
     limitations: [
-      'This calculator is informational and may not cover every exemption, surcharge, regime choice, or individual circumstance.',
-      'Tax rules and eligibility can change; verify the result with current official guidance or a qualified tax professional.',
+      'Do not use this calculator for a current return, filing, payment, or tax-planning decision.',
+      'Use current official Income Tax Department guidance or a qualified tax professional instead.',
     ],
     currencyFields: ['grossIncome', 'section80CDeductions', 'section80DDeductions', 'section80EDeductions', 'section80EEADeductions', 'section80GDeductions', 'capitalGainsLongTerm', 'capitalGainsShortTerm', 'deductibleExpenses'],
     fields: [
@@ -320,6 +320,12 @@ export default function CalculatorPage() {
 
         {/* Main Content */}
         <main className="px-4 sm:px-6 lg:px-8 py-12 flex-1">
+          {slug === 'india-tax' && (
+            <div className="max-w-6xl mx-auto mb-8 rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-950" role="status">
+              <h2 className="font-bold text-lg mb-2">Calculator under review</h2>
+              <p>This calculation is temporarily unavailable and must not be used for current tax filing, payment, or planning. Refer to current official guidance or a qualified tax professional.</p>
+            </div>
+          )}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -360,10 +366,12 @@ export default function CalculatorPage() {
 
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || slug === 'india-tax'}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2"
                   >
-                    {loading ? (
+                    {slug === 'india-tax' ? (
+                      <>Calculation Under Review</>
+                    ) : loading ? (
                       <>
                         <Loader size={18} className="animate-spin" />
                         Calculating...

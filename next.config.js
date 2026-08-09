@@ -220,6 +220,16 @@ const nextConfig = {
         destination: '/all-tools/video-tools',
         permanent: true, // 301 redirect
       },
+      {
+        source: '/all-tools/video-tools/universal-downloader',
+        destination: '/all-tools/save-from-online',
+        permanent: true,
+      },
+      {
+        source: '/tools/video',
+        destination: '/all-tools/video-tools',
+        permanent: true,
+      },
       // Consolidate duplicate-purpose URLs onto the established canonical routes.
       {
         source: '/all-tools/pdf-to-jpg',

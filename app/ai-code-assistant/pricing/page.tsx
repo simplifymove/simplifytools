@@ -87,7 +87,7 @@ export default function PricingPage() {
           </Link>
           <h1 className="text-4xl font-bold text-gray-900 mt-4">Simple, Transparent Pricing</h1>
           <p className="text-xl text-gray-600 mt-2">
-            Choose a plan that fits your coding needs
+            Review current access options and credit limits. AI requests are processed by SimplifyConvert's server-side service.
           </p>
         </div>
       </div>
@@ -125,31 +125,31 @@ export default function PricingPage() {
           <div className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition border border-gray-200">
             <div className="px-8 py-6">
               <h3 className="text-2xl font-bold text-gray-900">Starter</h3>
-              <p className="text-gray-600 mt-2">Perfect for trying it out</p>
+              <p className="text-gray-600 mt-2">Not currently offered</p>
             </div>
             <div className="px-8 py-4 bg-gray-50 border-b border-gray-200">
               <p className="text-4xl font-bold text-gray-900">
-                Free
+                Unavailable
               </p>
-              <p className="text-gray-600 text-sm mt-2">Trial period</p>
+              <p className="text-gray-600 text-sm mt-2">No active free trial</p>
             </div>
             <div className="px-8 py-8">
               <ul className="space-y-4">
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  10 credits to start
+                  Starter access is disabled
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  Basic support
+                  No trial credits are currently issued
                 </li>
                 <li className="flex items-center gap-3 text-gray-500">
                   <div className="w-5 h-5 flex-shrink-0" />
-                  No auto-renewal
+                  Review this page for future availability
                 </li>
                 <li className="flex items-center gap-3 text-gray-500">
                   <div className="w-5 h-5 flex-shrink-0" />
-                  Limited API usage
+                  API access requires active credentials
                 </li>
               </ul>
               <button
@@ -185,7 +185,7 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  Unlimited requests
+                  Requests subject to available credits
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -209,10 +209,10 @@ export default function PricingPage() {
                 disabled={loading}
                 className="w-full mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Processing..." : "Get Started Now"}
+                {loading ? "Opening checkout..." : "Continue to Checkout"}
               </button>
               <p className="text-xs text-gray-600 text-center mt-3">
-                No commitment. Cancel anytime.
+                Checkout depends on payment-service availability. Access is provisioned only after a completed payment is processed.
               </p>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  SLA guarantee
+                  Service terms by agreement
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -287,7 +287,7 @@ export default function PricingPage() {
               },
               {
                 q: "Is there a free trial?",
-                a: "The Starter plan is not currently available. The monthly subscription is the available option for accessing AI Code Assistant features.",
+                a: "No. The Starter plan is not currently available. The paid monthly plan is listed separately, and checkout availability is confirmed when an order can be created.",
               },
               {
                 q: "What if I run out of credits?",
