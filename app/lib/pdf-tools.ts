@@ -408,7 +408,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-tiff': {
     id: 'pdf-to-tiff',
     title: 'PDF to TIFF',
-    description: 'Convert PDF pages to high-quality TIFF images online for free. Choose DPI settings (72–600) for archival storage, printing, or professional use. Fast, secure, and no installation required.',
+    description: 'Render PDF pages as TIFF images at selectable DPI settings.',
     category: 'Convert',
     engine: 'convert',
     icon: ImageIcon,
@@ -450,7 +450,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'jpg-to-pdf': {
     id: 'jpg-to-pdf',
     title: 'JPG to PDF',
-    description: 'Convert JPG, JPEG, and PNG images to high-quality PDF documents online for free. Merge multiple images into a single PDF, adjust compression (0–9), and download instantly. No installation required.',
+    description: 'Combine JPG, JPEG, or PNG images into one PDF in upload order.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -462,7 +462,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'png-to-pdf': {
     id: 'png-to-pdf',
     title: 'PNG to PDF',
-    description: 'Convert PNG images to high-quality PDF documents online for free. Merge multiple PNGs, adjust compression (0–9), and download instantly. No installation required.',
+    description: 'Combine PNG images into one PDF with transparent areas flattened onto white.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -474,7 +474,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'tiff-to-pdf': {
     id: 'tiff-to-pdf',
     title: 'TIFF to PDF',
-    description: 'Convert TIFF images to professional PDF documents online for free. Merge multiple TIFF files, adjust compression (0–9), and download instantly. No installation required.',
+    description: 'Combine TIFF images into one PDF with one image placed on each page.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -486,7 +486,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'webp-to-pdf': {
     id: 'webp-to-pdf',
     title: 'WebP to PDF',
-    description: 'Convert WebP images to professional PDF documents online for free. Merge multiple WebP files, adjust compression (0–9), and download instantly. No installation required.',
+    description: 'Combine WebP images into one PDF with one image placed on each page.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -498,7 +498,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'gif-to-pdf': {
     id: 'gif-to-pdf',
     title: 'GIF to PDF',
-    description: 'Convert GIF to PDF online free. Merge multiple GIFs, adjust compression, and download instantly.',
+    description: 'Convert the first frame of each GIF into a static PDF page and combine multiple GIF files.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -510,7 +510,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'heic-to-pdf': {
     id: 'heic-to-pdf',
     title: 'HEIC to PDF',
-    description: 'Convert HEIC to PDF online free. Merge iPhone photos, adjust compression, and download instantly.',
+    description: 'Combine supported HEIC images into one PDF with one image placed on each page.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -524,7 +524,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'eps-to-pdf': {
     id: 'eps-to-pdf',
     title: 'EPS to PDF',
-    description: 'Convert EPS files without Adobe. EPS to PDF converter online free - works as EPS file viewer. Merge multiple EPS, adjust compression, download instantly.',
+    description: 'Render supported EPS files and combine the rendered results into a PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -536,7 +536,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'images-to-pdf': {
     id: 'images-to-pdf',
     title: 'Images to PDF',
-    description: 'Convert multiple images (JPG, PNG, GIF, WEBP, TIFF, HEIC) to PDF instantly. Merge images into a single PDF document with compression control. Free batch converter online - no signup required.',
+    description: 'Combine supported JPG, PNG, GIF, WebP, TIFF, or HEIC images into one PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,

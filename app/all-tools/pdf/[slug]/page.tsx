@@ -18,6 +18,7 @@ import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 import { BATCH_ONE_PDF_TOOL_IDS, getBatchOnePdfHeroDescription, HumanizedPdfBatchOneContent } from '@/app/components/HumanizedPdfBatchOneContent';
 import HumanizedPdfBatchTwoContent, { BATCH_TWO_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchTwoContent';
+import HumanizedPdfBatchThreeContent, { BATCH_THREE_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchThreeContent';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -266,11 +267,6 @@ export default function PdfToolPage({ params }: PageProps) {
                 <p className="text-lg text-white/90 max-w-2xl">
                   {getBatchOnePdfHeroDescription(tool.id, tool.description)}
                 </p>
-                {tool.id === 'eps-to-pdf' && (
-                  <p className="text-sm md:text-base text-yellow-200 font-semibold mt-3 max-w-2xl">
-                    ✓ No Adobe Illustrator required. Open and convert EPS files instantly.
-                  </p>
-                )}
               </div>
             </div>
           </div>
@@ -643,7 +639,6 @@ export default function PdfToolPage({ params }: PageProps) {
       )}
 
         {tool.id === 'compress-pdf' && <PriorityToolGuide toolId="compress-pdf" />}
-        {tool.id === 'pdf-to-jpg' && <PriorityToolGuide toolId="pdf-to-jpg" />}
 
         {/* SEO Content for Unlock PDF */}
         {tool.id === 'unlock-pdf' && (
@@ -1489,7 +1484,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF to PNG Converter */}
-        {tool.id === 'pdf-to-png' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'pdf-to-png' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -1880,7 +1875,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF to TIFF Converter */}
-        {tool.id === 'pdf-to-tiff' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'pdf-to-tiff' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -2279,7 +2274,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for JPG to PDF Converter */}
-        {tool.id === 'jpg-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'jpg-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -2648,7 +2643,7 @@ export default function PdfToolPage({ params }: PageProps) {
           </div>
         )}
 
-        {tool.id === 'png-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'png-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -2933,7 +2928,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for TIFF to PDF Converter */}
-        {tool.id === 'tiff-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'tiff-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -3281,7 +3276,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for GIF to PDF Converter */}
-        {tool.id === 'gif-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'gif-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -3556,7 +3551,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for HEIC to PDF Converter */}
-        {tool.id === 'heic-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'heic-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -3845,7 +3840,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for EPS to PDF Converter */}
-        {tool.id === 'eps-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'eps-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -4145,7 +4140,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Images to PDF Converter */}
-        {tool.id === 'images-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'images-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -5204,7 +5199,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for WebP to PDF Converter */}
-        {tool.id === 'webp-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'webp-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -6035,7 +6030,8 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
         {BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchOneContent toolId={tool.id} />}
         {BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchTwoContent toolId={tool.id} />}
-        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && (
+        {BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchThreeContent toolId={tool.id} />}
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && !BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && (
           <PdfToolSupportingContent toolId={tool.id} />
         )}
 
