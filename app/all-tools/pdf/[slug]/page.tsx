@@ -17,6 +17,7 @@ import { readDownloadResultResponse } from '@/app/lib/download-result-client';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
 import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 import { BATCH_ONE_PDF_TOOL_IDS, getBatchOnePdfHeroDescription, HumanizedPdfBatchOneContent } from '@/app/components/HumanizedPdfBatchOneContent';
+import HumanizedPdfBatchTwoContent, { BATCH_TWO_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchTwoContent';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -642,7 +643,6 @@ export default function PdfToolPage({ params }: PageProps) {
       )}
 
         {tool.id === 'compress-pdf' && <PriorityToolGuide toolId="compress-pdf" />}
-        {tool.id === 'pdf-to-word' && <PriorityToolGuide toolId="pdf-to-word" />}
         {tool.id === 'pdf-to-jpg' && <PriorityToolGuide toolId="pdf-to-jpg" />}
 
         {/* SEO Content for Unlock PDF */}
@@ -6034,7 +6034,10 @@ export default function PdfToolPage({ params }: PageProps) {
           </div>
         )}
         {BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchOneContent toolId={tool.id} />}
-        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && <PdfToolSupportingContent toolId={tool.id} />}
+        {BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchTwoContent toolId={tool.id} />}
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && (
+          <PdfToolSupportingContent toolId={tool.id} />
+        )}
 
         {!PDF_TOOLS_WITH_EXISTING_RELATED_SECTIONS.has(tool.id) && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 pb-16">
