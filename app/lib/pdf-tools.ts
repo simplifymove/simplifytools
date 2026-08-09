@@ -633,7 +633,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-epub': {
     id: 'pdf-to-epub',
     title: 'PDF to EPUB',
-    description: 'Convert PDF to EPUB eBook',
+    description: 'Convert fixed-page PDF content into EPUB e-book format for compatible readers.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -645,7 +645,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-mobi': {
     id: 'pdf-to-mobi',
     title: 'PDF to MOBI',
-    description: 'Convert PDF to MOBI eBook',
+    description: 'Convert PDF content into MOBI format for compatible e-book readers.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -657,7 +657,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-azw3': {
     id: 'pdf-to-azw3',
     title: 'PDF to AZW3',
-    description: 'Convert PDF to AZW3 eBook',
+    description: 'Convert PDF content into AZW3 e-book format for compatible readers.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -669,7 +669,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'epub-to-pdf': {
     id: 'epub-to-pdf',
     title: 'EPUB to PDF',
-    description: 'Convert EPUB eBook to PDF',
+    description: 'Render compatible EPUB e-book content into a fixed-page PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -681,7 +681,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'mobi-to-pdf': {
     id: 'mobi-to-pdf',
     title: 'MOBI to PDF',
-    description: 'Convert MOBI eBook to PDF',
+    description: 'Render compatible MOBI e-book content into a fixed-page PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -693,7 +693,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'azw3-to-pdf': {
     id: 'azw3-to-pdf',
     title: 'AZW3 to PDF',
-    description: 'Convert AZW3 eBook to PDF',
+    description: 'Render compatible AZW3 e-book content into a fixed-page PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -705,7 +705,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'url-to-pdf': {
     id: 'url-to-pdf',
     title: 'URL to PDF',
-    description: 'Convert webpage to PDF',
+    description: 'Render an accessible webpage URL into a static PDF document.',
     category: 'Convert',
     engine: 'convert',
     icon: Link,
@@ -726,7 +726,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'ms-outlook-to-pdf': {
     id: 'ms-outlook-to-pdf',
     title: 'Outlook to PDF',
-    description: 'Convert Outlook MSG file to PDF',
+    description: 'Render supported Outlook MSG message content into a PDF document.',
     category: 'Convert',
     engine: 'convert',
     icon: Mail,
@@ -1074,7 +1074,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-docx': {
     id: 'pdf-to-docx',
     title: 'PDF to Word',
-    description: 'Convert PDF to Microsoft Word DOCX format',
+    description: 'Extract PDF text into DOCX with OCR fallback for scanned pages.',
     category: 'Convert',
     engine: 'convert',
     icon: File,
@@ -1109,7 +1109,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-pptx': {
     id: 'pdf-to-pptx',
     title: 'PDF to PowerPoint',
-    description: 'Convert PDF to PowerPoint PPTX presentation',
+    description: 'Convert PDF pages into a PPTX with one image-based slide per selected page.',
     category: 'Convert',
     engine: 'convert',
     icon: File,
@@ -1129,7 +1129,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-xlsx': {
     id: 'pdf-to-xlsx',
     title: 'PDF to Excel',
-    description: 'Convert PDF tables and content to Excel XLSX',
+    description: 'Extract detected PDF tables into XLSX with page-text fallback when needed.',
     category: 'Convert',
     engine: 'convert',
     icon: File,
@@ -1149,7 +1149,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-html': {
     id: 'pdf-to-html',
     title: 'PDF to HTML',
-    description: 'Convert PDF to HTML web format',
+    description: 'Extract PDF text into HTML with OCR fallback for scanned pages.',
     category: 'Convert',
     engine: 'convert',
     icon: Globe,
@@ -1184,7 +1184,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-rtf': {
     id: 'pdf-to-rtf',
     title: 'PDF to RTF',
-    description: 'Convert PDF to Rich Text Format',
+    description: 'Extract PDF text into RTF with OCR fallback for scanned pages.',
     category: 'Convert',
     engine: 'convert',
     icon: FileCode,

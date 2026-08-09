@@ -19,6 +19,7 @@ import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 import { BATCH_ONE_PDF_TOOL_IDS, getBatchOnePdfHeroDescription, HumanizedPdfBatchOneContent } from '@/app/components/HumanizedPdfBatchOneContent';
 import HumanizedPdfBatchTwoContent, { BATCH_TWO_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchTwoContent';
 import HumanizedPdfBatchThreeContent, { BATCH_THREE_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchThreeContent';
+import HumanizedPdfBatchFourContent, { BATCH_FOUR_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchFourContent';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -6031,7 +6032,8 @@ export default function PdfToolPage({ params }: PageProps) {
         {BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchOneContent toolId={tool.id} />}
         {BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchTwoContent toolId={tool.id} />}
         {BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchThreeContent toolId={tool.id} />}
-        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && !BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && (
+        {BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchFourContent toolId={tool.id} />}
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && !BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && !BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && (
           <PdfToolSupportingContent toolId={tool.id} />
         )}
 
