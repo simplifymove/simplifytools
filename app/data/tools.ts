@@ -408,7 +408,7 @@ const converterTools: Tool[] = [
   {
     id: 'compress',
     title: 'Compress Image Size',
-    description: 'Reduce image file size without quality loss',
+    description: 'Reduce image file size while aiming to retain good visual quality',
     category: 'Image',
     icon: Package,
     route: '/all-tools/compress-image',
@@ -1626,7 +1626,7 @@ const downloaderTools: Tool[] = [
   {
     id: 'save-from-online',
     title: 'Save From Online',
-    description: 'Download any file from any URL - videos, images, PDFs, documents, and more',
+    description: 'Download supported public files and media from compatible URLs. Availability depends on the source and configured providers.',
     category: 'Downloader',
     icon: Download,
     route: '/all-tools/save-from-online',

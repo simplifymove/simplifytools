@@ -77,7 +77,7 @@ export default function VideoToolsPage() {
               >
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free Video Tools Online</h1>
                 <p className="text-lg text-white/90 max-w-3xl">
-                  Use our free video tools to convert, compress, trim, and edit videos instantly. Convert MP4, WebM, MKV, and more formats. No signup required, no watermarks, completely free.
+                  Use our free video tools to convert, compress, trim, and edit supported formats such as MP4, WebM, and MKV. No signup is required; output depends on the selected tool and source.
                 </p>
               </motion.div>
             </div>
@@ -357,7 +357,6 @@ export default function VideoToolsPage() {
     </>
   );
 }
-
 
 
 

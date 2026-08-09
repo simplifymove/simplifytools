@@ -193,10 +193,10 @@ export const imageToolsData = {
   },
   'compress-image': {
     title: 'Image Compressor - Reduce File Size & Optimize | SimplifyConvert',
-    description: 'Compress JPG, PNG, WebP images instantly. Maintain quality while reducing file size by up to 80%. Free online tool.',
+    description: 'Compress JPG, PNG, and WebP images while aiming to retain good visual quality. Results depend on image content and compression settings.',
     keywords: ['compress image', 'image compressor', 'image optimization', 'reduce file size', 'optimize image', 'free tool'],
     h1: 'Compress Images Online',
-    heroDesc: 'Reduce image file sizes without quality loss. Optimize images for web, email, and social media sharing.',
+    heroDesc: 'Reduce file size while aiming to retain good visual quality. Review the output when image quality is important.',
     button: 'Compress Image',
     relatedTools: [
       { title: 'Compress JPG', route: '/all-tools/compress-jpg' },
@@ -205,8 +205,8 @@ export const imageToolsData = {
       { title: 'Resize Image', route: '/all-tools/resize-image' },
     ],
     faq: [
-      { q: 'How much can I compress an image?', a: 'Compression depends on your image type. Typically: JPG 30-50%, PNG 20-40%, WebP 10-30% reduction with quality preserved.' },
-      { q: 'Will my image quality suffer?', a: 'No, our compression uses smart algorithms to reduce file size while keeping image quality visually identical.' },
+      { q: 'How much can I compress an image?', a: 'File-size reduction depends on the image format, content, dimensions, and selected compression settings.' },
+      { q: 'Will my image quality suffer?', a: 'Compression can reduce visual quality. The amount depends on the image content and settings, so review the output when quality is important.' },
       { q: 'What formats does this tool support?', a: 'We support JPG, PNG, WebP, GIF, BMP, TIFF, and more. Choose one or upload multiple formats.' },
       { q: 'Is compression reversible?', a: 'No, lossy compression is permanent. Always keep your original file before compressing.' },
       { q: 'How do I bulk compress multiple images?', a: 'Use our Bulk Image Compressor tool to process dozens of images at once and download them all together.' },

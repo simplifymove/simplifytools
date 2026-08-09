@@ -303,7 +303,7 @@ export default function HeicToJpgPage() {
                   <span>What's the file size limit?</span>
                   <span className="group-open:rotate-180 transition">▼</span>
                 </summary>
-                <p className="text-gray-600 mt-4">You can convert most image files without limits. For very large files (over 50MB), we recommend compressing them first with our image compression tool, then converting to JPG.</p>
+                <p className="text-gray-600 mt-4">Files around 50MB or larger may exceed practical upload or processing constraints. Compress or resize very large images before converting them to JPG.</p>
               </details>
             </div>
           </div>

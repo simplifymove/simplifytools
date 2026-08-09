@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/video-tools',
     siteName: 'SimplifyConvert',
     title: 'Free Video Tools Online - Convert & Compress Videos',
-    description: 'Convert, compress, trim and edit videos online for free. No signup, no watermarks, completely free.',
+    description: 'Convert, compress, trim, and edit supported video formats online for free. No signup is required; output depends on the selected tool and source.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',

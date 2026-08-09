@@ -19,17 +19,14 @@ function sitemapDebugLog(...args: Parameters<typeof console.log>) {
   }
 }
 
-// Tool patterns to exclude: YouTube, Instagram, TikTok downloaders
-// These are either not functional or have platform restrictions
-const EXCLUDED_PATTERNS = [
-  'youtube',
-  'instagram',
-  'tiktok',
+// Exact legacy downloader identifiers that must not enter the sitemap.
+// Platform-named AI generators and provider-dependent public tools remain eligible.
+const EXCLUDED_TOOL_IDS = new Set([
   'instagram-dl',
   'tiktok-dl',
   'instagram-reels',
   'tiktok-watermark',
-];
+]);
 
 const UNFINISHED_TOOL_IDS = new Set<string>([]);
 
@@ -48,13 +45,10 @@ const NOINDEX_TOOL_ROUTES = new Set([
   '/all-tools/financial-calculators/india-tax',
 ]);
 
-function isExcludedTool(id: string, title = ''): boolean {
+function isExcludedTool(id: string, _title = ''): boolean {
   const idLower = id.toLowerCase();
-  const titleLower = title.toLowerCase();
 
-  return UNFINISHED_TOOL_IDS.has(idLower) || EXCLUDED_PATTERNS.some(
-    (pattern) => idLower.includes(pattern) || titleLower.includes(pattern)
-  );
+  return UNFINISHED_TOOL_IDS.has(idLower) || EXCLUDED_TOOL_IDS.has(idLower);
 }
 
 /**

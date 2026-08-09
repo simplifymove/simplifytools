@@ -1049,7 +1049,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Will removing watermarks damage my PDF?',
-                    a: 'No, your PDF remains completely intact. Our watermark removal only eliminates watermarks and unwanted elements. All original content, text, formatting, images, and layout are preserved exactly as they were.'
+                    a: 'Watermark detection and removal may affect nearby text, graphics, colors, or page rendering. Complex or overlapping watermarks may require manual review. Review the resulting PDF before relying on it.'
                   },
                   {
                     q: 'What watermark removal methods are available?',
@@ -1139,7 +1139,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Will removing watermarks damage my PDF?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'No, your PDF remains completely intact. Our watermark removal only eliminates watermarks and unwanted elements. All original content, text, formatting, images, and layout are preserved exactly as they were.'
+                    text: 'Watermark detection and removal may affect nearby text, graphics, colors, or page rendering. Complex or overlapping watermarks may require manual review. Review the resulting PDF before relying on it.'
                   }
                 },
                 {
@@ -4373,7 +4373,7 @@ export default function PdfToolPage({ params }: PageProps) {
             <div className="mb-16 p-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Image to PDF Converter - The Smarter Solution</h2>
               <p className="text-lg text-gray-700 mb-4">
-                Instead of hunting for image-to-PDF software or paying for subscriptions, use our free online converter. We support all major image formats—JPG, PNG, GIF, WEBP, TIFF, and HEIC—in one simple tool. Merge images into PDFs without limits, adjust compression to your needs, and download instantly. No registration, no watermarks, no complications.
+                Instead of hunting for image-to-PDF software or paying for subscriptions, use our free online converter. We support JPG, PNG, GIF, WEBP, TIFF, and HEIC in one simple tool. Merge images up to the documented 100 MB-per-file limit, adjust compression to your needs, and download the resulting PDF. No registration or added watermarks.
               </p>
               <p className="text-lg text-gray-700">
                 Perfect for students creating study guides from lecture slides, professionals organizing project documentation, photographers compiling portfolios, and anyone who needs to convert and merge images into portable PDF documents.
@@ -4605,7 +4605,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
                   { icon: '✓', title: 'Free to Use', description: 'No subscription or credit card is required. File-count and size limits may apply.' },
-                  { icon: '🔄', title: 'Batch Convert', description: 'Convert multiple PDFs to Word in succession. Process numerous documents without size limitations or conversion count restrictions.' },
+                  { icon: '🔄', title: 'Batch Convert', description: 'Convert PDFs to Word in succession. Each uploaded PDF must be no larger than 100MB, and file-count limits may apply.' },
                   { icon: '📄', title: 'Preserve Formatting', description: 'Our converter maintains text layout, font sizes, and document structure. Your Word files are properly formatted and ready to edit.' },
                   { icon: '⚡', title: 'No Installation', description: 'Works entirely online in your browser. No software downloads, installations, or system requirements needed. Start converting immediately.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most PDF-to-Word conversions complete in seconds, even with large files. Get your editable Word document instantly.' },
