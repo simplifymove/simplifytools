@@ -47,7 +47,7 @@ export const imageToolsRegistry: Record<string, ImageTool> = {
   'profile-photo-maker': {
     id: 'profile-photo-maker',
     title: 'Profile Photo Maker',
-    description: 'Create perfect profile photos',
+    description: 'Create profile photos with configurable background, size, and framing options',
     slug: 'profile-photo-maker',
     type: 'ai',
     requiresValidation: true,
