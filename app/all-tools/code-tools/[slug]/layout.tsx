@@ -87,8 +87,8 @@ const titleOverrides: Record<string, string> = {
 const descriptionOverrides: Record<string, string> = {
   'json-formatter': 'Parse valid JSON and rewrite it with your selected indentation. Includes common syntax-error guidance and a warning not to submit secrets to server processing.',
   'json-validator': 'Check JSON syntax with JSON.parse and diagnose quotes, trailing commas, missing values, and nesting errors. This validates syntax, not JSON Schema.',
-  'jwt-decoder': 'Decode JWT tokens instantly in your browser. View headers, payloads, and claims securely without sending token data to servers.',
-  'password-generator': 'Generate strong random passwords instantly online. Customize length, symbols, numbers, and letter options securely in your browser.',
+  'jwt-decoder': 'Decode and inspect the header and payload of a JWT token. Decoding does not verify the token signature or establish that its claims are trustworthy.',
+  'password-generator': 'Generate random password strings using the available length, uppercase, lowercase, number, and symbol options. Review the generated value before use.',
 };
 
 function formatToolName(slug: string): string {
@@ -104,42 +104,42 @@ function buildSearchIntentDescription(slug: string, tool: CodeTool, label: strin
   }
 
   if (slug.includes('validator')) {
-    return `Validate ${label.replace(/ Validator$/, '')} syntax instantly online. Find formatting errors, check structure, and debug code securely in your browser.`;
+    return `Validate ${label.replace(/ Validator$/, '')} syntax using the checks available for this tool. Review reported errors and limitations before relying on the result.`;
   }
 
   if (slug.includes('formatter') || slug.includes('beautifier')) {
-    return `Format and beautify ${label.replace(/ Formatter$| Beautifier$/, '')} code instantly online. Improve readability, indentation, and structure in your browser.`;
+    return `Format and beautify ${label.replace(/ Formatter$| Beautifier$/, '')} code using the available formatting options. Review the output before replacing source code.`;
   }
 
   if (slug.includes('minifier')) {
-    return `Minify ${label.replace(/ Minifier$/, '')} code instantly online. Remove extra whitespace and reduce file size for faster web performance.`;
+    return `Minify ${label.replace(/ Minifier$/, '')} code by applying the transformations supported by this tool. Review the output before using it in production.`;
   }
 
   if (slug.includes('decoder') || slug.includes('decode')) {
-    return `Decode ${label.replace(/ Decoder$| Decode$/, '')} data instantly online. Convert encoded text back to readable output securely in your browser.`;
+    return `Decode ${label.replace(/ Decoder$| Decode$/, '')} data using the supported decoding workflow. Check the resulting text or data before using it.`;
   }
 
   if (slug.includes('encoder') || slug.includes('encode')) {
-    return `Encode ${label.replace(/ Encoder$| Encode$/, '')} data instantly online. Convert text into safe encoded output securely in your browser.`;
+    return `Encode ${label.replace(/ Encoder$| Encode$/, '')} data using the supported encoding workflow. Encoding changes representation and should not be treated as encryption.`;
   }
 
   if (slug.includes('converter') || slug.includes('-to-')) {
-    return `Convert ${label.replace(/ Converter$/, '')} instantly online. Transform developer data formats securely in your browser with no uploads required.`;
+    return `Convert ${label.replace(/ Converter$/, '')} using the supported conversion workflow. Review the generated structure, values, and formatting before using the result.`;
   }
 
   if (slug.includes('generator')) {
-    return `Generate ${label.replace(/ Generator$/, '')} instantly online. Create developer-ready output securely in your browser with no signup required.`;
+    return `Generate ${label.replace(/ Generator$/, '')} using the options available for this tool. Review generated values before using them in an application or workflow.`;
   }
 
   if (slug.includes('regex')) {
-    return 'Test regular expressions instantly online. Check matches, debug patterns, and validate regex behavior securely in your browser.';
+    return 'Test a regular expression against the provided text using the available flags. Review matches and pattern behavior before using the expression in an application.';
   }
 
   if (slug.includes('diff')) {
-    return 'Compare text instantly online and highlight differences side by side. Free browser-based text diff checker with no uploads required.';
+    return 'Compare two text inputs and review the differences reported by the tool. The comparison is intended to help inspect changed, added, or removed text.';
   }
 
-  return `${tool.description}. Use this free online developer tool instantly in your browser with no uploads, signup, or installation required.`;
+  return `${tool.description}. Use the available options for this developer utility and review the generated result before using it in another workflow.`;
 }
 
 function buildSEOData(slug: string, tool: CodeTool): ToolSEOData {
