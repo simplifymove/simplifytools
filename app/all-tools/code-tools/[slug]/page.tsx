@@ -76,7 +76,7 @@ const faqItems = [
   },
   {
     question: 'What browsers are supported?',
-    answer: 'This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge. It requires JavaScript to be enabled.',
+    answer: 'Use a modern browser with JavaScript enabled. Behavior can vary by browser, device resources, input size, and the selected tool.',
   },
   {
     question: 'Is there a limit on input size?',
@@ -872,9 +872,9 @@ export default function CodeToolPage({ params }: PageProps) {
                   <div className="p-4 border border-gray-200 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                       <CheckCircle size={18} className="text-green-600" />
-                      Free Forever
+                      No Account Required
                     </h3>
-                    <p className="text-gray-600 text-sm">Completely free with no hidden charges or premium plans</p>
+                    <p className="text-gray-600 text-sm">Use the available developer utilities without creating an account.</p>
                   </div>
                   <div className="p-4 border border-gray-200 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
@@ -886,9 +886,9 @@ export default function CodeToolPage({ params }: PageProps) {
                   <div className="p-4 border border-gray-200 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                       <CheckCircle size={18} className="text-green-600" />
-                      Fast & Reliable
+                      Processing Time Varies
                     </h3>
-                    <p className="text-gray-600 text-sm">Instant processing with consistent, accurate results</p>
+                    <p className="text-gray-600 text-sm">Processing time and output depend on the selected tool, input size, options, and server workload.</p>
                   </div>
                 </div>
               </div>
@@ -916,7 +916,7 @@ export default function CodeToolPage({ params }: PageProps) {
                       What browsers are supported?
                       <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
                     </summary>
-                    <p className="text-gray-600 mt-3 text-sm">This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge. It requires JavaScript to be enabled.</p>
+                    <p className="text-gray-600 mt-3 text-sm">Use a modern browser with JavaScript enabled. Behavior can vary by browser, device resources, input size, and the selected tool.</p>
                   </details>
                   <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
                     <summary className="font-semibold text-gray-900 flex items-center justify-between">
@@ -965,18 +965,18 @@ export default function CodeToolPage({ params }: PageProps) {
                 {[
                   {
                     icon: Zap,
-                    title: 'Instant Execution',
-                    description: 'Execute and get results instantly with real-time processing',
+                    title: 'Server-Side Processing',
+                    description: 'Tool inputs are sent to the processing service. Completion time depends on the selected operation, input, and current server workload.',
                   },
                   {
                     icon: Shield,
-                    title: 'Secure & Safe',
-                    description: 'Inputs are sent to our server for processing. If you create a download link, the generated result may be retained temporarily for retrieval.',
+                    title: 'Processing and Downloads',
+                    description: 'Inputs are sent to our server for processing. Generated results used for download may be retained temporarily for retrieval.',
                   },
                   {
                     icon: CheckCircle,
-                    title: 'Many Languages',
-                    description: 'Support for multiple programming languages and operations',
+                    title: 'Multiple Tool Types',
+                    description: 'The collection includes formatting, conversion, validation, encoding, decoding, and generation utilities for supported inputs.',
                   },
                 ].map((feature, index) => (
                   <motion.div
