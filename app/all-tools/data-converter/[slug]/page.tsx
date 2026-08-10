@@ -571,13 +571,13 @@ export default function DataToolPage({ params }: PageProps) {
             {[
               {
                 icon: Zap,
-                title: 'Fast Conversion',
-                description: 'Convert files instantly with our optimized processing engine',
+                title: 'Processing Time Varies',
+                description: 'Processing time depends on the source file, conversion type, selected settings, and current service availability.',
               },
               {
                 icon: Shield,
-                title: 'Secure & Private',
-                description: 'Files are sent to our server for conversion. Temporary conversion files are cleaned up after the request, and the result may be retained briefly for download.'
+                title: 'Server-Side Processing',
+                description: 'Supported files are uploaded to the server for conversion. Temporary processing and download handling depend on the current server workflow.'
               },
               {
                 icon: CheckCircle,
@@ -648,14 +648,14 @@ export default function DataToolPage({ params }: PageProps) {
                   description: 'Use immediately without account creation, email verification, or payment information.'
                 },
                 {
-                  title: 'Secure Processing',
-                  description: 'Files are sent to our server for conversion, and temporary conversion files are cleaned up after the request.'
+                  title: 'Processing Workflow',
+                  description: 'Supported source files are sent to the server and processed according to the selected data-conversion workflow.'
                 },
                 {
                   title: tool.category === 'split' ? 'Multiple Output Parts' : 'Single-File Workflow',
                   description: tool.category === 'split'
                     ? 'One source file is divided into multiple output parts and returned as a ZIP.'
-                    : 'Convert one source file per request, up to the current 100 MB limit.'
+                    : 'Convert one supported source file per request. The current upload interface applies a 100 MB client-side file limit, while practical processing limits can vary by conversion.'
                 }
               ].map((benefit, idx) => (
                 <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
@@ -697,7 +697,7 @@ export default function DataToolPage({ params }: PageProps) {
                   <li>Review converted data for completeness before using in production</li>
                   <li>Test conversions with sample files before processing large datasets</li>
                   <li>Verify data integrity after complex multi-step conversions</li>
-                  <li>Check for special characters or formatting that may not convert perfectly</li>
+                  <li>Check special characters, formatting, data types, and structure because they may be represented differently after conversion</li>
                   <li>Document your conversion settings if you need to repeat the process</li>
                 </ul>
               </div>
