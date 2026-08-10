@@ -180,7 +180,7 @@ export default function ContactPage() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  ✓ Message sent successfully! We'll get back to you soon.
+                  ✓ Message sent successfully. We've received your request.
                 </motion.div>
               )}
               {error && (
