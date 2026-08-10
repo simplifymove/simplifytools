@@ -4,16 +4,16 @@ import { notFound } from 'next/navigation';
 // Calculator metadata map
 const calculatorMetadata: Record<string, { title: string; description: string }> = {
   'startup-runway': {
-    title: 'Startup Runway Calculator - Forecast Funding Needs',
-    description: 'Calculate your startup\'s financial runway, burn rate, and funding requirements. Project cash runway and monthly burn costs.',
+    title: 'Startup Runway Calculator - Estimate Cash Runway',
+    description: 'Estimate startup runway, burn, and possible funding needs from the values and growth assumptions entered.',
   },
   'saas-profit': {
-    title: 'SaaS Profit Simulator - Revenue & Growth Modeling',
-    description: 'Model SaaS revenue growth, profitability, churn rates, and customer acquisition costs. Analyze your business profitability.',
+    title: 'SaaS Profit Simulator - Revenue and Cost Scenarios',
+    description: 'Explore SaaS revenue, costs, churn, customer acquisition, and profitability scenarios using the assumptions entered.',
   },
   'loan-optimizer': {
-    title: 'Loan Optimization Engine - Payment Strategy Analyzer',
-    description: 'Analyze loan terms, calculate monthly payments, and optimize your payment strategy to save money on interest.',
+    title: 'Loan Repayment Calculator - EMI and Interest Estimate',
+    description: 'Estimate monthly EMI, total interest, repayment timing, and the effect of additional payments from the loan terms entered.',
   },
   'india-tax': {
     title: 'India Tax Estimator Under Review | SimplifyConvert',
