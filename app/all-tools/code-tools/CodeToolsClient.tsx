@@ -79,7 +79,7 @@ export default function CodeToolsPage() {
               Free Code Tools Online (Format, Minify, Validate)
             </h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              49 free online tools for developers. Format, minify, validate, and convert code in JavaScript, HTML, CSS, JSON, XML, and more. No signup required.
+              Browse 49 developer utilities for formatting, minification, validation, encoding, decoding, conversion, and generation across supported code and data formats.
             </p>
           </motion.div>
         </div>
@@ -187,12 +187,12 @@ export default function CodeToolsPage() {
               <p className="text-white/80 text-sm mt-2 font-medium">Categories</p>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }}>
-              <div className="text-3xl font-bold text-white">100%</div>
-              <p className="text-white/80 text-sm mt-2 font-medium">Free & Open</p>
+              <div className="text-3xl font-bold text-white">{tools.length}</div>
+              <p className="text-white/80 text-sm mt-2 font-medium">Developer Utilities</p>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }}>
               <div className="text-3xl font-bold text-white">⚡</div>
-              <p className="text-white/80 text-sm mt-2 font-medium">Instant Results</p>
+              <p className="text-white/80 text-sm mt-2 font-medium">Processing Tools</p>
             </motion.div>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function CodeToolsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Account Required</h3>
                 <p className="text-gray-700 text-sm">Choose a formatter, validator, minifier, encoder, decoder, converter, or generator based on the output you need.</p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
@@ -223,11 +223,11 @@ export default function CodeToolsPage() {
                 <p className="text-gray-700 text-sm">Works directly in your browser. Use code tools on Windows, Mac, iPhone, Android, and any device with internet. No software downloads or complex setup required.</p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Instant Results</h3>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Processing Time Varies</h3>
                 <p className="text-gray-700 text-sm">Runtime depends on input length and operation. Validation identifies syntax problems but does not prove application correctness or security.</p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Server-Side Processing</h3>
                 <p className="text-gray-700 text-sm">Tool input is sent over HTTPS to the processing API. Remove secrets, tokens, private keys, passwords, and sensitive customer data first.</p>
               </div>
             </div>
@@ -262,7 +262,7 @@ export default function CodeToolsPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Our Code Tools</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              It's simple and intuitive. Select the tool you need from our collection—try <Link href="/all-tools/code-tools/code-minifier" className="text-green-600 font-medium hover:underline">minify code</Link>, <Link href="/all-tools/code-tools/json-formatter" className="text-green-600 font-medium hover:underline">format JSON</Link>, or any other tool. Paste your code or upload a file, then click process. Our tools automatically transform your input and generate results instantly. Copy the output or download it. No signup, no registration, no learning curve—just fast, secure code processing in seconds.
+              It's simple and intuitive. Select the tool you need from our collection—try <Link href="/all-tools/code-tools/code-minifier" className="text-green-600 font-medium hover:underline">minify code</Link>, <Link href="/all-tools/code-tools/json-formatter" className="text-green-600 font-medium hover:underline">format JSON</Link>, or any other tool. Paste or provide the supported input, then start processing. The selected tool sends its input to the processing service and returns the available result. Review the output before using it, especially for validation, conversion, minification, encoding, or generated values.
             </p>
           </motion.div>
         </div>
@@ -289,7 +289,7 @@ export default function CodeToolsPage() {
             name: 'Do I need to sign up or install anything?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'No signup required! Our code tools work instantly in your browser without registration, login, or account creation. Simply select your tool, paste your code, and get results immediately. No personal information needed or software to download.'
+              text: 'The current Code Tools utilities do not require account creation. Select a supported tool, provide its required input, and start processing. Processing time depends on the tool, input size, and current service availability.'
             }
           },
           {
@@ -303,7 +303,7 @@ export default function CodeToolsPage() {
             name: 'Can I use the code tools on mobile?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. All code tools work on iOS, Android, tablets, and mobile browsers. No app installation required. Simply visit SimplifyConvert from your mobile device and start processing code formats instantly. Full functionality on all devices.'
+              text: 'The tools can be opened in modern desktop and mobile browsers with JavaScript enabled. Practical behavior can vary by browser, device resources, input size, and the selected tool.'
             }
           },
           {
@@ -324,7 +324,7 @@ export default function CodeToolsPage() {
           '@context': 'https://schema.org',
           '@type': 'ItemList',
           name: 'Free Code Tools for Developers',
-          description: '49 free online tools for developers to format, minify, validate, and convert code instantly',
+          description: '49 developer utilities for supported formatting, minification, validation, encoding, decoding, conversion, and generation workflows',
           itemListElement: tools.map((tool, idx) => ({
             '@type': 'SoftwareApplication',
             position: idx + 1,
