@@ -268,6 +268,62 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
       },
     ],
   },
+  'essay-writer': {
+    introduction: 'The Essay Writer creates a structured draft from a topic and the selected essay type. Use the generated text as a starting point for planning, revision, and research rather than as a substitute for checking facts, sources, assignment requirements, or academic integrity rules.',
+    useCases: ['Create a first draft from an essay topic', 'Explore a possible structure for persuasive or informative writing', 'Develop ideas before revising them in your own voice', 'Compare different approaches to the same essay topic'],
+    examples: [
+      {
+        label: 'Informative essay draft',
+        input: 'Topic: How urban green spaces affect daily life. Essay type: Informative.',
+        output: 'A structured draft introducing the topic, developing several relevant points, and providing a conclusion that can be revised and supported with verified sources.',
+      },
+    ],
+  },
+  'article-writer': {
+    introduction: 'The Article Writer generates an article draft from the topic, audience, and article type you provide. The result can help with structure and initial wording, but factual claims, quotations, dates, sources, and other publishable details should be independently reviewed before use.',
+    useCases: ['Draft an article outline and first version from a topic', 'Explore how a subject could be explained to a particular audience', 'Create a starting draft for a how-to or opinion article', 'Develop article sections for further research and editing'],
+    examples: [
+      {
+        label: 'How-to article draft',
+        input: 'Topic: Organizing digital files for a small business. Audience: Small business owners. Type: How-To Guide.',
+        output: 'A practical article draft organized into steps, with an introduction and conclusion ready for fact-checking, examples, and editorial revision.',
+      },
+    ],
+  },
+  'story-generator': {
+    introduction: 'The Story Generator turns a supplied story idea into a creative draft using the available story settings. Generated characters, events, and wording can be revised freely, and the result should be reviewed if originality, continuity, or suitability for a particular audience is important.',
+    useCases: ['Turn a short story idea into a fuller creative draft', 'Explore characters, scenes, or plot directions', 'Create a writing prompt when you are unsure how to begin', 'Generate an alternative story direction for further editing'],
+    examples: [
+      {
+        label: 'Story idea expansion',
+        input: 'A night-shift librarian discovers that one book changes its ending every morning.',
+        output: 'A fictional story draft that develops the setting, introduces a central character, builds a conflict around the changing book, and provides a possible ending.',
+      },
+    ],
+  },
+  'fiction-writer': {
+    introduction: 'The Fiction Writer develops a short fictional draft from a premise and optional genre selection. It can help explore plot, character, conflict, and pacing, but generated creative material may still need substantial revision for consistency, originality, voice, and publication quality.',
+    useCases: ['Develop a premise into a short fiction draft', 'Explore how the same premise works in different genres', 'Generate possible scenes, conflicts, and character interactions', 'Create material to revise into your own narrative voice'],
+    examples: [
+      {
+        label: 'Mystery fiction draft',
+        input: 'Genre: Mystery. Premise: A hotel guest receives a room key for a floor that does not appear in the elevator.',
+        output: 'A short mystery draft with an opening hook, developing clues, escalating tension, and a conclusion that can be expanded or rewritten.',
+      },
+    ],
+  },
+  'poem-generator': {
+    introduction: 'The Poem Generator creates a poetry draft from a topic and optional style such as haiku, sonnet, free verse, acrostic, or limerick. Treat the result as generated creative material to review and revise, especially when originality, strict poetic form, or publication use matters.',
+    useCases: ['Explore a theme through a selected poetry style', 'Generate a starting draft for further creative editing', 'Compare different poetic approaches to the same topic', 'Experiment with form, imagery, and wording'],
+    examples: [
+      {
+        label: 'Free-verse draft',
+        input: 'Topic: The first rain after a long summer. Style: Free Verse.',
+        output: 'A free-verse poetry draft using imagery around heat, rain, changing air, and the transition between seasons.',
+      },
+    ],
+  },
+
 };
 
 interface PageProps {
