@@ -245,7 +245,7 @@ export default function TiffToJpgPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Adjust Quality Settings</h3>
-                <p className="text-gray-600 mt-2">Use the quality slider to find the perfect balance between file size and image quality.</p>
+                <p className="text-gray-600 mt-2">Use the quality slider to adjust JPEG compression, then compare the resulting file size and visible image quality.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -263,7 +263,7 @@ export default function TiffToJpgPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download Your JPG</h3>
-                <p className="text-gray-600 mt-2">Once conversion is complete, download your JPG file instantly. No signup required.</p>
+                <p className="text-gray-600 mt-2">Once conversion is complete, continue to download the generated JPG file. No signup is required for this converter.</p>
               </div>
             </div>
           </div>
@@ -286,14 +286,14 @@ export default function TiffToJpgPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Universal Compatibility</h3>
-                <p className="text-gray-600 text-sm">JPG is supported by all browsers, devices, and applications. TIFF files are less commonly supported, especially on the web.</p>
+                <p className="text-gray-600 text-sm">JPG is widely supported across browsers, devices, and applications. TIFF support is less common in typical web workflows.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Web-Ready Format</h3>
-                <p className="text-gray-600 text-sm">JPG is optimized for web use, providing excellent quality at smaller sizes. Perfect for websites, blogs, and social media.</p>
+                <p className="text-gray-600 text-sm">JPG is commonly used on websites, blogs, and social platforms because its lossy compression can reduce file size for photographic images.</p>
               </div>
             </div>
           </div>
@@ -315,7 +315,7 @@ export default function TiffToJpgPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will I lose quality converting TIFF to JPG?</h3>
-              <p className="text-gray-700">Our converter allows you to adjust quality settings to minimize quality loss. Higher quality settings (80-100%) provide excellent results with minimal visible difference from the original.</p>
+              <p className="text-gray-700">The quality setting controls JPEG compression. Higher settings generally retain more image detail but can create larger files; the visible difference depends on the source TIFF.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple TIFF files?</h3>
@@ -360,7 +360,7 @@ export default function TiffToJpgPage() {
               "name": "Will I lose quality converting TIFF to JPG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Our converter allows you to adjust quality settings to minimize quality loss. Higher quality settings (80-100%) provide excellent results with minimal visible difference from the original."
+                "text": "The quality setting controls JPEG compression. Higher settings generally retain more image detail but can create larger files; the visible difference depends on the source TIFF."
               }
             },
             {

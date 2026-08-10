@@ -228,7 +228,7 @@ export default function PngToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Upload Your PNG File</h3>
-                <p className="text-gray-600 mt-2">Click or drag and drop your PNG image. Transparency will be preserved in the AVIF format.</p>
+                <p className="text-gray-600 mt-2">Click or drag and drop your PNG image. AVIF supports transparency, and the converted result depends on the source image and encoder.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -278,14 +278,14 @@ export default function PngToAvifPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Full Transparency Support</h3>
-                <p className="text-gray-600 text-sm">AVIF preserves PNG transparency perfectly while using far fewer bytes, ideal for graphics and logos.</p>
+                <p className="text-gray-600 text-sm">AVIF supports alpha transparency and can produce smaller files for some graphics and logos, depending on the source image and encoding settings.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Better Performance</h3>
-                <p className="text-gray-600 text-sm">Dramatically faster page loads, improved SEO rankings, and superior user experience across all devices.</p>
+                <p className="text-gray-600 text-sm">Smaller image files can reduce transferred bytes and may help page-loading performance when the AVIF file is supported and appropriately encoded.</p>
               </div>
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function PngToAvifPage() {
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will PNG transparency be preserved?</h3>
-              <p className="text-gray-700">Yes, absolutely. AVIF fully supports alpha channel transparency. If your PNG has a transparent background, it will be perfectly preserved in the AVIF file.</p>
+              <p className="text-gray-700">AVIF supports alpha transparency. Transparent areas from the PNG can be retained when supported by the conversion pipeline, but the result should be checked after conversion.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than PNG?</h3>
@@ -319,7 +319,7 @@ export default function PngToAvifPage() {
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple files?</h3>
-              <p className="text-gray-700">Our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files one after another.</p>
+              <p className="text-gray-700">This converter currently processes one PNG file at a time. Additional files can be converted individually.</p>
             </div>
           </div>
         </div>
@@ -336,7 +336,7 @@ export default function PngToAvifPage() {
               "name": "Will PNG transparency be preserved?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, absolutely. AVIF fully supports alpha channel transparency. If your PNG has a transparent background, it will be perfectly preserved in the AVIF file."
+                "text": "AVIF supports alpha transparency. Transparent areas from the PNG can be retained when supported by the conversion pipeline, but the result should be checked after conversion."
               }
             },
             {
@@ -376,7 +376,7 @@ export default function PngToAvifPage() {
               "name": "Can I batch convert multiple files?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files one after another."
+                "text": "This converter currently processes one PNG file at a time. Additional files can be converted individually."
               }
             }
           ]

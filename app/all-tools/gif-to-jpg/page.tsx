@@ -105,7 +105,7 @@ export default function GifToJpgPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">GIF to JPG Converter</h1>
-                <p className="text-lg text-white/90">Convert GIF images to JPG format with high quality. First frame of animated GIFs will be used.</p>
+                <p className="text-lg text-white/90">Convert GIF images to static JPG files with adjustable JPEG quality. Animated GIFs use the browser-decoded first frame.</p>
               </div>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function GifToJpgPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
+                      <li>• Browser-based GIF-to-JPG conversion</li>
                       <li>• Uses first frame of animated GIFs</li>
                       <li>• Adjustable quality settings</li>
                       <li>• Conversion happens in your browser</li>

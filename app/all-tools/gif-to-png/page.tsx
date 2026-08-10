@@ -164,8 +164,8 @@ export default function GifToPngPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Preserves transparency</li>
+                      <li>• Browser-based GIF-to-PNG conversion</li>
+                      <li>• Supports transparency from the rendered GIF frame</li>
                       <li>• Uses first frame of animated GIFs</li>
                       <li>• Browser-based image conversion</li>
                     </ul>
@@ -205,7 +205,7 @@ export default function GifToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Click Convert to PNG</h3>
-                <p className="text-gray-600 mt-2">Press the convert button to instantly transform your GIF to PNG format.</p>
+                <p className="text-gray-600 mt-2">Press the convert button to render the browser-decoded GIF frame and encode it as a static PNG.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -244,7 +244,7 @@ export default function GifToPngPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Modern Format</h3>
-                <p className="text-gray-600 text-sm">PNG is the modern standard for web images. It's better supported and optimized for contemporary web browsers and applications.</p>
+                <p className="text-gray-600 text-sm">PNG is widely supported by modern browsers and image applications and is commonly used for static graphics, screenshots, and transparent images.</p>
               </div>
             </div>
           </div>

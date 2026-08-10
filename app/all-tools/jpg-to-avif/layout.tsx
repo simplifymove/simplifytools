@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'JPG to AVIF - Free Online Tool | SimplifyConvert',
-  description: 'Convert and edit jpg to avif online instantly. Free tool without signup required.',
+  description: 'Convert JPG images to AVIF with adjustable quality settings and server-assisted processing.',
   keywords: ['jpg to avif', 'free tool', 'online converter'],
   openGraph: {
     type: 'website',
@@ -10,10 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/jpg-to-avif',
     siteName: 'SimplifyConvert',
     title: 'JPG to AVIF - Free Online Tool',
-    description: 'Convert and edit jpg to avif online instantly. Free tool without signup required.',
+    description: 'Convert JPG images to AVIF with adjustable quality settings and server-assisted processing.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'JPG to AVIF' }],
   },
-  twitter: { card: 'summary_large_image', title: 'JPG to AVIF', description: 'Convert and edit jpg to avif online instantly. Free tool without signup required.', images: ['https://simplifyconvert.com/og-image.jpg'] },
+  twitter: { card: 'summary_large_image', title: 'JPG to AVIF', description: 'Convert JPG images to AVIF with adjustable quality settings and server-assisted processing.', images: ['https://simplifyconvert.com/og-image.jpg'] },
   alternates: { canonical: 'https://simplifyconvert.com/all-tools/jpg-to-avif' },
 };
 

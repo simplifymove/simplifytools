@@ -255,7 +255,7 @@ export default function JpgToAvifPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Download Your AVIF</h3>
-                  <p className="text-gray-600 mt-2">Download your optimized AVIF file instantly. No signup required for this conversion.</p>
+                  <p className="text-gray-600 mt-2">After processing is complete, download the generated AVIF file. No signup is required for this conversion.</p>
                 </div>
               </div>
             </div>
@@ -307,11 +307,11 @@ export default function JpgToAvifPage() {
               </div>
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Will quality be compromised?</h3>
-                <p className="text-gray-700">No. AVIF uses advanced compression that maintains excellent quality at much smaller file sizes. You can adjust the quality setting to optimize for your specific needs.</p>
+                <p className="text-gray-700">AVIF encoding can change image quality depending on the selected setting and source image. Use the quality control to compare visual detail and output file size.</p>
               </div>
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Can AVIF replace JPG on my website?</h3>
-                <p className="text-gray-700">Yes, AVIF can replace JPG for modern browsers. Use HTML picture tags to serve AVIF to supported browsers with JPG fallback for maximum compatibility.</p>
+                <p className="text-gray-700">AVIF can be used for supported browsers and applications. When compatibility with older software matters, keeping a JPG fallback can be useful.</p>
               </div>
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
@@ -319,7 +319,7 @@ export default function JpgToAvifPage() {
               </div>
               <div className="pb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple JPG files?</h3>
-                <p className="text-gray-700">Currently our converter handles one file at a time. However, conversion is instant, so you can quickly process multiple files sequentially.</p>
+                <p className="text-gray-700">This converter currently processes one JPG file at a time. Additional files can be converted individually.</p>
               </div>
             </div>
           </div>
@@ -352,7 +352,7 @@ export default function JpgToAvifPage() {
                 "name": "Will quality be compromised?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "No. AVIF uses advanced compression that maintains excellent quality at much smaller file sizes. You can adjust the quality setting to optimize for your specific needs."
+                  "text": "AVIF encoding can change image quality depending on the selected setting and source image. Use the quality control to compare visual detail and output file size."
                 }
               },
               {
@@ -360,7 +360,7 @@ export default function JpgToAvifPage() {
                 "name": "Can AVIF replace JPG on my website?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes, AVIF can replace JPG for modern browsers. Use HTML picture tags to serve AVIF to supported browsers with JPG fallback for maximum compatibility."
+                  "text": "AVIF can be used for supported browsers and applications. When compatibility with older software matters, keeping a JPG fallback can be useful."
                 }
               },
               {
@@ -376,7 +376,7 @@ export default function JpgToAvifPage() {
                 "name": "Can I convert multiple JPG files?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Currently our converter handles one file at a time. However, conversion is instant, so you can quickly process multiple files sequentially."
+                  "text": "This converter currently processes one JPG file at a time. Additional files can be converted individually."
                 }
               }
             ]

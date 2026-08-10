@@ -221,7 +221,7 @@ export default function HeicToJpgPage() {
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Download Your JPG</h3>
-                  <p className="text-gray-600 mt-2">Once converted, click "Download JPG" to save your image. JPG format is compatible with all devices and applications.</p>
+                  <p className="text-gray-600 mt-2">Once converted, click "Download JPG" to save your image. JPG is widely supported across browsers, devices, image editors, document tools, and publishing workflows.</p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -245,7 +245,7 @@ export default function HeicToJpgPage() {
                   <Image className="text-blue-600" size={24} />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Universal Compatibility</h3>
-                <p className="text-gray-600">JPG is supported on all devices, browsers, and applications. HEIC is relatively new and not supported everywhere.</p>
+                <p className="text-gray-600">JPG has broad support across browsers, devices, and applications, while HEIC support varies by platform and software.</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
@@ -275,14 +275,14 @@ export default function HeicToJpgPage() {
                   <span>Why does my iPhone use HEIC?</span>
                   <span className="group-open:rotate-180 transition">▼</span>
                 </summary>
-                <p className="text-gray-600 mt-4">Apple chose HEIC for better compression and quality. It reduces file size by up to 50% compared to JPG. However, this causes compatibility issues on non-Apple devices and platforms.</p>
+                <p className="text-gray-600 mt-4">HEIC is designed for efficient image storage and is commonly used by Apple devices. File-size differences compared with JPG depend on the image and encoding settings, while HEIC compatibility can vary across platforms and applications.</p>
               </details>
               <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
                 <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
                   <span>Will the image quality decrease?</span>
                   <span className="group-open:rotate-180 transition">▼</span>
                 </summary>
-                <p className="text-gray-600 mt-4">Not significantly. JPG is also a high-quality format. The conversion maintains excellent visual quality. Some minimal difference might occur due to different compression methods, but it's imperceptible to the human eye.</p>
+                <p className="text-gray-600 mt-4">JPG uses lossy compression, so some image information can change during conversion. The visible difference depends on the source HEIC image and the JPEG encoding used for the output.</p>
               </details>
               <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
                 <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
@@ -328,7 +328,7 @@ export default function HeicToJpgPage() {
                 "name": "Why does my iPhone use HEIC?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Apple chose HEIC for better compression and quality. It reduces file size by up to 50% compared to JPG. However, this causes compatibility issues on non-Apple devices and platforms."
+                  "text": "HEIC is designed for efficient image storage and is commonly used by Apple devices. File-size differences compared with JPG depend on the image and encoding settings, while HEIC compatibility can vary across platforms and applications."
                 }
               },
               {
@@ -336,7 +336,7 @@ export default function HeicToJpgPage() {
                 "name": "Will the image quality decrease?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Not significantly. JPG is also a high-quality format. The conversion maintains excellent visual quality. Some minimal difference might occur due to different compression methods, but it's imperceptible to the human eye."
+                  "text": "JPG uses lossy compression, so some image information can change during conversion. The visible difference depends on the source HEIC image and the JPEG encoding used for the output."
                 }
               }
             ]

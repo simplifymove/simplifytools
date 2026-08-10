@@ -261,7 +261,7 @@ export default function PngToWebpPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Preserve Transparency</h3>
-                <p className="text-gray-600 text-sm">WebP fully supports alpha channel transparency, making it perfect for graphics, logos, and images with transparent backgrounds.</p>
+                <p className="text-gray-600 text-sm">WebP supports alpha transparency and can be useful for graphics, logos, and other images with transparent areas.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -302,7 +302,7 @@ export default function PngToWebpPage() {
             </div>
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple PNG files at once?</h3>
-              <p className="text-gray-700">Currently our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files by uploading them one after another.</p>
+              <p className="text-gray-700">This converter currently processes one PNG file at a time. To convert additional files, upload and process them individually.</p>
             </div>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function PngToWebpPage() {
               "name": "Can I convert multiple PNG files at once?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Currently our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files by uploading them one after another."
+                "text": "This converter currently processes one PNG file at a time. To convert additional files, upload and process them individually."
               }
             }
           ]
