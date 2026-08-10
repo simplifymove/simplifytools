@@ -292,22 +292,22 @@ const toolSEODatabase: Record<string, {
   // Download Tools
   'instagram-download': {
     title: 'Download Instagram Videos - Free Instagram Video Downloader',
-    description: 'Download videos from Instagram instantly. Free online tool supporting stories, reels, and posts. No app needed.',
+    description: 'Process an accessible public Instagram media URL for download. Availability depends on the source, provider access, and platform restrictions.',
     keywords: ['instagram downloader', 'download instagram video', 'instagram video saver', 'instagram reels downloader']
   },
   'tiktok-video-download': {
     title: 'Download TikTok Videos - Free TikTok Video Downloader',
-    description: 'Download TikTok videos instantly. Free online downloader without watermark. Works on all devices.',
+    description: 'Process an accessible public TikTok video URL for download. Available output depends on the source media, provider capabilities, and platform restrictions.',
     keywords: ['tiktok downloader', 'download tiktok video', 'tiktok video saver', 'remove tiktok watermark']
   },
   'twitter-download': {
     title: 'Download Twitter Videos - Free Twitter Video Downloader',
-    description: 'Download videos from Twitter/X instantly. Free online tool supporting all video types. No installation required.',
+    description: 'Process an accessible public Twitter/X media URL for download. Results depend on source access, provider availability, and the media available at that URL.',
     keywords: ['twitter downloader', 'download twitter video', 'x video downloader', 'twitter video saver']
   },
   'facebook-download': {
     title: 'Download Facebook Videos - Free Facebook Video Downloader',
-    description: 'Download videos from Facebook instantly. Free online downloader for posts and live videos.',
+    description: 'Process an accessible public Facebook video URL for download. Results depend on source availability, provider access, and platform restrictions.',
     keywords: ['facebook downloader', 'download facebook video', 'facebook video saver', 'facebook live downloader']
   },
   
