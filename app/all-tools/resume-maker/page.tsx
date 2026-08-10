@@ -35,7 +35,7 @@ export default function ResumeMakerPage() {
                   Resume Maker
                 </h1>
                 <p className="text-lg text-white/90 max-w-2xl">
-                  Create professional resumes with AI-powered job matching. Choose from templates, customize designs, and download instantly.
+                  Create and edit a resume using role-based starter templates, design choices, job-match guidance, preview, and DOCX download.
                 </p>
               </motion.div>
             </div>
@@ -59,7 +59,7 @@ export default function ResumeMakerPage() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Professional Templates</h3>
                 <p className="text-gray-600">
-                  Choose from industry-standard resume templates designed to impress employers.
+                  Choose from available resume designs and role-based starter content, then replace the examples with information that accurately reflects your background.
                 </p>
               </motion.div>
 
@@ -71,9 +71,9 @@ export default function ResumeMakerPage() {
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                   <Zap className="w-6 h-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">AI Job Matching</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Job-Match Guidance</h3>
                 <p className="text-gray-600">
-                  Match your resume with job descriptions and optimize your content automatically.
+                  Compare resume skills and experience with the selected role to identify matches, gaps, and areas you may want to review.
                 </p>
               </motion.div>
 
@@ -85,7 +85,7 @@ export default function ResumeMakerPage() {
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                   <Download className="w-6 h-6 text-green-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Download Instantly</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Download as DOCX</h3>
                 <p className="text-gray-600">
                   Export your finished resume as an editable DOCX file with a single click. No sign-up required.
                 </p>
@@ -101,7 +101,7 @@ export default function ResumeMakerPage() {
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Build Your Resume?</h2>
               <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-                Get started in minutes with our intelligent resume builder. Match your skills with job requirements and create a winning resume.
+                Use the resume builder to prepare a role-specific draft, review the job-match guidance, edit the content, preview the layout, and download the completed resume as a DOCX file.
               </p>
               <Link
                 href="/all-tools/resume-maker/job-match"

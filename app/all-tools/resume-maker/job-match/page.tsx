@@ -212,8 +212,8 @@ export default function ResumeBuilderPage() {
             >
               <div className="text-5xl">📄</div>
               <div className="flex-1">
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">Free Resume Maker Online with Job Match Templates</h1>
-                <p className="text-white/95 text-lg">Build professional resumes with AI job matching. Select templates, customize easily, download as Word documents instantly.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">Resume Maker with Job-Match Guidance</h1>
+                <p className="text-white/95 text-lg">Start with a role-based resume template, edit your information, review job-match guidance, preview the layout, and download the result as a DOCX document.</p>
               </div>
             </motion.div>
           </div>
@@ -673,40 +673,40 @@ export default function ResumeBuilderPage() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Resume Maker?</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">What This Resume Maker Helps You Do</h2>
               
               <p className="text-gray-700 leading-relaxed mb-8">
-                SimplifyConvert's <Link href="/all-tools" className="text-blue-600 font-medium hover:underline">resume builder</Link> is the easiest way to create professional resumes that match job descriptions. Unlike complex software or generic templates, our free resume maker uses job matching to organize your content. Build your perfect resume in minutes, customize with multiple design templates, and download as a Word document immediately. Pair with our <Link href="/all-tools/pdf-tools" className="text-blue-600 font-medium hover:underline">PDF tools</Link> to format and optimize further.
+                SimplifyConvert's <Link href="/all-tools" className="text-blue-600 font-medium hover:underline">resume builder</Link> provides role-based starter content, editable resume sections, design choices, job-match guidance, preview, and DOCX download. The match information is intended to help you review how your entered skills and experience compare with the selected role. It does not predict hiring decisions or guarantee compatibility with an employer's screening system. You can also use our <Link href="/all-tools/pdf-tools" className="text-blue-600 font-medium hover:underline">PDF tools</Link> if you need additional file-format tools after downloading.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
                   <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
                     <Zap className="text-blue-600" size={20} />
-                    AI Job Matching
+                    Job-Match Guidance
                   </h3>
-                  <p className="text-gray-700 text-sm">Get resume recommendations based on job descriptions. Our tool helps organize your resume keywords and formatting for clarity and relevance to job postings.</p>
+                  <p className="text-gray-700 text-sm">Review skill matches, missing skills, experience signals, keyword overlap, and resume-completeness checks based on the selected role. Treat these results as editing guidance rather than a hiring prediction.</p>
                 </div>
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
                   <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
                     <CheckCircle className="text-blue-600" size={20} />
-                    Multiple Professional Templates
+                    Resume Design Choices
                   </h3>
-                  <p className="text-gray-700 text-sm">Choose from five industry-standard resume designs. Each template uses ATS-friendly formatting to improve resume clarity and relevance to job postings.</p>
+                  <p className="text-gray-700 text-sm">Choose from five available resume designs with different layouts and color choices. Review the downloaded document yourself before submitting it to an employer.</p>
                 </div>
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
                   <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
                     <Shield className="text-blue-600" size={20} />
-                    Instant Download as Word
+                    DOCX Download
                   </h3>
-                  <p className="text-gray-700 text-sm">Export your resume as .docx format immediately. Edit in Microsoft Word, Google Docs, or any text editor. No delays, no subscriptions required.</p>
+                  <p className="text-gray-700 text-sm">Export the completed resume as a .docx file. You can then open it in compatible word-processing software for additional review or editing.</p>
                 </div>
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
                   <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
                     <Users className="text-blue-600" size={20} />
-                    100% Free & No Signup
+                    Use Without Creating an Account
                   </h3>
-                  <p className="text-gray-700 text-sm">Create unlimited resumes without registration, hidden fees, or premium tiers. Start building your perfect resume right now—completely free.</p>
+                  <p className="text-gray-700 text-sm">The current resume builder can be opened and used without creating an account. Enter your information, review the result, and download the completed resume when ready.</p>
                 </div>
               </div>
 
@@ -716,7 +716,7 @@ export default function ResumeBuilderPage() {
                 <ol className="space-y-4 text-gray-700">
                   <li className="flex gap-4">
                     <span className="flex-shrink-0 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">1</span>
-                    <span><strong>Select a Job Template:</strong> Choose from pre-built resume templates matched to popular job positions. Each template includes relevant sections and formatting.</span>
+                    <span><strong>Select a Job Template:</strong> Choose an industry and job role to load role-based starter content. Review and replace the example information with details that accurately represent your experience.</span>
                   </li>
                   <li className="flex gap-4">
                     <span className="flex-shrink-0 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">2</span>
@@ -724,11 +724,11 @@ export default function ResumeBuilderPage() {
                   </li>
                   <li className="flex gap-4">
                     <span className="flex-shrink-0 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">3</span>
-                    <span><strong>Choose a Design Template:</strong> Browse five professional resume designs with different color schemes. Preview changes in real-time as you select designs.</span>
+                    <span><strong>Choose a Design Template:</strong> Browse five resume designs with different color choices and layouts. Preview the selected design before downloading.</span>
                   </li>
                   <li className="flex gap-4">
                     <span className="flex-shrink-0 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">4</span>
-                    <span><strong>Preview & Download:</strong> Toggle between edit and preview mode. When satisfied, click "Download .docx" to save your professional resume as a Word document.</span>
+                    <span><strong>Preview & Download:</strong> Toggle between edit and preview mode. Review the content carefully, then click "Download .docx" to save the resume as a DOCX document.</span>
                   </li>
                 </ol>
               </div>
@@ -739,7 +739,7 @@ export default function ResumeBuilderPage() {
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-start gap-3">
                     <span className="text-blue-600 font-bold">•</span>
-                    <span><strong>Job Applications:</strong> Create tailored resumes for each job posting. Use job matching to ensure your resume highlights relevant skills and experience.</span>
+                    <span><strong>Job Applications:</strong> Prepare different resume versions for different roles and use the match information to review relevant skills and experience.</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-blue-600 font-bold">•</span>
@@ -755,7 +755,7 @@ export default function ResumeBuilderPage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-blue-600 font-bold">•</span>
-                    <span><strong>Interview Preparation:</strong> Have a polished resume to review before interviews. Our templates help you prepare talking points. Use <Link href="/all-tools/text-to-speech" className="text-blue-600 font-medium hover:underline">text-to-speech</Link> to practice your talking points aloud.</span>
+                    <span><strong>Interview Preparation:</strong> Review the experience, achievements, and skills included in your resume before an interview. You can use <Link href="/all-tools/text-to-speech" className="text-blue-600 font-medium hover:underline">text-to-speech</Link> if listening to written notes is useful to you.</span>
                   </li>
                 </ul>
               </div>
@@ -769,45 +769,45 @@ export default function ResumeBuilderPage() {
             <FAQ
               items={[
                 {
-                  name: 'Is your resume maker really free?',
+                  name: 'Can I use the resume maker without creating an account?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes! Our resume maker is completely free with no hidden costs, subscriptions, or premium features. Create unlimited resumes, download as many times as needed, and customize all templates without any charges. No signup required.'
+                    text: 'The current resume builder can be used without creating an account. You can select a role-based template, edit the resume content, choose an available design, preview it, and download the result as a DOCX file.'
                   }
                 },
                 {
                   name: 'Can I export my resume as a Word document?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Absolutely! Click the "Download .docx" button to save your resume as a Microsoft Word document. You can then edit it further in Word, Google Docs, or any text editor. This gives you full control over your final resume.'
+                    text: 'Yes. Click the "Download .docx" button to save the completed resume as a DOCX document. You can open it in compatible word-processing software for additional review or editing.'
                   }
                 },
                 {
-                  name: 'Are these resumes optimized for ATS systems?',
+                  name: 'What does the ATS-oriented score mean?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Our resume templates use ATS-friendly formatting with clean, standard structures. ATS systems scan resumes for keywords and formatting. Our templates are designed to work well with these systems.'
+                    text: 'The ATS-oriented score is an internal editing aid based on checks such as contact information, summary length, experience detail, achievements, education, skills, and keyword overlap. It is not a test against a specific employer ATS and does not guarantee that a resume will pass automated screening.'
                   }
                 },
                 {
                   name: 'Can I use the same resume for different job positions?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes, but tailoring is recommended. Create multiple versions of your resume highlighting different skills and experiences for different roles. Use our job matching feature to customize your resume for specific positions and increase your chances of getting hired.'
+                    text: 'You can reuse a resume, but reviewing it for each role can help you emphasize genuinely relevant skills and experience. Only include qualifications and keywords that accurately represent your background.'
                   }
                 },
                 {
                   name: 'How many resume templates are available?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'We offer five professional resume design templates with different color schemes and layouts. Each template is fully editable, uses ATS-friendly formatting, and includes standard sections like experience, education, skills, and certifications.'
+                    text: 'The current builder provides five resume design choices with different color schemes and layouts. Resume content such as the summary, experience, education, skills, and certifications can be edited before download.'
                   }
                 },
                 {
                   name: 'Do I need to create an account to use this resume maker?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'No account required! Our free resume maker works entirely in your browser with no signup, login, or registration. Your data is not stored on our servers. Just start building your resume immediately.'
+                    text: `The current resume builder does not require signup or login. Resume editing happens in the tool interface, and the completed DOCX is prepared through SimplifyConvert's download flow when you choose to download it.`
                   }
                 }
               ]}
@@ -859,8 +859,8 @@ export default function ResumeBuilderPage() {
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'SoftwareApplication',
-              'name': 'Free Resume Maker',
-              'description': 'Create professional resumes with AI job matching. Free resume builder with multiple templates. Create, customize, and download instantly.',
+              'name': 'Resume Maker with Job-Match Guidance',
+              'description': 'Create and edit resumes using role-based starter templates, job-match guidance, design choices, preview, and DOCX download.',
               'applicationCategory': 'BusinessApplication',
               'operatingSystem': 'Web',
               'url': 'https://simplifyconvert.com/all-tools/resume-maker/job-match',
@@ -871,12 +871,12 @@ export default function ResumeBuilderPage() {
               },
               'featureList': [
                 'Job Matching',
-                'Multiple Professional Templates',
+                'Resume Design Choices',
                 'Real-time Preview',
                 'Download as Word Document',
-                'ATS-Friendly Formatting',
+                'ATS-Oriented Editing Guidance',
                 'No Signup Required',
-                'Free Forever'
+                'No Account Required'
               ]
             })
           }}
