@@ -223,17 +223,17 @@ const toolSEODatabase: Record<string, {
   },
   'mute-video': {
     title: 'Mute Video Online - Free Audio Removal Tool',
-    description: 'Remove audio from videos instantly. Free online mute video tool. Perfect for creating silent clips.',
+    description: 'Remove the audio track from supported video files to create a silent video. Processing time and output characteristics depend on the source media.',
     keywords: ['mute video', 'remove audio from video', 'silent video creator', 'audio removal']
   },
   'extract-audio-from-video': {
     title: 'Extract Audio from Video - Free Audio Extraction Tool',
-    description: 'Extract audio from videos as MP3 or WAV instantly. Free online tool with quality options. No software needed.',
+    description: 'Extract an available audio track from supported video files as MP3 or WAV using the available output options. Audio may be re-encoded during processing.',
     keywords: ['extract audio from video', 'audio extractor', 'video to audio', 'extract sound from video']
   },
   'video-to-gif': {
     title: 'Convert Video to GIF Online - Free Animated GIF Creator',
-    description: 'Convert any video to animated GIF instantly. Free online tool perfect for social media. Customize frame rate and size.',
+    description: 'Convert supported video files to animated GIF using adjustable frame-rate and size options. File size and visual quality depend on the source and selected settings.',
     keywords: ['video to gif', 'convert video to gif', 'gif converter', 'animated gif creator']
   },
   'compress-video': {
@@ -243,22 +243,22 @@ const toolSEODatabase: Record<string, {
   },
   'compress-mov': {
     title: 'Compress MOV Online - Reduce MOV File Size',
-    description: 'Compress MOV video files instantly. Free online tool with quality options. No software installation needed.',
+    description: 'Compress MOV video files using the available quality options. Resulting file size and visual quality depend on the source video and selected settings.',
     keywords: ['compress mov', 'mov compressor', 'reduce mov size', 'mov file compression']
   },
   'compress-avi': {
     title: 'Compress AVI Online - Reduce AVI File Size',
-    description: 'Compress AVI video files instantly. Free online tool with multiple quality settings. Perfect for sharing.',
+    description: 'Compress AVI video files using the available quality settings. Resulting file size and visual quality depend on the source video and selected settings.',
     keywords: ['compress avi', 'avi compressor', 'reduce avi size', 'avi file compression']
   },
   'compress-mkv': {
     title: 'Compress MKV Online - Reduce MKV File Size',
-    description: 'Compress MKV video files instantly. Free online tool preserving quality. No installation required.',
+    description: 'Compress MKV video files using the available quality settings. Compression can change file size, codec characteristics, and visible quality.',
     keywords: ['compress mkv', 'mkv compressor', 'reduce mkv size', 'mkv file compression']
   },
   'video-to-webp': {
     title: 'Convert Video to WebP Online - Animated WebP Creator',
-    description: 'Convert videos to animated WebP format instantly. Free online converter for web optimization. Smaller file sizes.',
+    description: 'Convert supported video files to animated WebP using the available quality settings. Resulting file size and visual quality depend on the source and selected options.',
     keywords: ['video to webp', 'convert video to webp', 'webp format', 'web image optimization']
   },
   
