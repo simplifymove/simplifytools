@@ -182,7 +182,7 @@ export default function InvertColorsPage() {
               <ol className="space-y-4 text-gray-700">
                 <li><strong>1. Upload Your Image:</strong> Select a JPG, PNG, or WebP image file.</li>
                 <li><strong>2. Click Invert:</strong> Press "Invert Colors" to process your image.</li>
-                <li><strong>3. Instant Effect:</strong> View the negative color transformation instantly.</li>
+                <li><strong>3. Preview the Effect:</strong> Review the negative-color transformation before downloading.</li>
                 <li><strong>4. Download:</strong> Save your inverted image as JPG.</li>
               </ol>
             </div>
