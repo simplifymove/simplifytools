@@ -289,7 +289,7 @@ export default function HeicToJpgPage() {
                   <span>Can I convert multiple HEIC files at once?</span>
                   <span className="group-open:rotate-180 transition">▼</span>
                 </summary>
-                <p className="text-gray-600 mt-4">Our converter processes one file at a time. You can quickly convert multiple files by uploading and converting them one after another. Each conversion takes just seconds.</p>
+                <p className="text-gray-600 mt-4">The converter processes one file at a time. To convert multiple HEIC files, upload and process them individually.</p>
               </details>
               <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
                 <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">

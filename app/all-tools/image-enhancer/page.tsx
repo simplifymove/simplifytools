@@ -137,7 +137,7 @@ export default function ImageEnhancerPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Image Enhancer</h1>
-                <p className="text-lg text-white/90">Adjust brightness, contrast, and color saturation to improve your images. Perfect for photo enhancement and professional editing.</p>
+                <p className="text-lg text-white/90">Adjust brightness, contrast, and color saturation and preview how these changes affect your image.</p>
               </div>
             </div>
           </div>
@@ -329,10 +329,10 @@ export default function ImageEnhancerPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Enhancement</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Fix underexposed images - brighten dark photos instantly</li>
+            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Adjust darker images - increase brightness using the available control</li>
             <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Improve composition - enhance contrast for better visual impact</li>
             <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Make colors pop - increase saturation for vibrant, vivid images</li>
-            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Professional look - achieve polished results for social media</li>
+            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Visual adjustments - tune the image appearance for different uses</li>
             <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Creative control - fine-tune every aspect with precise sliders</li>
           </ul>
         </div>

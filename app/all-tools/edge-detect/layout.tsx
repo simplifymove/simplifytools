@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Edge Detection Tool',
-    description: 'Detect and highlight edges in images instantly',
+    description: 'Detect and highlight visible edges in images online',
     url: 'https://simplifyconvert.com/all-tools/edge-detect',
     type: 'website',
   },

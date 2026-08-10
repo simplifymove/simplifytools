@@ -209,7 +209,7 @@ export default function EpsToJpgPage() {
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
-                      <span className="text-gray-700">Works on all devices</span>
+                      <span className="text-gray-700">Accessible through a compatible web browser</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>

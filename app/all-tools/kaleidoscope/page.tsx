@@ -216,7 +216,7 @@ export default function KaleidoscopePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Symmetrical Patterns</h3>
-                  <p className="text-gray-700">Create perfect symmetrical designs.</p>
+                  <p className="text-gray-700">Create repeated symmetrical-style patterns from the source image.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Customizable Segments</h3>

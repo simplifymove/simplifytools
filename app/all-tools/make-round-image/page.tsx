@@ -411,11 +411,11 @@ export default function MakeRoundImagePage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Create Round Images?</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Profile pictures - perfect circular avatars for social media and apps</li>
-            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Professional branding - create custom rounded images for websites and portfolios</li>
+            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Profile pictures - create circular or rounded images for supported profile-image uses</li>
+            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Branding graphics - create rounded images for websites and portfolios</li>
             <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Custom styling - add borders and background colors for unique designs</li>
             <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Transparency support - PNG format preserves transparent backgrounds</li>
-            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Instant results - create rounded images in seconds without design tools</li>
+            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Browser-based workflow - create rounded images using the available controls</li>
           </ul>
         </div>
       </div>

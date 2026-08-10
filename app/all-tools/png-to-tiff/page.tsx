@@ -113,7 +113,7 @@ export default function PngToTiffPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to TIFF Converter</h1>
-                <p className="text-lg text-white/90">Convert PNG images to TIFF format with lossless compression. Perfect for archival, professional printing, and quality-sensitive applications.</p>
+                <p className="text-lg text-white/90">Convert PNG images to TIFF format with lossless LZW compression for compatible image, archive, and print workflows.</p>
               </div>
             </div>
           </div>
@@ -206,7 +206,7 @@ export default function PngToTiffPage() {
                     </p>
                     <ul className="text-xs text-green-700 space-y-1">
                       <li>• Lossless compression for archival</li>
-                      <li>• Professional quality for printing</li>
+                      <li>• TIFF output for compatible print and image workflows</li>
                       <li>• Lossless LZW compression for TIFF output</li>
                       <li>• Wide compatibility with design tools</li>
                     </ul>

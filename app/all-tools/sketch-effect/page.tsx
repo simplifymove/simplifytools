@@ -157,7 +157,7 @@ export default function SketchEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">✏️ Sketch Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Transform photos into beautiful pencil sketches and drawings. Create artistic sketch effects instantly.
+              Apply a pencil-sketch-style transformation to photos using the available effect controls.
             </p>
           </div>
         </div>

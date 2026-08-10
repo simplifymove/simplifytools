@@ -254,7 +254,7 @@ export default function VignetteEffectPage() {
                 </details>
                 <details className="border-l-4 border-slate-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is the quality affected?</summary>
-                  <p className="text-gray-700 mt-2">No! Vignette application maintains full image quality throughout the process.</p>
+                  <p className="text-gray-700 mt-2">Applying the vignette changes image pixels and creates a processed result. Review the output if preserving source detail is important.</p>
                 </details>
               </div>
             </div>

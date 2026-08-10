@@ -313,7 +313,7 @@ export default function PsdToPngPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Transparency Support</h3>
-              <p className="text-gray-700">Full alpha channel preservation ensures transparent areas remain intact in the PNG output.</p>
+              <p className="text-gray-700">PNG output can retain transparency produced by the conversion workflow.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Universal Compatibility</h3>
@@ -412,10 +412,10 @@ export default function PsdToPngPage() {
           'No software installation required',
           'Support for files up to 200 MB',
           'PNG lossless image compression',
-          'Fast processing',
+          'Server-assisted processing',
           'Server-assisted file conversion',
           'No registration required',
-          'Works on all devices',
+          'Web-based conversion workflow',
         ],
       })}} />
     </>

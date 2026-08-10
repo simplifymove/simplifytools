@@ -10,10 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/bmp-to-jpg',
     siteName: 'SimplifyConvert',
     title: 'BMP to JPG - Free Image Converter',
-    description: 'Convert BMP images to JPG format instantly.',
+    description: 'Convert BMP images to JPG format online.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'BMP to JPG Converter' }],
   },
-  twitter: { card: 'summary_large_image', title: 'BMP to JPG Converter', description: 'Convert BMP to JPG instantly.', images: ['https://simplifyconvert.com/og-image.jpg'] },
+  twitter: { card: 'summary_large_image', title: 'BMP to JPG Converter', description: 'Convert BMP images to JPG format online.', images: ['https://simplifyconvert.com/og-image.jpg'] },
   alternates: { canonical: 'https://simplifyconvert.com/all-tools/bmp-to-jpg' },
 };
 

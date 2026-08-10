@@ -4,7 +4,7 @@
   keywords: 'duotone effect, duotone image, two color effect, artistic effect, color conversion, image art filter',
   openGraph: {
     title: 'Duotone Effect - Two-Color Image Converter',
-    description: 'Free online duotone effect tool. Create two-color artistic image conversions instantly.',
+    description: 'Online duotone effect tool for creating two-color image transformations.',
     type: 'website',
     url: 'https://simplifyconvert.com/all-tools/duotone-effect',
   },

@@ -249,7 +249,7 @@ export default function HeicToPngPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Universal Compatibility</h3>
-                <p className="text-gray-600 text-sm">PNG is supported by all browsers, devices, and applications. HEIC is limited to Apple devices, making PNG the better choice for sharing.</p>
+                <p className="text-gray-600 text-sm">PNG has broad support across browsers, devices, and image applications, while HEIC support can vary by platform and software.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -281,7 +281,7 @@ export default function HeicToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Why is PNG better than HEIC?</h3>
-              <p className="text-gray-700">PNG is universally supported across all platforms and devices, while HEIC is primarily limited to Apple ecosystem. PNG is ideal for sharing and web use.</p>
+              <p className="text-gray-700">PNG has broad support across browsers, platforms, and image applications, while HEIC support varies by platform and software.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will PNG be larger than HEIC?</h3>
@@ -289,7 +289,7 @@ export default function HeicToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple HEIC files?</h3>
-              <p className="text-gray-700">Currently our converter handles one file at a time. However, conversion is instant, so you can quickly process multiple HEIC files sequentially.</p>
+              <p className="text-gray-700">The converter handles one file at a time. To process multiple HEIC files, convert them individually.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion secure?</h3>
@@ -322,7 +322,7 @@ export default function HeicToPngPage() {
               "name": "Why is PNG better than HEIC?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG is universally supported across all platforms and devices, while HEIC is primarily limited to Apple ecosystem. PNG is ideal for sharing and web use."
+                "text": "PNG has broad support across browsers, platforms, and image applications, while HEIC support varies by platform and software."
               }
             },
             {
@@ -330,7 +330,7 @@ export default function HeicToPngPage() {
               "name": "Will PNG be larger than HEIC?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG files may be slightly larger than HEIC files. However, PNG's universal compatibility makes this worthwhile for sharing and cross-platform use."
+                "text": "PNG and HEIC use different compression approaches, so output file size varies with the source image and encoding. PNG can be useful when broader format compatibility is needed."
               }
             },
             {
@@ -338,7 +338,7 @@ export default function HeicToPngPage() {
               "name": "Can I batch convert multiple HEIC files?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Currently our converter handles one file at a time. However, conversion is instant, so you can quickly process multiple HEIC files sequentially."
+                "text": "The converter handles one file at a time. To process multiple HEIC files, convert them individually."
               }
             },
             {

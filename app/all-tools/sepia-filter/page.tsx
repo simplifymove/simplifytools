@@ -254,7 +254,7 @@ export default function SepiaFilterPage() {
                 </details>
                 <details className="border-l-4 border-amber-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is image quality affected?</summary>
-                  <p className="text-gray-700 mt-2">No! We maintain full image quality throughout the sepia filtering process.</p>
+                  <p className="text-gray-700 mt-2">Applying the filter changes the image pixels and creates a processed result. Review the output if preserving source detail is important.</p>
                 </details>
                 <details className="border-l-4 border-amber-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I undo the sepia effect?</summary>
