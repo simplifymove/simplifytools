@@ -378,7 +378,7 @@ export default function CropImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Crop Image</h1>
-                <p className="text-lg text-white/90">Drag to crop, adjust with handles. Real-time preview with instant feedback.</p>
+                <p className="text-lg text-white/90">Drag the crop area, adjust its handles, and review the browser preview before creating the result.</p>
               </div>
             </div>
           </div>
@@ -606,15 +606,15 @@ export default function CropImagePage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-Time Preview</h3>
-              <p className="text-gray-700">See changes instantly as you adjust. Grid overlay helps with composition and alignment.</p>
+              <p className="text-gray-700">The browser preview updates as you adjust the selection. The grid can help with composition and alignment.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Aspect Ratios</h3>
-              <p className="text-gray-700">Free crop or lock to 1:1, 4:3, 16:9, or 3:2. Perfect for social media and print.</p>
+              <p className="text-gray-700">Use free crop or choose 1:1, 4:3, 16:9, or 3:2 when the destination requires one of those proportions.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Zoom & Rotate</h3>
-              <p className="text-gray-700">Zoom in for detail and rotate by 90° for perfect composition.</p>
+              <p className="text-gray-700">Use the preview controls to inspect detail and adjust rotation while positioning the crop.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Fast Processing</h3>

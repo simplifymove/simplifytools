@@ -419,7 +419,7 @@ export default function FlipImagePage() {
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Mirror selfies - create the original camera view instead of mirrored front-camera photos</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Fix text direction - reverse text images for clarity or specific layouts</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Perfect symmetry - create mirror images for design and artistic work</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Mirror layouts - create horizontal or vertical reflections for design and artistic work</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Logo adjustments - flip logos and graphics to match design requirements</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Flipping preserves the working image dimensions before PNG encoding</li>
           </ul>

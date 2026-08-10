@@ -294,7 +294,7 @@ export default function JpgToPngPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">2</div>
-              <div><p className="text-gray-700"><strong>Click Convert to PNG:</strong> The tool will process your image instantly</p></div>
+              <div><p className="text-gray-700"><strong>Click Convert to PNG:</strong> The browser decodes the JPG and creates a PNG result at the source pixel dimensions</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
@@ -323,7 +323,7 @@ export default function JpgToPngPage() {
             </div>
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
-              <div><h3 className="font-semibold text-gray-900">Universal Support</h3><p className="text-gray-600 text-sm">PNG is supported by all modern browsers and applications</p></div>
+              <div><h3 className="font-semibold text-gray-900">Broad Compatibility</h3><p className="text-gray-600 text-sm">PNG is widely supported by modern browsers, image editors, document tools, and publishing workflows</p></div>
             </div>
           </div>
         </div>

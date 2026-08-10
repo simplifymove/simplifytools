@@ -209,7 +209,7 @@ export default function PngToJpgPage() {
               PNG to JPG Converter
             </h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert PNG images to JPG format with quality control. Reduce file size while maintaining image quality.
+              Convert PNG images to JPG format with adjustable JPEG quality. File size and visible quality depend on the source image and selected setting.
             </p>
           </motion.div>
         </div>
@@ -274,7 +274,7 @@ export default function PngToJpgPage() {
                     className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
                   />
                   <p className="text-xs text-orange-700 mt-2">
-                    Higher = better quality, larger file • Lower = smaller file, less quality
+                    Higher settings usually retain more detail and can create larger files; lower settings apply stronger JPEG compression
                   </p>
                 </motion.div>
 
@@ -366,7 +366,7 @@ export default function PngToJpgPage() {
             Smaller Files
           </h3>
           <p className="text-sm text-gray-600">
-            Reduce file size significantly while maintaining acceptable image quality through compression.
+            JPEG encoding can reduce file size for many photographic images, but the result depends on image content, dimensions, and the selected quality.
           </p>
         </motion.div>
 
@@ -376,7 +376,7 @@ export default function PngToJpgPage() {
             Quality Control
           </h3>
           <p className="text-sm text-gray-600">
-            Adjust quality slider (10-100%) to find the perfect balance for your needs.
+            Adjust the quality slider from 10% to 100%, then compare the resulting file size and visible artifacts.
           </p>
         </motion.div>
 
@@ -386,7 +386,7 @@ export default function PngToJpgPage() {
             Wide Compatibility
           </h3>
           <p className="text-sm text-gray-600">
-            JPG format works universally across all devices, browsers, and applications.
+            JPG is widely supported across browsers, devices, image editors, document tools, and publishing workflows.
           </p>
         </motion.div>
       </motion.div>
@@ -406,7 +406,7 @@ export default function PngToJpgPage() {
           </div>
           <div className="flex gap-4 items-start">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
-            <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> The tool will process your image instantly</p></div>
+            <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> The browser decodes the PNG and creates a JPEG using the selected quality setting</p></div>
           </div>
           <div className="flex gap-4 items-start">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -451,7 +451,7 @@ export default function PngToJpgPage() {
               <span className="text-gray-500 group-open:hidden">+</span>
               <span className="text-gray-500 hidden group-open:inline">−</span>
             </summary>
-            <p className="text-gray-700 mt-3 text-sm">For most use cases, 85-90% quality provides excellent results with good file size reduction. For web use, 75% is often sufficient. Increase to 95%+ only for professional printing.</p>
+            <p className="text-gray-700 mt-3 text-sm">There is no single quality setting that is best for every image. Start with a moderate-to-high setting, inspect text, edges, gradients, and fine detail, then adjust according to the resulting file size and visible artifacts.</p>
           </details>
 
           <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -511,7 +511,7 @@ export default function PngToJpgPage() {
           "name": "What quality setting should I use?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "For most use cases, 85-90% quality provides excellent results with good file size reduction. For web use, 75% is often sufficient. Increase to 95%+ only for professional printing."
+            "text": "There is no single quality setting that is best for every image. Start with a moderate-to-high setting, inspect text, edges, gradients, and fine detail, then adjust according to the resulting file size and visible artifacts."
           }
         },
         {

@@ -452,7 +452,7 @@ export default function RotateImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Rotate Image:</strong> Process your image instantly in the browser</p></div>
+              <div><p className="text-gray-700"><strong>Click Rotate Image:</strong> Apply the selected rotation using the browser image-processing workflow</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -468,7 +468,7 @@ export default function RotateImagePage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Rotate Images?</h2>
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Fix sideways photos - correct images taken in the wrong orientation</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Adjust composition - rotate any angle (not just 90°) for perfect framing</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Adjust composition - rotate by the required angle and review the resulting frame</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Prepare for printing - get images to the right orientation before printing</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Align graphics - rotate logos and designs to match your layout</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Rotation changes image orientation while retaining the visible source content</li>
@@ -505,7 +505,7 @@ export default function RotateImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, rotation doesn't reduce quality. Your image maintains full resolution and clarity.</p>
+              <p className="text-gray-700 mt-3 text-sm">Rotation changes image orientation and the result is encoded again as PNG. Depending on the angle, canvas geometry and pixel mapping can differ from the source, so review the generated image before use.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -544,7 +544,7 @@ export default function RotateImagePage() {
         "mainEntity": [
           { "@type": "Question", "name": "Can I rotate images by any angle?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, use the slider for 1° precision from 0-360° or enter custom degrees." } },
           { "@type": "Question", "name": "What formats does the image rotator support?", "acceptedAnswer": { "@type": "Answer", "text": "All common formats including JPG, PNG, WebP, GIF, BMP." } },
-          { "@type": "Question", "name": "Will my image quality be affected by rotation?", "acceptedAnswer": { "@type": "Answer", "text": "No, rotation doesn't reduce quality. Full resolution maintained." } },
+          { "@type": "Question", "name": "Will my image quality be affected by rotation?", "acceptedAnswer": { "@type": "Answer", "text": "Rotation changes image orientation and the result is encoded again as PNG. Review the generated image because angle, canvas geometry, and pixel mapping can affect the output." } },
           { "@type": "Question", "name": "How do I rotate an image 45 degrees?", "acceptedAnswer": { "@type": "Answer", "text": "Use the custom angle slider or enter 45 in the degree input field." } },
           { "@type": "Question", "name": "Can I preview before downloading?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, after clicking Rotate Image, you'll see the success message." } },
           { "@type": "Question", "name": "Is image rotation completely free?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the tool to rotate supported images." } }

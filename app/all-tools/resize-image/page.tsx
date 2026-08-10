@@ -430,7 +430,7 @@ export default function ResizeImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Enlarging images can result in quality loss or pixelation. Our resizer uses interpolation to minimize this, but for best results, resize images smaller rather than larger. Original resolution is always highest quality.</p>
+              <p className="text-gray-700 mt-3 text-sm">Enlarging an image resamples existing pixels and can look soft or pixelated because resizing cannot restore detail that was absent from the source. Inspect enlarged output at the intended display size.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -457,7 +457,7 @@ export default function ResizeImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support JPG, PNG, WebP, GIF, BMP, TIFF, and most common image formats. Maximum file size is 50MB. Resized images maintain the original format.</p>
+              <p className="text-gray-700 mt-3 text-sm">The page accepts supported browser-decodable image files up to its 50 MB validation limit. Actual decoding support depends on the browser and source format.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -491,7 +491,7 @@ export default function ResizeImagePage() {
             "name": "What happens if I make an image larger?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Enlarging images can result in quality loss. Our resizer uses interpolation to minimize this, but original resolution is always best."
+              "text": "Enlarging an image resamples existing pixels and can look soft or pixelated because resizing cannot restore detail that was absent from the source."
             }
           },
           {
@@ -515,7 +515,7 @@ export default function ResizeImagePage() {
             "name": "Which formats are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "JPG, PNG, WebP, GIF, BMP, TIFF and most common formats up to 50MB."
+              "text": "The page accepts supported browser-decodable image files up to its 50 MB validation limit. Actual format support depends on the browser."
             }
           },
           {

@@ -189,7 +189,7 @@ export default function WebpToJpgPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
+                      <li>• Browser-based image conversion</li>
                       <li>• Adjustable quality settings</li>
                       <li>• Useful for older system compatibility</li>
                       <li>• Supports WebP format</li>
@@ -220,7 +220,7 @@ export default function WebpToJpgPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> Processing happens instantly in your browser</p></div>
+              <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> The browser decodes the WebP and creates a JPEG using the selected quality setting</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -255,7 +255,7 @@ export default function WebpToJpgPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">WebP is a modern image format developed by Google that provides superior compression compared to JPG and PNG. It's smaller in file size but not all older systems support it yet.</p>
+              <p className="text-gray-700 mt-3 text-sm">WebP is an image format developed by Google with lossy and lossless encoding options. File-size differences compared with JPG or PNG depend on image content, dimensions, encoder, and selected settings.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -264,7 +264,7 @@ export default function WebpToJpgPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Quality depends on your settings. Using 85-90% quality preserves excellent visual quality. Lower settings (60-70%) are acceptable for web use but show more compression artifacts.</p>
+              <p className="text-gray-700 mt-3 text-sm">The JPEG result is re-encoded, so visible quality depends on the WebP source and selected JPEG setting. Lower settings generally apply stronger compression and can make artifacts more visible.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -273,7 +273,7 @@ export default function WebpToJpgPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">For best results: 85-90% for general use, 75-80% for web sharing, 90-95% for professional or print use. Higher quality = larger file size.</p>
+              <p className="text-gray-700 mt-3 text-sm">There is no universal best setting. Start with a moderate-to-high value, inspect the converted image, and adjust according to the required file size and visible detail.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -316,7 +316,7 @@ export default function WebpToJpgPage() {
             "name": "What is WebP format?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "WebP is a modern image format developed by Google that provides superior compression. It's smaller than JPG and PNG but not all older systems support it."
+              "text": "WebP is an image format developed by Google with lossy and lossless encoding options. Relative file size depends on image content, dimensions, encoder, and settings."
             }
           },
           {
@@ -324,7 +324,7 @@ export default function WebpToJpgPage() {
             "name": "Will converting WebP to JPG affect image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Quality depends on settings. 85-90% preserves excellent quality. Lower settings (60-70%) acceptable for web but show more compression artifacts."
+              "text": "The JPEG result is re-encoded, so visible quality depends on the source and selected JPEG setting. Lower settings generally apply stronger compression and can make artifacts more visible."
             }
           },
           {
@@ -332,7 +332,7 @@ export default function WebpToJpgPage() {
             "name": "What quality should I use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Use 85-90% for general use, 75-80% for web, 90-95% for professional/print. Higher quality means larger file size."
+              "text": "There is no universal best JPEG quality setting. Inspect the converted image and adjust according to the required file size and visible detail."
             }
           },
           {

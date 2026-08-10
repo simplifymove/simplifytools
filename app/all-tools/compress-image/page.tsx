@@ -365,7 +365,7 @@ export default function CompressImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">2</div>
-              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose compression level from 10% (smallest) to 100% (best quality)</p></div>
+              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose an encoding quality from 10% to 100% and compare the resulting file size and visible artifacts</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
@@ -404,7 +404,7 @@ export default function CompressImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, but intelligently. Using quality settings 75-85%, you'll see minimal quality loss while achieving significant file size reduction. Our compression algorithm uses smart techniques to preserve important details.</p>
+              <p className="text-gray-700 mt-3 text-sm">Lossy encoding can change visible image detail. The amount depends on the source format, image content, browser encoder, and selected quality. Compare the result at full size before replacing the original.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -422,7 +422,7 @@ export default function CompressImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support JPG, PNG, WebP, GIF, and most common image formats. Maximum file size is 50MB. All formats are compressed in your browser.</p>
+              <p className="text-gray-700 mt-3 text-sm">The tool accepts supported browser-decodable image files up to the page's 50 MB validation limit. Encoding behavior varies by format; browser PNG encoders, for example, may ignore the quality setting.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -431,7 +431,7 @@ export default function CompressImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Currently, this tool processes one image at a time. For batch compression of multiple images, try our Batch Compress Images tool which handles hundreds of files simultaneously.</p>
+              <p className="text-gray-700 mt-3 text-sm">This tool processes one image at a time. For multiple files, use the separate Batch Compress Images workflow and review its applicable limits.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -465,7 +465,7 @@ export default function CompressImagePage() {
             "name": "Will compression reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, but intelligently using smart compression techniques to preserve important details. Quality settings 75-85% provide minimal visible loss."
+              "text": "Lossy encoding can change visible image detail. The amount depends on the source format, image content, browser encoder, and selected quality."
             }
           },
           {
@@ -481,7 +481,7 @@ export default function CompressImagePage() {
             "name": "What file formats are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "We support JPG, PNG, WebP, GIF, and most common image formats up to 50MB."
+              "text": "The tool accepts supported browser-decodable image files up to the page's 50 MB validation limit. Encoding behavior varies by format."
             }
           },
           {
@@ -489,7 +489,7 @@ export default function CompressImagePage() {
             "name": "Can I compress multiple images at once?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Currently one at a time. For batch compression, try our Batch Compress Images tool."
+              "text": "This tool processes one image at a time. For multiple files, use the separate Batch Compress Images workflow and review its applicable limits."
             }
           },
           {

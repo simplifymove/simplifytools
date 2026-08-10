@@ -228,7 +228,7 @@ export default function JpgToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Adjust Quality Settings</h3>
-                <p className="text-gray-600 mt-2">Use the quality slider to balance between file size and image quality. 80-90% is recommended for web use.</p>
+                <p className="text-gray-600 mt-2">Use the quality slider to compare file size and visible quality. The appropriate setting depends on the source image and intended use.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -268,15 +268,15 @@ export default function JpgToWebpPage() {
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Superior Image Quality</h3>
-                <p className="text-gray-600 text-sm">WebP delivers better image quality at the same file size compared to JPG, with support for both lossless and lossy compression.</p>
+                <h3 className="text-lg font-semibold text-gray-900">Flexible WebP Encoding</h3>
+                <p className="text-gray-600 text-sm">WebP supports both lossy and lossless encoding. Relative file size and visual quality compared with JPG depend on the image content and encoding settings.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Modern Web Standard</h3>
-                <p className="text-gray-600 text-sm">WebP is supported by all modern browsers (Chrome, Firefox, Safari, Edge). Perfect for contemporary web development.</p>
+                <p className="text-gray-600 text-sm">WebP is supported by current major browsers, but compatibility requirements should still be checked for older software or specialized workflows.</p>
               </div>
             </div>
           </div>
@@ -290,7 +290,7 @@ export default function JpgToWebpPage() {
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is WebP supported by all browsers?</h3>
-              <p className="text-gray-700">WebP is supported by all modern browsers including Chrome, Firefox, Safari (iOS 14+), and Edge. For older browsers, you can serve JPG as a fallback using HTML picture tags.</p>
+              <p className="text-gray-700">Current major browsers support WebP. Check the target environment and provide an alternate format when compatibility with older browsers or software is required.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is WebP compared to JPG?</h3>
@@ -302,7 +302,7 @@ export default function JpgToWebpPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can WebP replace JPG on my website?</h3>
-              <p className="text-gray-700">Yes, WebP can replace JPG for modern browsers. Use HTML picture tags to serve WebP to supported browsers and JPG as a fallback for older browsers for maximum compatibility.</p>
+              <p className="text-gray-700">WebP can be used for many web images, but whether it should replace JPG depends on compatibility, image content, software, and delivery requirements.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is conversion secure and private?</h3>
@@ -327,7 +327,7 @@ export default function JpgToWebpPage() {
               "name": "Is WebP supported by all browsers?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "WebP is supported by all modern browsers including Chrome, Firefox, Safari (iOS 14+), and Edge. For older browsers, you can serve JPG as a fallback using HTML picture tags."
+                "text": "Current major browsers support WebP. Check the target environment and provide an alternate format when compatibility with older browsers or software is required."
               }
             },
             {
@@ -351,7 +351,7 @@ export default function JpgToWebpPage() {
               "name": "Can WebP replace JPG on my website?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, WebP can replace JPG for modern browsers. Use HTML picture tags to serve WebP to supported browsers and JPG as a fallback for older browsers for maximum compatibility."
+                "text": "WebP can be used for many web images, but whether it should replace JPG depends on compatibility, image content, software, and delivery requirements."
               }
             },
             {
