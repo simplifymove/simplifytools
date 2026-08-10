@@ -717,13 +717,13 @@ export default function AIWriteToolPage({ params }: PageProps) {
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <div className="flex-1">
       {/* Animated Gradient Header */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 overflow-hidden min-h-[280px] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 overflow-hidden py-7 md:py-8 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative z-10 flex items-center gap-2 text-white text-sm mb-6"
+          className="relative z-10 flex items-center gap-2 text-white text-sm mb-4"
         >
           <Link href="/" className="hover:opacity-80">Home</Link>
           <ChevronRight size={16} />
@@ -746,18 +746,13 @@ export default function AIWriteToolPage({ params }: PageProps) {
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">{tool.title}</h1>
               <p className="text-white text-lg opacity-95 max-w-2xl">{tool.description}</p>
-              <div className="mt-4 flex items-center gap-3">
-                <span className="inline-block text-white text-xs font-semibold px-4 py-1.5 rounded-full" style={{ backgroundColor: '#B90A45' }}>
-                  {tool.category}
-                </span>
-              </div>
             </div>
           </div>
         </motion.div>
       </div>
 
       {/* Main Content */}
-      <div className="px-4 sm:px-6 lg:px-8 py-12">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 md:py-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
