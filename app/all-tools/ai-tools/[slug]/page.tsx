@@ -997,18 +997,18 @@ export default function AIWriteToolPage({ params }: PageProps) {
             ] : [
               {
                 icon: Zap,
-                title: 'Instant Generation',
-                description: 'Get AI-powered suggestions instantly with advanced algorithms',
+                title: 'AI-Assisted Drafting',
+                description: 'Generate a draft or suggestion from the information you provide, subject to provider availability',
               },
               {
                 icon: Shield,
-                title: 'Privacy & Security',
-                description: 'Your content is processed securely. Always review and edit AI-generated content before use. Keep your originals safe.',
+                title: 'Input Awareness',
+                description: 'AI inputs may be sent to the server and handled by an AI provider. Avoid submitting confidential, regulated, or credential-bearing content.',
               },
               {
                 icon: CheckCircle,
-                title: 'Professional Quality',
-                description: 'AI-assisted content designed to help with your writing workflow',
+                title: 'Human Review',
+                description: 'Review generated content for facts, tone, originality, and suitability before using or publishing it',
               },
             ]).map((feature, index) => (
               <motion.div
@@ -1119,20 +1119,20 @@ export default function AIWriteToolPage({ params }: PageProps) {
                 }
               ] : [
                 {
-                  title: 'Save Time',
-                  description: 'Reduce time spent on initial drafts. AI assistance helps you work faster.'
+                  title: 'Start with a Draft',
+                  description: 'Use generated wording as a starting point, then revise it for your specific purpose and audience.'
                 },
                 {
-                  title: 'Overcome Writer\'s Block',
-                  description: 'Get inspired with AI suggestions when you\'re stuck on what to write next.'
+                  title: 'Explore Alternatives',
+                  description: 'Generate alternative wording or directions when you want additional ideas to review.'
                 },
                 {
-                  title: 'Quality First Draft',
+                  title: 'Editable First Draft',
                   description: 'Use as a starting point that you can edit and customize for your needs.'
                 },
                 {
-                  title: 'Free to Use',
-                  description: 'No credit card required. Test our AI writing tools completely free.'
+                  title: 'Category Tool Access',
+                  description: 'These AI writing utilities are separate from the account-based, credit-priced Premium AI Studio.'
                 }
               ]).map((benefit, idx) => (
                 <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
