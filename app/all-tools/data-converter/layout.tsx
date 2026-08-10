@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://simplifyconvert.com/all-tools/data',
     siteName: 'SimplifyConvert',
-    title: 'Free Data Converter for CSV, JSON, XML & Excel',
+    title: 'Data Converter for CSV, JSON, XML & Excel',
     description: 'Convert among CSV, JSON, XML, and Excel formats using online tools for specific format pairs. Review the generated structure before using the result.',
     images: [
       {
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Free Data Converter for CSV, JSON, XML & Excel',
+    title: 'Data Converter for CSV, JSON, XML & Excel',
     description: 'Convert among CSV, JSON, XML, and Excel formats using tools designed for specific format pairs. No account is required for these utilities.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },

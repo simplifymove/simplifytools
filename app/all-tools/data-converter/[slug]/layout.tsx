@@ -88,7 +88,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
   // Get tool-specific SEO data or use intelligent fallback
   const seoData = toolSEODatabase[slug] || {
-    title: `${tool.title} - Free Data Conversion Tool | SimplifyConvert`,
+    title: `${tool.title} | SimplifyConvert`,
     description: tool.description || `Use the ${tool.title.toLowerCase()} tool for its supported data-processing workflow. Review the generated result before using it.`,
     keywords: [tool.title, 'converter', 'data tool', 'format conversion', 'free tool']
   };
