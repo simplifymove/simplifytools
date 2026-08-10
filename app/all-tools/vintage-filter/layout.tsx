@@ -4,7 +4,7 @@ export const metadata = {
   keywords: 'vintage filter, retro effect, old photo effect, vintage photo editor, film effect',
   openGraph: {
     title: 'Free Vintage Filter - Apply Retro Effects to Photos Online',
-    description: 'Transform your photos with beautiful vintage and retro effects',
+    description: 'Apply adjustable vintage and retro-style effects to supported images',
     type: 'website',
     url: 'https://simplifyconvert.com/all-tools/vintage-filter',
   },

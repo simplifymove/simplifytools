@@ -288,7 +288,7 @@ export default function VintageFilterPage() {
                 </details>
                 <details className="border-l-4 border-yellow-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I use this on mobile devices?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Our vintage filter works on all devices including smartphones, tablets, and desktops.</p>
+                  <p className="text-gray-700 mt-2">The filter can be used in many modern desktop and mobile browsers, but compatibility and practical image limits can vary by browser and device.</p>
                 </details>
                 <details className="border-l-4 border-yellow-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Do you offer batch processing?</summary>
@@ -333,9 +333,9 @@ export default function VintageFilterPage() {
           '@context': 'https://schema.org',
           '@type': 'FAQPage',
           mainEntity: [
-            { '@type': 'Question', name: 'What file formats are supported?', acceptedAnswer: { '@type': 'Answer', text: 'The vintage filter supports common image formats including JPG, PNG, WebP, BMP, and TIFF.' } },
+            { '@type': 'Question', name: 'What file formats are supported?', acceptedAnswer: { '@type': 'Answer', text: 'The tool accepts image formats that the browser can decode. Actual decoding support can vary by browser and source format.' } },
             { '@type': 'Question', name: 'What does the intensity slider do?', acceptedAnswer: { '@type': 'Answer', text: 'The intensity slider controls how strong the vintage effect appears, from subtle warmth to a stronger retro look.' } },
-            { '@type': 'Question', name: 'Is my image data stored?', acceptedAnswer: { '@type': 'Answer', text: 'No. Your image is processed locally in your browser and is not stored on our servers for this effect.' } },
+            { '@type': 'Question', name: 'Where is the vintage effect processed?', acceptedAnswer: { '@type': 'Answer', text: 'The vintage effect is processed locally in the browser. When Download is selected, the generated result is sent through the download-result service so the download page can be prepared.' } },
           ],
         })}
       </script>

@@ -127,7 +127,7 @@ export default function MirrorImagePage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🔄 Mirror Image</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Flip and mirror images horizontally or vertically. Create mirror effects and reverse photos instantly.
+              Flip images horizontally or vertically to create mirrored or reversed versions using browser-based processing.
             </p>
           </div>
         </div>
@@ -219,15 +219,15 @@ export default function MirrorImagePage() {
                   <p className="text-gray-700">Horizontal or vertical flip options for any orientation.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-teal-600 mb-2">Perfect Symmetry</h3>
+                  <h3 className="font-bold text-lg text-teal-600 mb-2">Mirror Layouts</h3>
                   <p className="text-gray-700">Create mirror images and symmetric artwork.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-teal-600 mb-2">Instant Processing</h3>
+                  <h3 className="font-bold text-lg text-teal-600 mb-2">Browser-Based Processing</h3>
                   <p className="text-gray-700">Apply horizontal or vertical mirroring in your browser.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-teal-600 mb-2">100% Free</h3>
+                  <h3 className="font-bold text-lg text-teal-600 mb-2">No Account Required</h3>
                   <p className="text-gray-700">No registration or subscription required.</p>
                 </div>
               </div>
@@ -278,7 +278,7 @@ export default function MirrorImagePage() {
                 </Link>
                 <Link href="/all-tools/sharpen-image" className="p-4 border-2 border-teal-200 rounded-lg hover:bg-teal-50 transition">
                   <h3 className="font-bold text-gray-800">Sharpen Image</h3>
-                  <p className="text-sm text-gray-600">Enhance clarity</p>
+                  <p className="text-sm text-gray-600">Adjust apparent edge contrast</p>
                 </Link>
               </div>
             </div>

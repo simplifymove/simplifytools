@@ -140,7 +140,7 @@ export default function WhiteBalancePage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🌡️ White Balance Tool</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Adjust white balance and color temperature. Fix warm or cool color casts instantly.
+              Adjust image color temperature and tint to reduce or change warm and cool color casts.
             </p>
           </div>
         </div>
@@ -246,7 +246,7 @@ export default function WhiteBalancePage() {
                   <p className="text-gray-700">Adjust temperature and tint independently.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-blue-600 mb-2">100% Free</h3>
+                  <h3 className="font-bold text-lg text-blue-600 mb-2">No Account Required</h3>
                   <p className="text-gray-700">No registration or payment needed.</p>
                 </div>
               </div>
@@ -258,7 +258,7 @@ export default function WhiteBalancePage() {
               <div className="space-y-4">
                 <details className="border-l-4 border-blue-400 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What is white balance?</summary>
-                  <p className="text-gray-700 mt-2">Correcting color temperature caused by different lighting conditions.</p>
+                  <p className="text-gray-700 mt-2">Adjusting the visible color temperature of images affected by different lighting conditions.</p>
                 </details>
                 <details className="border-l-4 border-blue-400 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">When to adjust temperature?</summary>
@@ -278,7 +278,7 @@ export default function WhiteBalancePage() {
                 </details>
                 <details className="border-l-4 border-blue-400 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
+                  <p className="text-gray-700 mt-2">The color adjustment is performed locally in the browser. When you choose Download, the generated image is sent through the download-result service so the download page can be prepared.</p>
                 </details>
               </div>
             </div>

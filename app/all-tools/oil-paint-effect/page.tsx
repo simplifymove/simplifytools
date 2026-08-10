@@ -152,7 +152,7 @@ export default function OilPaintEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Oil Paint Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert photos into oil painting style artwork. Create beautiful artistic oil paintings from your images instantly.
+              Apply a painterly smoothing effect that blends nearby colors and reduces fine image detail.
             </p>
           </div>
         </div>
@@ -233,15 +233,15 @@ export default function OilPaintEffectPage() {
                   <p className="text-gray-700">Convert photos into beautiful paintings.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-orange-600 mb-2">Professional Quality</h3>
-                  <p className="text-gray-700">High-quality oil painting effects.</p>
+                  <h3 className="font-bold text-lg text-orange-600 mb-2">Adjustable Painterly Effect</h3>
+                  <p className="text-gray-700">Adjust the smoothing strength to change the painterly appearance.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-orange-600 mb-2">Customizable</h3>
                   <p className="text-gray-700">Adjust intensity for desired effect.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-orange-600 mb-2">100% Free</h3>
+                  <h3 className="font-bold text-lg text-orange-600 mb-2">No Account Required</h3>
                   <p className="text-gray-700">No registration or payment needed.</p>
                 </div>
               </div>
@@ -294,15 +294,15 @@ export default function OilPaintEffectPage() {
                 </details>
                 <details className="border-l-4 border-orange-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I use for commercial art?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processed images can be used commercially.</p>
+                  <p className="text-gray-700 mt-2">Commercial-use rights depend on the rights and license attached to the source image and any other material used in your project.</p>
                 </details>
                 <details className="border-l-4 border-orange-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What's the output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent detail preservation.</p>
+                  <p className="text-gray-700 mt-2">The processed result is exported as JPEG. The effect intentionally smooths and changes image detail, and JPEG encoding can introduce additional compression changes.</p>
                 </details>
                 <details className="border-l-4 border-orange-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is my image private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, processing happens locally in your browser only.</p>
+                  <p className="text-gray-700 mt-2">The visual effect is processed locally in the browser. When you choose Download, the generated JPEG is sent through the download-result service so the download page can be prepared.</p>
                 </details>
                 <details className="border-l-4 border-orange-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I edit further?</summary>
@@ -347,7 +347,7 @@ export default function OilPaintEffectPage() {
           mainEntity: [
             { '@type': 'Question', name: 'What intensity should I use?', acceptedAnswer: { '@type': 'Answer', text: 'Start at 5 for a balanced oil paint effect. Lower values are more subtle and higher values create stronger smoothing.' } },
             { '@type': 'Question', name: 'Does this work on all photos?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, it works on most photos, with best results on images that have clear color areas and visible detail.' } },
-            { '@type': 'Question', name: 'Is my image private?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. The effect is processed locally in your browser.' } },
+            { '@type': 'Question', name: 'Where is the effect processed?', acceptedAnswer: { '@type': 'Answer', text: 'The visual effect is processed locally in the browser. When Download is selected, the generated JPEG is sent through the download-result service so the download page can be prepared.' } },
           ],
         })}
       </script>

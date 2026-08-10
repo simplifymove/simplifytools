@@ -431,7 +431,7 @@ export default function MakeRoundImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, the radius slider lets you adjust from slightly rounded to perfectly circular (0-100%).</p>
+              <p className="text-gray-700 mt-3 text-sm">Yes, the radius slider lets you adjust the roundness from slightly rounded toward a fully circular appearance (0-100%).</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -440,7 +440,7 @@ export default function MakeRoundImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">All formats: JPG, PNG, WebP, GIF, BMP. Output is PNG with transparency support.</p>
+              <p className="text-gray-700 mt-3 text-sm">The tool accepts image formats that the browser can decode. The processed rounded result is exported as PNG.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -467,7 +467,7 @@ export default function MakeRoundImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, rounding preserves full image quality. Only pixels outside the round shape are removed.</p>
+              <p className="text-gray-700 mt-3 text-sm">Rounding changes the visible canvas area and creates a newly encoded PNG result. Review the output if preserving exact source appearance is important.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -486,11 +486,11 @@ export default function MakeRoundImagePage() {
         "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
-          { "@type": "Question", "name": "Can I control the roundness level?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, the radius slider lets you adjust from slightly rounded to perfectly circular." } },
-          { "@type": "Question", "name": "What formats are supported for input?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is PNG." } },
+          { "@type": "Question", "name": "Can I control the roundness level?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, the radius slider lets you adjust the roundness from slightly rounded toward a fully circular appearance." } },
+          { "@type": "Question", "name": "What formats are supported for input?", "acceptedAnswer": { "@type": "Answer", "text": "The tool accepts image formats that the browser can decode. The processed rounded result is exported as PNG." } },
           { "@type": "Question", "name": "Can I add transparent backgrounds?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, set background opacity or use a transparent color." } },
           { "@type": "Question", "name": "How do I add a border to the rounded image?", "acceptedAnswer": { "@type": "Answer", "text": "Use the border width slider and choose a color with the color picker." } },
-          { "@type": "Question", "name": "Does rounding reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, rounding preserves full image quality." } },
+          { "@type": "Question", "name": "Does rounding reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "Rounding changes the visible canvas area and creates a newly encoded PNG result, so the processed output should be reviewed." } },
           { "@type": "Question", "name": "Is this round image tool free?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the available tool controls to create rounded images." } }
         ]
       })}</script>

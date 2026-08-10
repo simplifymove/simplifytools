@@ -289,7 +289,7 @@ export default function ImageEnhancerPage() {
                       <li>• Adjust multiple at once</li>
                       <li>• Reset to defaults anytime</li>
                       <li>• Live preview support</li>
-                      <li>• Instant processing</li>
+                      <li>• Browser-based adjustment processing</li>
                     </ul>
                   </div>
                 </div>
@@ -318,7 +318,7 @@ export default function ImageEnhancerPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download enhanced image:</strong> Save your improved image instantly</p></div>
+              <div><p className="text-gray-700"><strong>Download adjusted image:</strong> Prepare and save the processed image</p></div>
             </div>
           </div>
         </div>
@@ -376,7 +376,7 @@ export default function ImageEnhancerPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Enhancement is applied non-destructively at 90% JPG quality. Extreme adjustments may introduce artifacts.</p>
+              <p className="text-gray-700 mt-3 text-sm">Brightness, contrast, and saturation adjustments change the rendered pixels, and the result is encoded again as JPEG. Strong adjustments can introduce clipping, color shifts, or other visible artifacts.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -434,7 +434,7 @@ export default function ImageEnhancerPage() {
             "name": "Will enhancement affect image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Enhancement is applied non-destructively at 90% JPG quality. Extreme adjustments may introduce artifacts."
+              "text": "Brightness, contrast, and saturation adjustments change the rendered pixels, and the result is encoded again as JPEG. Strong adjustments can introduce clipping, color shifts, or other visible artifacts."
             }
           },
           {
@@ -442,7 +442,7 @@ export default function ImageEnhancerPage() {
             "name": "What's the best way to enhance photos?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Start with brightness (fix exposure), adjust contrast (add punch), then adjust saturation (make colors pop)."
+              "text": "There is no single adjustment sequence that fits every image. Make small brightness, contrast, and saturation changes and compare the preview with the source."
             }
           },
           {

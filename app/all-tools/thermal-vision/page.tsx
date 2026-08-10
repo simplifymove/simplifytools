@@ -161,7 +161,7 @@ export default function ThermalVisionPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🌡️ Thermal Vision</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert images to thermal and infrared color mapping. Create thermal vision effects instantly.
+              Apply a heat-map-style color transformation based on image brightness. This is a visual effect, not thermal or infrared measurement.
             </p>
           </div>
         </div>
@@ -247,10 +247,10 @@ export default function ThermalVisionPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-red-600 mb-2">Infrared Effect</h3>
-                  <p className="text-gray-700">Realistic thermal color palette.</p>
+                  <p className="text-gray-700">Applies a heat-map-style color palette for a simulated thermal appearance.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-red-600 mb-2">100% Free</h3>
+                  <h3 className="font-bold text-lg text-red-600 mb-2">No Account Required</h3>
                   <p className="text-gray-700">No registration or payment needed.</p>
                 </div>
               </div>
@@ -262,11 +262,11 @@ export default function ThermalVisionPage() {
               <div className="space-y-4">
                 <details className="border-l-4 border-red-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">50% for balanced. 100% for pure thermal colors.</p>
+                  <p className="text-gray-700 mt-2">The intensity setting controls how strongly the simulated heat-map colors replace the original appearance. Choose a value according to the visual result you want.</p>
                 </details>
                 <details className="border-l-4 border-red-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Color mapping explained?</summary>
-                  <p className="text-gray-700 mt-2">Blue=cold, Cyan=cool, Yellow=warm, Red=hot.</p>
+                  <p className="text-gray-700 mt-2">The visual mapping assigns blue/cyan tones to darker ranges and yellow/red tones to brighter ranges. These colors do not represent measured temperatures.</p>
                 </details>
                 <details className="border-l-4 border-red-600 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>

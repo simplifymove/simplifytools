@@ -135,7 +135,7 @@ export default function PosterizeImagePage() {
               Transform your photos into bold, artistic poster art. Create striking effects by reducing color levels to create a dramatic, stylized appearance.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Perfect for creating eye-catching designs and artistic prints.
+              Useful for stylized graphics, poster-like effects, and reduced-color artwork.
             </p>
           </div>
         </div>
@@ -216,15 +216,15 @@ export default function PosterizeImagePage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-red-600 mb-2">Bold Design Appeal</h3>
-                  <p className="text-gray-700">Perfect for posters, prints, and eye-catching social media content.</p>
+                  <p className="text-gray-700">Use reduced color levels for posters, prints, graphics, and stylized social content.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-red-600 mb-2">Easy Customization</h3>
                   <p className="text-gray-700">Control the intensity of the effect with simple color level adjustments.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-red-600 mb-2">Professional Quality</h3>
-                  <p className="text-gray-700">Achieve gallery-worthy results with our advanced posterization algorithm.</p>
+                  <h3 className="font-bold text-lg text-red-600 mb-2">Adjustable Color Levels</h3>
+                  <p className="text-gray-700">Choose the number of color levels and review how strongly the setting simplifies the image.</p>
                 </div>
               </div>
             </div>
@@ -247,11 +247,11 @@ export default function PosterizeImagePage() {
                 </details>
                 <details className="border-l-4 border-red-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What file formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, BMP, and TIFF formats. Download as JPG for best compatibility.</p>
+                  <p className="text-gray-700 mt-2">The tool accepts image formats that the browser can decode. The processed result is downloaded as JPEG.</p>
                 </details>
                 <details className="border-l-4 border-red-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is there a file size limit?</summary>
-                  <p className="text-gray-700 mt-2">No file size limit! Process images of any resolution, from small thumbnails to large prints.</p>
+                  <p className="text-gray-700 mt-2">Practical limits depend on the browser, available device memory, image dimensions, and file size.</p>
                 </details>
                 <details className="border-l-4 border-red-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I combine posterize with other effects?</summary>
@@ -270,7 +270,7 @@ export default function PosterizeImagePage() {
                 </Link>
                 <Link href="/all-tools/color-grader" className="p-4 border-2 border-red-200 rounded-lg hover:bg-red-50 transition">
                   <h3 className="font-bold text-gray-800">Color Grader</h3>
-                  <p className="text-sm text-gray-600">Professional color adjustment</p>
+                  <p className="text-sm text-gray-600">Adjust image color settings</p>
                 </Link>
                 <Link href="/all-tools/vignette-effect" className="p-4 border-2 border-red-200 rounded-lg hover:bg-red-50 transition">
                   <h3 className="font-bold text-gray-800">Vignette Effect</h3>
