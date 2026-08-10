@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Free Video Tools Online - Convert & Compress Videos',
-  description: 'Free online video tools to convert, compress, trim, and edit videos in any format. Fast, secure, and no signup required. Works on all devices.',
+  description: 'Browse online video tools for conversion, compression, trimming, audio extraction, transcription, and other media tasks. Supported formats and processing options vary by tool.',
   keywords: ['free video tools', 'video converter online', 'compress video', 'edit video online', 'convert MP4 free', 'video compression tool'],
   openGraph: {
     type: 'website',

@@ -237,7 +237,7 @@ export default function VideoToolsPage() {
                     <p className="text-gray-700 text-sm">Video is server-processed. Upload and encoding time depend on duration, resolution, codec, operation, and network speed.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Processing Information</h3>
                     <p className="text-gray-700 text-sm">Uploads use HTTPS and are retained temporarily for processing and download. Media cleanup is scheduled after approximately one hour.</p>
                   </div>
                 </div>
@@ -268,7 +268,7 @@ export default function VideoToolsPage() {
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Free Video Tools</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Using SimplifyConvert video tools is simple and straightforward. Select the tool you need from our 58 options, upload your video file, configure options if needed, and click process. The tool handles complex video operations in seconds while maintaining quality. Download your converted or edited video instantly. No signup required, no registration needed, no learning curve.
+                  Select the video tool you need, upload a supported file, configure the available options, and start processing. Processing time and output characteristics depend on the selected operation, source file, settings, and current service availability. When processing is complete, use the available result or download option.
                 </p>
               </motion.div>
             </div>
@@ -288,7 +288,7 @@ export default function VideoToolsPage() {
                 name: 'What video formats do you support?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'We support most common video formats including MP4, WebM, MKV, AVI, MOV, FLV, and more. Our video tools can convert between any formats while maintaining quality and preserving video properties.'
+                  text: 'Available format support depends on the selected tool. Common video formats used across the collection include MP4, WebM, MKV, AVI, MOV, and others. Check the individual tool for its accepted input and generated output formats.'
                 }
               },
               {
@@ -316,7 +316,7 @@ export default function VideoToolsPage() {
                 name: 'Which video tools are most popular?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Video compression, MP4 conversion, video trimming, and video to GIF conversion are our most popular tools. All are free, fast, and work without signup or installation. Perfect for social media, web design, and general video editing.'
+                  text: 'The collection includes video compression, MP4 conversion, trimming, video-to-GIF conversion, audio extraction, transcription, and other media-processing tools. Availability, supported formats, and processing limits vary by tool.'
                 }
               }
             ]}
