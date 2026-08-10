@@ -364,10 +364,10 @@ export default function AddBorderPage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Add Borders to Images?</h2>
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Frame your photos - add elegant borders to highlight and separate images</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Professional presentations - polished borders enhance slide shows and portfolios</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Social media appeal - eye-catching borders increase engagement and visibility</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Presentation layouts - use borders to separate images from surrounding slide or portfolio content</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Social graphics - add visual separation around images used in posts and layouts</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Custom colors - match your brand with unlimited color choices</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Instant results - add borders in seconds without design software</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Simple controls - choose the border width and color directly in the tool</li>
           </ul>
         </div>
       </div>
@@ -401,7 +401,7 @@ export default function AddBorderPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">All formats: JPG, PNG, WebP, GIF, BMP. Output is always PNG.</p>
+              <p className="text-gray-700 mt-3 text-sm">Supported browser-readable images can be processed by the tool. The generated bordered result is downloaded as PNG.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -419,7 +419,7 @@ export default function AddBorderPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, adding borders doesn't affect the original image quality - only adds space around it.</p>
+              <p className="text-gray-700 mt-3 text-sm">Adding a border creates a new image with a larger canvas around the source content. It does not add detail or improve the source image itself.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -440,9 +440,9 @@ export default function AddBorderPage() {
         "mainEntity": [
           { "@type": "Question", "name": "What are the border width limits?", "acceptedAnswer": { "@type": "Answer", "text": "You can add borders from 5px to 100px." } },
           { "@type": "Question", "name": "Can I use custom border colors?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, use the color picker for any color in the RGB spectrum." } },
-          { "@type": "Question", "name": "What file formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is PNG." } },
+          { "@type": "Question", "name": "What file formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Supported browser-readable images can be processed by the tool. The generated bordered result is downloaded as PNG." } },
           { "@type": "Question", "name": "Can I add borders only on specific sides?", "acceptedAnswer": { "@type": "Answer", "text": "This tool adds borders on all sides equally." } },
-          { "@type": "Question", "name": "Does adding borders reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, adding borders doesn't affect original image quality." } },
+          { "@type": "Question", "name": "Does adding borders reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "Adding a border creates a new image with a larger canvas around the source content. It does not add detail or improve the source image itself." } },
           { "@type": "Question", "name": "Is this border tool completely free?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the tool to add borders to supported images." } }
         ]
       })}</script>

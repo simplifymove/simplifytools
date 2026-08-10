@@ -136,7 +136,7 @@ export default function BlurImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Blur Image</h1>
-                <p className="text-lg text-white/90">Add blur effects to images with adjustable intensity. Perfect for privacy, artistic effects, and background softening.</p>
+                <p className="text-lg text-white/90">Apply an adjustable blur effect to soften details, backgrounds, or selected image workflows.</p>
               </div>
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function BlurImagePage() {
                       <li>• Higher blur = stronger effect</li>
                       <li>• Great for privacy</li>
                       <li>• Artistic effects</li>
-                      <li>• Instant processing</li>
+                      <li>• Browser-based blur processing</li>
                     </ul>
                   </div>
                 </div>
@@ -273,7 +273,7 @@ export default function BlurImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Apply Blur:</strong> Processing happens instantly in your browser with no uploads</p></div>
+              <div><p className="text-gray-700"><strong>Click Apply Blur:</strong> Apply the blur effect using browser-based image processing</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -289,10 +289,10 @@ export default function BlurImagePage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Blurring</h2>
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Privacy protection - blur sensitive information like license plates and faces</li>
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Artistic effects - create bokeh and depth of field effects professionally</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Artistic effects - soften image detail for creative compositions and backgrounds</li>
             <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Background softening - draw focus to main subject by blurring background</li>
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Social media ready - perfect blurred images for social posts and stories</li>
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Document redaction - blur confidential content before sharing documents</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Social media preparation - create softened images for posts, stories, and graphics</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Detail obscuring - reduce the visibility of information before sharing, while reviewing the result carefully</li>
           </ul>
         </div>
       </div>
@@ -369,7 +369,7 @@ export default function BlurImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Blur is applied non-destructively and maintains the original image quality. The blur effect is applied during export at 90% quality.</p>
+              <p className="text-gray-700 mt-3 text-sm">The blur operation intentionally changes image detail, and the generated result is encoded as JPG at 90% quality. Keep the original file if you may need the unmodified image later.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -378,7 +378,7 @@ export default function BlurImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Supports all common image formats: JPG, PNG, WebP, GIF, BMP and more. Output is always JPG at 90% quality.</p>
+              <p className="text-gray-700 mt-3 text-sm">Supported browser-readable images can be processed by the tool. The generated result is encoded as JPG at 90% quality.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -428,7 +428,7 @@ export default function BlurImagePage() {
             "name": "Does blur reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Blur is applied non-destructively and maintains original quality at 90% JPG compression."
+              "text": "The blur operation changes image detail, and the generated result is encoded as JPG at 90% quality."
             }
           },
           {
@@ -436,7 +436,7 @@ export default function BlurImagePage() {
             "name": "What formats does blur support?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Supports all common image formats: JPG, PNG, WebP, GIF, BMP and more. Output is always JPG at 90% quality."
+              "text": "Supported browser-readable images can be processed by the tool. The generated result is encoded as JPG at 90% quality."
             }
           },
           {

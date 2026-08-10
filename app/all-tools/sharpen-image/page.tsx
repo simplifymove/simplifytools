@@ -126,7 +126,7 @@ export default function SharpenImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Sharpen Image</h1>
-                <p className="text-lg text-white/90">Enhance image clarity and details with adjustable sharpening. Perfect for improving soft images and bringing out details.</p>
+                <p className="text-lg text-white/90">Apply an adjustable contrast-based sharpening effect to make edges and tonal differences appear more pronounced.</p>
               </div>
             </div>
           </div>
@@ -225,10 +225,10 @@ export default function SharpenImagePage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">Tips</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Enhance soft images</li>
+                      <li>• Increase apparent edge contrast</li>
                       <li>• Improve details</li>
                       <li>• Multiple levels available</li>
-                      <li>• Instant processing</li>
+                      <li>• Browser-based processing</li>
                     </ul>
                   </div>
                 </div>
@@ -268,9 +268,9 @@ export default function SharpenImagePage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Sharpening</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-amber-600 font-bold">•</span> Enhance clarity - bring out details in soft or blurry images</li>
-            <li className="flex gap-2"><span className="text-amber-600 font-bold">•</span> Improve focus - make photos appear more focused and professional</li>
-            <li className="flex gap-2"><span className="text-amber-600 font-bold">•</span> Professional results - achieve crisp, detailed images for printing</li>
+            <li className="flex gap-2"><span className="text-amber-600 font-bold">•</span> Adjust apparent clarity - increase contrast around visible image details</li>
+            <li className="flex gap-2"><span className="text-amber-600 font-bold">•</span> Emphasize edges - make existing tonal differences appear stronger</li>
+            <li className="flex gap-2"><span className="text-amber-600 font-bold">•</span> Adjustable appearance - compare different settings before choosing the result</li>
             <li className="flex gap-2"><span className="text-amber-600 font-bold">•</span> Social media ready - create sharp images for social platforms</li>
             <li className="flex gap-2"><span className="text-amber-600 font-bold">•</span> Adjustable intensity - control sharpening strength for different images</li>
           </ul>
@@ -324,7 +324,7 @@ export default function SharpenImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Sharpening works best on soft images. Heavily blurry images need blur removal or unblurring tools for best results.</p>
+              <p className="text-gray-700 mt-3 text-sm">This adjustment can make existing edges and tonal differences appear stronger, but it does not reconstruct detail that is missing from a heavily blurred source image.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -381,7 +381,7 @@ export default function SharpenImagePage() {
             "name": "Will sharpening improve a very blurry image?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Sharpening works best on soft images. Heavily blurry images need blur removal tools for best results."
+              "text": "The adjustment can make existing edges and tonal differences appear stronger, but it does not reconstruct detail missing from a heavily blurred source image."
             }
           },
           {

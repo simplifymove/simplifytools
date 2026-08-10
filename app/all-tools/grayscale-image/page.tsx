@@ -100,7 +100,7 @@ export default function GrayscaleImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Convert to Grayscale</h1>
-                <p className="text-lg text-white/90">Transform any colored image into a beautiful black and white grayscale image. Perfect for artistic photography and vintage effects.</p>
+                <p className="text-lg text-white/90">Convert a color image to grayscale for monochrome designs, photography, documents, and creative effects.</p>
               </div>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function GrayscaleImagePage() {
                       <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                         📝 Professional Look
                       </h4>
-                      <p className="text-sm text-gray-600">Perfect for professional photography, portfolios, and artistic projects.</p>
+                      <p className="text-sm text-gray-600">Useful for photography, portfolios, documents, and creative projects.</p>
                     </div>
                   </div>
                 </div>
@@ -297,7 +297,7 @@ export default function GrayscaleImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Convert to Grayscale:</strong> Instantly convert to black and white</p></div>
+              <div><p className="text-gray-700"><strong>Click Convert to Grayscale:</strong> Apply the grayscale conversion in your browser</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -350,7 +350,7 @@ export default function GrayscaleImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">All formats: JPG, PNG, WebP, GIF, BMP. Output is JPG format for optimal compatibility.</p>
+              <p className="text-gray-700 mt-3 text-sm">Supported browser-readable images can be processed by the tool. The generated result is downloaded as a JPG image.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -368,7 +368,7 @@ export default function GrayscaleImagePage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, it preserves image quality and detail. Only color information is removed, brightness and contrast remain intact.</p>
+              <p className="text-gray-700 mt-3 text-sm">Grayscale conversion changes the image pixels by removing color information, and the generated result is encoded again as JPG. Review the output if image fidelity is important.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -389,9 +389,9 @@ export default function GrayscaleImagePage() {
         "mainEntity": [
           { "@type": "Question", "name": "What does grayscale conversion do exactly?", "acceptedAnswer": { "@type": "Answer", "text": "Grayscale conversion removes color and creates black and white with shades of gray." } },
           { "@type": "Question", "name": "Is grayscale the same as black and white?", "acceptedAnswer": { "@type": "Answer", "text": "Grayscale includes shades of gray, while black and white is only pure black and white." } },
-          { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is JPG." } },
+          { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Supported browser-readable images can be processed by the tool. The generated result is downloaded as JPG." } },
           { "@type": "Question", "name": "Can I convert back from grayscale to color?", "acceptedAnswer": { "@type": "Answer", "text": "Not automatically. Use your original image to revert, or use colorization tools." } },
-          { "@type": "Question", "name": "Does grayscale reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, it preserves quality. Only color information is removed." } },
+          { "@type": "Question", "name": "Does grayscale reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "Grayscale conversion changes the image pixels and the generated result is encoded again as JPG, so review the output when image fidelity is important." } },
           { "@type": "Question", "name": "Is grayscale conversion completely free?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the tool to convert supported images to grayscale." } }
         ]
       })}</script>

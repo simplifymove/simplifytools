@@ -144,7 +144,7 @@ export default function PixelateImagePage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Pixelate Image</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Create pixelated and mosaic effects on your photos. Perfect for privacy, artistic effects, or retro-style images.
+              Create adjustable pixelated and mosaic-style effects for creative images or for reducing visible fine detail.
             </p>
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function PixelateImagePage() {
                 <li><strong>1. Upload Your Image:</strong> Select a JPG, PNG, or WebP image from your device.</li>
                 <li><strong>2. Adjust Pixel Size:</strong> Use the slider to control the pixelation level (2-50px).</li>
                 <li><strong>3. Apply Effect:</strong> Click "Apply Pixelate Effect" to process your image.</li>
-                <li><strong>4. Download:</strong> Save your pixelated image instantly.</li>
+                <li><strong>4. Download:</strong> Save the processed pixelated image.</li>
               </ol>
             </div>
 
@@ -222,18 +222,18 @@ export default function PixelateImagePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Privacy Protection</h3>
-                  <p className="text-gray-700">Blur faces and sensitive information in photos safely.</p>
+                  <p className="text-gray-700">Reduce visible detail in faces or other image areas, then review the result before sharing.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Artistic Effects</h3>
-                  <p className="text-gray-700">Create unique retro and modern art styles instantly.</p>
+                  <p className="text-gray-700">Create retro, mosaic, and block-style visual effects.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Mosaic Effects</h3>
                   <p className="text-gray-700">Transform photos into beautiful mosaic patterns.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-indigo-600 mb-2">100% Free</h3>
+                  <h3 className="font-bold text-lg text-indigo-600 mb-2">No Account Required</h3>
                   <p className="text-gray-700">No registration or payment required, completely free.</p>
                 </div>
               </div>
@@ -249,7 +249,7 @@ export default function PixelateImagePage() {
                 </details>
                 <details className="border-l-4 border-indigo-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is this good for hiding faces?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Pixelation is commonly used to anonymize faces and sensitive information in photos.</p>
+                  <p className="text-gray-700 mt-2">Pixelation can reduce visible detail, but it should not be treated as a guaranteed anonymization method. Use a strong enough setting and review the processed result before sharing.</p>
                 </details>
                 <details className="border-l-4 border-indigo-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I customize the effect?</summary>
@@ -265,7 +265,7 @@ export default function PixelateImagePage() {
                 </details>
                 <details className="border-l-4 border-indigo-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Does pixelation reduce file size?</summary>
-                  <p className="text-gray-700 mt-2">Yes, heavily pixelated images often have smaller file sizes due to reduced color complexity.</p>
+                  <p className="text-gray-700 mt-2">File size can change after pixelation because the image pixels are modified and the result is encoded again. The final size depends on the source image, effect strength, dimensions, and output encoding.</p>
                 </details>
               </div>
             </div>
