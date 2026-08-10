@@ -1220,7 +1220,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'compress-pdf': {
     id: 'compress-pdf',
     title: 'Compress PDF',
-    description: 'Reduce PDF file size',
+    description: 'Reduce PDF file size where additional PDF compression is possible.',
     category: 'Advanced',
     engine: 'core',
     icon: Archive,
@@ -1245,7 +1245,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-translator': {
     id: 'pdf-translator',
     title: 'PDF Translator',
-    description: 'Translate PDF content',
+    description: 'Translate extracted PDF text into a selected target language.',
     category: 'Advanced',
     engine: 'ocr_translate',
     icon: Languages,
@@ -1316,7 +1316,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-ocr': {
     id: 'pdf-ocr',
     title: 'PDF OCR',
-    description: 'Extract text from scanned PDFs using OCR',
+    description: 'Recognize text in scanned PDF pages using OCR and export supported output formats.',
     category: 'Advanced',
     engine: 'ocr_translate',
     icon: Wand2,
@@ -1363,7 +1363,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-deskew': {
     id: 'pdf-deskew',
     title: 'PDF Deskew',
-    description: 'Straighten tilted or skewed scanned pages',
+    description: 'Correct small amounts of tilt in selected scanned PDF pages.',
     category: 'Advanced',
     engine: 'ocr_translate',
     icon: RotateCw,
@@ -1383,7 +1383,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-enhance-scan': {
     id: 'pdf-enhance-scan',
     title: 'Enhance Scanned PDF',
-    description: 'Improve quality of scanned documents (contrast, sharpness, denoise)',
+    description: 'Apply image-processing adjustments to improve the readability of scanned PDF pages.',
     category: 'Advanced',
     engine: 'ocr_translate',
     icon: Sparkles,
