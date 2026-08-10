@@ -762,7 +762,7 @@ export default function MakeBackgroundTransparentPage() {
                   className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                 />
                 <p className="text-xs text-gray-600 mt-2">
-                  Smooths edges for more professional results (0 = sharp, 10 = soft)
+                  Smooths the transition around processed edges (0 = sharp, 10 = soft)
                 </p>
               </div>
 

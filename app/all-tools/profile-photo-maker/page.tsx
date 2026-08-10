@@ -341,7 +341,7 @@ export default function ProfilePhotoMakerPage() {
 
                   {/* Use Cases */}
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-amber-900 mb-2">Perfect for:</h3>
+                    <h3 className="font-semibold text-amber-900 mb-2">Common uses:</h3>
                     <ul className="text-sm text-amber-800 space-y-1">
                       <li>• LinkedIn profile</li>
                       <li>• Instagram account</li>

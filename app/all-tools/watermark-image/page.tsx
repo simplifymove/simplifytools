@@ -310,7 +310,7 @@ export default function WatermarkImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Watermark Image</h1>
-                <p className="text-lg text-white/90">Add text watermarks to protect your images and add branding. Perfect for photos, artwork, and digital content.</p>
+                <p className="text-lg text-white/90">Add text watermarks for branding, attribution, labeling, or other supported image workflows.</p>
               </div>
             </div>
           </div>
