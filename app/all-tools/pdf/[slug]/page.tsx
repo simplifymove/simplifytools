@@ -22,6 +22,7 @@ import HumanizedPdfBatchThreeContent, { BATCH_THREE_PDF_TOOL_IDS } from '@/app/c
 import HumanizedPdfBatchFourContent, { BATCH_FOUR_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchFourContent';
 import HumanizedPdfBatchFiveContent, { BATCH_FIVE_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchFiveContent';
 import HumanizedPdfBatchSixContent, { BATCH_SIX_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchSixContent';
+import HumanizedPdfBatchSevenContent, { BATCH_SEVEN_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchSevenContent';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -6036,7 +6037,8 @@ export default function PdfToolPage({ params }: PageProps) {
         {BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchFourContent toolId={tool.id} />}
         {BATCH_FIVE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchFiveContent toolId={tool.id} />}
         {BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchSixContent toolId={tool.id} />}
-        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && !BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && !BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && !BATCH_FIVE_PDF_TOOL_IDS.has(tool.id) && !BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && (
+        {BATCH_SEVEN_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchSevenContent toolId={tool.id} />}
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && !BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && !BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && !BATCH_FIVE_PDF_TOOL_IDS.has(tool.id) && !BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && !BATCH_SEVEN_PDF_TOOL_IDS.has(tool.id) && (
           <PdfToolSupportingContent toolId={tool.id} />
         )}
 
@@ -6312,7 +6314,9 @@ function AnnotatePdfPage({ tool }: { tool: PdfToolConfig }) {
               </motion.div>
             )}
           </div>
-          <div className="mt-8">
+          <HumanizedPdfBatchSevenContent toolId="annotate-pdf" />
+
+            <div className="mt-8">
             <RelatedToolsSection
               family="pdf"
               toolId={tool.id}

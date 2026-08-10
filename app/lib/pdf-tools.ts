@@ -751,7 +751,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'add-text': {
     id: 'add-text',
     title: 'Add Text to PDF',
-    description: 'Add custom text to PDF pages',
+    description: 'Place new text on a selected PDF page with configurable position, size, and color.',
     category: 'Edit',
     engine: 'edit',
     icon: Type,
@@ -813,7 +813,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'add-watermark': {
     id: 'add-watermark',
     title: 'Add Watermark',
-    description: 'Add watermark text to PDF pages',
+    description: 'Add configurable text watermarks to all or selected PDF pages.',
     category: 'Edit',
     engine: 'edit',
     icon: Stamp,
@@ -911,7 +911,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'annotate-pdf': {
     id: 'annotate-pdf',
     title: 'Annotate PDF',
-    description: 'Add annotations to PDF',
+    description: 'Add visible annotation markup to a PDF and save the annotated result.',
     category: 'Edit',
     engine: 'edit',
     icon: MessageSquare,
@@ -987,7 +987,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'extract-text-from-pdf': {
     id: 'extract-text-from-pdf',
     title: 'Extract Text from PDF',
-    description: 'Extract all text from PDF',
+    description: 'Extract available text from selected PDF pages with optional OCR fallback.',
     category: 'Extract',
     engine: 'extract',
     icon: FileText,
@@ -1013,7 +1013,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'extract-images-pdf': {
     id: 'extract-images-pdf',
     title: 'Extract Images from PDF',
-    description: 'Extract all images from PDF',
+    description: 'Extract embedded image objects from all or selected PDF pages.',
     category: 'Extract',
     engine: 'extract',
     icon: ImageIcon,
