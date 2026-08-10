@@ -492,6 +492,63 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
       },
     ],
   },
+
+  'contract-summary': {
+    introduction: 'The Contract Summarizer creates a plain-language summary from the contract text you provide. It can help identify terms, obligations, payment provisions, termination language, and possible areas to review, but the generated summary is not legal advice and may miss context, exceptions, definitions, or legally significant details in the original document.',
+    useCases: ['Create a shorter overview of supplied contract text', 'Identify terms and obligations that may need closer review', 'Turn dense contract wording into a more accessible first-pass summary', 'Prepare notes before reviewing the original agreement or discussing it with a qualified professional'],
+    examples: [
+      {
+        label: 'Contract overview',
+        input: 'A service agreement containing payment terms, responsibilities, renewal language, and termination conditions.',
+        output: 'A structured plain-language summary highlighting major provisions and areas to review against the original agreement.',
+      },
+    ],
+  },
+  'research-paper-writer': {
+    introduction: 'The Research Paper Writer creates a structured academic-style draft or outline from a research topic and selected academic level. Generated material can help organize an initial approach, but claims, methods, findings, references, citations, and source attribution must be independently researched and verified before academic use.',
+    useCases: ['Explore a possible structure for a research topic', 'Draft sections to use as a starting point for further research', 'Organize ideas for an introduction, literature review, methodology, and conclusion', 'Compare possible approaches before developing a paper from verified sources'],
+    examples: [
+      {
+        label: 'Research structure',
+        input: 'Topic: How remote work affects communication in small project teams. Level: Undergraduate.',
+        output: 'A proposed research-paper structure with a thesis direction, introduction, literature-review topics, methodology ideas, expected-findings section, and conclusion outline for further research and revision.',
+      },
+    ],
+  },
+  'explain-it': {
+    introduction: 'Explain It Simply rewrites a complex topic using simpler wording, examples, analogies, and step-by-step explanations for the selected audience level. Simplification can omit nuance or introduce inaccuracies, so important technical, legal, medical, financial, scientific, or other specialized information should be checked against reliable sources.',
+    useCases: ['Create a simpler explanation of unfamiliar material', 'Adapt technical wording for a general audience', 'Explore an analogy or step-by-step explanation of a concept', 'Create a starting explanation to review for clarity and accuracy'],
+    examples: [
+      {
+        label: 'Simplify a technical concept',
+        input: 'Explain how cloud storage works for a general adult audience.',
+        output: 'A simpler explanation using everyday language and an analogy, ready to be checked against the original technical information.',
+      },
+    ],
+  },
+  'outline-generator': {
+    introduction: 'The Content Outline Generator creates a proposed structure from a topic and selected content type. It can organize main sections, subsections, key points, and suggested depth, giving you a starting framework that can be adjusted as your research, audience, and writing goals become clearer.',
+    useCases: ['Plan the sections of an article before drafting', 'Create a starting structure for a guide or tutorial', 'Organize report topics into sections and subsections', 'Compare possible content structures before writing'],
+    examples: [
+      {
+        label: 'Guide outline',
+        input: 'Topic: Organizing digital files for a small team. Content type: Guide.',
+        output: 'A proposed guide structure covering preparation, folder organization, naming conventions, access practices, maintenance, and related subtopics for further editing.',
+      },
+    ],
+  },
+  'question-generator': {
+    introduction: 'The Question Generator creates a set of questions from a topic and selected purpose such as engagement, reflection, research, or brainstorming. Generated questions can provide starting prompts, but they should be reviewed for relevance, neutrality, clarity, audience suitability, and research or assessment requirements.',
+    useCases: ['Create brainstorming questions around a topic', 'Draft reflection prompts for further editing', 'Explore possible research questions before refining a study', 'Prepare discussion questions for a selected audience or subject'],
+    examples: [
+      {
+        label: 'Research-question ideas',
+        input: 'Topic: Remote collaboration in small teams. Purpose: Research.',
+        output: 'A set of possible questions covering communication, coordination, tools, challenges, and team practices that can be narrowed and refined for a specific research objective.',
+      },
+    ],
+  },
+
 };
 
 interface PageProps {

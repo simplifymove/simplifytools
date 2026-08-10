@@ -148,7 +148,7 @@ const toolSEODatabase: Record<string, {
   },
   'outline-generator': {
     title: 'Outline Generator - Create Content Outlines',
-    description: 'Generate structured outlines for essays, articles, and documents. Organize your ideas before writing with AI-powered outlines.',
+    description: 'Create a proposed content outline with sections, subsections, and key points from the topic and content type you provide.',
     keywords: ['outline generator', 'content outline', 'essay outline', 'article outline', 'create outline']
   },
   'title-rewriter': {
@@ -158,7 +158,7 @@ const toolSEODatabase: Record<string, {
   },
   'question-generator': {
     title: 'Question Generator - Create Questions & Prompts',
-    description: 'Generate relevant questions for surveys, quizzes, and interviews. Perfect for educational content and engagement.',
+    description: 'Generate question ideas from a topic for engagement, reflection, research, or brainstorming, then review them for relevance and clarity.',
     keywords: ['question generator', 'create questions', 'survey questions', 'quiz generator', 'interview questions']
   },
   'facebook-post-generator': {
