@@ -46,17 +46,17 @@ const toolSEODatabase: Record<string, {
 }> = {
   'paragraph-writer': {
     title: 'Paragraph Writer - AI Paragraph Generator & Creator',
-    description: 'Write well-structured paragraphs instantly. Our AI paragraph generator helps you create engaging, professional paragraphs for essays, articles, and more.',
+    description: 'Generate paragraph drafts from your input for essays, articles, and other writing tasks. Review and edit the result before use.',
     keywords: ['paragraph writer', 'paragraph generator', 'AI paragraph creator', 'write paragraphs', 'essay paragraphs']
   },
   'content-improver': {
     title: 'Content Improver - Enhance & Polish Your Writing',
-    description: 'Instantly improve your content quality. Our AI-powered content enhancer refines clarity, tone, and readability while preserving your original meaning.',
+    description: 'Generate a revised version of your text with changes to clarity, tone, and readability. Review the output to confirm the intended meaning is preserved.',
     keywords: ['content improver', 'text enhancer', 'writing improvement', 'content quality', 'text polish']
   },
   'content-summarizer': {
     title: 'Content Summarizer - Condensed Text & Key Points',
-    description: 'Quickly summarize long content into concise summaries. Perfect for articles, documents, and research papers. AI-powered summarization tool.',
+    description: 'Generate shorter summaries from longer text such as articles, documents, and research material. Check important details against the source.',
     keywords: ['summarizer', 'text summarization', 'content summary', 'AI summarizer', 'condense text']
   },
   'grammar-fixer': {
@@ -66,22 +66,22 @@ const toolSEODatabase: Record<string, {
   },
   'translate': {
     title: 'AI Text Translator - Translate Between Languages',
-    description: 'Translate text between 100+ languages instantly. Fast, accurate AI-powered translation tool with support for multiple language pairs.',
+    description: 'Translate text between supported languages using AI assistance. Important, technical, or sensitive translations should be reviewed by a qualified person.',
     keywords: ['translator', 'AI translator', 'language translator', 'text translation', 'translate text']
   },
   'blog-post-generator': {
     title: 'Blog Post Generator - Create Blog Posts with AI',
-    description: 'Generate complete blog posts instantly with AI. Create SEO-optimized, engaging blog content for your website in minutes.',
+    description: 'Generate blog-post drafts from your topic and instructions. Review facts, structure, search intent, and wording before publication.',
     keywords: ['blog generator', 'blog post creator', 'blog writer AI', 'article generator', 'blog content']
   },
   'faq-generator': {
     title: 'FAQ Generator - Create FAQs & Q&A Content',
-    description: 'Generate comprehensive FAQ sections automatically. Perfect for product pages, help centers, and customer support documentation.',
+    description: 'Generate FAQ drafts for product pages, help centers, and support documentation based on the information you provide.',
     keywords: ['FAQ generator', 'FAQ creator', 'Q&A generator', 'question and answer', 'FAQ content']
   },
   'article-writer': {
     title: 'Article Writer - AI Article Generation Tool',
-    description: 'Write professional articles effortlessly. Our AI article generator helps you create well-researched, engaging articles for blogs and publications.',
+    description: 'Generate article drafts from your topic and instructions for blogs and other publishing workflows. Verify facts and sources before publication.',
     keywords: ['article writer', 'article generator', 'AI writer', 'article creation', 'content writing']
   },
   'article-rewriter': {
@@ -91,7 +91,7 @@ const toolSEODatabase: Record<string, {
   },
   'email-writer': {
     title: 'Email Writer - Professional Email Generator',
-    description: 'Write professional, persuasive emails instantly. Generate effective emails for any situation - marketing, support, sales, and more.',
+    description: 'Generate email drafts for marketing, support, sales, and other communication tasks. Edit the result for your audience and situation.',
     keywords: ['email writer', 'email generator', 'professional email', 'email templates', 'email copy']
   },
   'essay-writer': {
@@ -101,17 +101,17 @@ const toolSEODatabase: Record<string, {
   },
   'story-generator': {
     title: 'Story Generator - Create Stories with AI',
-    description: 'Generate creative stories, plots, and narratives. Perfect for creative writing, fiction, and storytelling projects.',
+    description: 'Generate story, plot, and narrative drafts for creative-writing and fiction projects.',
     keywords: ['story generator', 'story writer', 'creative writing', 'fiction generator', 'story creator']
   },
   'product-description-writer': {
     title: 'Product Description Writer - Create Product Copy',
-    description: 'Generate compelling product descriptions for e-commerce. Create persuasive, SEO-optimized product descriptions that boost sales.',
+    description: 'Generate product-description drafts for e-commerce listings. Review product facts, claims, keywords, and brand wording before publishing.',
     keywords: ['product description generator', 'product copy writer', 'product description', 'ecommerce content', 'product writing']
   },
   'cover-letter-writer': {
     title: 'Cover Letter Writer - Professional Cover Letter Generator',
-    description: 'Create compelling cover letters for job applications. Generate personalized, professional cover letters that impress employers.',
+    description: 'Generate a cover-letter draft from the information you provide. Personalize and verify the final letter before submitting an application.',
     keywords: ['cover letter writer', 'cover letter generator', 'job application', 'cover letter template', 'professional letter']
   },
   'sentence-rewriter': {
@@ -131,7 +131,7 @@ const toolSEODatabase: Record<string, {
   },
   'text-expander': {
     title: 'Text Expander - Expand & Lengthen Content',
-    description: 'Expand short text into longer, more detailed content. Perfect for creating more comprehensive articles and detailed explanations.',
+    description: 'Expand shorter text into a longer draft with additional detail. Review the result for accuracy, relevance, and unnecessary repetition.',
     keywords: ['text expander', 'content expander', 'expand text', 'lengthen content', 'text expansion']
   },
   'outline-generator': {
@@ -141,12 +141,12 @@ const toolSEODatabase: Record<string, {
   },
   'title-rewriter': {
     title: 'Title Rewriter - Generate Alternative Titles',
-    description: 'Create catchy, SEO-optimized titles and headlines. Generate multiple title variations for articles, blogs, and content.',
+    description: 'Generate alternative title and headline ideas for articles, blogs, and other content. Choose and edit suggestions based on your audience and context.',
     keywords: ['title rewriter', 'headline generator', 'title generator', 'SEO titles', 'generate headlines']
   },
   'question-generator': {
     title: 'Question Generator - Create Questions & Prompts',
-    description: 'Generate relevant questions for surveys, quizzes, and interviews. Perfect for educational content and engagement.',
+    description: 'Generate question ideas for surveys, quizzes, interviews, and educational material based on the context you provide.',
     keywords: ['question generator', 'create questions', 'survey questions', 'quiz generator', 'interview questions']
   },
   'facebook-post-generator': {
@@ -156,7 +156,7 @@ const toolSEODatabase: Record<string, {
   },
   'instagram-caption-generator': {
     title: 'Instagram Caption Generator - Create Captions',
-    description: 'Generate engaging Instagram captions with hashtags. Create captions that boost engagement and grow your audience.',
+    description: 'Generate Instagram caption and hashtag ideas from your input. Edit suggestions to match your post, audience, and brand voice.',
     keywords: ['Instagram caption generator', 'Instagram captions', 'caption writer', 'hashtag generator', 'Instagram content']
   },
   'linkedin-post-generator': {
@@ -171,32 +171,32 @@ const toolSEODatabase: Record<string, {
   },
   'youtube-title-generator': {
     title: 'YouTube Title Generator - Create Video Titles',
-    description: 'Generate SEO-optimized YouTube video titles. Create clickable titles that improve your video visibility and CTR.',
+    description: 'Generate YouTube title ideas from your video topic and instructions. Review suggestions for accuracy, relevance, and audience fit.',
     keywords: ['YouTube title generator', 'video title creator', 'YouTube SEO', 'title generator', 'video marketing']
   },
   'youtube-description-generator': {
     title: 'YouTube Description Generator - Create Video Descriptions',
-    description: 'Generate comprehensive YouTube video descriptions with SEO optimization. Perfect for channel growth and discoverability.',
+    description: 'Generate YouTube description drafts from your video details. Review links, claims, keywords, and factual information before publishing.',
     keywords: ['YouTube description generator', 'video description', 'YouTube SEO', 'description writer', 'video metadata']
   },
   'cold-email-writer': {
     title: 'Cold Email Writer - Generate Effective Cold Emails',
-    description: 'Write persuasive cold emails that get responses. Generate conversion-focused cold outreach messages for sales and marketing.',
+    description: 'Generate cold-email drafts for sales and marketing outreach. Personalize the message and review it for relevance, accuracy, and applicable outreach rules.',
     keywords: ['cold email writer', 'cold email generator', 'outreach emails', 'sales email', 'email marketing']
   },
   'blog-rewriter': {
     title: 'Blog Post Rewriter - Rewrite & Refresh Blog Content',
-    description: 'Rewrite existing blog posts with fresh perspective. Update and improve old content to boost rankings and engagement.',
+    description: 'Generate a revised version of an existing blog post. Review the rewrite for accuracy, originality, search intent, and current information.',
     keywords: ['blog rewriter', 'rewrite blog posts', 'content update', 'blog refresh', 'content rewriting']
   },
   'poem-generator': {
     title: 'Poem Generator - Create Poems with AI',
-    description: 'Generate creative poems in various styles and formats. Perfect for creative expression, cards, and special occasions.',
+    description: 'Generate poem drafts in different styles and formats for creative writing, cards, and other personal projects.',
     keywords: ['poem generator', 'poetry generator', 'poem writer', 'create poems', 'AI poetry']
   },
   'tiktok-caption-generator': {
     title: 'TikTok Caption Generator - Create TikTok Captions',
-    description: 'Generate trending TikTok captions with hashtags. Create engaging captions that boost video views and followers.',
+    description: 'Generate TikTok caption and hashtag ideas from your input. Review and edit suggestions to match the video and intended audience.',
     keywords: ['TikTok caption generator', 'TikTok captions', 'caption writer', 'TikTok content', 'video captions']
   },
 };

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'AI Write - Free AI Writing Tools | SimplifyConvert',
-  description: 'Generate, edit, and enhance content with AI-powered writing tools. Create engaging copy, articles, and more instantly.',
+  description: 'Generate, rewrite, summarize, and work with text using AI-assisted writing tools. Review and edit generated content before use.',
   keywords: ['AI writing', 'content generator', 'AI writer', 'free writing tools'],
   openGraph: {
     type: 'website',

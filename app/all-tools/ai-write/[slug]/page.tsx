@@ -479,18 +479,18 @@ export default function AIWriteToolPage() {
             {[
               {
                 icon: Zap,
-                title: 'Instant Generation',
-                description: 'Get AI-powered suggestions instantly with advanced algorithms',
+                title: 'AI-Assisted Drafting',
+                description: 'Generate a draft or suggestion from the information you provide',
               },
               {
                 icon: Shield,
-                title: 'Privacy & Security',
-                description: 'Your content is processed securely. Always review and edit AI-generated content before use. Keep your originals safe.',
+                title: 'Input Awareness',
+                description: 'Avoid submitting sensitive information unless you are permitted to process it with the selected AI service.',
               },
               {
                 icon: CheckCircle,
-                title: 'Professional Quality',
-                description: 'AI-assisted content designed to help with your writing workflow',
+                title: 'Human Review',
+                description: 'Review facts, wording, tone, and suitability before using generated content',
               },
             ].map((feature, index) => (
               <motion.div
@@ -537,20 +537,20 @@ export default function AIWriteToolPage() {
             <div className="grid md:grid-cols-2 gap-6">
               {[
                 {
-                  title: 'Save Time',
-                  description: 'Reduce time spent on initial drafts. AI assistance helps you work faster.'
+                  title: 'Start with a Draft',
+                  description: 'Use generated content as a starting point for your own editing and refinement.'
                 },
                 {
-                  title: 'Overcome Writer\'s Block',
-                  description: 'Get inspired with AI suggestions when you\'re stuck on what to write next.'
+                  title: 'Explore Alternatives',
+                  description: 'Generate another version when you want to explore different wording or approaches.'
                 },
                 {
-                  title: 'Quality First Draft',
-                  description: 'Use as a starting point that you can edit and customize for your needs.'
+                  title: 'Editable First Draft',
+                  description: 'Treat the generated result as an editable draft rather than finished content.'
                 },
                 {
-                  title: 'Free to Use',
-                  description: 'No credit card required. Test our AI writing tools completely free.'
+                  title: 'Category Tool Access',
+                  description: 'These AI writing utilities are separate from Premium AI Studio credits. Availability and limits can vary by tool and provider.'
                 }
               ].map((benefit, idx) => (
                 <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
@@ -567,8 +567,8 @@ export default function AIWriteToolPage() {
             <div className="space-y-6">
               {[
                 {
-                  q: 'Is the content 100% original?',
-                  a: 'AI tools generate variations of existing content patterns. Always review and customize the output. Original thought and editing are essential to create unique content.'
+                  q: 'Should I treat generated content as original and ready to publish?',
+                  a: 'No. Treat generated text as a draft. Review it for originality, accuracy, attribution needs, and similarity to existing material before publishing or submitting it.'
                 },
                 {
                   q: 'Can I use the output directly without editing?',
@@ -576,15 +576,15 @@ export default function AIWriteToolPage() {
                 },
                 {
                   q: 'Does AI detection flag this content?',
-                  a: 'Content created with our tools may be detected by AI detection services. Mix human and AI writing, add original insights, and edit heavily to reduce detectability.'
+                  a: 'AI-detection tools can produce uncertain or inconsistent results. Do not rely on a detector score as proof of authorship; use relevant context and human review when the distinction matters.'
                 },
                 {
                   q: 'Is my content private?',
-                  a: 'Content processed on our platform is handled securely. Always follow your organization\'s policies regarding sensitive data and AI tool usage.'
+                  a: 'Avoid entering confidential, personal, or otherwise sensitive information unless you are authorized to process it with the relevant AI service. Follow your organization\'s data and AI-use policies.'
                 },
                 {
                   q: 'Can I use this for commercial purposes?',
-                  a: 'Yes, but review our terms of service. Content must not violate copyright or contain harmful material.'
+                  a: 'Commercial use can depend on the generated material, applicable provider terms, intellectual-property rights, and your intended use. Review the relevant terms and the final content before publishing it commercially.'
                 },
                 {
                   q: 'How do I get the best results?',
