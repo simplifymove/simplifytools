@@ -13,7 +13,7 @@ import { uploadBrowserTextDownloadResult } from '@/app/lib/download-result-clien
 const calculatorConfig: Record<string, any> = {
   'startup-runway': {
     title: 'Startup Runway Calculator',
-    description: 'Project your startup\'s financial runway and funding needs',
+    description: 'Estimate startup runway from the funds, burn, revenue, and growth assumptions entered',
     icon: '🚀',
     assumptions: [
       'Monthly burn and revenue begin with the values entered and change at the monthly growth rates provided.',
@@ -36,7 +36,7 @@ const calculatorConfig: Record<string, any> = {
   },
   'saas-profit': {
     title: 'SaaS Profit Simulator',
-    description: 'Model revenue growth, costs, and profitability for SaaS businesses',
+    description: 'Explore SaaS revenue, costs, churn, and profitability using the assumptions entered',
     icon: '💼',
     assumptions: [
       'MRR and operating costs change each month using the growth rates entered for the forecast period.',
@@ -59,8 +59,8 @@ const calculatorConfig: Record<string, any> = {
     ],
   },
   'loan-optimizer': {
-    title: 'Loan Optimization Engine',
-    description: 'Analyze loan terms and create optimal payment strategies',
+    title: 'Loan Repayment Calculator',
+    description: 'Estimate EMI, interest costs, and repayment timing from the loan terms entered',
     icon: '🏦',
     assumptions: [
       'Payments follow a standard amortizing-loan schedule using the entered principal, annual rate, and term.',

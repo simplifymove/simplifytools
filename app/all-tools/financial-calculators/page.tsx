@@ -102,7 +102,7 @@ export default function FinancialCalculatorsPage() {
                   {/* Feature Pills */}
                   <div className="flex flex-wrap gap-3 mb-8">
                     {[
-                      { icon: Zap, text: 'Real-time' },
+                      { icon: Zap, text: 'Input-based estimates' },
                       { icon: Target, text: 'Scenario Based' },
                       { icon: Sparkles, text: 'Defined Assumptions' },
                     ].map((item, idx) => (
