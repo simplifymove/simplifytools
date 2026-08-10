@@ -118,7 +118,7 @@ const toolSEODatabase: Record<string, {
   },
   'product-description-writer': {
     title: 'Product Description Writer - Create Product Copy',
-    description: 'Generate compelling product descriptions for e-commerce. Create persuasive, SEO-optimized product descriptions that boost sales.',
+    description: 'Create product-description drafts from supplied product details, features, and tone. Review specifications, benefits, and commercial claims before publishing.',
     keywords: ['product description generator', 'product copy writer', 'product description', 'ecommerce content', 'product writing']
   },
   'cover-letter-writer': {
@@ -153,7 +153,7 @@ const toolSEODatabase: Record<string, {
   },
   'title-rewriter': {
     title: 'Title Rewriter - Generate Alternative Titles',
-    description: 'Create catchy, SEO-optimized titles and headlines. Generate multiple title variations for articles, blogs, and content.',
+    description: 'Create alternative titles and headlines from an existing title and optional content context. Review each option for clarity and accuracy before publishing.',
     keywords: ['title rewriter', 'headline generator', 'title generator', 'SEO titles', 'generate headlines']
   },
   'question-generator': {
@@ -183,12 +183,12 @@ const toolSEODatabase: Record<string, {
   },
   'youtube-title-generator': {
     title: 'YouTube Title Generator - Create Video Titles',
-    description: 'Generate SEO-optimized YouTube video titles. Create clickable titles that improve your video visibility and CTR.',
+    description: 'Generate YouTube title ideas from a video topic and audience. Review suggestions for accuracy and fit; video performance is not guaranteed.',
     keywords: ['YouTube title generator', 'video title creator', 'YouTube SEO', 'title generator', 'video marketing']
   },
   'youtube-description-generator': {
     title: 'YouTube Description Generator - Create Video Descriptions',
-    description: 'Generate comprehensive YouTube video descriptions with SEO optimization. Perfect for channel growth and discoverability.',
+    description: 'Create YouTube description drafts from a video title, content details, and optional keywords. Review links, claims, hashtags, and other details before publishing.',
     keywords: ['YouTube description generator', 'video description', 'YouTube SEO', 'description writer', 'video metadata']
   },
   'cold-email-writer': {

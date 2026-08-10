@@ -436,6 +436,62 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
       },
     ],
   },
+
+  'product-description-writer': {
+    introduction: 'The Product Description Writer creates a product-copy draft from the product name, supplied features, and selected tone. Use the result as a starting point for describing the product clearly, and verify specifications, benefits, pricing, guarantees, certifications, availability, and other commercial claims before publishing.',
+    useCases: ['Turn supplied product features into a description draft', 'Explore benefit-focused wording for an e-commerce listing', 'Create alternative product-copy approaches for editorial review', 'Prepare a first draft that can be adjusted to match a brand voice'],
+    examples: [
+      {
+        label: 'Product listing draft',
+        input: 'Product: Wireless headphones. Features: Foldable design, Bluetooth connectivity, built-in microphone. Tone: Professional.',
+        output: 'A product-description draft that organizes the supplied features into readable benefit-focused copy with wording ready for specification and claim review.',
+      },
+    ],
+  },
+  'keyword-generator': {
+    introduction: 'The Keyword Generator creates keyword and topic ideas from the subject and search intent you provide. Suggested terms can support brainstorming and content planning, but generated search-volume context, competition, difficulty, ranking potential, and user intent should not be treated as verified search-engine data.',
+    useCases: ['Brainstorm keyword ideas around a topic or service', 'Explore possible long-tail phrases for content planning', 'Group related terms into preliminary topic clusters', 'Create a starting keyword list for validation with search or analytics data'],
+    examples: [
+      {
+        label: 'Topic keyword ideas',
+        input: 'Topic: Home office organization. Intent: Informational.',
+        output: 'A draft list of primary, long-tail, and related keyword ideas that can be reviewed and validated with current search data before use in an SEO plan.',
+      },
+    ],
+  },
+  'youtube-description-generator': {
+    introduction: 'The YouTube Description Generator creates a video-description draft from the title, video details, and optional keywords you provide. It can organize summaries, links, hashtags, calls to action, and other description elements, but generated wording does not guarantee search visibility, recommendations, views, subscribers, or channel growth.',
+    useCases: ['Draft a description from a supplied video title and summary', 'Organize important video information into readable sections', 'Create suggested hashtags or keyword wording for review', 'Prepare description copy that can be checked before a video is published'],
+    examples: [
+      {
+        label: 'Tutorial description draft',
+        input: 'Title: How to Organize Digital Files. Content: A beginner tutorial covering folders, file names, backups, and archiving.',
+        output: 'A structured YouTube description draft summarizing the tutorial and suggesting supporting description elements that can be reviewed before publishing.',
+      },
+    ],
+  },
+  'youtube-title-generator': {
+    introduction: 'The YouTube Title Generator creates several title ideas from a video topic and optional audience selection. The suggestions can help explore different hooks and wording approaches, but no generated title can guarantee click-through rate, search visibility, recommendations, views, or other video performance.',
+    useCases: ['Generate several possible titles for a video topic', 'Explore different hooks for educational or tutorial videos', 'Compare concise title approaches before publishing', 'Create title ideas to refine against the actual video content'],
+    examples: [
+      {
+        label: 'Tutorial title ideas',
+        input: 'Topic: Beginner guide to organizing digital photos. Audience: Tutorial.',
+        output: 'Several concise title ideas using different framing approaches, ready to be checked for accuracy and adjusted to match the finished video.',
+      },
+    ],
+  },
+  'title-rewriter': {
+    introduction: 'The Title Rewriter creates alternative titles from an existing title and optional content context. It can help explore clearer, shorter, or more engaging wording, but generated alternatives should still accurately represent the underlying content and do not guarantee rankings, clicks, traffic, or engagement.',
+    useCases: ['Create alternative wording for an existing article title', 'Explore shorter or clearer headline variations', 'Compare several title approaches before publication', 'Revise a working title so it better reflects the supplied content context'],
+    examples: [
+      {
+        label: 'Article title alternatives',
+        input: 'Current title: Practical Ways to Keep Digital Project Files Organized. Context: A beginner guide for small teams.',
+        output: 'Several alternative titles using different wording and emphasis while staying aligned with the supplied article context.',
+      },
+    ],
+  },
 };
 
 interface PageProps {
