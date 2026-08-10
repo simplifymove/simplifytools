@@ -77,10 +77,10 @@ export default function ImageToolsPage() {
               >
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Free Image Tools Online</h1>
                 <p className="text-lg text-white/90 max-w-3xl mb-4">
-                  Use our free image tools to compress, convert, resize, and enhance images instantly. Supports JPG, PNG, WebP, and more. No signup required, no watermarks, completely free.
+                  Use image tools for compression, format conversion, resizing, cropping, enhancement, and other supported workflows. Format support, processing method, and available options vary by tool.
                 </p>
                 <p className="text-base text-white/80 max-w-3xl">
-                  Professional-grade image processing tools for everyone. Fast, secure, and easy to use on all devices.
+                  Choose the tool that matches the image task, review its available controls, and check the result before replacing your original file.
                 </p>
               </motion.div>
             </div>
@@ -224,19 +224,19 @@ export default function ImageToolsPage() {
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Choose the Image Operation That Matches the Goal</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">⚡ Lightning Fast Processing</h3>
+                    <h3 className="font-semibold text-gray-900 text-lg">Choose the Right Image Operation</h3>
                     <p className="text-gray-700">Resize changes pixel dimensions, compression targets file size, and conversion changes the format. Each choice affects quality differently.</p>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">🔒 100% Secure & Private</h3>
+                    <h3 className="font-semibold text-gray-900 text-lg">Understand How Processing Works</h3>
                     <p className="text-gray-700">Some basic image operations use browser APIs, while AI-assisted and background workflows can upload images for server processing. Check the individual tool before submitting sensitive material.</p>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">📱 Works on All Devices</h3>
-                    <p className="text-gray-700">Use image tools on desktop, tablet, or mobile. No app installation needed. Works on Windows, Mac, iOS, and Android.</p>
+                    <h3 className="font-semibold text-gray-900 text-lg">Browser and Device Compatibility</h3>
+                    <p className="text-gray-700">Many image tools can be used from modern desktop and mobile browsers. Available file pickers, memory limits, browser APIs, and processing behavior can vary by device and browser.</p>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">🎨 Professional Results</h3>
+                    <h3 className="font-semibold text-gray-900 text-lg">Review the Result Before Use</h3>
                     <p className="text-gray-700">Preview the result at full size and confirm transparency, color, dimensions, and compression artifacts before publishing it.</p>
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export default function ImageToolsPage() {
                 name: 'What image formats do you support?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'We support most common image formats including JPG, PNG, WebP, BMP, GIF, TIFF, and more. Our image converter tools can transform between any of these formats while maintaining quality.'
+                  text: 'Supported formats depend on the individual tool. Common workflows include JPG, PNG, WebP, BMP, GIF, TIFF, HEIC, and other listed formats. Conversion can change transparency, compression, color behavior, metadata, animation, or other image characteristics.'
                 }
               },
               {
@@ -344,7 +344,7 @@ export default function ImageToolsPage() {
                 name: 'Can I use image tools on mobile?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. All image tools work on iOS, Android, tablets, and mobile browsers. No app installation required. Simply visit SimplifyConvert from your mobile device and start using any tool.'
+                  text: 'Many image tools can be used from modern mobile browsers, but compatibility and practical file-size limits can vary by browser, device memory, file type, and the processing method used by the individual tool.'
                 }
               },
               {
@@ -358,7 +358,7 @@ export default function ImageToolsPage() {
                 name: 'Which image tools are most popular?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Image compression, resizing, PNG to JPG conversion, and image cropping are our most popular tools. All are free, fast, and work without signup or installation. Perfect for social media, web design, and general photo editing.'
+                  text: 'Common image workflows include compression, resizing, PNG to JPG conversion, and cropping. Choose the operation according to the required dimensions, file size, format compatibility, transparency, and visual result.'
                 }
               }
             ]}

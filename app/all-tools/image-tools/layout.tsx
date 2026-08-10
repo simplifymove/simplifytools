@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Free Image Tools Online - Compress, Convert & Resize',
-  description: 'Free online image tools to compress, convert, resize and enhance images. JPG, PNG, WebP converters. No signup required, fast and secure.',
+  description: 'Image tools for compression, resizing, cropping, format conversion, enhancement, and other supported workflows. Features and processing methods vary by tool.',
   keywords: ['free image tools', 'image converter', 'compress image', 'resize image', 'image editor online', 'PNG to JPG converter'],
   openGraph: {
     type: 'website',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/image-tools',
     siteName: 'SimplifyConvert',
     title: 'Free Image Tools Online - Compress, Convert & Resize',
-    description: 'Free online image tools to compress, convert, resize and enhance images. JPG, PNG, WebP converters. No signup required.',
+    description: 'Browse image tools for compression, resizing, cropping, conversion, enhancement, and other supported image workflows.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Free Image Tools Online - Compress, Convert & Resize',
-    description: 'Free online image tools to compress, convert, resize and enhance images.',
+    description: 'Browse image tools for conversion, compression, resizing, cropping, enhancement, and other supported workflows.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
 };
