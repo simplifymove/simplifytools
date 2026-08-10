@@ -250,7 +250,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'protect-pdf': {
     id: 'protect-pdf',
     title: 'Protect PDF',
-    description: 'Add password protection to your PDF files online. Encrypt documents with user and owner passwords to prevent unauthorized access — fast, secure, and free.',
+    description: 'Add password-based encryption so a password is required to open the PDF.',
     category: 'Security',
     engine: 'security',
     icon: Lock,
@@ -279,7 +279,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'unlock-pdf': {
     id: 'unlock-pdf',
     title: 'Unlock PDF',
-    description: 'Remove password protection from PDF files you own or have permission to access. Upload your PDF, enter the password, and download an unlocked copy online.',
+    description: 'Create an unlocked PDF copy when you provide the correct password.',
     category: 'Security',
     engine: 'security',
     icon: LockOpen,
@@ -300,7 +300,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-watermark-remover': {
     id: 'pdf-watermark-remover',
     title: 'PDF Watermark Remover',
-    description: 'Remove watermarks from PDF (text, graphics, annotations)',
+    description: 'Attempt to remove detectable watermark-like content using available removal methods.',
     category: 'Security',
     engine: 'security',
     icon: Eye,
@@ -948,7 +948,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'esign-pdf': {
     id: 'esign-pdf',
     title: 'eSign PDF',
-    description: 'Add electronic signature to PDF',
+    description: 'Place a visible signature image onto selected PDF pages.',
     category: 'Edit',
     engine: 'edit',
     icon: PenTool,

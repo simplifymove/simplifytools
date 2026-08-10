@@ -21,6 +21,7 @@ import HumanizedPdfBatchTwoContent, { BATCH_TWO_PDF_TOOL_IDS } from '@/app/compo
 import HumanizedPdfBatchThreeContent, { BATCH_THREE_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchThreeContent';
 import HumanizedPdfBatchFourContent, { BATCH_FOUR_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchFourContent';
 import HumanizedPdfBatchFiveContent, { BATCH_FIVE_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchFiveContent';
+import HumanizedPdfBatchSixContent, { BATCH_SIX_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchSixContent';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -642,7 +643,7 @@ export default function PdfToolPage({ params }: PageProps) {
 
 
         {/* SEO Content for Unlock PDF */}
-        {tool.id === 'unlock-pdf' && (
+        {!BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && tool.id === 'unlock-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -907,7 +908,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF Watermark Remover */}
-        {tool.id === 'pdf-watermark-remover' && (
+        {!BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && tool.id === 'pdf-watermark-remover' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -5959,7 +5960,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Protect PDF */}
-        {tool.id === 'protect-pdf' && (
+        {!BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && tool.id === 'protect-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
@@ -6034,7 +6035,8 @@ export default function PdfToolPage({ params }: PageProps) {
         {BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchThreeContent toolId={tool.id} />}
         {BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchFourContent toolId={tool.id} />}
         {BATCH_FIVE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchFiveContent toolId={tool.id} />}
-        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && !BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && !BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && !BATCH_FIVE_PDF_TOOL_IDS.has(tool.id) && (
+        {BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchSixContent toolId={tool.id} />}
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && !BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && !BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && !BATCH_FIVE_PDF_TOOL_IDS.has(tool.id) && !BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && (
           <PdfToolSupportingContent toolId={tool.id} />
         )}
 
