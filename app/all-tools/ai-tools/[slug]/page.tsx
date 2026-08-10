@@ -324,6 +324,62 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
     ],
   },
 
+
+  'cold-email-writer': {
+    introduction: 'The Cold Email Writer creates an outreach draft from the recipient or company, purpose, and tone you provide. Use the result as a starting point for a relevant message rather than assuming generated wording will produce opens, replies, meetings, or sales.',
+    useCases: ['Draft an initial outreach email to a prospective client or contact', 'Turn a short outreach goal into a structured message', 'Explore different wording for a professional introduction', 'Create a concise first draft before personalizing it for the recipient'],
+    examples: [
+      {
+        label: 'Service introduction',
+        input: 'Recipient: A small retail company. Purpose: Introduce a website performance audit service.',
+        output: 'A concise outreach draft with a subject line, brief introduction, explanation of the proposed value, and a call to action ready for personalization.',
+      },
+    ],
+  },
+  'job-description-writer': {
+    introduction: 'The Job Description Writer turns a job title, responsibilities, and required skills into a structured posting draft. Review responsibilities, qualifications, compensation language, benefits, employment terms, and local hiring requirements before publishing the result.',
+    useCases: ['Organize supplied responsibilities into a job-posting draft', 'Create a first version of a role overview and qualifications section', 'Turn hiring notes into clearer candidate-facing language', 'Prepare a draft for review by a hiring manager or HR team'],
+    examples: [
+      {
+        label: 'Project coordinator role',
+        input: 'Position: Project Coordinator. Responsibilities: Track tasks, coordinate meetings, prepare status updates. Skills: Communication, documentation, scheduling.',
+        output: 'A structured job-description draft containing a role overview, responsibilities, qualifications, optional nice-to-haves, and sections that can be reviewed before publication.',
+      },
+    ],
+  },
+  'cover-letter-writer': {
+    introduction: 'The Cover Letter Writer creates a job-application letter draft from the role, company, and experience or skills you provide. Generated wording should be checked carefully so that achievements, experience, qualifications, and statements about the employer remain accurate and genuinely reflect the applicant.',
+    useCases: ['Create a first cover-letter draft for a specific role', 'Organize relevant experience into application-focused paragraphs', 'Explore ways to connect supplied skills with a job opportunity', 'Prepare a draft to personalize further before submitting an application'],
+    examples: [
+      {
+        label: 'Role-specific cover letter',
+        input: 'Job: UX Designer. Company: Example Studio. Skills: User research, Figma, prototyping, usability testing.',
+        output: 'A cover-letter draft connecting the supplied skills with the role, including an introduction, experience-focused body paragraphs, and a professional closing for further personalization.',
+      },
+    ],
+  },
+  'proposal-writer': {
+    introduction: 'The Proposal Writer organizes a supplied project or service overview, deliverables, and timeline into a business-proposal draft. Treat generated budgets, assumptions, commitments, scope language, milestones, and commercial terms as placeholders unless you have explicitly provided and verified them.',
+    useCases: ['Turn project notes into a structured proposal outline', 'Organize deliverables and milestones for client review', 'Create a first draft for a service or project proposal', 'Develop proposal sections before adding verified pricing and contractual terms'],
+    examples: [
+      {
+        label: 'Website redesign proposal',
+        input: 'Project: Redesign a company website. Deliverables: UX review, new interface designs, responsive pages. Timeline: Eight weeks.',
+        output: 'A proposal draft organized into an executive summary, project context, proposed approach, deliverables, milestones, timeline, and sections requiring verified commercial details.',
+      },
+    ],
+  },
+  'press-release-writer': {
+    introduction: 'The Press Release Writer creates an announcement draft from the news and organization details you provide. Names, dates, quotations, statistics, claims, contact information, style requirements, and other publishable facts should be verified before the release is distributed to journalists or published publicly.',
+    useCases: ['Structure a company announcement as a press-release draft', 'Create a starting draft for product or organizational news', 'Organize supplied announcement details into a conventional release format', 'Prepare copy for communications or PR review before distribution'],
+    examples: [
+      {
+        label: 'Product announcement',
+        input: 'Organization: Example Software. Announcement: Launch of a new reporting dashboard for business customers.',
+        output: 'A press-release draft with a headline, dateline placeholder, lead paragraph, supporting sections, organization description, and contact-information placeholder ready for factual review.',
+      },
+    ],
+  },
 };
 
 interface PageProps {
