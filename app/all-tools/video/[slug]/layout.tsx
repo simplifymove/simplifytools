@@ -321,14 +321,14 @@ const toolSEODatabase: Record<string, {
   // Subtitle
   'add-subtitles': {
     title: 'Add Subtitles to Video Online - Free Subtitle Adder',
-    description: 'Add subtitle files to videos instantly. Free online tool supporting all formats. Perfect for video localization.',
+    description: 'Add subtitle files to supported video formats using the available subtitle options. Processing may re-encode the video depending on the selected mode.',
     keywords: ['add subtitles', 'subtitle adder', 'add captions to video', 'subtitle embedding']
   },
   
   // AI Tools
   'text-to-video': {
     title: 'Text to Video Generator - Free AI Video Creator',
-    description: 'Generate videos from text prompts using AI instantly. Free online tool creating cinematic videos from descriptions.',
+    description: 'Generate a video from a text prompt using the configured generation workflow. Output characteristics and availability depend on the generation service and input.',
     keywords: ['text to video', 'ai video generator', 'generate video', 'video maker', 'ai video creation']
   }
 };
