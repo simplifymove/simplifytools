@@ -404,7 +404,7 @@ export default function RemoveBackgroundPage() {
                   {/* Use Cases */}
                   {preview && (
                     <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-indigo-900 mb-2">Perfect for:</h3>
+                      <h3 className="font-semibold text-indigo-900 mb-2">Useful for:</h3>
                       <ul className="text-sm text-indigo-800 space-y-1">
                         <li>• e-Commerce product photos</li>
                         <li>• Profile pictures</li>
@@ -455,7 +455,7 @@ export default function RemoveBackgroundPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Click Remove Background:</strong> Our AI instantly processes and removes the background</p></div>
+              <div><p className="text-gray-700"><strong>Click Remove Background:</strong> The server model processes the image and generates a foreground cutout</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">5</div>
@@ -476,7 +476,7 @@ export default function RemoveBackgroundPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Our AI is highly accurate for most images, especially with distinct backgrounds. For complex hair, fur, or intricate edges, enabling High Quality Mode provides better results. Some manual touch-ups may be needed for very fine details.</p>
+              <p className="text-gray-700 mt-3 text-sm">Background removal works best when the subject is visually distinct from the background. Hair, fur, translucent areas, motion blur, and fine edges can be difficult to segment, so review the generated cutout before downloading.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -485,7 +485,7 @@ export default function RemoveBackgroundPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support JPG, PNG, WebP, and most common image formats. Maximum file size is 50MB. For best results, use clear, well-lit images with distinct subject-background contrast.</p>
+              <p className="text-gray-700 mt-3 text-sm">The server accepts JPEG, PNG, and WebP images up to 20 MB. Images with clear lighting and stronger subject-background contrast usually give the segmentation model a clearer boundary.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -512,7 +512,7 @@ export default function RemoveBackgroundPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Most images process in 2-10 seconds. High Quality Mode may take 15-30 seconds. Processing time depends on image size and complexity. You'll see the duration after processing completes.</p>
+              <p className="text-gray-700 mt-3 text-sm">Processing time varies with image dimensions, complexity, selected mode, and current server workload. High Quality Mode can take longer than Standard mode. The page displays the measured processing time after the operation completes.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -537,7 +537,7 @@ export default function RemoveBackgroundPage() {
             "name": "How accurate is the AI background removal?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Our AI is highly accurate for most images, especially with distinct backgrounds. For complex hair, fur, or intricate edges, enabling High Quality Mode provides better results."
+              "text": "Background removal works best when the subject is visually distinct from the background. Hair, fur, translucent areas, motion blur, and fine edges can be difficult to segment."
             }
           },
           {
@@ -545,7 +545,7 @@ export default function RemoveBackgroundPage() {
             "name": "What image formats are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "We support JPG, PNG, WebP, and most common image formats. Maximum file size is 50MB."
+              "text": "The server accepts JPEG, PNG, and WebP images up to 20 MB."
             }
           },
           {
@@ -561,7 +561,7 @@ export default function RemoveBackgroundPage() {
             "name": "Are my images stored on your servers?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Images are automatically deleted after processing completes. They're not stored or viewed by anyone."
+              "text": "The image is sent to the server for background-removal processing. Temporary model input, output, and script files are deleted in the request cleanup path."
             }
           },
           {
@@ -569,7 +569,7 @@ export default function RemoveBackgroundPage() {
             "name": "How long does background removal take?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Most images process in 2-10 seconds. High Quality Mode may take 15-30 seconds depending on image size and complexity."
+              "text": "Processing time varies with image dimensions, complexity, selected mode, and current server workload. High Quality Mode can take longer than Standard mode."
             }
           },
           {
@@ -675,7 +675,7 @@ export default function RemoveBackgroundPage() {
 
           <div className="border-t border-gray-800 pt-8">
             <p className="text-center text-sm text-gray-400">
-              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
+              © 2026 SimplifyConvert. All rights reserved.
             </p>
           </div>
         </div>

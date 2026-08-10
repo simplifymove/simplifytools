@@ -316,7 +316,7 @@ export default function UpscaleImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">AI Image Upscaler</h1>
-                <p className="text-lg text-white/90">Professional image enlargement using Real-ESRGAN. Upscale to 2×, 3×, or 4× with advanced AI enhancement.</p>
+                <p className="text-lg text-white/90">Enlarge images to 2×, 3×, or 4× using Real-ESRGAN processing. Visible detail and artifacts depend on the source image and selected settings.</p>
               </div>
             </div>
           </div>
@@ -471,7 +471,7 @@ export default function UpscaleImagePage() {
                         <li>✓ Auto image type detection</li>
                         <li>✓ Face enhancement mode</li>
                         <li>✓ Multiple formats (PNG/JPG/WebP)</li>
-                        <li>✓ Batch processing ready</li>
+                        <li>✓ One-image processing workflow</li>
                       </ul>
                     </div>
                   )}
@@ -500,7 +500,7 @@ export default function UpscaleImagePage() {
                           ))}
                         </div>
                         <div className="text-xs text-gray-600 mt-2 space-y-1">
-                          <p>{scale === 2 ? '✓ Fastest, good for web' : scale === 3 ? '✓ Balanced quality & speed' : '✓ Maximum quality'}</p>
+                          <p>{scale === 2 ? '✓ Smaller enlargement, usually quicker' : scale === 3 ? '✓ Mid-range enlargement' : '✓ Largest available enlargement'}</p>
                         </div>
                       </div>
 
@@ -599,7 +599,7 @@ export default function UpscaleImagePage() {
                       <ul className="text-xs text-indigo-800 space-y-1">
                         <li><span className="font-medium">2×</span> — Quick, web-friendly</li>
                         <li><span className="font-medium">3×</span> — Balanced approach</li>
-                        <li><span className="font-medium">4×</span> — Maximum detail</li>
+                        <li><span className="font-medium">4×</span> — Largest available scale</li>
                       </ul>
                     </div>
                   )}
@@ -609,7 +609,7 @@ export default function UpscaleImagePage() {
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                       <h3 className="font-semibold text-amber-900 mb-2 text-sm">Format Guide</h3>
                       <ul className="text-xs text-amber-800 space-y-1">
-                        <li><span className="font-medium">PNG:</span> Lossless, best quality</li>
+                        <li><span className="font-medium">PNG:</span> Lossless output format</li>
                         <li><span className="font-medium">WebP:</span> Optimal balance</li>
                         <li><span className="font-medium">JPG:</span> Smallest file size</li>
                       </ul>
@@ -658,19 +658,19 @@ export default function UpscaleImagePage() {
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-ESRGAN AI Technology</h3>
-              <p className="text-gray-700">Advanced neural networks trained to enhance and enlarge images while preserving quality and detail.</p>
+              <p className="text-gray-700">Real-ESRGAN increases image dimensions and generates additional pixel detail. The result can look clearer, but it cannot guarantee recovery of detail missing from the source.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Scale Options</h3>
-              <p className="text-gray-700">Choose 2×, 3×, or 4× upscaling. Higher scales provide more detail but larger file sizes.</p>
+              <p className="text-gray-700">Choose 2×, 3×, or 4× upscaling. Higher scales create larger image dimensions and usually larger output files.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Smart Image Detection</h3>
-              <p className="text-gray-700">Auto-detect mode optimizes for photos, or manually select photo or anime mode for custom enhancement.</p>
+              <p className="text-gray-700">Choose Auto, Photo, or Anime mode according to the source image and compare the processed result.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Face Enhancement</h3>
-              <p className="text-gray-700">Optional face enhancement sharpens facial details for portrait photos and improved clarity.</p>
+              <p className="text-gray-700">Optional face enhancement applies additional processing to detected facial regions. Review faces closely because results vary with the source.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Format Export</h3>
@@ -691,7 +691,7 @@ export default function UpscaleImagePage() {
           <div className="space-y-4">
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between 2×, 3×, and 4× upscaling?</summary>
-              <p className="text-gray-700 mt-2">2× doubles dimensions (fastest, web-friendly), 3× triples dimensions (balanced), and 4× quadruples dimensions (maximum detail). Higher scales take longer and create larger files.</p>
+              <p className="text-gray-700 mt-2">2× doubles the image dimensions, 3× triples them, and 4× quadruples them. Larger scales generally require more processing and create larger output files; visible detail depends on the source image.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Does upscaling reduce image quality?</summary>
@@ -703,11 +703,11 @@ export default function UpscaleImagePage() {
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">When should I use photo vs. anime mode?</summary>
-              <p className="text-gray-700 mt-2">Use photo mode for real photographs and illustrations. Use anime mode for anime, manga, or cartoon artwork. Auto-detect works well for mixed content.</p>
+              <p className="text-gray-700 mt-2">Photo mode is intended for photographic content, while Anime mode targets anime or illustration-style images. Auto mode lets the processing workflow select a mode based on the input.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Images may be processed locally or by the tool's server-side processing workflow depending on the selected operation.</p>
+              <p className="text-gray-700 mt-2">Upscaling is performed through the tool's server-side processing workflow.</p>
             </details>
             <details className="border-l-4 border-orange-500 pl-4 py-2">
               <summary className="font-bold text-gray-800 cursor-pointer">Can I use upscaled images commercially?</summary>
@@ -763,11 +763,11 @@ export default function UpscaleImagePage() {
         featureList: [
           '2×, 3×, and 4× upscaling options',
           'Real-ESRGAN AI technology',
-          'Smart image type detection',
+          'Auto, photo, and anime processing modes',
           'Optional face enhancement',
           'Multiple output formats (PNG, WebP, JPG)',
           'No sign-up required',
-          'Privacy-focused local processing',
+          'Server-side Real-ESRGAN processing',
         ],
       })}} />
     </>
