@@ -380,6 +380,62 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
       },
     ],
   },
+
+  'instagram-caption-generator': {
+    introduction: 'The Instagram Caption Generator creates a caption draft from the post description you provide, with an option to include hashtags. The generated caption can help with initial wording, but hashtags, calls to action, claims, brand references, and other details should be reviewed before publishing.',
+    useCases: ['Draft a caption from a description of an Instagram post', 'Explore alternative wording for a photo, product, or announcement', 'Create a caption draft with optional hashtags', 'Prepare social copy for further brand or editorial review'],
+    examples: [
+      {
+        label: 'Product photo caption',
+        input: 'A photo introducing a new reusable travel bottle. Include hashtags.',
+        output: 'An Instagram caption draft describing the product, followed by a call to action and suggested hashtags that can be reviewed before posting.',
+      },
+    ],
+  },
+  'facebook-post-generator': {
+    introduction: 'The Facebook Post Generator turns a topic and optional audience selection into a social-post draft. It can help organize an announcement, update, or discussion prompt, but generated facts, promotional claims, hashtags, links, and calls to action should be checked before publication.',
+    useCases: ['Draft a Facebook update from a supplied topic', 'Create a starting post for customers or a community audience', 'Explore conversational wording for an announcement', 'Prepare social copy for editing before it is published'],
+    examples: [
+      {
+        label: 'Community update',
+        input: 'Topic: Announce extended weekend opening hours. Audience: Community.',
+        output: 'A conversational Facebook post draft explaining the update and inviting readers to respond, ready for the hours and other details to be verified.',
+      },
+    ],
+  },
+  'linkedin-post-generator': {
+    introduction: 'The LinkedIn Post Generator creates a professional-networking post draft from a topic and selected length. Use the result as a starting point for your own perspective rather than assuming generated wording establishes expertise, authority, engagement, or thought leadership.',
+    useCases: ['Draft a LinkedIn post about a professional topic', 'Turn a workplace observation into a structured post', 'Explore short, medium, or longer versions of an idea', 'Prepare a professional post for further personalization and fact-checking'],
+    examples: [
+      {
+        label: 'Project lesson post',
+        input: 'Topic: What a project team learned from simplifying weekly status updates. Length: Medium.',
+        output: 'A LinkedIn post draft with an opening observation, a short explanation of the lesson, and a closing prompt that can be personalized before publishing.',
+      },
+    ],
+  },
+  'twitter-generator': {
+    introduction: 'The Twitter Generator creates three short post options from a topic and selected tone while aiming to stay within the requested character limit. Review wording, facts, mentions, links, hashtags, and tone before publishing any generated option on X or another short-form platform.',
+    useCases: ['Create several short-post options from one idea', 'Explore different concise ways to phrase an update', 'Draft short social copy in a selected tone', 'Compare generated options before writing or editing the final post'],
+    examples: [
+      {
+        label: 'Feature update',
+        input: 'Topic: A file-conversion tool now supports an additional export format. Tone: Professional.',
+        output: 'Three concise post options presenting the update in slightly different wording for review before publishing.',
+      },
+    ],
+  },
+  'tiktok-caption-generator': {
+    introduction: 'The TikTok Caption Generator creates a short caption draft from a description of the video and an optional style preference. It can suggest hooks, hashtags, calls to action, and emojis, but generated wording cannot guarantee views, followers, reach, engagement, or viral performance.',
+    useCases: ['Draft a short caption from a description of a TikTok video', 'Explore hook ideas for educational or humorous videos', 'Create caption wording with suggested hashtags and emojis', 'Prepare several ideas for further editing before posting'],
+    examples: [
+      {
+        label: 'Educational video caption',
+        input: 'Video: Three quick ways to organize files before sharing them. Style: Educational.',
+        output: 'A short caption draft with an opening hook, concise context, and suggested hashtags that can be reviewed before posting.',
+      },
+    ],
+  },
 };
 
 interface PageProps {

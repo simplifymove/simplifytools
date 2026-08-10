@@ -163,22 +163,22 @@ const toolSEODatabase: Record<string, {
   },
   'facebook-post-generator': {
     title: 'Facebook Post Generator - Create Facebook Content',
-    description: 'Generate engaging Facebook posts that drive engagement. Create viral-worthy content for your Facebook business page.',
+    description: 'Create Facebook post drafts from a topic and audience selection. Review generated claims, links, hashtags, and calls to action before publishing.',
     keywords: ['Facebook post generator', 'Facebook content', 'social media posts', 'engagement content', 'Facebook marketing']
   },
   'instagram-caption-generator': {
     title: 'Instagram Caption Generator - Create Captions',
-    description: 'Generate engaging Instagram captions with hashtags. Create captions that boost engagement and grow your audience.',
+    description: 'Create Instagram caption drafts from the post context you provide, with optional hashtags. Review wording, claims, brand references, and hashtags before publishing.',
     keywords: ['Instagram caption generator', 'Instagram captions', 'caption writer', 'hashtag generator', 'Instagram content']
   },
   'linkedin-post-generator': {
-    title: 'LinkedIn Post Generator - Professional Content',
-    description: 'Create professional LinkedIn posts that drive engagement. Generate thought leadership content for business networking.',
+    title: 'LinkedIn Post Generator - Create Post Drafts',
+    description: 'Create LinkedIn post drafts from a topic and selected length. Personalize the result and verify factual or professional claims before publishing.',
     keywords: ['LinkedIn post generator', 'LinkedIn content', 'professional posts', 'business content', 'thought leadership']
   },
   'twitter-generator': {
     title: 'Tweet Generator - Create Twitter/X Posts',
-    description: 'Generate viral tweets and engaging Twitter content. Create concise, impactful posts within character limits.',
+    description: 'Create short Twitter/X post options from a topic and tone while aiming to stay within the requested character limit. Review each option before publishing.',
     keywords: ['tweet generator', 'Twitter post creator', 'tweet writer', 'social media posts', 'X posts']
   },
   'youtube-title-generator': {
@@ -208,7 +208,7 @@ const toolSEODatabase: Record<string, {
   },
   'tiktok-caption-generator': {
     title: 'TikTok Caption Generator - Create TikTok Captions',
-    description: 'Generate trending TikTok captions with hashtags. Create engaging captions that boost video views and followers.',
+    description: 'Create TikTok caption drafts from a video description and style preference, with suggested hooks, hashtags, and calls to action. Social performance is not guaranteed.',
     keywords: ['TikTok caption generator', 'TikTok captions', 'caption writer', 'TikTok content', 'video captions']
   },
 };
