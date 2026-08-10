@@ -169,7 +169,7 @@ export default function SaveFromOnline() {
             className="text-center mb-12"
           >
             <h1 className="text-5xl md:text-6xl font-bold text-green-600 mb-4">
-              Free Online Downloader for Videos, Images & Files
+              Download Files from Public URLs
             </h1>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
               Download supported files from direct public URLs. Additional public media sources may work when a compatible provider is available.
@@ -342,7 +342,7 @@ export default function SaveFromOnline() {
 
             <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
-                <h3 className="font-bold text-green-900 mb-2">⚡ Fast & Simple</h3>
+                <h3 className="font-bold text-green-900 mb-2">Direct URL Requests</h3>
                 <p className="text-green-800 text-sm">Paste a direct public file URL and request the file without installing desktop software. Processing time depends on the source and file size.</p>
               </div>
               <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
@@ -350,12 +350,12 @@ export default function SaveFromOnline() {
                 <p className="text-blue-800 text-sm">Recognized direct file extensions include common video, image, document, audio, and archive formats. The tool downloads the source file; it does not promise format conversion.</p>
               </div>
               <div className="bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
-                <h3 className="font-bold text-purple-900 mb-2">📱 Works Everywhere</h3>
+                <h3 className="font-bold text-purple-900 mb-2">Provider-Dependent Sources</h3>
                 <p className="text-purple-800 text-sm">Additional public sources may work through a compatible provider. A source can fail because of access controls, provider configuration, or platform changes.</p>
               </div>
               <div className="bg-orange-50 p-6 rounded-lg border-l-4 border-orange-500">
-                <h3 className="font-bold text-orange-900 mb-2">🔒 100% Free & Easy</h3>
-                <p className="text-orange-800 text-sm">No hidden fees, no premium plans. No signup required. Simple, straightforward downloading with secure HTTPS connections.</p>
+                <h3 className="font-bold text-orange-900 mb-2">No Signup Required</h3>
+                <p className="text-orange-800 text-sm">No signup is required for the current downloader page. Download success still depends on the source, access rules, file availability, and any provider used for the request.</p>
               </div>
             </div>
 
@@ -369,12 +369,12 @@ export default function SaveFromOnline() {
 
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Common Uses for Online Downloading</h3>
             <ul className="space-y-2 text-gray-700 mb-8">
-              <li>📹 <strong>Save Tutorial Videos:</strong> Download educational content from popular platforms for offline learning</li>
+              <li>📹 <strong>Save Your Public Media:</strong> Request a public media URL when the source is supported and you have permission to download it</li>
               <li>🎵 <strong>Save Direct Audio Files:</strong> Download a public audio-file URL in its available source format</li>
-              <li>📸 <strong>Backup Your Photos:</strong> Download a direct public image URL when you have permission</li>
-              <li>💼 <strong>Archive Documents:</strong> Save a direct public PDF or document URL for later reference</li>
-              <li>🎬 <strong>Create Content:</strong> Download clips for editing and remixing (check platform terms)</li>
-              <li>🔍 <strong>Research:</strong> Save images and videos for research and reference purposes</li>
+              <li>📸 <strong>Save Your Images:</strong> Download a direct public image URL when you own the image or have permission to save it</li>
+              <li>💼 <strong>Save Public Documents:</strong> Request a direct public PDF or document URL for later access</li>
+              <li>🎬 <strong>Work with Authorized Media:</strong> Save media you own or are permitted to use before continuing with editing tools</li>
+              <li>🔍 <strong>Keep Reference Files:</strong> Save authorized public files that you need to access offline</li>
             </ul>
 
             <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200 mb-8">
@@ -390,7 +390,7 @@ export default function SaveFromOnline() {
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">Supported Formats</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Download a wide range of file formats</p>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Recognized direct URLs can include common video, image, document, audio, and archive file types.</p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
             {supportedFormatsData.map((format, idx) => (
@@ -554,7 +554,7 @@ export default function SaveFromOnline() {
                 name: 'Is it legal to download from online?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Downloading is legal in most cases, but you must respect copyright laws and the terms of service of the platform. Download only content you own or have permission to use. Do not use our tool to download copyrighted material without authorization. Always verify you have the right to download content before proceeding.'
+                  text: 'Whether you may download or reuse content depends on the content, your rights or permission, applicable law, and the source platform\'s terms. Use the downloader only for content you own or are authorized to access and download.'
                 }
               },
               {
