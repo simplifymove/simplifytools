@@ -265,27 +265,27 @@ const toolSEODatabase: Record<string, {
   // Transcription & Text Tools
   'audio-to-text': {
     title: 'Convert Audio to Text Online - Free Speech-to-Text Tool',
-    description: 'Transcribe audio files to text instantly. Free online speech-to-text converter with high accuracy.',
+    description: 'Transcribe supported audio files into text. Transcription can contain errors, so review the generated text against the source recording.',
     keywords: ['audio to text', 'speech to text', 'transcribe audio', 'audio transcription', 'voice to text']
   },
   'video-to-text': {
     title: 'Convert Video to Text - Free Video Transcription Tool',
-    description: 'Transcribe videos to text instantly. Free online tool extracting and converting video audio to text.',
+    description: 'Extract speech from supported video files and generate a text transcript. Transcription results can contain errors and should be reviewed against the source.',
     keywords: ['video to text', 'transcribe video', 'video transcription', 'extract text from video']
   },
   'youtube-to-text': {
     title: 'Convert YouTube to Text - Free Video Transcription',
-    description: 'Download YouTube videos and transcribe to text instantly. Free online converter for video analysis.',
+    description: 'Generate a text transcript from an accessible public YouTube source. Results depend on source access, provider availability, and transcription quality.',
     keywords: ['youtube to text', 'transcribe youtube video', 'youtube transcription', 'youtube to transcript']
   },
   'youtube-transcript': {
     title: 'YouTube Transcript Generator - Free Video Subtitle Extractor',
-    description: 'Get transcripts from YouTube videos instantly. Free online tool extracting captions and generating transcripts.',
+    description: 'Generate a transcript from an accessible public YouTube source. Source availability and transcription results can vary.',
     keywords: ['youtube transcript', 'extract youtube captions', 'youtube subtitles', 'video transcript']
   },
   'transcribe-podcast': {
     title: 'Transcribe Podcast Online - Free Podcast Transcription Tool',
-    description: 'Transcribe podcast audio files to text instantly. Free online converter for podcast analysis and content creation.',
+    description: 'Transcribe supported podcast audio files into text. Names, accents, overlapping speech, and background noise can affect the generated transcript.',
     keywords: ['transcribe podcast', 'podcast transcription', 'audio transcription', 'convert podcast to text']
   },
   
@@ -314,7 +314,7 @@ const toolSEODatabase: Record<string, {
   // Summarization
   'summarize-podcast': {
     title: 'Summarize Podcast Online - Free Podcast Summary Generator',
-    description: 'Summarize podcast episodes instantly. Free online tool transcribing and summarizing audio content.',
+    description: 'Transcribe and summarize supported podcast audio files. Review the generated summary for transcription mistakes, omitted context, or other inaccuracies.',
     keywords: ['podcast summarizer', 'summarize podcast', 'podcast summary generator', 'podcast notes']
   },
   
