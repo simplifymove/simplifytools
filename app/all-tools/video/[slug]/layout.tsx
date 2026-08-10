@@ -161,12 +161,12 @@ const toolSEODatabase: Record<string, {
     keywords: ['convert aac to mp3', 'aac to mp3 converter', 'audio format conversion', 'aac converter']
   },
   'aac-to-wav': {
-    title: 'Convert AAC to WAV Online - Free Lossless Audio Converter',
+    title: 'Convert AAC to WAV Online - Free Audio Converter',
     description: 'Convert AAC audio to WAV format for supported editing and playback workflows. WAV output does not restore information already lost in the AAC source.',
     keywords: ['convert aac to wav', 'aac to wav converter', 'lossless audio', 'audio format conversion']
   },
   'aac-to-flac': {
-    title: 'Convert AAC to FLAC Online - Free Lossless Audio Converter',
+    title: 'Convert AAC to FLAC Online - Free Audio Converter',
     description: 'Convert AAC audio to FLAC format. FLAC stores the converted audio without additional lossy compression but cannot restore information already lost in the AAC source.',
     keywords: ['convert aac to flac', 'aac to flac converter', 'lossless audio format', 'audio conversion']
   },
