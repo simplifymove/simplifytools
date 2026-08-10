@@ -220,7 +220,7 @@ export default function CodeToolsPage() {
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
-                <p className="text-gray-700 text-sm">Works directly in your browser. Use code tools on Windows, Mac, iPhone, Android, and any device with internet. No software downloads or complex setup required.</p>
+                <p className="text-gray-700 text-sm">Open the tools through a modern web browser without installing separate development software. Tool input is processed through the service, and practical behavior can vary by browser, device, input size, and selected tool.</p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Processing Time Varies</h3>
