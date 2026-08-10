@@ -227,7 +227,7 @@ export default function AddOpacityPage() {
                 </details>
                 <details className="border-l-4 border-cyan-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Can I use for watermarks?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Perfect for creating semi-transparent watermarks.</p>
+                  <p className="text-gray-700 mt-2">Yes. Adjusting opacity can be useful when preparing semi-transparent watermark graphics.</p>
                 </details>
                 <details className="border-l-4 border-cyan-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between 0% and 100%?</summary>
@@ -235,7 +235,7 @@ export default function AddOpacityPage() {
                 </details>
                 <details className="border-l-4 border-cyan-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Does this support all image types?</summary>
-                  <p className="text-gray-700 mt-2">Yes, supports JPG, PNG, WebP, BMP, TIFF, and standard formats.</p>
+                  <p className="text-gray-700 mt-2">The tool is intended for supported browser-readable image files such as JPG, PNG, and WebP. Browser decoding support can vary for other formats.</p>
                 </details>
                 <details className="border-l-4 border-cyan-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is my image stored?</summary>

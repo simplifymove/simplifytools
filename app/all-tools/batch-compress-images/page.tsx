@@ -149,7 +149,7 @@ export default function BatchCompressImagesPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Batch Compress Images</h1>
-                <p className="text-lg text-white/90">Compress multiple images at once and reduce file sizes significantly. Perfect for bulk optimization. No signup required.</p>
+                <p className="text-lg text-white/90">Compress multiple supported images in one workflow with an adjustable quality setting. No signup is required.</p>
               </div>
             </div>
           </div>
@@ -317,7 +317,7 @@ export default function BatchCompressImagesPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">2</div>
-              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose compression level from 10% (smallest) to 100% (best quality)</p></div>
+              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose the compression quality setting from 10% to 100%. File size and visible quality depend on the source image and selected setting.</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">3</div>
@@ -365,7 +365,7 @@ export default function BatchCompressImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">For web/social: 70-75%. For professional use: 85-90%. For maximum compression: 60-70%. All images in a batch use the same quality setting for consistency.</p>
+              <p className="text-gray-700 mt-3 text-sm">There is no single quality setting that is best for every image. Lower settings generally favor smaller files, while higher settings generally retain more visual detail. Review the output and adjust the setting for your needs.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -383,7 +383,7 @@ export default function BatchCompressImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Typical savings are 30-70% depending on image content and quality settings. You'll see exact before/after sizes and percentage reduction after compression completes.</p>
+              <p className="text-gray-700 mt-3 text-sm">File-size reduction varies with the source image, dimensions, format, and selected quality setting. Review the displayed before-and-after sizes after processing.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -425,7 +425,7 @@ export default function BatchCompressImagesPage() {
             "name": "What quality setting should I use for batch compression?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "For web/social: 70-75%. For professional use: 85-90%. For maximum compression: 60-70%."
+              "text": "There is no single quality setting that is best for every image. Lower settings generally favor smaller files, while higher settings generally retain more visual detail."
             }
           },
           {
@@ -441,7 +441,7 @@ export default function BatchCompressImagesPage() {
             "name": "How much space can I save with batch compression?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Typical savings are 30-70% depending on image content and quality settings."
+              "text": "File-size reduction varies with the source image, dimensions, format, and selected quality setting."
             }
           },
           {

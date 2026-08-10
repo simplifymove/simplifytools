@@ -164,7 +164,7 @@ export default function GlowEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">✨ Glow Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Add luminous glow and bloom effects to images. Create stunning glowing photos with custom intensity.
+              Apply luminous glow and bloom-style effects to images with adjustable intensity.
             </p>
           </div>
         </div>
@@ -258,8 +258,8 @@ export default function GlowEffectPage() {
                   <p className="text-gray-700">Create stunning contemporary glow effects.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-pink-600 mb-2">Professional Quality</h3>
-                  <p className="text-gray-700">Studio-quality luminous glow effects.</p>
+                  <h3 className="font-bold text-lg text-pink-600 mb-2">Glow Processing</h3>
+                  <p className="text-gray-700">Apply a configurable luminous glow effect using the available intensity and blur controls.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-pink-600 mb-2">Customizable</h3>
@@ -325,7 +325,7 @@ export default function GlowEffectPage() {
                 </details>
                 <details className="border-l-4 border-pink-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What format is the output?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG format with excellent glow quality.</p>
+                  <p className="text-gray-700 mt-2">The processed glow result is exported in JPEG format.</p>
                 </details>
                 <details className="border-l-4 border-pink-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is my image private?</summary>

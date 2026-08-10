@@ -158,7 +158,7 @@ export default function CartoonEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Cartoon Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Transform photos into cartoon and comic style. Create artistic cartoon effects instantly.
+              Apply a cartoon-style effect that simplifies image tones and emphasizes visible edges.
             </p>
           </div>
         </div>
@@ -226,7 +226,7 @@ export default function CartoonEffectPage() {
                 <li><strong>1. Upload Photo:</strong> Select a JPG, PNG, or WebP image.</li>
                 <li><strong>2. Adjust Intensity:</strong> Control how simplified or detailed the cartoon looks.</li>
                 <li><strong>3. Apply Effect:</strong> Click "Apply Cartoon Effect" to process.</li>
-                <li><strong>4. Download:</strong> Save your cartoon image instantly.</li>
+                <li><strong>4. Download:</strong> Prepare and save the processed cartoon-style image.</li>
               </ol>
             </div>
 
@@ -271,7 +271,7 @@ export default function CartoonEffectPage() {
                 </details>
                 <details className="border-l-4 border-orange-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">What file format is the output?</summary>
-                  <p className="text-gray-700 mt-2">Images are saved as high-quality JPEG format.</p>
+                  <p className="text-gray-700 mt-2">Processed images are exported in JPEG format.</p>
                 </details>
                 <details className="border-l-4 border-orange-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Is my image kept private?</summary>

@@ -133,7 +133,7 @@ export default function ColorBalancePage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Color Balance Tool</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Adjust RGB color balance independently. Perfect for white balance correction and color grading.
+              Adjust the red, green, and blue channels independently for color correction and creative color adjustments.
             </p>
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function ColorBalancePage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-cyan-600 mb-2">Color Grading</h3>
-                  <p className="text-gray-700">Create professional color grades.</p>
+                  <p className="text-gray-700">Create custom color adjustments by changing the RGB channel balance.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-cyan-600 mb-2">100% Free</h3>

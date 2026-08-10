@@ -141,7 +141,7 @@ export default function BrightnessContrastPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">☀️ Brightness Contrast Adjuster</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Adjust brightness and contrast levels precisely. Enhance image visibility and improve photo quality.
+              Adjust brightness and contrast levels and preview how the tonal changes affect the image.
             </p>
           </div>
         </div>
@@ -238,11 +238,11 @@ export default function BrightnessContrastPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Real-time Preview</h3>
-                  <p className="text-gray-700">See changes instantly with adjustment sliders.</p>
+                  <p className="text-gray-700">Adjust the controls and review the resulting tonal changes.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Photo Enhancement</h3>
-                  <p className="text-gray-700">Improve visibility and detail in any photo.</p>
+                  <p className="text-gray-700">Adjust tonal visibility in light, dark, or low-contrast images.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">100% Free</h3>
@@ -277,7 +277,7 @@ export default function BrightnessContrastPage() {
                 </details>
                 <details className="border-l-4 border-yellow-500 pl-4 py-2">
                   <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with maximum detail preservation.</p>
+                  <p className="text-gray-700 mt-2">The processed result is exported as a JPEG. Visible quality depends on the source image and processing.</p>
                 </details>
               </div>
             </div>

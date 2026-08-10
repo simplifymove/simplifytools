@@ -511,7 +511,7 @@ export default function CombineImagesPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Layout Options</h3>
-                <p className="text-gray-700">Arrange images horizontally, vertically, or in a grid layout. Perfect for creating collages and compositions.</p>
+                <p className="text-gray-700">Arrange images horizontally, vertically, or in a grid layout for collages and other image compositions.</p>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Flexible Customization</h3>
@@ -519,15 +519,15 @@ export default function CombineImagesPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Preview Before Download</h3>
-                <p className="text-gray-700">See exactly how your combined image will look before exporting. Make changes instantly.</p>
+                <p className="text-gray-700">Review the combined layout in the on-page preview and adjust the available settings before exporting.</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-orange-500 mb-2">✓ High Quality Output</h3>
+                <h3 className="text-lg font-bold text-orange-500 mb-2">✓ PNG Output</h3>
                 <p className="text-gray-700">Exports the combined result as a PNG image.</p>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Browser-Based Processing</h3>
-                <p className="text-gray-700">No sign-up required. All processing happens locally in your browser. Your data stays private.</p>
+                <p className="text-gray-700">No sign-up is required for the combining step. Image composition is performed locally in the browser before the generated result enters the download workflow.</p>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Batch Processing</h3>
@@ -552,7 +552,7 @@ export default function CombineImagesPage() {
               </details>
               <details className="border-l-4 border-orange-500 pl-4 py-2">
                 <summary className="font-bold text-gray-800 cursor-pointer">Can I change the layout after uploading?</summary>
-                <p className="text-gray-700 mt-2">Yes! Switch between horizontal, vertical, and grid layouts at any time. The preview updates instantly so you can see the changes in real-time.</p>
+                <p className="text-gray-700 mt-2">Yes. Switch between horizontal, vertical, and grid layouts and use the on-page preview to review the updated composition.</p>
               </details>
               <details className="border-l-4 border-orange-500 pl-4 py-2">
                 <summary className="font-bold text-gray-800 cursor-pointer">Is my data safe and private?</summary>
@@ -600,7 +600,7 @@ export default function CombineImagesPage() {
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
           name: 'Combine Images - Free Online Image Merger & Collage Maker',
-          description: 'Combine multiple images into one with flexible layout options. Create stunning collages and image compositions.',
+          description: 'Combine multiple images into one using flexible horizontal, vertical, or grid layout options.',
           url: 'https://simplifyconvert.com/all-tools/combine-images',
           applicationCategory: 'Multimedia',
           offers: {
@@ -619,11 +619,11 @@ export default function CombineImagesPage() {
           featureList: [
             'Horizontal, vertical, and grid layout options',
             'Customizable spacing and background color',
-            'Real-time preview',
-            'PNG export with full quality',
+            'On-page layout preview',
+            'PNG export',
             'Support for multiple image formats',
             'No sign-up required',
-            'Privacy-focused local processing',
+            'Browser-based image composition',
           ],
         })
       }} />

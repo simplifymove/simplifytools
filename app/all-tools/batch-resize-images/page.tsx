@@ -174,7 +174,7 @@ export default function BatchResizeImagesPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Batch Resize Images</h1>
-                <p className="text-lg text-white/90">Resize multiple images at once to your desired dimensions. Perfect for bulk image optimization. No signup required.</p>
+                <p className="text-lg text-white/90">Resize multiple supported images in one workflow using your chosen output dimensions. No signup is required.</p>
               </div>
             </div>
           </div>
@@ -374,7 +374,7 @@ export default function BatchResizeImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can resize up to 100 images in a single batch operation. Processing speed depends on image size and your device performance, typically taking a few seconds to a minute.</p>
+              <p className="text-gray-700 mt-3 text-sm">You can select up to 100 images in a batch operation. Processing time depends on the number of files, their dimensions and sizes, and your device performance.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -392,7 +392,7 @@ export default function BatchResizeImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more. Resized images are saved in their original format unless you specify otherwise.</p>
+              <p className="text-gray-700 mt-3 text-sm">The batch resizer is intended for image formats that the browser can decode. The current download workflow generates resized JPEG results.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -401,7 +401,7 @@ export default function BatchResizeImagesPage() {
                 <span className="text-gray-500 group-open:hidden">+</span>
                 <span className="text-gray-500 hidden group-open:inline">−</span>
               </summary>
-              <p className="text-gray-700 mt-3 text-sm">Resizing to smaller dimensions may slightly affect quality, but our tool uses high-quality interpolation algorithms to minimize loss. Resizing to larger dimensions cannot improve quality.</p>
+              <p className="text-gray-700 mt-3 text-sm">Resizing changes the pixel dimensions and can affect visible quality. Enlarging an image does not reconstruct detail that is absent from the source.</p>
             </details>
 
             <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
@@ -451,7 +451,7 @@ export default function BatchResizeImagesPage() {
             "name": "What file formats are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more."
+              "text": "The batch resizer is intended for image formats that the browser can decode. The current download workflow generates resized JPEG results."
             }
           },
           {
@@ -459,7 +459,7 @@ export default function BatchResizeImagesPage() {
             "name": "Will resizing reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Resizing to smaller dimensions may affect quality slightly, but we use high-quality interpolation algorithms to minimize loss."
+              "text": "Resizing changes the pixel dimensions and can affect visible quality. Enlarging an image does not reconstruct detail that is absent from the source."
             }
           },
           {
