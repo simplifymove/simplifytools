@@ -535,12 +535,12 @@ export default function ColorizePhotoPage() {
               <p className="text-gray-700">Preview changes as you adjust tone, color, and intensity.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Restore Vintage Photos</h3>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Apply Tones to Vintage Photos</h3>
               <p className="text-gray-700">Bring old black and white photographs back to life with beautiful, natural-looking colors.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Precise Control</h3>
-              <p className="text-gray-700">Adjust intensity from subtle to vibrant to get exactly the look you want.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Adjustable Intensity</h3>
+              <p className="text-gray-700">Adjust the intensity from subtle to stronger tonal effects and review the preview before downloading.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ PNG Output</h3>
@@ -619,7 +619,7 @@ export default function ColorizePhotoPage() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'Colorize Photo - Free Online Photo Colorization Tool',
-        description: 'Add colors to black and white photos. Restore vintage photographs with sepia, warm, cool, or custom color tones.',
+        description: 'Apply sepia, warm, cool, or custom color tones to black-and-white and other supported photos.',
         url: 'https://simplifyconvert.com/all-tools/colorize-photo',
         applicationCategory: 'Multimedia',
         offers: {

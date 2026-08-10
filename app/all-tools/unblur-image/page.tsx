@@ -292,7 +292,7 @@ export default function UnblurImagePage() {
                         disabled={processing}
                         className="w-full"
                       />
-                      <p className="text-xs text-gray-500 mt-1">More passes = Better quality (slower processing)</p>
+                      <p className="text-xs text-gray-500 mt-1">Additional passes repeat the refinement process and may also increase artifacts</p>
                     </div>
                   </div>
 

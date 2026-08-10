@@ -265,7 +265,7 @@ export default function RemoveObjectPage() {
                         <li>• Multiple removing methods</li>
                         <li>• Adjustable parameters</li>
                         <li>• Real-time preview</li>
-                        <li>• Fast processing</li>
+                        <li>• Mask-guided processing</li>
                       </ul>
                     </div>
                   )}

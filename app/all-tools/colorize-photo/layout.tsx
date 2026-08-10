@@ -6,15 +6,12 @@ export const metadata: Metadata = {
   keywords: [
     'colorize photo',
     'colorize image',
-    'restore photo',
     'black and white to color',
     'photo colorization',
-    'vintage photo restoration',
     'sepia effect',
     'add color to bw photo',
     'free photo editor',
     'online colorizer',
-    'restore old photos',
     'photo enhancement'
   ],
   authors: [{ name: 'SimplifyConvert' }],
@@ -24,7 +21,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/colorize-photo',
     siteName: 'SimplifyConvert',
     title: 'Colorize Photo - Free Online Photo Colorization Tool',
-    description: 'Add colors to black and white photos. Restore vintage photographs with multiple tone options.',
+    description: 'Apply selectable color tones to black-and-white and other supported photos.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'Colorize Photo Tool' }],
   },
   twitter: {
