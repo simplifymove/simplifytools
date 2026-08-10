@@ -216,7 +216,7 @@ export default function BmpToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Why convert BMP to PNG?</h3>
-              <p className="text-gray-700">PNG format offers several advantages over BMP: it supports transparency, provides lossless compression (reducing file size), and is universally supported by web browsers and modern applications. PNG is ideal for web use, graphics, and images requiring transparency.</p>
+              <p className="text-gray-700">PNG supports lossless compression and can represent transparency, although the result depends on information available in the source BMP. PNG is widely supported by modern browsers, image editors, document tools, and publishing workflows.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the converted image lose quality?</h3>
@@ -224,7 +224,7 @@ export default function BmpToPngPage() {
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple BMP files at once?</h3>
-              <p className="text-gray-700">Currently, our converter processes one image at a time. However, you can quickly convert multiple files by uploading and converting them individually. Each conversion is fast and takes just seconds.</p>
+              <p className="text-gray-700">The converter currently processes one BMP image at a time. To convert several files, upload and process them individually. Processing time can vary with file size, image dimensions, and current server workload.</p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">What's the file size limit?</h3>
@@ -257,7 +257,7 @@ export default function BmpToPngPage() {
               "name": "Why convert BMP to PNG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG format offers several advantages over BMP: it supports transparency, provides lossless compression (reducing file size), and is universally supported by web browsers and modern applications. PNG is ideal for web use, graphics, and images requiring transparency."
+                "text": "PNG supports lossless compression and can represent transparency, although the result depends on information available in the source BMP. PNG is widely supported by modern browsers, image editors, document tools, and publishing workflows."
               }
             },
             {
@@ -273,7 +273,7 @@ export default function BmpToPngPage() {
               "name": "Can I convert multiple BMP files at once?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Currently, our converter processes one image at a time. However, you can quickly convert multiple files by uploading and converting them individually. Each conversion is fast and takes just seconds."
+                "text": "The converter currently processes one BMP image at a time. To convert several files, upload and process them individually. Processing time can vary with file size, image dimensions, and current server workload."
               }
             },
             {
