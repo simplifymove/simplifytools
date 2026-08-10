@@ -103,110 +103,110 @@ const toolSEODatabase: Record<string, {
   // MKV Conversions
   'mkv-to-mp4': {
     title: 'Convert MKV to MP4 Online - Free Video Format Converter',
-    description: 'Convert MKV (Matroska) videos to MP4 format instantly. Free online converter for streaming compatibility. Multiple quality options.',
+    description: 'Convert MKV (Matroska) videos to MP4 using the available quality options. Playback compatibility depends on the generated codecs and target device or software.',
     keywords: ['convert mkv to mp4', 'mkv to mp4 converter', 'matroska to mp4', 'video format converter']
   },
   'mkv-to-mp3': {
     title: 'Convert MKV to MP3 - Extract Audio from Matroska Videos',
-    description: 'Extract audio from MKV videos as MP3 instantly. Free online converter with quality options. No installation required.',
+    description: 'Extract audio from MKV videos as MP3 using the available quality options. Processing time and output characteristics depend on the source media and selected settings.',
     keywords: ['mkv to mp3', 'extract audio from mkv', 'matroska audio extraction', 'audio converter']
   },
   'mkv-to-avi': {
     title: 'Convert MKV to AVI Online - Free Video Format Converter',
-    description: 'Convert MKV videos to AVI format instantly. Free online tool for compatibility. Multiple quality settings available.',
+    description: 'Convert MKV videos to AVI using the available quality settings. Playback compatibility depends on the generated codecs and target software.',
     keywords: ['convert mkv to avi', 'mkv to avi converter', 'matroska to avi', 'video format conversion']
   },
   'mkv-to-mov': {
     title: 'Convert MKV to MOV Online - Free QuickTime Video Converter',
-    description: 'Convert MKV (Matroska) videos to MOV format instantly. Free online converter for Mac compatibility.',
+    description: 'Convert MKV (Matroska) videos to MOV format. Playback compatibility depends on the codecs in the generated file and the target software.',
     keywords: ['convert mkv to mov', 'mkv to mov converter', 'matroska to quicktime', 'mac video format']
   },
   'mkv-to-gif': {
     title: 'Convert MKV to GIF Online - Create Animated GIFs from Videos',
-    description: 'Convert MKV videos to animated GIF instantly. Free online converter with customizable settings.',
+    description: 'Convert MKV videos to animated GIFs using the available conversion settings. File size and visual quality depend on the source video and selected options.',
     keywords: ['mkv to gif', 'video to gif', 'animated gif creator', 'matroska to gif']
   },
   
   // WebM & OGG Conversions
   'webm-to-mp4': {
     title: 'Convert WebM to MP4 Online - Free Web Video Converter',
-    description: 'Convert WebM videos to MP4 format instantly. Free online converter for universal compatibility. Multiple quality options.',
+    description: 'Convert WebM videos to MP4 using the available quality options. Playback compatibility depends on the generated codecs and target device or software.',
     keywords: ['convert webm to mp4', 'webm to mp4 converter', 'vp9 to h264', 'video format converter']
   },
   'webm-to-mp3': {
     title: 'Convert WebM to MP3 - Extract Audio from WebM Videos',
-    description: 'Extract audio from WebM videos as MP3 instantly. Free online converter with quality settings.',
+    description: 'Extract audio from WebM videos as MP3 using the available quality settings. Output characteristics depend on the source audio and selected options.',
     keywords: ['webm to mp3', 'extract audio from webm', 'audio converter', 'vorbis to mp3']
   },
   'webm-to-mov': {
     title: 'Convert WebM to MOV Online - Free Video Converter for Mac',
-    description: 'Convert WebM videos to MOV format instantly. Free online converter for Mac compatibility.',
+    description: 'Convert WebM videos to MOV format. Playback compatibility depends on the generated codecs and target software.',
     keywords: ['convert webm to mov', 'webm to mov converter', 'quicktime format', 'mac video']
   },
   'ogg-to-mp3': {
     title: 'Convert OGG to MP3 Online - Free Audio Format Converter',
-    description: 'Convert OGG audio files to MP3 instantly. Free online converter with quality options. No installation needed.',
+    description: 'Convert OGG audio files to MP3 using the available quality options. Re-encoding can affect audio quality and resulting file size.',
     keywords: ['convert ogg to mp3', 'ogg to mp3 converter', 'audio format conversion', 'vorbis to mp3']
   },
   'ogg-to-wav': {
     title: 'Convert OGG to WAV Online - Free Audio Converter',
-    description: 'Convert OGG audio to WAV (lossless) format instantly. Free online converter for professional audio editing.',
+    description: 'Convert OGG audio to WAV format for supported audio workflows. WAV output does not restore information already lost through earlier lossy encoding.',
     keywords: ['convert ogg to wav', 'ogg to wav converter', 'audio format conversion', 'lossless audio']
   },
   
   // AAC Conversions
   'aac-to-mp3': {
     title: 'Convert AAC to MP3 Online - Free Audio Format Converter',
-    description: 'Convert AAC audio files to MP3 instantly. Free online converter with multiple bitrate options. No installation required.',
+    description: 'Convert AAC audio files to MP3 using the available bitrate options. Re-encoding can affect audio quality and resulting file size.',
     keywords: ['convert aac to mp3', 'aac to mp3 converter', 'audio format conversion', 'aac converter']
   },
   'aac-to-wav': {
     title: 'Convert AAC to WAV Online - Free Lossless Audio Converter',
-    description: 'Convert AAC audio to WAV (lossless) format instantly. Free online converter perfect for professional audio editing.',
+    description: 'Convert AAC audio to WAV format for supported editing and playback workflows. WAV output does not restore information already lost in the AAC source.',
     keywords: ['convert aac to wav', 'aac to wav converter', 'lossless audio', 'audio format conversion']
   },
   'aac-to-flac': {
     title: 'Convert AAC to FLAC Online - Free Lossless Audio Converter',
-    description: 'Convert AAC audio to FLAC (lossless) format instantly. Free online converter ideal for music archival and editing.',
+    description: 'Convert AAC audio to FLAC format. FLAC stores the converted audio without additional lossy compression but cannot restore information already lost in the AAC source.',
     keywords: ['convert aac to flac', 'aac to flac converter', 'lossless audio format', 'audio conversion']
   },
   'aac-to-mp4': {
     title: 'Convert AAC to MP4 Online - Audio Container Format Converter',
-    description: 'Convert AAC audio to MP4 container format instantly. Free online converter for multimedia use.',
+    description: 'Convert AAC audio to an MP4 container for supported multimedia workflows. Resulting compatibility depends on the generated file and target software.',
     keywords: ['convert aac to mp4', 'aac to mp4 converter', 'audio container', 'mp4 format']
   },
   'aac-to-m4r': {
     title: 'Convert AAC to M4R Online - iPhone Ringtone Creator',
-    description: 'Convert AAC audio to M4R (iPhone ringtone) format instantly. Free online converter for custom iPhone ringtones.',
+    description: 'Convert AAC audio to M4R format for supported ringtone workflows. Device acceptance can depend on file duration, encoding, and platform requirements.',
     keywords: ['convert aac to m4r', 'aac to m4r converter', 'iphone ringtone', 'm4r format']
   },
   
   // M4A Conversions
   'm4a-to-mp3': {
     title: 'Convert M4A to MP3 Online - Free Audio Format Converter',
-    description: 'Convert M4A (MPEG-4 Audio) to MP3 instantly. Free online converter with quality options. Perfect for iTunes files.',
+    description: 'Convert M4A (MPEG-4 Audio) files to MP3 using the available quality options. Re-encoding can affect audio quality and resulting file size.',
     keywords: ['convert m4a to mp3', 'm4a to mp3 converter', 'audio format conversion', 'itunes to mp3']
   },
   'm4a-to-wav': {
     title: 'Convert M4A to WAV Online - Free Audio Converter',
-    description: 'Convert M4A audio to WAV (lossless) format instantly. Free online converter for audio editing and professional use.',
+    description: 'Convert M4A audio to WAV format for supported editing and playback workflows. WAV output does not restore information already lost in a lossy source.',
     keywords: ['convert m4a to wav', 'm4a to wav converter', 'lossless audio', 'audio format conversion']
   },
   'm4a-to-mp4': {
     title: 'Convert M4A to MP4 Online - Audio Container Converter',
-    description: 'Convert M4A audio files to MP4 container format instantly. Free online converter for multimedia playback.',
+    description: 'Convert M4A audio files to an MP4 container for supported multimedia workflows. Playback compatibility depends on the generated file and target software.',
     keywords: ['convert m4a to mp4', 'm4a to mp4 converter', 'audio container', 'mp4 format']
   },
   
   // GIF Conversions
   'gif-to-mov': {
     title: 'Convert GIF to MOV Online - Animated GIF to Video Converter',
-    description: 'Convert animated GIF files to MOV (QuickTime) video format instantly. Free online converter for Mac compatibility.',
+    description: 'Convert animated GIF files to MOV (QuickTime) video format. Playback compatibility depends on the generated codecs and target software.',
     keywords: ['convert gif to mov', 'gif to mov converter', 'animated gif to video', 'quicktime format']
   },
   'gif-to-webp': {
     title: 'Convert GIF to WebP Online - Free Modern Image Format Converter',
-    description: 'Convert animated GIFs to WebP format instantly. Free online converter for smaller file sizes and better compression.',
+    description: 'Convert animated GIFs to WebP format. Resulting file size, animation behavior, and visual quality depend on the source GIF and conversion settings.',
     keywords: ['convert gif to webp', 'gif to webp converter', 'webp format', 'image compression']
   },
   
