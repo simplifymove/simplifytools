@@ -17,86 +17,86 @@ const toolSEODatabase: Record<string, {
   // MP4 Conversions
   'mp4-to-mp3': {
     title: 'Convert MP4 to MP3 Online - Free Video to Audio Converter',
-    description: 'Convert MP4 videos to MP3 audio instantly. Free online tool with multiple quality options (128, 192, 320 kbps). No installation, no signup required.',
+    description: 'Convert MP4 video audio to MP3 with selectable bitrate options including 128, 192, and 320 kbps. Processing time depends on the source file and selected settings.',
     keywords: ['convert mp4 to mp3', 'mp4 to mp3 converter', 'extract audio from mp4', 'video to audio converter', 'free mp4 to mp3']
   },
   'mp4-to-wav': {
     title: 'Convert MP4 to WAV Online - Extract Audio as WAV Format',
-    description: 'Extract audio from MP4 videos as WAV format. Free online converter with sample rate options (16kHz, 44.1kHz, 48kHz). Perfect for professional audio editing.',
+    description: 'Extract audio from MP4 videos as WAV with available sample-rate options including 16 kHz, 44.1 kHz, and 48 kHz. Output characteristics depend on the source audio and selected settings.',
     keywords: ['mp4 to wav', 'extract audio to wav', 'wav converter', 'lossless audio extraction', 'video to audio']
   },
   'mp4-to-avi': {
     title: 'Convert MP4 to AVI Online - Free Video Format Converter',
-    description: 'Convert MP4 videos to AVI format instantly. Free online tool supporting multiple quality settings. No software installation needed.',
+    description: 'Convert MP4 videos to AVI format using the available quality settings. Processing time and output characteristics depend on the source video and selected options.',
     keywords: ['convert mp4 to avi', 'mp4 to avi converter', 'avi format converter', 'video format conversion']
   },
   'mp4-to-mov': {
     title: 'Convert MP4 to MOV Online - Free Video Converter for Mac',
-    description: 'Convert MP4 videos to MOV (QuickTime) format instantly. Free online converter optimized for Mac compatibility. Multiple quality options available.',
+    description: 'Convert MP4 videos to MOV (QuickTime) format with available quality options. Playback compatibility can depend on the codecs used by the generated file and the target software.',
     keywords: ['convert mp4 to mov', 'mp4 to mov converter', 'quicktime converter', 'mov format', 'mac video conversion']
   },
   'mp4-to-gif': {
     title: 'Convert MP4 to GIF Online - Create Animated GIFs from Videos',
-    description: 'Convert MP4 videos to animated GIF instantly. Free online tool with frame rate and dimension controls. Perfect for social media sharing.',
+    description: 'Convert an MP4 video to an animated GIF using the available frame-rate and dimension controls. File size and visual quality depend on the selected settings and source video.',
     keywords: ['mp4 to gif', 'video to gif converter', 'animated gif creator', 'mp4 to gif online', 'create gif from video']
   },
   'mp4-to-webm': {
     title: 'Convert MP4 to WebM Online - Free Web Video Format Converter',
-    description: 'Convert MP4 videos to WebM format for web delivery. Free online converter optimized for smaller file sizes. Perfect for web developers.',
+    description: 'Convert MP4 videos to WebM format for supported web and media workflows. Resulting file size and quality depend on the source video and selected conversion settings.',
     keywords: ['convert mp4 to webm', 'mp4 to webm converter', 'webm video format', 'web video converter', 'html5 video']
   },
   'mp4-to-ogg': {
     title: 'Convert MP4 to OGG Online - Free Audio Format Converter',
-    description: 'Convert MP4 audio to OGG format instantly. Free online converter with quality options. Open-source format ideal for web platforms.',
+    description: 'Convert audio from an MP4 file to OGG using the available quality options. Processing time and output characteristics depend on the source media and selected settings.',
     keywords: ['mp4 to ogg', 'convert mp4 to ogg', 'ogg audio converter', 'theora format', 'vorbis audio']
   },
   
   // MOV Conversions
   'mov-to-mp4': {
     title: 'Convert MOV to MP4 Online - Free QuickTime Video Converter',
-    description: 'Convert MOV (QuickTime) videos to MP4 format instantly. Free online converter with quality options. Compatible with all devices and platforms.',
+    description: 'Convert MOV (QuickTime) videos to MP4 with available quality options. Playback compatibility depends on the codecs in the generated MP4 and the target device or software.',
     keywords: ['convert mov to mp4', 'mov to mp4 converter', 'quicktime to mp4', 'mov format converter', 'free mov converter']
   },
   'mov-to-mp3': {
     title: 'Convert MOV to MP3 - Extract Audio from QuickTime Videos',
-    description: 'Extract audio from MOV (QuickTime) videos as MP3 instantly. Free online converter with multiple bitrate options. No installation required.',
+    description: 'Extract audio from MOV (QuickTime) videos as MP3 using the available bitrate options. Processing time depends on the source file and selected settings.',
     keywords: ['convert mov to mp3', 'mov to mp3 converter', 'extract audio from mov', 'quicktime to mp3', 'audio extraction']
   },
   'mov-to-avi': {
     title: 'Convert MOV to AVI Online - Free Video Format Converter',
-    description: 'Convert MOV videos to AVI format instantly. Free online tool for windows compatibility. Multiple quality settings available.',
+    description: 'Convert MOV videos to AVI format using the available quality settings. Compatibility depends on the codecs in the generated AVI and the target software.',
     keywords: ['convert mov to avi', 'mov to avi converter', 'quicktime to avi', 'video format conversion']
   },
   'mov-to-gif': {
     title: 'Convert MOV to GIF Online - Create Animated GIFs from Videos',
-    description: 'Convert MOV videos to animated GIF instantly. Free online converter with customizable frame rates and dimensions. Perfect for web sharing.',
+    description: 'Convert MOV videos to animated GIFs using configurable frame-rate and dimension settings. File size and visual quality vary with the source video and selected options.',
     keywords: ['mov to gif', 'convert mov to gif', 'video to gif converter', 'animated gif from mov']
   },
   
   // AVI Conversions
   'avi-to-mp4': {
     title: 'Convert AVI to MP4 Online - Free Video Format Converter',
-    description: 'Convert AVI videos to MP4 format instantly. Free online converter with quality options. Compatible with all modern devices.',
+    description: 'Convert AVI videos to MP4 using the available quality options. Playback compatibility depends on the generated codecs and the target device or software.',
     keywords: ['convert avi to mp4', 'avi to mp4 converter', 'avi format converter', 'video format conversion']
   },
   'avi-to-mp3': {
     title: 'Convert AVI to MP3 - Extract Audio from AVI Videos',
-    description: 'Extract audio from AVI videos as MP3 instantly. Free online converter with quality settings. No installation needed.',
+    description: 'Extract audio from AVI videos as MP3 using the available quality settings. Processing time and output characteristics depend on the source file and selected options.',
     keywords: ['avi to mp3', 'extract audio from avi', 'audio converter', 'avi audio extraction']
   },
   'avi-to-mov': {
     title: 'Convert AVI to MOV Online - Free Video Converter for Mac',
-    description: 'Convert AVI videos to MOV (QuickTime) format instantly. Free online converter for Mac compatibility. Multiple quality options.',
+    description: 'Convert AVI videos to MOV (QuickTime) format with available quality options. Playback compatibility depends on the generated codecs and target software.',
     keywords: ['convert avi to mov', 'avi to mov converter', 'quicktime converter', 'mac video format']
   },
   'avi-to-mkv': {
     title: 'Convert AVI to MKV Online - Free Container Format Converter',
-    description: 'Convert AVI videos to MKV container format instantly. Free online tool preserving high quality. Perfect for archival storage.',
+    description: 'Convert AVI videos to MKV format. The resulting quality, file size, and playback compatibility depend on the source media, conversion settings, and target software.',
     keywords: ['convert avi to mkv', 'avi to mkv converter', 'matroska format', 'video container']
   },
   'avi-to-gif': {
     title: 'Convert AVI to GIF Online - Create Animated GIFs from Videos',
-    description: 'Convert AVI videos to animated GIF instantly. Free online converter with frame rate and dimension controls.',
+    description: 'Convert AVI videos to animated GIFs using the available frame-rate and dimension controls. Resulting file size and visual quality depend on the selected settings.',
     keywords: ['avi to gif', 'convert avi to gif', 'video to gif', 'animated gif creator']
   },
   
