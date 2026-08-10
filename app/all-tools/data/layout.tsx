@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Data Converter - Free Data Format Conversion | SimplifyConvert',
-  description: 'Convert between CSV, Excel, JSON, XML and other data formats. Transform your data instantly.',
+  description: 'Convert between CSV, Excel, JSON, XML, and other supported data formats. Review the generated structure and values before using the result.',
   keywords: ['data converter', 'CSV to Excel', 'data format conversion', 'free tool'],
   openGraph: {
     type: 'website',

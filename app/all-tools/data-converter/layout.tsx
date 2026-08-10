@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/data',
     siteName: 'SimplifyConvert',
     title: 'Free Data Converter for CSV, JSON, XML & Excel',
-    description: 'Free data converter to transform CSV, JSON, XML, and Excel formats instantly. Convert between data formats online without signup.',
+    description: 'Convert among CSV, JSON, XML, and Excel formats using online tools for specific format pairs. Review the generated structure before using the result.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Free Data Converter for CSV, JSON, XML & Excel',
-    description: 'Free data converter to transform CSV, JSON, XML, and Excel formats instantly. Convert without signup.',
+    description: 'Convert among CSV, JSON, XML, and Excel formats using tools designed for specific format pairs. No account is required for these utilities.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
   alternates: {

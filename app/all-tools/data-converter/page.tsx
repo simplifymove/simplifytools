@@ -50,7 +50,7 @@ export default function DataToolsPage() {
           >
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free Data Tools for CSV, JSON, XML & Excel</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert and transform CSV, JSON, XML, Excel, and other data formats securely online.
+              Convert and transform CSV, JSON, XML, Excel, and other supported data formats online.
             </p>
           </motion.div>
         </div>
@@ -157,19 +157,19 @@ export default function DataToolsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Format-Specific Tools</h3>
                 <p className="text-gray-700 text-sm">Choose a specific source-and-target pair so parsing rules match the formats you are working with.</p>
               </div>
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
-                <p className="text-gray-700 text-sm">Works directly in your browser. Use data converter tools on Windows, Mac, iPhone, Android, and any device with internet. No software downloads or complex setup required.</p>
+                <p className="text-gray-700 text-sm">Open the tools through a modern web browser without installing separate conversion software. Browser and device behavior can vary by file type, size, and selected tool.</p>
               </div>
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Instant Results</h3>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Processing Time Varies</h3>
                 <p className="text-gray-700 text-sm">Conversion time depends on input size and structure. Inspect the result before replacing a source dataset.</p>
               </div>
               <div className="bg-gradient-to-br from-teal-50 to-green-100 p-6 rounded-lg border border-teal-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Server-Side Processing</h3>
                 <p className="text-gray-700 text-sm">Input is sent over HTTPS to the conversion service. Remove credentials and sensitive records before submitting data.</p>
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function DataToolsPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Check the Structure After Conversion</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              It's simple and intuitive. Select the tool you need from our collection—try <Link href="/all-tools/data/csv-to-json" className="text-teal-600 font-medium hover:underline">CSV to JSON</Link>, <Link href="/all-tools/data/excel-to-csv" className="text-teal-600 font-medium hover:underline">Excel to CSV</Link>, or any other format pair. Upload your file or paste your data, then choose your desired output format. Our tools automatically process your input and generate results instantly. Download your file or copy the output to clipboard. No signup, no registration, no learning curve—just fast, secure format transformation in seconds.
+              Select the format-pair tool you need—for example, <Link href="/all-tools/data/csv-to-json" className="text-teal-600 font-medium hover:underline">CSV to JSON</Link> or <Link href="/all-tools/data/excel-to-csv" className="text-teal-600 font-medium hover:underline">Excel to CSV</Link>. Provide the supported input, start the conversion, and use the available download or copy option when processing finishes. Check headers, field types, delimiters, empty values, and nested structures before relying on the converted data.
             </p>
           </motion.div>
         </div>
@@ -235,7 +235,7 @@ export default function DataToolsPage() {
             name: 'Do I need to sign up to use the data converter?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'No signup required! Our free data converter works instantly without registration, login, or account creation. Simply select your conversion tool, upload or paste your data, and get results immediately. No personal information needed.'
+              text: 'The data conversion utilities do not require account creation. Select a supported tool, provide its required input, and start processing. Processing time depends on the input and selected conversion.'
             }
           },
           {
@@ -249,14 +249,14 @@ export default function DataToolsPage() {
             name: 'Can I use the data converter on mobile?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. All data conversion tools work on iOS, Android, tablets, and mobile browsers. No app installation required. Simply visit SimplifyConvert from your mobile device and start converting data formats instantly.'
+              text: 'The tools are web-based and can be opened from modern desktop and mobile browsers. Practical support can vary by browser, device resources, file size, and the selected conversion.'
             }
           },
           {
             name: 'What file sizes can the converter handle?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Our data converter tools can handle files up to 100MB depending on the format and your internet connection. Large files may take longer to process, but our tools handle them efficiently without losing data quality.'
+              text: 'The current file-upload workflow applies a 100 MB client-side limit. Individual conversions may have additional practical limits, and larger or more complex files can take longer to process. Review the generated data because format conversion can change how structures, types, or formatting are represented.'
             }
           }
         ]}
