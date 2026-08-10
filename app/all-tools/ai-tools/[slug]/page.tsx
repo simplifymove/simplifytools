@@ -213,6 +213,61 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
       },
     ],
   },
+  'ai-humanizer': {
+    introduction: 'The AI Humanizer rewrites stiff or formulaic text so it reads more naturally while keeping the main idea intact. Use it as an editing aid for drafts that need better rhythm, clearer wording, or a more appropriate voice. Humanized wording does not guarantee that AI-detection systems will classify the text differently.',
+    useCases: ['Make an AI-assisted draft sound less repetitive or mechanical', 'Adjust awkward wording before publishing or sharing', 'Improve sentence rhythm while preserving the main message', 'Create a more natural starting point for further human editing'],
+    examples: [
+      {
+        label: 'Formal draft to natural wording',
+        input: 'It is important to note that the implementation of this feature provides users with an enhanced level of convenience.',
+        output: 'This feature makes the experience more convenient for users.',
+      },
+    ],
+  },
+  'article-rewriter': {
+    introduction: 'The Article Rewriter creates a fresh version of an existing article while preserving its central subject and useful information. It can help change structure, tone, or phrasing, but rewritten material should still be checked for factual accuracy, attribution, and originality.',
+    useCases: ['Refresh an older article without starting from a blank page', 'Adapt an article for a different audience or tone', 'Improve repetitive or awkward sections in a draft', 'Restructure your own material while keeping its main points'],
+    examples: [
+      {
+        label: 'Article refresh',
+        input: 'An existing article explaining practical ways small businesses can reduce unnecessary operating costs.',
+        output: 'A reorganized draft covering the same core topic with clearer sections, updated phrasing, and a more direct introduction.',
+      },
+    ],
+  },
+  'blog-post-rewriter': {
+    introduction: 'The Blog Post Rewriter helps revise an existing blog draft by changing wording, organization, and flow while retaining the intended topic. It is useful for refreshing your own content, but important facts, links, examples, and claims should be reviewed before the revised post is published.',
+    useCases: ['Refresh an older blog post that feels dated or repetitive', 'Rewrite a draft for a different reader or brand voice', 'Improve the flow between blog sections', 'Create an alternative version of your own source material for editorial review'],
+    examples: [
+      {
+        label: 'Blog draft refresh',
+        input: 'A previous blog post covering five practical tips for improving remote team communication.',
+        output: 'A revised post with a clearer opening, reorganized tips, smoother transitions, and wording ready for further editorial review.',
+      },
+    ],
+  },
+  'content-paraphraser': {
+    introduction: 'The Content Paraphraser expresses existing text with different wording while aiming to preserve the original meaning. It can help clarify your own drafts or explore alternative phrasing, but paraphrasing does not remove the need to credit sources or follow copyright and academic integrity requirements.',
+    useCases: ['Explore alternative wording for your own draft', 'Simplify a passage that feels unnecessarily complicated', 'Reduce repetition across nearby sentences', 'Rephrase notes before adding your own analysis and context'],
+    examples: [
+      {
+        label: 'Clearer paraphrase',
+        input: 'Regular communication enables project teams to identify potential problems before those problems become difficult to resolve.',
+        output: 'Frequent communication helps project teams spot issues early, before they become harder to fix.',
+      },
+    ],
+  },
+  'tone-of-voice': {
+    introduction: 'The Tone of Voice Converter rewrites text to better match a selected communication style, such as professional, friendly, concise, or persuasive. It changes presentation rather than underlying facts, so the revised version should still be checked for meaning, audience fit, and accuracy.',
+    useCases: ['Make a customer message sound warmer and more approachable', 'Turn casual wording into a more professional business message', 'Adjust marketing copy for a particular audience', 'Compare different ways to express the same information'],
+    examples: [
+      {
+        label: 'Casual to professional',
+        input: 'Hey, just checking if you got the files I sent yesterday.',
+        output: 'Hello, I wanted to confirm that you received the files I sent yesterday.',
+      },
+    ],
+  },
 };
 
 interface PageProps {
