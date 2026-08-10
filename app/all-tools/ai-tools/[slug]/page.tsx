@@ -549,6 +549,62 @@ const topToolSeoContent: Record<string, ToolSeoContent> = {
     ],
   },
 
+
+  'brainstorm-ideas': {
+    introduction: 'The Brainstorm Ideas tool generates a collection of possible ideas from the topic and style you provide. Suggestions can help start exploration, but feasibility, effort, impact, originality, and suitability depend on your circumstances and should be evaluated separately.',
+    useCases: ['Explore possible directions for a project or topic', 'Generate practical or unconventional ideas for further evaluation', 'Create starting points for team brainstorming', 'Compare several possibilities before choosing what to develop'],
+    examples: [
+      {
+        label: 'Product-feature brainstorming',
+        input: 'Topic: Ways a small appointment-booking app could reduce missed appointments. Style: Practical.',
+        output: 'A set of possible feature ideas with brief descriptions and estimated effort or impact indicators that can be reviewed against actual user needs and technical constraints.',
+      },
+    ],
+  },
+  'business-name-generator': {
+    introduction: 'The Business Name Generator suggests possible names from the business description and style you provide. Generated names are ideas only; trademark rights, company-name registration, domain availability, social handles, cultural meaning, and other legal or commercial considerations are not checked automatically.',
+    useCases: ['Explore possible names for a new business or project', 'Generate naming directions from a supplied business description', 'Compare modern, classic, creative, or playful naming styles', 'Create a shortlist for further trademark and availability research'],
+    examples: [
+      {
+        label: 'Business-name ideas',
+        input: 'Business: A software service that helps small teams organize project notes. Style: Modern.',
+        output: 'A list of possible business-name ideas with different naming approaches, ready for independent trademark, registration, domain, and brand research.',
+      },
+    ],
+  },
+  'movie-script-generator': {
+    introduction: 'The Movie Script Generator creates a screenplay-scene draft from the selected genre and scene description. It can provide scene headings, action, dialogue, and character cues as a starting point, but formatting conventions, continuity, originality, tone, and production suitability should be reviewed and revised.',
+    useCases: ['Turn a scene idea into an initial screenplay-style draft', 'Explore dialogue between characters in a supplied situation', 'Develop an alternative direction for a fictional scene', 'Create material for further screenplay editing and formatting'],
+    examples: [
+      {
+        label: 'Thriller scene draft',
+        input: 'Genre: Thriller. Scene: Two coworkers remain in an office after a power failure and discover that an important file has disappeared.',
+        output: 'A screenplay-style scene draft with a scene heading, action description, character dialogue, and tension that can be revised for continuity, voice, and formatting.',
+      },
+    ],
+  },
+  'song-lyric-generator': {
+    introduction: 'The Song Lyric Generator creates a lyric draft from a topic and optional genre. It can suggest verses, a chorus, a bridge, and possible hooks, but generated material should be reviewed for originality, consistency, suitability, and any similarities to existing songs before publication, recording, or commercial use.',
+    useCases: ['Develop a lyric draft from a song topic or story', 'Explore verse and chorus ideas in a selected genre', 'Generate a possible hook for further rewriting', 'Create a starting structure for an original songwriting project'],
+    examples: [
+      {
+        label: 'Songwriting draft',
+        input: 'Topic: Reconnecting with an old friend after many years. Genre: Pop.',
+        output: 'A lyric draft organized into verses, chorus, and bridge, providing a starting point for rewriting, melody development, and originality review.',
+      },
+    ],
+  },
+  'text-expander': {
+    introduction: 'The Text Expander develops short notes or text into a longer draft based on the selected target length. It can add context, examples, supporting explanation, and structure, but generated additions may introduce assumptions or unsupported details and should be checked against the original meaning and available facts.',
+    useCases: ['Develop brief notes into a fuller first draft', 'Add explanatory context around an existing idea', 'Explore examples that could support a short passage', 'Create a longer version for further fact-checking and editing'],
+    examples: [
+      {
+        label: 'Expand project notes',
+        input: 'Short text: Weekly status updates should focus on blockers, decisions, and next actions. Target: Medium.',
+        output: 'A longer draft explaining each part of the status update with additional context and examples that can be checked and edited before use.',
+      },
+    ],
+  },
 };
 
 interface PageProps {

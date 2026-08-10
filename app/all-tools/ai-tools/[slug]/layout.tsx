@@ -58,62 +58,62 @@ const toolSEODatabase: Record<string, {
   },
   'paragraph-writer': {
     title: 'Paragraph Writer - AI Paragraph Generator & Creator',
-    description: 'Write well-structured paragraphs instantly. Our AI paragraph generator helps you create engaging, professional paragraphs for essays, articles, and more.',
+    description: 'Create a paragraph draft from a topic, tone, and length selection. Review the generated wording for accuracy, relevance, and fit before using it.',
     keywords: ['paragraph writer', 'paragraph generator', 'AI paragraph creator', 'write paragraphs', 'essay paragraphs']
   },
   'content-improver': {
     title: 'Content Improver - Enhance & Polish Your Writing',
-    description: 'Instantly improve your content quality. Our AI-powered content enhancer refines clarity, tone, and readability while preserving your original meaning.',
+    description: 'Rewrite supplied text to improve clarity, tone, and readability while aiming to preserve the original meaning. Review the result for unintended changes.',
     keywords: ['content improver', 'text enhancer', 'writing improvement', 'content quality', 'text polish']
   },
   'content-summarizer': {
     title: 'Content Summarizer - Condensed Text & Key Points',
-    description: 'Quickly summarize long content into concise summaries. Perfect for articles, documents, and research papers. AI-powered summarization tool.',
+    description: 'Create a shorter summary from supplied text while preserving the main points where possible. Review the result for omitted context, factual accuracy, and important details.',
     keywords: ['summarizer', 'text summarization', 'content summary', 'AI summarizer', 'condense text']
   },
   'grammar-fixer': {
     title: 'Grammar Fixer - Fix Grammar & Punctuation Errors',
-    description: 'Automatically fix grammar, punctuation, and spelling mistakes. Improve your writing with our AI grammar checker and correction tool.',
+    description: 'Review supplied text for possible grammar, punctuation, and spelling corrections. Check suggested changes before using the revised version.',
     keywords: ['grammar fixer', 'grammar checker', 'spell checker', 'punctuation fixer', 'grammar correction']
   },
   'translate': {
     title: 'AI Text Translator - Translate Between Languages',
-    description: 'Translate text between 100+ languages instantly. Fast, accurate AI-powered translation tool with support for multiple language pairs.',
+    description: 'Translate supplied text using the available language options. Translation quality can vary by language, context, terminology, and source wording.',
     keywords: ['translator', 'AI translator', 'language translator', 'text translation', 'translate text']
   },
   'blog-post-generator': {
     title: 'Blog Post Generator - Create Blog Posts with AI',
-    description: 'Generate complete blog posts instantly with AI. Create SEO-optimized, engaging blog content for your website in minutes.',
+    description: 'Create a blog-post draft from a topic and available settings. Verify facts, sources, claims, links, and other publishable details before use.',
     keywords: ['blog generator', 'blog post creator', 'blog writer AI', 'article generator', 'blog content']
   },
   'faq-generator': {
     title: 'FAQ Generator - Create FAQs & Q&A Content',
-    description: 'Generate comprehensive FAQ sections automatically. Perfect for product pages, help centers, and customer support documentation.',
+    description: 'Generate FAQ question-and-answer drafts from a topic or supplied content. Review each answer for accuracy, completeness, and suitability before publishing.',
     keywords: ['FAQ generator', 'FAQ creator', 'Q&A generator', 'question and answer', 'FAQ content']
   },
   'article-writer': {
     title: 'Article Writer - AI Article Generation Tool',
-    description: 'Write professional articles effortlessly. Our AI article generator helps you create well-researched, engaging articles for blogs and publications.',
+    description: 'Create an article draft from a topic, audience, and article type. Verify facts, quotations, dates, sources, and other publishable details before use.',
     keywords: ['article writer', 'article generator', 'AI writer', 'article creation', 'content writing']
   },
   'article-rewriter': {
     title: 'Article Rewriter - Rewrite & Rephrase Articles',
-    description: 'Rewrite existing articles with fresh perspective. Our AI rewriter maintains meaning while creating unique variations of your content.',
+    description: 'Rewrite an existing article with alternative wording and structure while aiming to preserve its main subject. Review the result for factual accuracy, attribution, originality, and unintended changes.',
     keywords: ['article rewriter', 'rewrite tool', 'rewrite article', 'rephrase', 'content rewriter']
   },
   'email-writer': {
     title: 'Email Writer - Professional Email Generator',
-    description: 'Write professional, persuasive emails instantly. Generate effective emails for any situation - marketing, support, sales, and more.',
+    description: 'Create an email draft from the supplied purpose and context. Personalize the wording and verify names, claims, offers, links, and other details before sending.',
     keywords: ['email writer', 'email generator', 'professional email', 'email templates', 'email copy']
   },
   'essay-writer': {
     title: 'Essay Writer - AI Essay Generator & Creator',
-    description: 'Generate complete essays with proper structure. Our essay writing tool helps you organize thoughts and create well-written essays.',
+    description: 'Create an essay draft from a topic and selected essay type. Review the structure, facts, sources, citations, assignment requirements, and academic integrity rules before use.',
     keywords: ['essay writer', 'essay generator', 'essay creator', 'write essays', 'essay help']
   },
   'story-generator': {
     title: 'Story Generator - Create Stories with AI',
-    description: 'Generate creative stories, plots, and narratives. Perfect for creative writing, fiction, and storytelling projects.',
+    description: 'Create a fictional story draft from a supplied idea and available story settings. Review the result for continuity, originality, tone, and audience suitability.',
     keywords: ['story generator', 'story writer', 'creative writing', 'fiction generator', 'story creator']
   },
   'product-description-writer': {
@@ -123,7 +123,7 @@ const toolSEODatabase: Record<string, {
   },
   'cover-letter-writer': {
     title: 'Cover Letter Writer - Professional Cover Letter Generator',
-    description: 'Create compelling cover letters for job applications. Generate personalized, professional cover letters that impress employers.',
+    description: 'Create a cover-letter draft from the role, company, and experience you provide. Verify achievements, qualifications, and employer details before submitting it.',
     keywords: ['cover letter writer', 'cover letter generator', 'job application', 'cover letter template', 'professional letter']
   },
   'sentence-rewriter': {
@@ -143,7 +143,7 @@ const toolSEODatabase: Record<string, {
   },
   'text-expander': {
     title: 'Text Expander - Expand & Lengthen Content',
-    description: 'Expand short text into longer, more detailed content. Perfect for creating more comprehensive articles and detailed explanations.',
+    description: 'Expand short text into a longer draft with added context, examples, and explanation. Review generated additions for accuracy and consistency with the original meaning.',
     keywords: ['text expander', 'content expander', 'expand text', 'lengthen content', 'text expansion']
   },
   'outline-generator': {
@@ -193,17 +193,17 @@ const toolSEODatabase: Record<string, {
   },
   'cold-email-writer': {
     title: 'Cold Email Writer - Generate Effective Cold Emails',
-    description: 'Write persuasive cold emails that get responses. Generate conversion-focused cold outreach messages for sales and marketing.',
+    description: 'Create a cold-outreach email draft from the recipient, purpose, and tone you provide. Personalize the message and verify claims, offers, links, and recipient details before sending.',
     keywords: ['cold email writer', 'cold email generator', 'outreach emails', 'sales email', 'email marketing']
   },
   'blog-rewriter': {
     title: 'Blog Post Rewriter - Rewrite & Refresh Blog Content',
-    description: 'Rewrite existing blog posts with fresh perspective. Update and improve old content to boost rankings and engagement.',
+    description: 'Rewrite an existing blog-post draft with alternative wording and organization while aiming to preserve its main topic. Review facts, links, claims, attribution, and meaning before publishing.',
     keywords: ['blog rewriter', 'rewrite blog posts', 'content update', 'blog refresh', 'content rewriting']
   },
   'poem-generator': {
     title: 'Poem Generator - Create Poems with AI',
-    description: 'Generate creative poems in various styles and formats. Perfect for creative expression, cards, and special occasions.',
+    description: 'Create a poetry draft from a topic and selected style. Review and revise generated wording when originality, poetic form, tone, or publication use matters.',
     keywords: ['poem generator', 'poetry generator', 'poem writer', 'create poems', 'AI poetry']
   },
   'tiktok-caption-generator': {
