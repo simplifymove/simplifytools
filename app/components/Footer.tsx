@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail } from 'lucide-react';
+import { Linkedin, Mail } from 'lucide-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -65,6 +65,16 @@ export function Footer() {
                   info@simplifyconvert.com
                 </a>
               </div>
+
+              <a
+                href="https://www.linkedin.com/company/simplifyconvert/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="SimplifyConvert on LinkedIn"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-700 text-gray-400 transition hover:border-blue-500 hover:bg-blue-500/10 hover:text-blue-400"
+              >
+                <Linkedin size={18} aria-hidden="true" />
+              </a>
             </div>
           </div>
 
