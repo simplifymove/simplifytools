@@ -717,7 +717,8 @@ export default function AIWriteToolPage({ params }: PageProps) {
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <div className="flex-1">
       {/* Animated Gradient Header */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 overflow-hidden py-7 md:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-gradient-to-r from-blue-600 to-cyan-700 overflow-hidden py-7 md:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -749,6 +750,7 @@ export default function AIWriteToolPage({ params }: PageProps) {
             </div>
           </div>
         </motion.div>
+        </div>
       </div>
 
       {/* Main Content */}
