@@ -12,108 +12,365 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Configure deployment
+      - name: Validate source
         run: |
-          # Setup SSH
+          set -euo pipefail
+          npm ci
+          npx tsc --noEmit --pretty false
+          git diff --check
+
+      - name: Create Git deployment bundle
+        run: |
+          set -euo pipefail
+
+          git branch -f ci-deploy-release "$GITHUB_SHA"
+
+          git bundle create \
+            /tmp/simplifyconvert-release.bundle \
+            ci-deploy-release
+
+          git bundle verify /tmp/simplifyconvert-release.bundle
+
+          echo "Release: $GITHUB_SHA"
+          ls -lh /tmp/simplifyconvert-release.bundle
+
+      - name: Configure SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+
           mkdir -p ~/.ssh
-          
-          # Store SSH key
-          cat > ~/.ssh/deploy_key << 'EOF'
-          ${{ secrets.VPS_SSH_KEY }}
-          EOF
+
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          
-          # Add host to known hosts
-          echo "🔐 Configuring SSH..."
-          ssh-keyscan -p 22 75.119.155.15 >> ~/.ssh/known_hosts 2>/dev/null || true
-          
-          # Test connectivity
-          echo "🧪 Testing SSH connectivity..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-            root@75.119.155.15 "echo 'SSH connection successful'" || { echo "❌ SSH connection failed"; exit 1; }
+
+          ssh-keyscan -p 22 75.119.155.15 \
+            >> ~/.ssh/known_hosts 2>/dev/null
+
+          ssh \
+            -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=10 \
+            deploy@75.119.155.15 \
+            'test "$(whoami)" = "deploy" && echo "SSH connection successful"'
+
+      - name: Verify VPS state
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            deploy@75.119.155.15 '
+              set -euo pipefail
+
+              cd /var/www/simplifyconvertapp
+
+              if [ -n "$(git status --porcelain)" ]; then
+                echo "ERROR: VPS working tree is not clean."
+                git status --short
+                exit 1
+              fi
+
+              pm2 describe simplifyconvertapp >/dev/null
+              pm2 describe simplifyconvert-worker >/dev/null
+
+              echo "VPS pre-deploy check passed."
+              git log -1 --oneline
+            '
+
+      - name: Upload Git bundle
+        run: |
+          set -euo pipefail
+
+          scp \
+            -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            /tmp/simplifyconvert-release.bundle \
+            deploy@75.119.155.15:/tmp/simplifyconvert-release.bundle
 
       - name: Deploy application
+        env:
+          RELEASE_SHA: ${{ github.sha }}
         run: |
-          echo "🚀 Starting deployment..."
-          
-          # Kill old npm processes and free port 3000
-          echo "🛑 Stopping old processes..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
-            "pkill -9 -f 'npm start' || true; sleep 1" || true
-          
-          # Pull latest code
-          echo "📥 Pulling latest code..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
-            "cd /var/www/simplifyconvertapp && git pull origin main --quiet" || { echo "❌ Git pull failed"; exit 1; }
-          
-          # Install dependencies
-          echo "📦 Installing dependencies..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
-            "cd /var/www/simplifyconvertapp && npm ci --silent" || { echo "❌ npm ci failed"; exit 1; }
-          
-          # Provision the Python Playwright package and its matching Chromium
-          # revision in an application-local cache. Version markers and an
-          # executable check keep this idempotent across ordinary deployments.
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            deploy@75.119.155.15 \
+            "RELEASE_SHA='$RELEASE_SHA' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          APP_DIR=/var/www/simplifyconvertapp
+          BUNDLE=/tmp/simplifyconvert-release.bundle
+
+          PREVIOUS_SHA=""
+          RELEASE_SWITCHED=0
+          DEPLOYMENT_COMPLETE=0
+
+          cleanup() {
+            rm -f "$BUNDLE"
+          }
+
+          rollback() {
+            exit_code=$?
+            trap - EXIT
+
+            if [ "$exit_code" -eq 0 ] || [ "$DEPLOYMENT_COMPLETE" -eq 1 ]; then
+              cleanup
+              exit "$exit_code"
+            fi
+
+            echo "ERROR: deployment failed with exit code $exit_code."
+
+            if [ "$RELEASE_SWITCHED" -ne 1 ]; then
+              echo "Release was not switched; rollback is not required."
+              cleanup
+              exit "$exit_code"
+            fi
+
+            if [ -z "$PREVIOUS_SHA" ]; then
+              echo "Rollback unavailable: previous production commit was not captured."
+              cleanup
+              exit "$exit_code"
+            fi
+
+            echo "Rolling back repository to previous production commit: $PREVIOUS_SHA"
+
+            set +e
+
+            cd "$APP_DIR"
+            git reset --hard "$PREVIOUS_SHA"
+            rollback_git_code=$?
+
+            if [ "$rollback_git_code" -ne 0 ]; then
+              echo "ERROR: rollback Git reset failed."
+              cleanup
+              exit "$exit_code"
+            fi
+
+            echo "Reinstalling dependencies for previous release..."
+            npm ci
+            rollback_npm_code=$?
+
+            if [ "$rollback_npm_code" -ne 0 ]; then
+              echo "ERROR: rollback npm ci failed."
+              cleanup
+              exit "$exit_code"
+            fi
+
+            echo "Rebuilding previous release..."
+            npm run build
+            rollback_build_code=$?
+
+            if [ "$rollback_build_code" -ne 0 ]; then
+              echo "ERROR: rollback build failed."
+              cleanup
+              exit "$exit_code"
+            fi
+
+            test -f .next/BUILD_ID &&
+            test -f .next/build-manifest.json &&
+            test -d .next/server
+            rollback_artifact_code=$?
+
+            if [ "$rollback_artifact_code" -ne 0 ]; then
+              echo "ERROR: rollback build artifacts are incomplete."
+              cleanup
+              exit "$exit_code"
+            fi
+
+            echo "Restarting web process on previous release..."
+            pm2 restart simplifyconvertapp
+            rollback_pm2_code=$?
+
+            if [ "$rollback_pm2_code" -ne 0 ]; then
+              echo "ERROR: rollback web restart failed."
+              cleanup
+              exit "$exit_code"
+            fi
+
+            sleep 8
+
+            if pm2 describe simplifyconvertapp | grep -q online; then
+              echo "Rollback completed. Web process is online at $PREVIOUS_SHA."
+            else
+              echo "ERROR: rollback completed but web process is not online."
+            fi
+
+            cleanup
+            exit "$exit_code"
+          }
+
+          trap rollback EXIT
+
+          cd "$APP_DIR"
+
+          PREVIOUS_SHA="$(git rev-parse HEAD)"
+          echo "Previous production commit: $PREVIOUS_SHA"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "ERROR: working tree became dirty before deployment."
+            git status --short
+            exit 1
+          fi
+
+          echo "Fetching release from uploaded Git bundle..."
+
+          git fetch \
+            "$BUNDLE" \
+            ci-deploy-release
+
+          git switch main
+          git reset --hard FETCH_HEAD
+          RELEASE_SWITCHED=1
+
+          if [ "$(git rev-parse HEAD)" != "$RELEASE_SHA" ]; then
+            echo "ERROR: deployed Git commit does not match GitHub release."
+            exit 1
+          fi
+
+          echo "Now deploying:"
+          git log -1 --oneline
+
+          echo "Installing Node dependencies..."
+          npm ci
+
           echo "Provisioning URL-to-PDF browser runtime..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 '
-            set -eu
-            APP_DIR=/var/www/simplifyconvertapp
-            PYTHON_BIN="$APP_DIR/venv/bin/python"
-            BROWSER_DIR="$APP_DIR/.playwright-browsers"
-            PLAYWRIGHT_VERSION=$(sed -n "s/^playwright==//p" "$APP_DIR/requirements-vps.txt")
-            test -n "$PLAYWRIGHT_VERSION"
-            BROWSER_MARKER="$BROWSER_DIR/.playwright-version"
-            DEPS_MARKER="$BROWSER_DIR/.system-deps-$PLAYWRIGHT_VERSION"
 
-            INSTALLED_VERSION=$("$PYTHON_BIN" -c "import importlib.metadata; print(importlib.metadata.version(\"playwright\"))" 2>/dev/null || true)
-            if [ "$INSTALLED_VERSION" != "$PLAYWRIGHT_VERSION" ]; then
-              "$PYTHON_BIN" -m pip install --disable-pip-version-check "playwright==$PLAYWRIGHT_VERSION"
-            fi
+          PYTHON_BIN="$APP_DIR/venv/bin/python"
+          BROWSER_DIR="$APP_DIR/.playwright-browsers"
+          PLAYWRIGHT_VERSION="$(
+            sed -n 's/^playwright==//p' requirements-vps.txt
+          )"
 
-            mkdir -p "$BROWSER_DIR"
-            if [ ! -f "$DEPS_MARKER" ]; then
-              PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" "$PYTHON_BIN" -m playwright install-deps chromium
-              touch "$DEPS_MARKER"
-            fi
+          test -n "$PLAYWRIGHT_VERSION"
+          test -x "$PYTHON_BIN"
 
-            INSTALLED_MARKER=$(cat "$BROWSER_MARKER" 2>/dev/null || true)
-            BROWSER_EXECUTABLE=$(PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" "$PYTHON_BIN" -c "from playwright.sync_api import sync_playwright; p = sync_playwright().start(); print(p.chromium.executable_path); p.stop()")
-            if [ "$INSTALLED_MARKER" != "$PLAYWRIGHT_VERSION" ] || [ ! -x "$BROWSER_EXECUTABLE" ]; then
-              PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" "$PYTHON_BIN" -m playwright install chromium
-              printf "%s\n" "$PLAYWRIGHT_VERSION" > "$BROWSER_MARKER"
-              chmod -R a+rX "$BROWSER_DIR"
-            fi
+          INSTALLED_VERSION="$(
+            "$PYTHON_BIN" -c \
+              'import importlib.metadata; print(importlib.metadata.version("playwright"))' \
+              2>/dev/null || true
+          )"
 
-            BROWSER_EXECUTABLE=$(PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" "$PYTHON_BIN" -c "from playwright.sync_api import sync_playwright; p = sync_playwright().start(); print(p.chromium.executable_path); p.stop()")
-            test -x "$BROWSER_EXECUTABLE"
-          ' || { echo "URL-to-PDF browser provisioning failed"; exit 1; }
+          if [ "$INSTALLED_VERSION" != "$PLAYWRIGHT_VERSION" ]; then
+            "$PYTHON_BIN" -m pip install \
+              --disable-pip-version-check \
+              "playwright==$PLAYWRIGHT_VERSION"
+          fi
 
-          # Build application
-          echo "🏗️ Building application..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
-            "cd /var/www/simplifyconvertapp && rm -rf .next .turbo && npm run build" || { echo "❌ Build failed"; exit 1; }
-          
-          # Verify build
-          echo "✅ Verifying build..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
-            "test -d /var/www/simplifyconvertapp/.next && echo '✅ Build verified successfully'" || { echo "❌ Build verification failed"; exit 1; }
-          
-          # Start the application
-          echo "🟢 Starting application..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
-            "cd /var/www/simplifyconvertapp && npm start > /tmp/app.log 2>&1 &" || { echo "⚠️ App start command sent"; }
-          
-          # Give app time to start
-          sleep 3
-          
-          # Verify app is running
-          echo "🔍 Verifying app is running..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@75.119.155.15 \
-            "curl -s http://localhost:3000 | head -1 | grep -q 'html' && echo '✅ App is responding!' || echo '⚠️ App may still be starting...'" || true
-          
-          echo "✨ Deployment completed successfully!"
+          mkdir -p "$BROWSER_DIR"
+
+          DEPS_MARKER="$BROWSER_DIR/.system-deps-$PLAYWRIGHT_VERSION"
+          BROWSER_MARKER="$BROWSER_DIR/.playwright-version"
+
+          if [ ! -f "$DEPS_MARKER" ]; then
+            sudo -n env \
+              PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" \
+              "$PYTHON_BIN" -m playwright install-deps chromium
+
+            touch "$DEPS_MARKER"
+          fi
+
+          INSTALLED_MARKER="$(
+            cat "$BROWSER_MARKER" 2>/dev/null || true
+          )"
+
+          if [ "$INSTALLED_MARKER" != "$PLAYWRIGHT_VERSION" ]; then
+            PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" \
+              "$PYTHON_BIN" -m playwright install chromium
+
+            printf '%s\n' "$PLAYWRIGHT_VERSION" \
+              > "$BROWSER_MARKER"
+
+            chmod -R a+rX "$BROWSER_DIR"
+          fi
+
+          BROWSER_EXECUTABLE="$(
+            PLAYWRIGHT_BROWSERS_PATH="$BROWSER_DIR" \
+              "$PYTHON_BIN" -c \
+              'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()'
+          )"
+
+          test -x "$BROWSER_EXECUTABLE"
+
+          echo "Building application..."
+
+          npm run build
+
+          test -f .next/BUILD_ID
+          test -f .next/build-manifest.json
+          test -d .next/server
+
+          echo "Build passed. Restarting web process only..."
+
+          pm2 restart simplifyconvertapp
+
+          sleep 8
+
+          pm2 describe simplifyconvertapp | grep -q online
+
+          echo "Checking health endpoint..."
+
+          HEALTH_CODE="$(
+            curl \
+              -sS \
+              --max-time 20 \
+              -o /tmp/simplify-health.json \
+              -w '%{http_code}' \
+              http://127.0.0.1:3000/api/health
+          )"
+
+          cat /tmp/simplify-health.json
+          echo
+          echo "Health HTTP: $HEALTH_CODE"
+
+          test "$HEALTH_CODE" = "200"
+
+          echo "Public smoke tests..."
+
+          for URL in \
+            https://simplifyconvert.com/ \
+            https://simplifyconvert.com/all-tools \
+            https://simplifyconvert.com/all-tools/ai-tools \
+            https://simplifyconvert.com/all-tools/pdf-tools
+          do
+            CODE="$(
+              curl \
+                -sS \
+                --max-time 20 \
+                -o /dev/null \
+                -w '%{http_code}' \
+                "$URL"
+            )"
+
+            echo "$CODE $URL"
+            test "$CODE" = "200"
+          done
+
+          echo "Final repository:"
+          git status --short
+          git log -1 --oneline
+
+          DEPLOYMENT_COMPLETE=1
+          echo "Deployment successful: $RELEASE_SHA"
+          REMOTE
+
+      - name: Deployment summary
+        run: |
+          echo "Deployment completed successfully."
+          echo "Commit: $GITHUB_SHA"
