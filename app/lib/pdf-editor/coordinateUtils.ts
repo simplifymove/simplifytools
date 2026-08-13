@@ -15,13 +15,10 @@ export function screenToPdfCoords(
   viewport: ViewportData,
   zoom: number = 1
 ): Point {
-  // Undo zoom
-  const unzoomedX = screenX / zoom;
-  const unzoomedY = screenY / zoom;
-  
-  // Undo offset
-  const pdfX = (unzoomedX - viewport.offsetX) / viewport.scale;
-  const pdfY = (unzoomedY - viewport.offsetY) / viewport.scale;
+  // viewport.scale already contains the PDF.js render zoom.
+  // Do not divide by zoom again or pointer coordinates are scaled twice.
+  const pdfX = (screenX - viewport.offsetX) / viewport.scale;
+  const pdfY = (screenY - viewport.offsetY) / viewport.scale;
   
   // Handle rotation if present
   if (viewport.rotation && viewport.rotation !== 0) {
@@ -57,9 +54,10 @@ export function pdfToScreenCoords(
     y = rotated.y;
   }
   
-  // Apply scale and offset
-  const screenX = (x * viewport.scale + viewport.offsetX) * zoom;
-  const screenY = (y * viewport.scale + viewport.offsetY) * zoom;
+  // viewport.scale already contains the PDF.js render zoom.
+  // Do not multiply by zoom again or edit overlays are scaled twice.
+  const screenX = x * viewport.scale + viewport.offsetX;
+  const screenY = y * viewport.scale + viewport.offsetY;
   
   return { x: screenX, y: screenY };
 }
