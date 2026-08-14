@@ -12,12 +12,15 @@ import {
   FileImage,
   FileSpreadsheet,
   FileText,
+  FileCheck,
+  Download,
   Image,
   PenTool,
   Presentation,
   Sparkles,
   TrendingUp,
   Video,
+  Volume2,
   Zap,
 } from 'lucide-react';
 import { Footer } from './components/Footer';
@@ -29,7 +32,7 @@ const categories = [
   {
     id: 'pdf',
     title: 'PDF Tools',
-    description: 'Merge, compress, convert, and edit PDF files.',
+    description: 'Explore tools',
     icon: FileText,
     accent: 'bg-violet-100 text-violet-700',
     link: '/all-tools/pdf-tools',
@@ -37,7 +40,7 @@ const categories = [
   {
     id: 'image',
     title: 'Image Tools',
-    description: 'Convert, resize, enhance, and optimize images.',
+    description: 'Explore tools',
     icon: Image,
     accent: 'bg-orange-100 text-orange-700',
     link: '/all-tools/image-tools',
@@ -45,15 +48,23 @@ const categories = [
   {
     id: 'video',
     title: 'Video Tools',
-    description: 'Convert, compress, trim, and process video.',
+    description: 'Explore tools',
     icon: Video,
     accent: 'bg-rose-100 text-rose-700',
     link: '/all-tools/video-tools',
   },
   {
+    id: 'ai-writing',
+    title: 'AI Writing Tools',
+    description: 'Explore tools',
+    icon: PenTool,
+    accent: 'bg-blue-100 text-blue-700',
+    link: '/all-tools/ai-tools',
+  },
+  {
     id: 'data',
     title: 'Data Tools',
-    description: 'Work with CSV, JSON, Excel, XML, and more.',
+    description: 'Explore tools',
     icon: Database,
     accent: 'bg-teal-100 text-teal-700',
     link: '/all-tools/data',
@@ -61,29 +72,44 @@ const categories = [
   {
     id: 'code',
     title: 'Code Tools',
-    description: 'Format, validate, minify, and transform code.',
+    description: 'Explore tools',
     icon: Code2,
     accent: 'bg-emerald-100 text-emerald-700',
     link: '/all-tools/code-tools',
   },
   {
-    id: 'ai-writing',
-    title: 'AI Writing Tools',
-    description: 'Draft, rewrite, summarize, and refine content.',
-    icon: PenTool,
-    accent: 'bg-blue-100 text-blue-700',
-    link: '/all-tools/ai-tools',
+    id: 'text-to-speech',
+    title: 'Text to Speech',
+    description: 'Explore tools',
+    icon: Volume2,
+    accent: 'bg-indigo-100 text-indigo-700',
+    link: '/all-tools/text-to-speech',
   },
   {
     id: 'financial',
     title: 'Financial Calculators',
-    description: 'Plan loans, investments, savings, and budgets.',
+    description: 'Explore tools',
     icon: TrendingUp,
-    accent: 'bg-amber-100 text-amber-800',
+    accent: 'bg-emerald-100 text-emerald-700',
     link: '/all-tools/financial-calculators',
   },
+  {
+    id: 'resume-maker',
+    title: 'Resume Maker',
+    description: 'Explore tools',
+    icon: FileCheck,
+    accent: 'bg-sky-100 text-sky-700',
+    link: '/all-tools/resume-maker',
+  },
+  {
+    id: 'downloader',
+    title: 'Save From Online',
+    description: 'Explore tools',
+    icon: Download,
+    accent: 'bg-green-100 text-green-700',
+    link: '/all-tools/save-from-online',
+  },
 ];
-
 const popularTasks = [
   {
     title: 'Remove Background',
@@ -205,116 +231,96 @@ export default function Home() {
       />
       <HomeHeader />
 
-      <section className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(251,146,60,0.14),transparent_38%),linear-gradient(to_bottom,#fffaf5,#ffffff)]">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[1.08fr_0.92fr] lg:px-8 lg:py-28">
-          <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1.5 text-sm font-semibold text-orange-700 shadow-sm">
-              <Sparkles aria-hidden="true" size={16} />
-              Hundreds of tools, one simple workspace
-            </div>
-            <h1 className="max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.10),transparent_38%),linear-gradient(to_bottom,#fffaf5,#ffffff)]">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+          <div className="mx-auto max-w-4xl text-center">
+            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
               Free online tools to{' '}
               <span className="text-orange-600">convert, edit, and create files</span>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+
+            <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
               Convert, compress, edit, and create files directly in your browser. Explore free
               tools for PDFs, images, videos, data, code, and AI-powered documents, presentations,
               and spreadsheets.
             </p>
+          </div>
 
-            <div className="mt-8 max-w-2xl">
-              <SearchBox
-                placeholder="Search for a tool or task"
-                onSearch={(query) =>
-                  router.push(`/all-tools?search=${encodeURIComponent(query)}`)
-                }
-                variant="hero"
-                showSuggestions
-              />
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Try
-                </span>
-                {['Remove background', 'Merge PDF', 'JPG to PNG'].map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => navigateSearch(tag)}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-              <Link
-                href="/all-tools"
-                className="mt-6 inline-flex items-center gap-2 rounded-lg px-1 py-2 text-sm font-semibold text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-              >
-                Browse all tools
-                <ArrowRight aria-hidden="true" size={16} />
-              </Link>
-            </div>
+          <div className="mx-auto mt-9 max-w-3xl">
+            <SearchBox
+              placeholder="Search for a tool or task"
+              onSearch={(query) =>
+                router.push(`/all-tools?search=${encodeURIComponent(query)}`)
+              }
+              variant="hero"
+              showSuggestions
+            />
           </div>
 
           <div
-            className="relative mx-auto w-full max-w-xl"
-            aria-label="SimplifyConvert product overview"
+            className="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+            aria-label="Tool categories"
           >
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.35)] sm:p-7">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-5">
-                <div>
-                  <p className="text-sm font-semibold text-orange-600">Explore our tools</p>
-                  <p className="mt-1 text-xl font-bold text-slate-900">Everything you need in one place</p>
-                </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 text-orange-700">
-                  <Zap aria-hidden="true" size={22} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 py-5">
-                {categories.slice(0, 4).map((category) => {
-                  const Icon = category.icon;
-                  return (
-                    <Link
-                      key={category.id}
-                      href={category.link}
-                      className="group rounded-2xl border border-slate-100 bg-slate-50 p-3.5 transition hover:border-orange-200 hover:bg-orange-50/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+            {categories.map((category) => {
+              const Icon = category.icon;
+
+              return (
+                <Link
+                  key={category.id}
+                  href={category.link}
+                  className="group rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${category.accent}`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${category.accent}`}
-                        >
-                          <Icon aria-hidden="true" size={18} />
-                        </span>
+                      <Icon aria-hidden="true" size={17} />
+                    </span>
 
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-slate-800 transition group-hover:text-orange-700">
-                            {category.title}
-                          </p>
-                          <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-slate-500">
-                            {category.description}
-                          </p>
-                        </div>
+                    <p className="text-sm font-bold leading-5 text-slate-800 transition group-hover:text-orange-700">
+                      {category.title}
+                    </p>
+                  </div>
 
-                        <ArrowRight
-                          aria-hidden="true"
-                          className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-orange-600"
-                          size={14}
-                        />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-              <div className="rounded-2xl bg-gradient-to-r from-slate-950 via-blue-950 to-cyan-900 p-4 text-white">
-                <div className="flex items-center gap-3">
-                  <Sparkles aria-hidden="true" className="shrink-0 text-cyan-300" size={19} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold">Premium AI Studio</p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
+                  <p className="mt-3 text-xs font-medium text-slate-500">
+                    {category.description}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mx-auto mt-5 max-w-5xl">
+            <Link
+              href="/ai-studio"
+              className="group block overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 via-blue-950 to-cyan-900 p-5 text-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.65)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_55px_-25px_rgba(15,23,42,0.8)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 sm:p-6"
+            >
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-cyan-200">
+                    <Sparkles aria-hidden="true" size={21} />
+                  </span>
+
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-base font-bold sm:text-lg">
+                        Premium AI Studio
+                      </p>
+                      <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-100">
+                        Premium
+                      </span>
+                    </div>
+
+                    <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-300">
+                      Create presentations, documents, and spreadsheets from a simple idea with
+                      our guided AI workspace.
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
                       {['Presentation', 'Document', 'Spreadsheet'].map((format) => (
                         <span
                           key={format}
-                          className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-cyan-50"
+                          className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1 text-xs font-medium text-cyan-50"
                         >
                           {format}
                         </span>
@@ -322,12 +328,20 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+
+                <span className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-white">
+                  Explore AI Studio
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="transition group-hover:translate-x-1"
+                    size={17}
+                  />
+                </span>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
-
       <section aria-label="Product benefits" className="border-b border-slate-200 bg-white">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-px bg-slate-200 sm:grid-cols-2 lg:grid-cols-4">
           {trustItems.map((item) => (
