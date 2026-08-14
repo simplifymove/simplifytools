@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Footer } from '@/app/components/Footer';
 import { GUIDE_DISPLAY_DATE, GUIDE_PUBLISHED_DATE } from '@/app/blog/guides';
@@ -10,10 +11,22 @@ interface EditorialGuideProps {
   category: string;
   readTime: string;
   marker: string;
+  image?: string;
+  imageAlt?: string;
   children: ReactNode;
 }
 
-export function EditorialGuide({ slug, title, description, category, readTime, marker, children }: EditorialGuideProps) {
+export function EditorialGuide({
+  slug,
+  title,
+  description,
+  category,
+  readTime,
+  marker,
+  image,
+  imageAlt,
+  children,
+}: EditorialGuideProps) {
   const url = `https://simplifyconvert.com/blog/${slug}`;
   const schema = {
     '@context': 'https://schema.org',
@@ -25,6 +38,7 @@ export function EditorialGuide({ slug, title, description, category, readTime, m
     datePublished: GUIDE_PUBLISHED_DATE,
     author: { '@type': 'Organization', name: 'SimplifyConvert', url: 'https://simplifyconvert.com' },
     publisher: { '@type': 'Organization', name: 'SimplifyConvert', url: 'https://simplifyconvert.com' },
+    ...(image ? { image: `https://simplifyconvert.com${image}` } : {}),
   };
 
   return (
@@ -49,6 +63,19 @@ export function EditorialGuide({ slug, title, description, category, readTime, m
               <span>{readTime} read</span>
             </div>
           </header>
+
+          {image && (
+            <figure className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+              <Image
+                src={image}
+                alt={imageAlt || title}
+                width={1200}
+                height={630}
+                className="h-auto w-full"
+                priority
+              />
+            </figure>
+          )}
 
           <p className="sr-only">{marker}</p>
           <div className="editorial-copy mt-10 space-y-6 text-[1.0625rem] leading-8 text-gray-700">

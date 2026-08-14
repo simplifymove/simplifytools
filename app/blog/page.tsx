@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { ArrowRight, Calendar, FileText, Image, Video, Database } from 'lucide-react';
+import NextImage from 'next/image';
+import { ArrowRight, Calendar, FileText, ImageIcon, Video, Database, Wrench, Sparkles } from 'lucide-react';
 import { Footer } from '@/app/components/Footer';
 import { blogGuides, existingBlogGuide, GUIDE_DISPLAY_DATE } from './guides';
 
@@ -13,13 +14,17 @@ const categoryStyles: Record<string, string> = {
   Images: 'bg-orange-100 text-orange-800',
   Data: 'bg-teal-100 text-teal-800',
   Video: 'bg-pink-100 text-pink-800',
+  Platform: 'bg-blue-100 text-blue-800',
+  AI: 'bg-violet-100 text-violet-800',
 };
 
 const categoryIcons = {
   PDF: FileText,
-  Images: Image,
+  Images: ImageIcon,
   Data: Database,
   Video: Video,
+  Platform: Wrench,
+  AI: Sparkles,
 };
 
 export default function BlogPage() {
@@ -46,14 +51,14 @@ export default function BlogPage() {
 
         <section aria-labelledby="all-guides" className="mt-16">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
-            <div><h2 id="all-guides" className="text-3xl font-bold text-gray-950">All guides</h2><p className="mt-2 text-gray-600">Six published articles; every card opens a complete guide.</p></div>
+            <div><h2 id="all-guides" className="text-3xl font-bold text-gray-950">All guides</h2><p className="mt-2 text-gray-600">Practical guides covering file conversion, editing, compression, data workflows and AI-assisted creation.</p></div>
             <span className="text-sm font-semibold text-gray-600">{posts.length} articles</span>
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => {
               const Icon = categoryIcons[post.category];
               return (
-                <article key={post.slug} className="flex flex-col rounded-2xl border-2 border-gray-200 bg-white p-6 transition hover:border-orange-300 hover:shadow-lg">
+                <article key={post.slug} className="flex flex-col overflow-hidden rounded-2xl border-2 border-gray-200 bg-white transition hover:border-orange-300 hover:shadow-lg">{'image' in post && post.image ? <div className="relative aspect-[16/9] w-full overflow-hidden border-b border-gray-100 bg-gray-50"><NextImage src={post.image} alt={post.imageAlt} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" /></div> : null}<div className="flex grow flex-col p-6">
                   <div className="flex items-center justify-between gap-3">
                     <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${categoryStyles[post.category]}`}><Icon size={14} aria-hidden="true" />{post.category}</span>
                     <span className="text-xs text-gray-500">{post.readTime} read</span>
@@ -64,6 +69,7 @@ export default function BlogPage() {
                   <Link href={`/blog/${post.slug}`} className="mt-5 inline-flex items-center gap-2 rounded-sm font-semibold text-orange-700 hover:text-orange-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600">
                     Read {post.category.toLowerCase()} guide <ArrowRight size={16} aria-hidden="true" />
                   </Link>
+                  </div>
                 </article>
               );
             })}
