@@ -136,7 +136,7 @@ export default function Sidebar({
   return (
     <div
       ref={sidebarRef}
-      className="w-56 bg-gray-800 border-r border-gray-700 flex flex-col overflow-hidden"
+      className="w-48 bg-gray-800 border-r border-gray-700 flex flex-col overflow-hidden"
     >
       {/* Thumbnails Section */}
       <div className="flex-1 overflow-y-auto border-b border-gray-700 p-3">

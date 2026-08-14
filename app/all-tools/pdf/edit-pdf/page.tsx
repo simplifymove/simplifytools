@@ -82,7 +82,7 @@ export default function EditPdfPage() {
 
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
-                <span className="text-2xl">✏️</span>
+                <span className="text-2xl">✏</span>
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
@@ -175,8 +175,10 @@ export default function EditPdfPage() {
               </div>
 
               {/* PDF Editor */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden h-screen">
-                <PdfEditor file={file} />
+              <div className="relative left-1/2 w-screen -translate-x-1/2 px-2 md:px-4">
+                <div className="h-[calc(100vh-1rem)] min-h-[720px] overflow-hidden border-y border-gray-200 bg-white shadow-xl md:rounded-xl md:border">
+                  <PdfEditor file={file} />
+                </div>
               </div>
             </div>
           )}

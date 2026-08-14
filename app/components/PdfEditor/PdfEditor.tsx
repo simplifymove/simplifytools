@@ -4,20 +4,18 @@ import React, { useCallback, useEffect, useRef, useState, lazy, Suspense } from 
 import { PdfEdit, PdfEditorState } from '@/app/types/pdf-editor';
 import { EditHistory } from '@/app/lib/pdf-editor/editHistory';
 import Toolbar from './Toolbar';
-import PDFCanvas from './PDFCanvas';
+import PDFCanvas from './PDFCanvasActive';
 import Sidebar from './Sidebar';
 import PropertiesPanel from './PropertiesPanel';
+import ToolSettingsPanel from './ToolSettingsPanel';
 import MobileToolMenu, { MobileSheet } from './MobileMenu';
 import type { ExtractedText } from '@/app/lib/pdf-editor/textExtraction';
 import { extractTextFromPdf } from '@/app/lib/pdf-editor/textExtraction';
 
 // Lazy load tool components for better performance
-const TextTool = lazy(() => import('./tools/TextTool'));
 const HighlightTool = lazy(() => import('./tools/HighlightTool'));
 const ShapeTool = lazy(() => import('./tools/ShapeTool'));
 const DrawingTool = lazy(() => import('./tools/DrawingTool'));
-const ImageTool = lazy(() => import('./tools/ImageTool'));
-const SignatureTool = lazy(() => import('./tools/SignatureTool'));
 const ExportModal = lazy(() => import('./ExportModal'));
 
 // Loading fallback component
@@ -215,6 +213,69 @@ export default function PdfEditor({ file, onSave }: Props) {
     setState((prev) => ({ ...prev, zoom: Math.max(0.5, prev.zoom - 0.2) }));
   }, []);
 
+  const createImageEdit = useCallback(
+    (data: string) => {
+      const now = Date.now();
+
+      const imageEdit: PdfEdit = {
+        id: `edit-${now}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'image',
+        pageNumber: state.currentPage,
+        x: 50,
+        y: 50,
+        width: 200,
+        height: 200,
+        zIndex: 1000,
+        opacity: 1,
+        imageData: data,
+        preserveAspectRatio: true,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      addEdit(imageEdit);
+      setCurrentImageData(data);
+
+      setState((prev) => ({
+        ...prev,
+        activeTool: 'select',
+        selectedEditId: imageEdit.id,
+      }));
+    },
+    [addEdit, state.currentPage]
+  );
+
+  const createSignatureEdit = useCallback(
+    (data: string) => {
+      const now = Date.now();
+
+      const signatureEdit: PdfEdit = {
+        id: `edit-${now}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'signature',
+        pageNumber: state.currentPage,
+        x: 50,
+        y: 50,
+        width: 200,
+        height: 80,
+        zIndex: 1000,
+        opacity: 1,
+        imageData: data,
+        preserveAspectRatio: true,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      addEdit(signatureEdit);
+      setCurrentImageData(data);
+
+      setState((prev) => ({
+        ...prev,
+        activeTool: 'select',
+        selectedEditId: signatureEdit.id,
+      }));
+    },
+    [addEdit, state.currentPage]
+  );
   // Save
   const handleSave = useCallback(async () => {
     setShowExportModal(true);
@@ -335,7 +396,7 @@ export default function PdfEditor({ file, onSave }: Props) {
     : undefined;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900">
+    <div className="flex h-[calc(100vh-1rem)] min-h-[720px] w-full flex-col overflow-hidden bg-gray-900">
       {/* Toolbar */}
       <Toolbar
         currentPage={state.currentPage}
@@ -350,7 +411,16 @@ export default function PdfEditor({ file, onSave }: Props) {
         onZoomOut={handleZoomOut}
         onPrevPage={handlePrevPage}
         onNextPage={handleNextPage}
-        onToolSelect={(tool: any) => setState((prev) => ({ ...prev, activeTool: tool }))}
+        onToolSelect={(tool: any) =>
+          setState((prev) => ({
+            ...prev,
+            activeTool: tool,
+            selectedEditId:
+              tool === 'select'
+                ? prev.selectedEditId
+                : undefined,
+          }))
+        }
         onSave={handleSave}
         onExtractText={handleExtractText}
         isExtractingText={isExtractingText}
@@ -359,7 +429,7 @@ export default function PdfEditor({ file, onSave }: Props) {
       />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Sidebar (hidden on mobile) */}
         <div className="hidden md:block">
           <Sidebar
@@ -377,7 +447,7 @@ export default function PdfEditor({ file, onSave }: Props) {
         </div>
 
         {/* PDF Canvas */}
-        <div className="flex-1 relative">
+        <main className="relative min-w-0 flex-1 overflow-hidden bg-gray-950">
           <PDFCanvas
             pdfDoc={pdfDocRef.current}
             currentPage={state.currentPage}
@@ -397,6 +467,12 @@ export default function PdfEditor({ file, onSave }: Props) {
             onSelectEdit={(id) => setState((prev) => ({ ...prev, selectedEditId: id }))}
             onUpdateEdit={updateEdit}
             onAddEdit={addEdit}
+            onToolChange={(tool: string) =>
+              setState((prev) => ({
+                ...prev,
+                activeTool: tool as PdfEditorState['activeTool'],
+              }))
+            }
             onDeleteEdit={deleteEdit}
             onTextClick={setEditingTextId}
             onTextEditChange={handleTextEdit}
@@ -412,19 +488,42 @@ export default function PdfEditor({ file, onSave }: Props) {
               )}
             </div>
           )}
-        </div>
+        </main>
 
-        {/* Properties Panel (hidden on mobile) */}
-        <div className="hidden md:block">
-          <PropertiesPanel
-            edit={selectedEdit}
-            onUpdate={(updates) => {
-              if (state.selectedEditId) {
-                updateEdit(state.selectedEditId, updates);
-              }
-            }}
-          />
-        </div>
+        {/* Persistent desktop inspector */}
+        <aside className="hidden w-64 shrink-0 xl:block">
+          {selectedEdit ? (
+            <PropertiesPanel
+              edit={selectedEdit}
+              onUpdate={(updates) => {
+                if (state.selectedEditId) {
+                  updateEdit(state.selectedEditId, updates);
+                }
+              }}
+              onDelete={() => {
+                if (state.selectedEditId) {
+                  deleteEdit(state.selectedEditId);
+                }
+              }}
+            />
+          ) : (
+            <ToolSettingsPanel
+              activeTool={state.activeTool}
+              shapeType={shapeType}
+              drawingType={drawingType}
+              strokeColor={strokeColor}
+              strokeWidth={strokeWidth}
+              highlightColor={highlightColor}
+              onShapeTypeChange={setShapeType}
+              onDrawingTypeChange={setDrawingType}
+              onStrokeColorChange={setStrokeColor}
+              onStrokeWidthChange={setStrokeWidth}
+              onHighlightColorChange={setHighlightColor}
+              onImageCreate={createImageEdit}
+              onSignatureCreate={createSignatureEdit}
+            />
+          )}
+        </aside>
       </div>
 
       {/* Mobile Tool Menu */}
@@ -452,6 +551,11 @@ export default function PdfEditor({ file, onSave }: Props) {
             onUpdate={(updates) => {
               if (state.selectedEditId) {
                 updateEdit(state.selectedEditId, updates);
+              }
+            }}
+            onDelete={() => {
+              if (state.selectedEditId) {
+                deleteEdit(state.selectedEditId);
               }
             }}
           />
@@ -488,124 +592,7 @@ export default function PdfEditor({ file, onSave }: Props) {
         />
       </MobileSheet>
 
-      {/* Tool-Specific UI Components */}
-      <Suspense fallback={<ToolLoadingFallback />}>
-        <TextTool
-          edit={selectedEdit}
-          isActive={state.activeTool === 'text'}
-          onUpdate={(updates) => {
-            if (state.selectedEditId) {
-              updateEdit(state.selectedEditId, updates);
-            }
-          }}
-        />
-      </Suspense>
-
-      <Suspense fallback={<ToolLoadingFallback />}>
-        <HighlightTool
-          isActive={state.activeTool === 'highlight'}
-          currentColor={highlightColor}
-          onColorChange={setHighlightColor}
-        />
-      </Suspense>
-
-      <Suspense fallback={<ToolLoadingFallback />}>
-        <ShapeTool
-          isActive={state.activeTool === 'shape'}
-          edit={selectedEdit}
-          onUpdate={(updates) => {
-            if (state.selectedEditId) {
-              updateEdit(state.selectedEditId, updates);
-            }
-          }}
-          onShapeTypeChange={setShapeType}
-          currentShapeType={shapeType}
-          currentStrokeColor={strokeColor}
-          currentStrokeWidth={strokeWidth}
-          onStrokeColorChange={setStrokeColor}
-          onStrokeWidthChange={setStrokeWidth}
-        />
-      </Suspense>
-
-      <Suspense fallback={<ToolLoadingFallback />}>
-        <DrawingTool
-          isActive={state.activeTool === 'drawing'}
-          currentDrawingType={drawingType}
-          currentStrokeColor={strokeColor}
-          currentStrokeWidth={strokeWidth}
-          onDrawingTypeChange={setDrawingType}
-          onStrokeColorChange={setStrokeColor}
-          onStrokeWidthChange={setStrokeWidth}
-        />
-      </Suspense>
-
-      <Suspense fallback={<ToolLoadingFallback />}>
-        <ImageTool
-          isActive={state.activeTool === 'image'}
-          edit={selectedEdit}
-          onImageUpload={(data) => {
-            // Automatically create and place image edit on canvas
-            const imageEdit: PdfEdit = {
-              id: `edit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              type: 'image',
-              pageNumber: state.currentPage,
-              x: 50,
-              y: 50,
-              width: 200,
-              height: 200,
-              zIndex: 1000,
-              opacity: 1,
-              imageData: data,
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-            };
-            addEdit(imageEdit);
-            setCurrentImageData(data);
-          }}
-          onUpdate={(updates) => {
-            if (state.selectedEditId) {
-              updateEdit(state.selectedEditId, updates);
-            }
-          }}
-          onClose={() => {
-            setState(prev => ({ ...prev, selectedEditId: undefined }));
-          }}
-        />
-      </Suspense>
-
-      <Suspense fallback={<ToolLoadingFallback />}>
-        <SignatureTool
-          isActive={state.activeTool === 'signature'}
-          edit={selectedEdit}
-          onSignatureCreate={(data) => {
-            // Automatically create and place signature edit on canvas
-            const signatureEdit: PdfEdit = {
-              id: `edit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              type: 'signature',
-              pageNumber: state.currentPage,
-              x: 50,
-              y: 50,
-              width: 200,
-              height: 80,
-              zIndex: 1000,
-              opacity: 1,
-              imageData: data,
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-            };
-            addEdit(signatureEdit);
-            setCurrentImageData(data);
-          }}
-          onUpdate={(updates) => {
-            if (state.selectedEditId) {
-              updateEdit(state.selectedEditId, updates);
-            }
-          }}
-          onClose={() => {
-            setState(prev => ({ ...prev, selectedEditId: undefined }));
-          }}
-        />
-      </Suspense>
+      {/* V2 tool controls are rendered in ToolSettingsPanel */}
 
       {/* Export Modal */}
       <Suspense fallback={<ToolLoadingFallback />}>
