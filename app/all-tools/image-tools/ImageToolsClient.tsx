@@ -224,7 +224,7 @@ export default function ImageToolsPage() {
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Choose the Image Operation That Matches the Goal</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">Choose the Right Image Operation</h3>
+                    <h3 className="font-semibold text-gray-900 text-lg">Resize, Compress, or Convert?</h3>
                     <p className="text-gray-700">Resize changes pixel dimensions, compression targets file size, and conversion changes the format. Each choice affects quality differently.</p>
                   </div>
                   <div className="space-y-3">
@@ -288,14 +288,14 @@ export default function ImageToolsPage() {
               >
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Use the Image Tools</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Choose the operation first, upload a supported image, and set dimensions, format, quality, or other available options. Download the result and compare it with the original at full size. Keep the original until you have checked sharpness, transparency, color, orientation, and file size.
+                  Each image tool has its own supported formats and available settings. Check the tool's instructions before uploading, and review the downloaded result before using it.
                 </p>
                 <div className="space-y-4">
                   <div className="flex gap-4">
                     <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Upload Your Image</h3>
-                      <p className="text-gray-700">Click on the tool and upload your image file. Supports JPG, PNG, WebP, BMP, GIF, and more.</p>
+                      <p className="text-gray-700">Open the image tool you need and upload a supported file. Accepted formats vary by tool, so check the available options before uploading.</p>
                     </div>
                   </div>
                   <div className="flex gap-4">

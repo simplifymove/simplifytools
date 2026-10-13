@@ -217,9 +217,9 @@ export default function Home() {
               <span className="text-orange-600">convert, edit, and create files</span>
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-              Convert, compress, edit, and create files directly in your browser. Explore free
-              tools for PDFs, images, videos, data, code, and AI-powered documents, presentations,
-              and spreadsheets.
+              Convert, compress, edit, and create files with easy-to-use online tools. Explore
+              free PDF, image, video, data, and code utilities, plus Premium AI Studio for
+              presentations, documents, and spreadsheets.
             </p>
 
             <div className="mt-8 max-w-2xl">
@@ -720,13 +720,9 @@ export default function Home() {
           </h2>
           <div className="mx-auto mt-5 max-w-3xl space-y-4 text-base leading-8 text-slate-600">
             <p>
-              You don&apos;t need to know the technical name of every conversion before getting
-              started. Browse the available categories or search for the task you want to complete.
-            </p>
-            <p>
-              Whether you need to prepare an image for a website, change a document format, extract
-              audio from a video, reorganize data or try an AI-assisted workflow, start with the tool
-              designed for that specific job.
+              Browse tools by category or search for a specific task. Whether you&apos;re converting
+              a PDF, editing an image, processing video, or working with data, choose the tool
+              that fits your needs.
             </p>
           </div>
           <Link

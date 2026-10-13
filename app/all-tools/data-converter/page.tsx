@@ -50,7 +50,7 @@ export default function DataToolsPage() {
           >
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free Data Tools for CSV, JSON, XML & Excel</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert and transform CSV, JSON, XML, Excel, and other supported data formats online.
+              Convert CSV, JSON, XML, Excel, and other supported data formats using tools for specific input and output formats. Check the converted result for changes to headers, values, and structure.
             </p>
           </motion.div>
         </div>
@@ -177,7 +177,7 @@ export default function DataToolsPage() {
             {/* Popular Data Tools - Internal Linking Section */}
             <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Data Tools</h2>
-              <p className="text-gray-700 mb-6">Quick access to our most-used data format conversion tools:</p>
+              <p className="text-gray-700 mb-6">Quick access to common data format conversion tools:</p>
               <div className="space-y-3">
                 <Link href="/all-tools/data/csv-to-json" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-teal-500 hover:bg-teal-50 transition">
                   <span className="text-teal-600 font-semibold">→</span>
@@ -228,7 +228,7 @@ export default function DataToolsPage() {
             name: 'What data formats can I convert?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Our free data converter supports CSV, JSON, XML, Excel, YAML, and more formats. You can transform data between any of these formats using our specialized conversion tools. Each tool is optimized for specific format pairs.'
+              text: 'Available formats include CSV, JSON, XML, Excel, and other formats supported by individual tools. Each converter handles a specific input and output format pair, so check the selected tool for supported conversions.'
             }
           },
           {

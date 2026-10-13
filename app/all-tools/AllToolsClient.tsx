@@ -285,27 +285,7 @@ function AllToolsGuidance() {
             </div>
           </section>
 
-          <section className="border-t border-slate-200 pt-8" aria-labelledby="keep-original-heading">
-            <h2 id="keep-original-heading" className="text-2xl font-bold text-slate-950">
-              Keep the Original When It Matters
-            </h2>
-            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
-              <p>
-                For files that are difficult to replace, keep the source until you have opened and
-                reviewed the processed result.
-              </p>
-              <p>
-                This is particularly useful for business documents, spreadsheets with formulas,
-                high-resolution images, long videos and structured datasets. A technically
-                successful conversion can still produce an output that is unsuitable for a
-                particular workflow.
-              </p>
-              <p>
-                Use the search and category filters above to find the operation you need, then check
-                the individual tool page for its supported formats and limitations.
-              </p>
-            </div>
-          </section>
+
         </div>
       </div>
     </section>
@@ -415,8 +395,8 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             {categoryParam 
-              ? `Discover our powerful collection of ${categoryParam.toLowerCase()} tools`
-              : 'Browse our complete collection of free online tools'
+              ? `Browse available tools in this category or search for a specific task.`
+              : 'Explore PDF, image, video, data, code, and AI tools. Search for a specific task or browse by category.'
             }
           </motion.p>
         </div>
