@@ -25,6 +25,59 @@ import {
 import { generateText, generateTextMock, analyzeText } from '@/app/lib/ai-client';
 import { detectAI } from '@/app/lib/ai-detector';
 
+import Redis from 'ioredis';
+
+const AI_WRITE_RATE_LIMIT = 30;
+const AI_WRITE_WINDOW_SECONDS = 60;
+
+let aiWriteRedis: Redis | null = null;
+
+function getAiWriteRedis(): Redis {
+  if (!aiWriteRedis) {
+    aiWriteRedis = new Redis({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: Number(process.env.REDIS_PORT || 6379),
+      lazyConnect: true,
+      enableOfflineQueue: false,
+      maxRetriesPerRequest: 1,
+      connectTimeout: 2000,
+      retryStrategy: (times: number) => Math.min(times * 200, 2000),
+    });
+
+    aiWriteRedis.on('error', (error) => {
+      console.error('[AI Write] Redis connection error:', error.message);
+    });
+  }
+
+  return aiWriteRedis;
+}
+
+async function enforceAiWriteRateLimit(): Promise<{
+  allowed: boolean;
+  retryAfter: number;
+}> {
+  const redis = getAiWriteRedis();
+
+  if (redis.status === 'wait') {
+    await redis.connect();
+  }
+
+  const result = await redis.eval(
+    `local count = redis.call('INCR', KEYS[1])
+     if count == 1 then
+       redis.call('EXPIRE', KEYS[1], ARGV[1])
+     end
+     return {count, redis.call('TTL', KEYS[1])}`,
+    1,
+    'rate-limit:ai-write:global',
+    AI_WRITE_WINDOW_SECONDS
+  ) as [number, number];
+
+  return {
+    allowed: Number(result[0]) <= AI_WRITE_RATE_LIMIT,
+    retryAfter: Math.max(1, Number(result[1])),
+  };
+}
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -84,6 +137,28 @@ export async function POST(request: NextRequest) {
     // Build user prompt from tool config
     const userPrompt = tool.buildPrompt(inputs);
 
+    let rateLimit;
+
+    try {
+      rateLimit = await enforceAiWriteRateLimit();
+    } catch (error) {
+      console.error('[AI Write] Rate limiter unavailable:', error);
+      return NextResponse.json(
+        { ok: false, error: 'AI generation is temporarily unavailable.' },
+        { status: 503 }
+      );
+    }
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { ok: false, error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateLimit.retryAfter) },
+        }
+      );
+    }
+
     // Call LLM (use mock if no API key)
     const hasApiKey = !!process.env.GROQ_API_KEY;
     const generateFn = hasApiKey ? generateText : generateTextMock;
@@ -112,7 +187,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
+        error: 'Unable to process this request right now.',
       },
       { status: 500 }
     );

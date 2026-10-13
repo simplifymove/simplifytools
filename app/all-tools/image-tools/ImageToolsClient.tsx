@@ -11,6 +11,137 @@ import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
+const IMAGE_TOOL_PRIORITY = [
+  // Highest-demand everyday image tools
+  'remove-bg',
+  'compress',
+  'resize',
+  'crop',
+  'upscale',
+  'jpg-png',
+  'png-jpg',
+  'webp-jpg',
+  'jpg-webp',
+  'transparent-bg',
+  'image-to-text',
+  'image-enhancer',
+  'profile-photo',
+  'remove-objects',
+  'remove-watermark',
+  'rotate',
+
+  // Common editing and cleanup
+  'cleanup',
+  'unblur',
+  'blur-bg',
+  'sharpen-image',
+  'blur-image',
+  'add-text',
+  'watermark-image',
+  'combine',
+  'collage',
+  'flip',
+  'mirror-image',
+  'round-image',
+  'add-border',
+  'add-images',
+  'splitter',
+  'bw',
+  'grayscale',
+  'colorize',
+  'brightness-contrast',
+  'hue-saturation',
+  'color-balance',
+  'white-balance',
+  'color-grader',
+  'add-opacity',
+  'metadata',
+  'translate-img',
+
+  // Popular format conversions
+  'webp-png',
+  'png-webp',
+  'heic-jpg',
+  'heic-png',
+  'jpg-avif',
+  'png-avif',
+  'webp-avif',
+  'heic-avif',
+  'png-svg',
+  'jpg-svg',
+  'pdf-jpg',
+  'pdf-to-text',
+  'gif-mp4',
+  'mp4-gif',
+  'jpg-gif',
+  'gif-jpg',
+  'gif-png',
+  'webp-gif',
+
+  // Professional / specialist format conversions
+  'tiff-jpg',
+  'tiff-png',
+  'png-tiff',
+  'jpg-tif',
+  'tiff-avif',
+  'tiff-svg',
+  'tiff-text',
+  'psd-jpg',
+  'psd-png',
+  'psd-svg',
+  'bmp-jpg',
+  'bmp-png',
+  'eps-jpg',
+  'eps-svg',
+  'png-eps',
+  'vsd-pdf',
+  'vsdx-pdf',
+  'vsdx-jpg',
+  'edit-png',
+
+  // Utility / creation tools
+  'chart-maker',
+  'font-awesome',
+  'reverse-img',
+
+  // Common creative effects
+  'pixelate-image',
+  'invert-colors',
+  'cartoon-effect',
+  'sketch-effect',
+  'vintage-filter',
+  'sepia-filter',
+  'vignette-effect',
+  'posterize',
+  'duotone-effect',
+  'glow-effect',
+  'neon-glow',
+  'oil-paint-effect',
+  'emboss-effect',
+  'motion-blur',
+  'glitch-effect',
+  'lens-flare',
+  'tilt-shift',
+
+  // Specialist effects
+  'chromatic-aberration',
+  'kaleidoscope',
+  'dream-effect',
+  'film-noir',
+  'sunburst',
+  'blur-zoom',
+  'vhs-effect',
+  'swirl-distortion',
+  'thermal-vision',
+  'mosaic-tile',
+  'solarize-effect',
+  'edge-detect',
+  'histogram-equalize',
+] as const;
+
+const IMAGE_TOOL_PRIORITY_INDEX = new Map(
+  IMAGE_TOOL_PRIORITY.map((id, index) => [id, index])
+);
 export default function ImageToolsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -43,7 +174,17 @@ export default function ImageToolsPage() {
       );
     }
 
-    return results;
+    return [...results].sort((a, b) => {
+      const aPriority =
+        IMAGE_TOOL_PRIORITY_INDEX.get(a.id as (typeof IMAGE_TOOL_PRIORITY)[number]) ??
+        Number.MAX_SAFE_INTEGER;
+
+      const bPriority =
+        IMAGE_TOOL_PRIORITY_INDEX.get(b.id as (typeof IMAGE_TOOL_PRIORITY)[number]) ??
+        Number.MAX_SAFE_INTEGER;
+
+      return aPriority - bPriority;
+    });
   }, [searchTerm, selectedCategory, allImageTools]);
 
   return (

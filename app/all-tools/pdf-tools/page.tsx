@@ -11,6 +11,68 @@ import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
+const PDF_TOOL_PRIORITY = [
+  'edit-pdf',
+  'merge-pdf',
+  'compress-pdf',
+  'split-pdf',
+  'pdf-to-word',
+  'word-to-pdf',
+  'pdf-to-jpg',
+  'jpg-to-pdf',
+  'esign-pdf',
+  'pdf-ocr',
+  'pdf-to-excel',
+  'pdf-to-powerpoint',
+  'powerpoint-to-pdf',
+  'pdf-to-png',
+  'png-to-pdf',
+  'rotate-pdf',
+  'rearrange-pdf',
+  'pdf-page-deleter',
+  'protect-pdf',
+  'unlock-pdf',
+  'add-watermark',
+  'add-numbers-to-pdf',
+  'annotate-pdf',
+  'add-text',
+  'create-pdf',
+  'extract-text-from-pdf',
+  'extract-images-pdf',
+  'extract-tables-from-pdf',
+  'pdf-to-text',
+  'pdf-translator',
+  'crop-pdf',
+  'pdf-enhance-scan',
+  'pdf-deskew',
+  'pdf-watermark-remover',
+  'images-to-pdf',
+  'url-to-pdf',
+  'pdf-to-html',
+  'pdf-to-csv',
+  'pdf-to-tiff',
+  'tiff-to-pdf',
+  'webp-to-pdf',
+  'heic-to-pdf',
+  'gif-to-pdf',
+  'eps-to-pdf',
+  'pdf-to-epub',
+  'epub-to-pdf',
+  'pdf-to-mobi',
+  'mobi-to-pdf',
+  'pdf-to-azw3',
+  'azw3-to-pdf',
+  'ms-outlook-to-pdf',
+  'pdf-to-rtf',
+  'pdf-to-docx',
+  'pdf-to-pptx',
+  'pdf-to-xlsx',
+] as const;
+
+const PDF_TOOL_PRIORITY_INDEX = new Map<string, number>(
+  PDF_TOOL_PRIORITY.map((id, index) => [id, index]),
+);
+
 function PdfToolsGuidance() {
   return (
     <section
@@ -316,7 +378,14 @@ export default function PdfToolsPage() {
       );
     }
 
-    return results;
+    return [...results].sort((a, b) => {
+      const aPriority =
+        PDF_TOOL_PRIORITY_INDEX.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+      const bPriority =
+        PDF_TOOL_PRIORITY_INDEX.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+
+      return aPriority - bPriority;
+    });
   }, [searchTerm, selectedCategory]);
 
   return (
@@ -380,11 +449,7 @@ export default function PdfToolsPage() {
               >
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free PDF Tools Online - Merge, Split & Compress</h1>
                 <p className="text-lg text-white/90 max-w-2xl mb-4">
-                  Professional free PDF tools for merging, splitting, compressing, converting, and editing PDF files. No signup or installation required.
-                </p>
-                {/* Keyword-rich intro paragraph */}
-                <p className="text-base text-white/85 max-w-3xl leading-relaxed">
-                  Use our free online PDF tools to merge, split, compress, and convert PDF files. No signup required.
+                  Browse PDF tools to merge documents, split pages, reduce file sizes, convert between formats, and make changes to existing PDFs. Select a tool below to see its supported formats and limits.
                 </p>
               </motion.div>
             </div>
@@ -467,7 +532,10 @@ export default function PdfToolsPage() {
                   animate={{ opacity: 1 }}
                   transition={{ staggerChildren: 0.05, delayChildren: 0.3 }}
                 >
-                  {filteredTools.map((tool) => (
+                  {filteredTools.map((tool) => {
+                    const isFeaturedEditor = tool.id === 'edit-pdf';
+
+                    return (
                     <motion.div
                       key={tool.id}
                       initial={false}
@@ -476,7 +544,11 @@ export default function PdfToolsPage() {
                     >
                       <Link href={`/all-tools/pdf/${tool.id}`}>
                         <motion.div
-                          className="h-full rounded-2xl bg-white border-2 border-gray-200 hover:border-gray-300 p-6 hover:shadow-xl transition-all group relative overflow-hidden"
+                          className={`h-full rounded-2xl border-2 p-6 hover:shadow-xl transition-all group relative overflow-hidden ${
+                            isFeaturedEditor
+                              ? 'bg-gradient-to-br from-orange-50 via-white to-orange-50 border-orange-400 hover:border-orange-500 shadow-lg shadow-orange-100/80'
+                              : 'bg-white border-gray-200 hover:border-gray-300'
+                          }`}
                           whileHover={{ y: -8 }}
                           transition={{ duration: 0.3 }}
                         >
@@ -487,22 +559,50 @@ export default function PdfToolsPage() {
                           />
 
                           <div className="relative z-10">
+                            {isFeaturedEditor && (
+                              <div className="absolute right-0 top-0">
+                                <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-orange-700 ring-1 ring-inset ring-orange-300">
+                                  Featured
+                                </span>
+                              </div>
+                            )}
+
                             {/* Icon */}
                             <motion.div
-                              className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center group-hover:from-purple-200 group-hover:to-purple-300 transition mb-4"
+                              className={`w-12 h-12 rounded-xl flex items-center justify-center transition mb-4 ${
+                                isFeaturedEditor
+                                  ? 'bg-gradient-to-br from-orange-100 to-orange-200 group-hover:from-orange-200 group-hover:to-orange-300'
+                                  : 'bg-gradient-to-br from-purple-100 to-purple-200 group-hover:from-purple-200 group-hover:to-purple-300'
+                              }`}
                               whileHover={{ scale: 1.2, rotate: 12 }}
                               title={tool.title}
                               role="img"
                               aria-label={`${tool.title} tool icon`}
                             >
-                              {tool.icon && <tool.icon className="w-6 h-6 text-purple-600" />}
+                              {tool.icon && (
+                                <tool.icon
+                                  className={`w-6 h-6 ${
+                                    isFeaturedEditor ? 'text-orange-600' : 'text-purple-600'
+                                  }`}
+                                />
+                              )}
                             </motion.div>
 
                             {/* Content */}
-                            <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition">{tool.title}</h3>
+                            <h3
+                              className={`font-semibold mb-2 line-clamp-2 transition ${
+                                isFeaturedEditor
+                                  ? 'text-gray-950 group-hover:text-orange-600'
+                                  : 'text-gray-900 group-hover:text-purple-600'
+                              }`}
+                            >
+                              {tool.title}
+                            </h3>
                             <p className="text-sm text-gray-600 line-clamp-2 mb-4">{tool.description}</p>
                             <motion.div
-                              className="flex items-center gap-1 text-purple-600 font-medium text-sm"
+                              className={`flex items-center gap-1 font-medium text-sm ${
+                                isFeaturedEditor ? 'text-orange-600' : 'text-purple-600'
+                              }`}
                               whileHover={{ gap: 8 }}
                             >
                               Open tool
@@ -512,7 +612,8 @@ export default function PdfToolsPage() {
                         </motion.div>
                       </Link>
                     </motion.div>
-                  ))}
+                    );
+                  })}
                 </motion.div>
               )}
             </div>

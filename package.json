@@ -56,6 +56,7 @@
     "bcrypt": "^6.0.0",
     "bullmq": "^5.76.10",
     "canvas": "^3.2.3",
+    "cheerio": "^1.2.0",
     "clean-css": "^5.3.3",
     "docx": "^8.5.0",
     "enhanced-resolve": "^5.20.1",

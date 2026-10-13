@@ -12,7 +12,7 @@ const rateLimitStore: Map<string, RateLimitEntry> = new Map();
 const CLEANUP_INTERVAL = 60 * 1000; // 1 minute
 
 // Cleanup old entries periodically
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of rateLimitStore.entries()) {
     if (entry.resetTime < now) {
@@ -20,6 +20,8 @@ setInterval(() => {
     }
   }
 }, CLEANUP_INTERVAL);
+
+cleanupTimer.unref();
 
 /**
  * Check rate limit for a user/API key

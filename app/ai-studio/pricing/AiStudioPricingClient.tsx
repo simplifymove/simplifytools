@@ -587,50 +587,14 @@ export function AiStudioPricingClient({
                 ))}
               </ul>
 
-              {!canStartCheckout ? (
-                sessionStatus === 'unauthenticated' ? (
-                  <Link
-                    href={signInHref}
-                    className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-                  >
-                    Sign in to buy credits
-                  </Link>
-                ) : (
-                  <div
-                    className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-slate-200 px-4 text-sm font-semibold text-slate-600"
-                    role="status"
-                  >
-                    Checking sign-in...
-                  </div>
-                )
-              ) : isPayPalPlan && paypalClientId ? (
-                <PayPalPlanButton
-                  plan={plan}
-                  clientId={paypalClientId}
-                  disabled={Boolean(loadingPlanId) && !isLoading}
-                  checkoutLock={paypalCheckoutLock}
-                  setLoadingPlanId={setLoadingPlanId}
-                  setCheckoutState={setCheckoutState}
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleBuyPlan(plan)}
-                  disabled={!canBuyPlan || Boolean(loadingPlanId)}
-                  aria-busy={isLoading}
-                  className={`mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold shadow-lg transition ${
-                    canBuyPlan
-                      ? 'bg-slate-950 text-white shadow-slate-950/20 hover:bg-slate-800 disabled:cursor-wait disabled:opacity-70'
-                      : 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none'
-                  }`}
-                >
-                  {isLoading
-                    ? 'Opening checkout...'
-                    : canBuyPlan
-                      ? 'Buy Now'
-                      : 'Unavailable'}
-                </button>
-              )}
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                className="mt-8 inline-flex h-12 w-full cursor-not-allowed items-center justify-center rounded-lg bg-slate-200 px-4 text-sm font-semibold text-slate-600"
+              >
+                Payments Temporarily Unavailable
+              </button>
             </article>
           );
         })}

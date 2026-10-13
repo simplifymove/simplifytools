@@ -1,3 +1,4 @@
+import { isAiStudioPaymentEnabled } from '@/lib/ai-studio/payment-availability';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
@@ -12,6 +13,13 @@ interface CreateAiStudioRazorpayOrderRequest {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isAiStudioPaymentEnabled()) {
+    return NextResponse.json(
+      { error: 'AI Studio payments are temporarily unavailable' },
+      { status: 503 },
+    );
+  }
+
   try {
     const session = await getServerSession(authOptions);
 

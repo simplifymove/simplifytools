@@ -205,11 +205,11 @@ export default function PricingPage() {
                 </li>
               </ul>
               <button
-                onClick={handleBuyNow}
-                disabled={loading}
-                className="w-full mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+                aria-disabled="true"
+                className="w-full mt-8 bg-gray-300 text-gray-600 px-6 py-3 rounded-lg font-semibold cursor-not-allowed"
               >
-                {loading ? "Opening checkout..." : "Continue to Checkout"}
+                Payments Temporarily Unavailable
               </button>
               <p className="text-xs text-gray-600 text-center mt-3">
                 Checkout depends on payment-service availability. Access is provisioned only after a completed payment is processed.

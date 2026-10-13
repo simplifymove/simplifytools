@@ -1,3 +1,4 @@
+import { isPaymentEnabled } from '@/lib/billing/payment-availability';
 /**
  * POST /api/payments/create-order
  * Creates a Razorpay order for subscription purchase
@@ -10,6 +11,13 @@ import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/billing/razorpay";
 
 export async function POST(request: NextRequest) {
+  if (!isPaymentEnabled()) {
+    return NextResponse.json(
+      { error: 'Payments are temporarily unavailable' },
+      { status: 503 },
+    );
+  }
+
   try {
     // Check authentication
     const session = await getServerSession(authOptions);

@@ -9,11 +9,11 @@ import {
   Combine,
   Database,
   Eraser,
-  Download,
-  FileCheck,
   FileImage,
   FileSpreadsheet,
   FileText,
+  FileCheck,
+  Download,
   Image,
   PenTool,
   Presentation,
@@ -110,7 +110,6 @@ const categories = [
     link: '/all-tools/save-from-online',
   },
 ];
-
 const popularTasks = [
   {
     title: 'Remove Background',
@@ -635,32 +634,31 @@ export default function Home() {
                 className="h-auto w-full max-w-md"
               />
             </div>
-
             <div>
-              <h2
-                id="how-it-works-heading"
-                className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
-              >
-                How SimplifyConvert Works
-              </h2>
-              <div className="mt-6 space-y-4 text-base leading-8 text-slate-600">
-                <p>
-                  Start by choosing the tool that matches your task. The page will show the type of
-                  input it accepts and any options available for that particular operation.
-                </p>
-                <p>
-                  After processing, supported tools provide an output that you can review or
-                  download. Because SimplifyConvert includes different types of tools, processing is
-                  not identical across the entire website. Some operations can happen in the browser,
-                  while file conversions, media processing and certain AI features may require
-                  server-side or provider-based processing.
-                </p>
-                <p>
-                  File-size limits, supported formats and processing requirements can also vary by
-                  tool. Check the information shown on the individual tool page when working with an
-                  important or unusually large file.
-                </p>
-              </div>
+            <h2
+              id="how-it-works-heading"
+              className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+            >
+              How SimplifyConvert Works
+            </h2>
+            <div className="mt-6 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                Start by choosing the tool that matches your task. The page will show the type of
+                input it accepts and any options available for that particular operation.
+              </p>
+              <p>
+                After processing, supported tools provide an output that you can review or
+                download. Because SimplifyConvert includes different types of tools, processing is
+                not identical across the entire website. Some operations can happen in the browser,
+                while file conversions, media processing and certain AI features may require
+                server-side or provider-based processing.
+              </p>
+              <p>
+                File-size limits, supported formats and processing requirements can also vary by
+                tool. Check the information shown on the individual tool page when working with an
+                important or unusually large file.
+              </p>
+            </div>
             </div>
           </div>
         </div>
