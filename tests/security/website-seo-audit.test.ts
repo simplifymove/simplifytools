@@ -3,9 +3,9 @@ import test from 'node:test';
 
 import {
   handleWebsiteSeoAuditRequest,
-} from '../../app/api/website-seo/audit/route';
+} from '../../app/api/website-seo/audit/handler';
 import { WebsiteSeoFetchError } from '../../lib/website-seo/safe-fetch';
-import type { WebsiteSeoAuditRouteDependencies } from '../../app/api/website-seo/audit/route';
+import type { WebsiteSeoAuditRouteDependencies } from '../../app/api/website-seo/audit/handler';
 
 type AuditRunner = NonNullable<WebsiteSeoAuditRouteDependencies['runAudit']>;
 type RateLimiter = NonNullable<WebsiteSeoAuditRouteDependencies['rateLimit']>;
