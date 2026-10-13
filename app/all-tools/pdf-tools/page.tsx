@@ -60,8 +60,11 @@ function PdfToolsGuidance() {
                 The destination format may represent those elements differently.
               </p>
               <p>
-                Because of this, complex layouts can change during conversion. Check tables,
-                columns, fonts, spacing and page breaks before relying on the converted file.
+                Converting a PDF to an editable format such as DOCX requires reconstructing
+                paragraphs, columns, tables and other document elements. Simple documents often
+                convert more predictably than multi-column layouts, forms, mathematical notation,
+                unusual fonts or scanned pages. Check formatting and content before relying on
+                the result; creating an output file does not guarantee an identical layout.
               </p>
             </div>
           </section>
@@ -186,31 +189,6 @@ function PdfToolsGuidance() {
               <p>
                 If small text or detailed graphics are important, inspect the result at normal
                 viewing size before discarding the source files.
-              </p>
-            </div>
-          </section>
-
-          <section className="border-t border-gray-200 pt-6" aria-labelledby="pdf-layout-change-heading">
-            <h2 id="pdf-layout-change-heading" className="text-2xl font-bold text-gray-900">
-              Why PDF Layout Can Change During Conversion
-            </h2>
-            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
-              <p>
-                A PDF describes how content should appear on a page, while formats such as DOCX are
-                designed around editable document structures.
-              </p>
-              <p>
-                Reconstructing one from the other can require the converter to interpret where
-                paragraphs, columns, tables and other elements belong.
-              </p>
-              <p>
-                Simple documents often translate more predictably than complex ones. Multi-column
-                layouts, unusual fonts, forms, mathematical notation, tightly positioned graphics
-                and scanned pages can require additional review.
-              </p>
-              <p>
-                A successful conversion therefore means that an output file was created; it does not
-                necessarily mean every visual or structural detail is identical to the source.
               </p>
             </div>
           </section>

@@ -240,9 +240,9 @@ export default function Home() {
             </h1>
 
             <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Convert, compress, edit, and create files directly in your browser. Explore free
-              tools for PDFs, images, videos, data, code, and AI-powered documents, presentations,
-              and spreadsheets.
+              Convert, compress, edit, and create files with easy-to-use online tools. Explore
+              free PDF, image, video, data, and code utilities, plus Premium AI Studio for
+              presentations, documents, and spreadsheets.
             </p>
           </div>
 
@@ -622,8 +622,19 @@ export default function Home() {
       </section>
 
       <section className="bg-slate-50 py-16 md:py-20" aria-labelledby="how-it-works-heading">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:p-10">
+            <div className="flex items-center justify-center">
+              <img
+                src="/images/how-simplifyconvert-works.webp"
+                alt="Illustration showing the SimplifyConvert file processing workflow"
+                width={1536}
+                height={1024}
+                loading="lazy"
+                className="h-auto w-full max-w-md"
+              />
+            </div>
+            <div>
             <h2
               id="how-it-works-heading"
               className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
@@ -647,6 +658,7 @@ export default function Home() {
                 tool. Check the information shown on the individual tool page when working with an
                 important or unusually large file.
               </p>
+            </div>
             </div>
           </div>
         </div>
@@ -721,13 +733,9 @@ export default function Home() {
           </h2>
           <div className="mx-auto mt-5 max-w-3xl space-y-4 text-base leading-8 text-slate-600">
             <p>
-              You don&apos;t need to know the technical name of every conversion before getting
-              started. Browse the available categories or search for the task you want to complete.
-            </p>
-            <p>
-              Whether you need to prepare an image for a website, change a document format, extract
-              audio from a video, reorganize data or try an AI-assisted workflow, start with the tool
-              designed for that specific job.
+              Browse tools by category or search for a specific task. Whether you&apos;re converting
+              a PDF, editing an image, processing video, or working with data, choose the tool
+              that fits your needs.
             </p>
           </div>
           <Link

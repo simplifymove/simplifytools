@@ -245,7 +245,7 @@ export default function AIWriteToolsPage() {
             name: 'Are all AI writing tools really free?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'The AI writing utilities in this category are separate from Premium AI Studio credits. Availability and rate limits can vary by tool and provider capacity.'
+              text: 'These AI writing utilities are separate from Premium AI Studio credits. Availability and rate limits can vary by tool and provider capacity; check the individual tool for its current access requirements.'
             }
           },
           {
@@ -328,10 +328,10 @@ export default function AIWriteToolsPage() {
             Ready to Try an AI Writing Tool?
           </h2>
           <p className="text-lg text-white/90 mb-2">
-            Choose any tool above and start generating professional content in seconds.
+            Choose a tool above to draft, rewrite, or summarize content with AI assistance. Review and edit the output before using it.
           </p>
           <p className="text-sm text-white/80">
-            💡 All tools use our shared AI engine for consistent, high-quality results
+            💡 AI-generated results may vary by task and input. Review the output for accuracy and relevance.
           </p>
         </div>
       </motion.div>
