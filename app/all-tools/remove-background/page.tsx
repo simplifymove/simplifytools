@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -466,65 +467,65 @@ export default function RemoveBackgroundPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 How accurate is the AI background removal?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Background removal works best when the subject is visually distinct from the background. Hair, fur, translucent areas, motion blur, and fine edges can be difficult to segment, so review the generated cutout before downloading.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Background removal works best when the subject is visually distinct from the background. Hair, fur, translucent areas, motion blur, and fine edges can be difficult to segment, so review the generated cutout before downloading.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What image formats are supported?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">The server accepts JPEG, PNG, and WebP images up to 20 MB. Images with clear lighting and stronger subject-background contrast usually give the segmentation model a clearer boundary.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The server accepts JPEG, PNG, and WebP images up to 20 MB. Images with clear lighting and stronger subject-background contrast usually give the segmentation model a clearer boundary.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I edit the result after download?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes! Downloaded PNG files with transparent backgrounds can be edited in any image editor like Photoshop, GIMP, or even Paint. You can add custom backgrounds or make further adjustments.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes! Downloaded PNG files with transparent backgrounds can be edited in any image editor like Photoshop, GIMP, or even Paint. You can add custom backgrounds or make further adjustments.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Are my images stored on your servers?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Processing happens on our servers for AI analysis. Uploaded images are used to perform the requested background-removal operation.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Processing happens on our servers for AI analysis. Uploaded images are used to perform the requested background-removal operation.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 How long does background removal take?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Processing time varies with image dimensions, complexity, selected mode, and current server workload. High Quality Mode can take longer than Standard mode. The page displays the measured processing time after the operation completes.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Processing time varies with image dimensions, complexity, selected mode, and current server workload. High Quality Mode can take longer than Standard mode. The page displays the measured processing time after the operation completes.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Do I need to sign up or pay to use this tool?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No signup is required to use the available background-removal controls.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>No signup is required to use the available background-removal controls.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* FAQ Schema */}

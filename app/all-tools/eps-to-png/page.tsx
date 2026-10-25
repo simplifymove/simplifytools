@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -269,24 +270,24 @@ export default function EpsToPngPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 EPS to PNG FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['Does the PNG remain a vector file?', 'No. PNG is a raster image format, so the EPS artwork is rendered into pixels during conversion.'],
                   ['Can PNG be opened in a web browser?', 'Yes. PNG is broadly supported by modern web browsers.'],
                   ['Should I keep my original EPS?', 'Yes, especially when you may need the original vector artwork for editing, scaling, or print workflows.'],
                   ['Does conversion add detail to the source artwork?', 'No. Conversion changes the representation and file format; it does not create new source detail.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -539,35 +540,35 @@ export default function CombineImagesPage() {
 
         {/* FAQ Section */}
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-          <div className="bg-white rounded-lg border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-4">
-              <details className="border-l-4 border-orange-500 pl-4 py-2">
-                <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-                <p className="text-gray-700 mt-2">Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The combined output is generated in PNG format.</p>
-              </details>
-              <details className="border-l-4 border-orange-500 pl-4 py-2">
-                <summary className="font-bold text-gray-800 cursor-pointer">How many images can I combine?</summary>
-                <p className="text-gray-700 mt-2">You can combine multiple images in one session. The practical limit depends on image dimensions, file sizes, and available browser memory.</p>
-              </details>
-              <details className="border-l-4 border-orange-500 pl-4 py-2">
-                <summary className="font-bold text-gray-800 cursor-pointer">Can I change the layout after uploading?</summary>
-                <p className="text-gray-700 mt-2">Yes. Switch between horizontal, vertical, and grid layouts and use the on-page preview to review the updated composition.</p>
-              </details>
-              <details className="border-l-4 border-orange-500 pl-4 py-2">
-                <summary className="font-bold text-gray-800 cursor-pointer">Is my data safe and private?</summary>
-                <p className="text-gray-700 mt-2">The image-combining operation is performed locally in your browser.</p>
-              </details>
-              <details className="border-l-4 border-orange-500 pl-4 py-2">
-                <summary className="font-bold text-gray-800 cursor-pointer">What size images does it support?</summary>
-                <p className="text-gray-700 mt-2">The practical image-size limit depends on your browser and available device memory. Very large images may need to be resized before combining.</p>
-              </details>
-              <details className="border-l-4 border-orange-500 pl-4 py-2">
-                <summary className="font-bold text-gray-800 cursor-pointer">Can I reorder images?</summary>
-                <p className="text-gray-700 mt-2">Currently, images are arranged in the order you upload them. You can remove an image using the delete button and re-upload it in a different position.</p>
-              </details>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQDisclosure>
+                <FAQQuestion>What image formats are supported?</FAQQuestion>
+                <FAQAnswer>Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The combined output is generated in PNG format.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>How many images can I combine?</FAQQuestion>
+                <FAQAnswer>You can combine multiple images in one session. The practical limit depends on image dimensions, file sizes, and available browser memory.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Can I change the layout after uploading?</FAQQuestion>
+                <FAQAnswer>Yes. Switch between horizontal, vertical, and grid layouts and use the on-page preview to review the updated composition.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Is my data safe and private?</FAQQuestion>
+                <FAQAnswer>The image-combining operation is performed locally in your browser.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>What size images does it support?</FAQQuestion>
+                <FAQAnswer>The practical image-size limit depends on your browser and available device memory. Very large images may need to be resized before combining.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Can I reorder images?</FAQQuestion>
+                <FAQAnswer>Currently, images are arranged in the order you upload them. You can remove an image using the delete button and re-upload it in a different position.</FAQAnswer>
+              </FAQDisclosure>
+            </FAQList>
+          </FAQPanel>
         </div>
 
         {/* Related Tools Section */}

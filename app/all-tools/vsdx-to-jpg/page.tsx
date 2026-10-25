@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -268,24 +269,24 @@ export default function VsdxToJpgPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 VSDX to JPG FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['Can I edit Visio shapes in the resulting JPG?', 'No. JPG is a flattened raster image and does not retain editable Visio shapes, connectors, or diagram structure.'],
                   ['Why create a JPG from a VSDX file?', 'A JPG is convenient when you need a broadly supported visual snapshot for sharing or inserting into other content.'],
                   ['Should I keep the original VSDX file?', 'Yes. Keep the source VSDX whenever you may need to modify the original diagram later.'],
                   ['Will every complex diagram look identical after conversion?', 'Rendering can depend on the source file, diagram complexity, fonts, and conversion environment, so reviewing the output is recommended.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">

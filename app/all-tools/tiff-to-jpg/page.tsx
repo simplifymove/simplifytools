@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -301,36 +302,36 @@ export default function TiffToJpgPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is TIFF format?</h3>
-              <p className="text-gray-700">TIFF (Tagged Image File Format) is a lossless image format commonly used for professional photography and scanning. It stores uncompressed or minimally compressed image data, resulting in large file sizes but excellent quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why is JPG better for web use?</h3>
-              <p className="text-gray-700">JPG uses lossy compression, which significantly reduces file size while maintaining acceptable image quality. This makes it ideal for web use where load times matter. TIFF files are much larger and impractical for online use.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will I lose quality converting TIFF to JPG?</h3>
-              <p className="text-gray-700">The quality setting controls JPEG compression. Higher settings generally retain more image detail but can create larger files; the visible difference depends on the source TIFF.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple TIFF files?</h3>
-              <p className="text-gray-700">Currently, our converter handles one file at a time. However, the conversion is very fast, so you can quickly process multiple files by uploading them sequentially.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What TIFF compression types are supported?</h3>
-              <p className="text-gray-700">Our converter supports all common TIFF compression types including uncompressed, LZW, and JPEG compression. Most TIFF files will convert without any issues.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-              <p className="text-gray-700">Your TIFF file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>What is TIFF format?</FAQStaticQuestion>
+              <FAQAnswer>TIFF (Tagged Image File Format) is a lossless image format commonly used for professional photography and scanning. It stores uncompressed or minimally compressed image data, resulting in large file sizes but excellent quality.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Why is JPG better for web use?</FAQStaticQuestion>
+              <FAQAnswer>JPG uses lossy compression, which significantly reduces file size while maintaining acceptable image quality. This makes it ideal for web use where load times matter. TIFF files are much larger and impractical for online use.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will I lose quality converting TIFF to JPG?</FAQStaticQuestion>
+              <FAQAnswer>The quality setting controls JPEG compression. Higher settings generally retain more image detail but can create larger files; the visible difference depends on the source TIFF.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I batch convert multiple TIFF files?</FAQStaticQuestion>
+              <FAQAnswer>Currently, our converter handles one file at a time. However, the conversion is very fast, so you can quickly process multiple files by uploading them sequentially.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>What TIFF compression types are supported?</FAQStaticQuestion>
+              <FAQAnswer>Our converter supports all common TIFF compression types including uncompressed, LZW, and JPEG compression. Most TIFF files will convert without any issues.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+              <FAQAnswer>Your TIFF file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -354,12 +355,12 @@ export default function VsdToPdfPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 VSD to PDF FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
+              <FAQList>
                 {[
                   [
                     'What does the VSD to PDF converter do?',
@@ -382,13 +383,13 @@ export default function VsdToPdfPage() {
                     'No. They are different Visio file formats. VSD is an older drawing format, while VSDX is a newer XML-based format.',
                   ],
                 ].map(([q, a]) => (
-                  <div key={q} className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-sm text-gray-600 leading-6">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

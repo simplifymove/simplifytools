@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -350,39 +351,39 @@ export default function PsdToJpgPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Will my PSD layers be preserved in the JPG?</h3>
-                  <p className="text-gray-600">No. JPG format doesn't support layers, so all layers in your PSD will be automatically flattened and merged into a single image. The final result shows all visible layers combined.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What if my PSD has transparency?</h3>
-                  <p className="text-gray-600">Transparent areas in your PSD will be converted to a white background in the JPG, since JPG format doesn't support transparency. If you need transparency, consider converting to PNG instead.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">How does quality affect the file size?</h3>
-                  <p className="text-gray-600">Higher quality percentages result in larger file sizes and better visual quality, while lower percentages create smaller files with more compression artifacts. Quality 85% is usually ideal for web use.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Can I convert back from JPG to PSD?</h3>
-                  <p className="text-gray-600">Once converted to JPG, you cannot recover the original layers. JPG is a lossy format. Always keep your original PSD file if you need to edit it later.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What about fonts and effects in my PSD?</h3>
-                  <p className="text-gray-600">All text, effects, and adjustments will be rendered and flattened into the image. However, font information will be lost since JPG stores only pixels, not editable text.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What's the maximum file size?</h3>
-                  <p className="text-gray-600">You can convert PSD files up to 500MB in size. Larger files may take longer to process, but the conversion quality remains unchanged.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Is the conversion process secure?</h3>
-                  <p className="text-gray-600">Files are uploaded to the conversion server and processed only as needed to create the JPG output.</p>
-                </div>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>Will my PSD layers be preserved in the JPG?</FAQStaticQuestion>
+                  <FAQAnswer>No. JPG format doesn't support layers, so all layers in your PSD will be automatically flattened and merged into a single image. The final result shows all visible layers combined.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What if my PSD has transparency?</FAQStaticQuestion>
+                  <FAQAnswer>Transparent areas in your PSD will be converted to a white background in the JPG, since JPG format doesn't support transparency. If you need transparency, consider converting to PNG instead.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>How does quality affect the file size?</FAQStaticQuestion>
+                  <FAQAnswer>Higher quality percentages result in larger file sizes and better visual quality, while lower percentages create smaller files with more compression artifacts. Quality 85% is usually ideal for web use.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Can I convert back from JPG to PSD?</FAQStaticQuestion>
+                  <FAQAnswer>Once converted to JPG, you cannot recover the original layers. JPG is a lossy format. Always keep your original PSD file if you need to edit it later.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What about fonts and effects in my PSD?</FAQStaticQuestion>
+                  <FAQAnswer>All text, effects, and adjustments will be rendered and flattened into the image. However, font information will be lost since JPG stores only pixels, not editable text.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What's the maximum file size?</FAQStaticQuestion>
+                  <FAQAnswer>You can convert PSD files up to 500MB in size. Larger files may take longer to process, but the conversion quality remains unchanged.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+                  <FAQAnswer>Files are uploaded to the conversion server and processed only as needed to create the JPG output.</FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </div>
       </main>

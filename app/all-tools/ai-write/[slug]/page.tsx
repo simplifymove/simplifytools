@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -562,9 +563,9 @@ export default function AIWriteToolPage() {
           </section>
 
           {/* FAQ Section */}
-          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6">
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
               {[
                 {
                   q: 'Should I treat generated content as original and ready to publish?',
@@ -591,13 +592,13 @@ export default function AIWriteToolPage() {
                   a: 'Provide detailed context, specific requirements, and clear examples. Better inputs lead to more useful AI suggestions that require less editing.'
                 }
               ].map((faq, idx) => (
-                <div key={idx} className="border-b border-gray-200 pb-6 last:border-0">
-                  <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
-                  <p className="text-gray-700">{faq.a}</p>
-                </div>
+                <FAQCard key={idx}>
+                  <FAQStaticQuestion>{faq.q}</FAQStaticQuestion>
+                  <FAQAnswer>{faq.a}</FAQAnswer>
+                </FAQCard>
               ))}
-            </div>
-          </section>
+            </FAQList>
+          </FAQPanel>
 
           {/* Related Tools Section */}
           <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">

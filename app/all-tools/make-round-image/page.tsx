@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -422,64 +423,64 @@ export default function MakeRoundImagePage() {
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I control the roundness level?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, the radius slider lets you adjust the roundness from slightly rounded toward a fully circular appearance (0-100%).</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, the radius slider lets you adjust the roundness from slightly rounded toward a fully circular appearance (0-100%).</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What formats are supported for input?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">The tool accepts image formats that the browser can decode. The processed rounded result is exported as PNG.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The tool accepts image formats that the browser can decode. The processed rounded result is exported as PNG.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I add transparent backgrounds?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, set background opacity or use a transparent color. PNG format preserves transparency.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, set background opacity or use a transparent color. PNG format preserves transparency.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 How do I add a border to the rounded image?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Use the border width slider (0-50px) and choose a color with the color picker. Borders wrap around the rounded shape.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Use the border width slider (0-50px) and choose a color with the color picker. Borders wrap around the rounded shape.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Does rounding reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Rounding changes the visible canvas area and creates a newly encoded PNG result. Review the output if preserving exact source appearance is important.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Rounding changes the visible canvas area and creates a newly encoded PNG result. Review the output if preserving exact source appearance is important.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is this round image tool free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, You can use the available tool controls to create and download rounded images.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, You can use the available tool controls to create and download rounded images.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       <script type="application/ld+json">{JSON.stringify({
@@ -559,35 +560,35 @@ export default function MakeRoundImagePage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Make Round Image FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-3">
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does processing improve the original image quality?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     The tool applies the selected transformation to the source
                     image. It does not recreate resolution or image detail
                     that is absent from the original file.
-                  </p>
-                </details>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Should I check the result before downloading?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Previewing the result helps you confirm that the
                     selected settings are appropriate for the particular
                     image you uploaded.
-                  </p>
-                </details>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

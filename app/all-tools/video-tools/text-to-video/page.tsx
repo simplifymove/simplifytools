@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -368,31 +369,31 @@ export default function TextToVideoPage() {
 
         {/* FAQ Section */}
         <div className="bg-white border-t border-gray-200 py-16 px-4 md:px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-4">
-              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">What does this tool create?</summary>
-                <p className="text-gray-600 mt-3">It creates a text plan containing a title, voiceover, scene directions, captions, and timing. It does not currently render a video.</p>
-              </details>
-              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">Can I download the plan?</summary>
-                <p className="text-gray-600 mt-3">Yes. After generating a plan, you can download the script and scene directions as a plain-text file.</p>
-              </details>
-              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">Can I edit the generated script?</summary>
-                <p className="text-gray-600 mt-3">Currently, you can preview and accept the script. In future updates, we'll add editing capabilities.</p>
-              </details>
-              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">Does this page render or export video?</summary>
-                <p className="text-gray-600 mt-3">No. Video rendering and MP4 export are currently unavailable. The current output is a downloadable text plan.</p>
-              </details>
-              <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
-                <summary className="font-semibold text-gray-900">What do the duration and aspect-ratio settings do?</summary>
-                <p className="text-gray-600 mt-3">They guide the structure and timing of the generated script. They do not create a media file.</p>
-              </details>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQDisclosure>
+                <FAQQuestion>What does this tool create?</FAQQuestion>
+                <FAQAnswer>It creates a text plan containing a title, voiceover, scene directions, captions, and timing. It does not currently render a video.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Can I download the plan?</FAQQuestion>
+                <FAQAnswer>Yes. After generating a plan, you can download the script and scene directions as a plain-text file.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Can I edit the generated script?</FAQQuestion>
+                <FAQAnswer>Currently, you can preview and accept the script. In future updates, we'll add editing capabilities.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Does this page render or export video?</FAQQuestion>
+                <FAQAnswer>No. Video rendering and MP4 export are currently unavailable. The current output is a downloadable text plan.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>What do the duration and aspect-ratio settings do?</FAQQuestion>
+                <FAQAnswer>They guide the structure and timing of the generated script. They do not create a media file.</FAQAnswer>
+              </FAQDisclosure>
+            </FAQList>
+          </FAQPanel>
         </div>
 
         {/* Beta Info Section */}

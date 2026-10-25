@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -160,7 +161,7 @@ export default function TiffToTextPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Extraction Settings</h3>
-                    
+
                     {/* Language Selection */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -294,11 +295,11 @@ export default function TiffToTextPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 TIFF to Text FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['What type of file can I upload?', 'This page accepts TIFF image files for OCR processing.'],
                   ['What output formats are available?', 'You can select Plain Text or Searchable PDF from the output settings.'],
@@ -306,13 +307,13 @@ export default function TiffToTextPage() {
                   ['Is OCR always perfectly accurate?', 'No. Accuracy depends on image quality, text clarity, layout, language, fonts, and other characteristics of the source.'],
                   ['Should I review the extracted text?', 'Yes. Proofread names, numbers, dates, addresses, and other important information before relying on OCR output.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-sm text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
       </main>

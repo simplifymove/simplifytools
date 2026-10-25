@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -253,35 +254,35 @@ export default function SketchEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the best intensity for sketches?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50. Lower for subtle sketches, higher for bold outlines.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this work on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Works best on photos with clear subjects and good contrast.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use sketches commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processed images can be used commercially without restrictions.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is quality preserved?</summary>
-                  <p className="text-gray-700 mt-2">Yes, high-quality JPEG output maintains excellent detail.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, processing happens locally. No server uploads.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I edit further?</summary>
-                  <p className="text-gray-700 mt-2">Yes, download and use any image editor for additional edits.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the best intensity for sketches?</FAQQuestion>
+                  <FAQAnswer>Start at 50. Lower for subtle sketches, higher for bold outlines.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this work on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes! Works best on photos with clear subjects and good contrast.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use sketches commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, all processed images can be used commercially without restrictions.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is quality preserved?</FAQQuestion>
+                  <FAQAnswer>Yes, high-quality JPEG output maintains excellent detail.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my data private?</FAQQuestion>
+                  <FAQAnswer>Yes, processing happens locally. No server uploads.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I edit further?</FAQQuestion>
+                  <FAQAnswer>Yes, download and use any image editor for additional edits.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -355,33 +356,33 @@ The sketch effect processes image pixels to reduce normal
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 the Sketch Effect works FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does this effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. It changes existing pixel values and does not recreate
                     missing detail or increase the source resolution.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I preview the effect first?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Review the available preview before downloading the
                     processed result.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

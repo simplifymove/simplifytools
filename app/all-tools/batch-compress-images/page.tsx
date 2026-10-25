@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -346,65 +348,65 @@ export default function BatchCompressImagesPage() {
       </div>
 
       {/* FAQ Section */}
-      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+      <div className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 How many images can I compress at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can compress up to 100 images in a single batch operation. Processing time depends on the number, dimensions, and sizes of the selected images.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>You can compress up to 100 images in a single batch operation. Processing time depends on the number, dimensions, and sizes of the selected images.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What quality setting should I use for batch compression?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">There is no single quality setting that is best for every image. Lower settings generally favor smaller files, while higher settings generally retain more visual detail. Review the output and adjust the setting for your needs.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>There is no single quality setting that is best for every image. Lower settings generally favor smaller files, while higher settings generally retain more visual detail. Review the output and adjust the setting for your needs.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What file formats are supported for batch compression?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more. All images are compressed to optimal formats for web use.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more. All images are compressed to optimal formats for web use.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 How much space can I save with batch compression?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">File-size reduction varies with the source image, dimensions, format, and selected quality setting. Review the displayed before-and-after sizes after processing.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>File-size reduction varies with the source image, dimensions, format, and selected quality setting. Review the displayed before-and-after sizes after processing.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I download all compressed images at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes. Click "Download All" to download all compressed images. Your browser will download them individually with sequential delays to prevent blocking.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes. Click "Download All" to download all compressed images. Your browser will download them individually with sequential delays to prevent blocking.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is batch image compression really free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can compress multiple supported images using the available batch controls without creating an account.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>You can compress multiple supported images using the available batch controls without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}

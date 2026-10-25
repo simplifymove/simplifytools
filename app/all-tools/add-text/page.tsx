@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -704,39 +705,39 @@ export default function AddTextPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Add Text to Image FAQ
-              </h2>
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     What format is the finished image?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     The generated image is encoded and downloaded as PNG.
-                  </p>
-                </div>
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                  </FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I change the position of the text?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Horizontal and vertical position controls determine
                     where the text is drawn on the image.
-                  </p>
-                </div>
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                  </FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I make the text partially transparent?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. The text opacity control changes the alpha value used
                     when the text is rendered.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
 

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -536,52 +537,52 @@ export default function ProfilePhotoMakerPage() {
                 </div>
               </div>
 
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              <FAQPanel>
+                <FAQHeading>
                   Profile Photo Maker FAQ
-                </h2>
+                </FAQHeading>
 
-                <div className="space-y-4">
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQList>
+                  <FAQCard>
+                    <FAQStaticQuestion>
                       Does Profile Photo Maker remove the original background?
-                    </h3>
-                    <p className="text-gray-700">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       Yes. The tool separates the foreground subject before applying the
                       selected solid, gradient, or blurred background.
-                    </p>
-                  </div>
+                    </FAQAnswer>
+                  </FAQCard>
 
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard>
+                    <FAQStaticQuestion>
                       What happens if my face is not detected?
-                    </h3>
-                    <p className="text-gray-700">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       The tool uses the extracted foreground area as a fallback so the image
                       can still be framed and processed.
-                    </p>
-                  </div>
+                    </FAQAnswer>
+                  </FAQCard>
 
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard>
+                    <FAQStaticQuestion>
                       Which image formats can I upload?
-                    </h3>
-                    <p className="text-gray-700">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       The current interface accepts JPG, PNG, and WebP files up to 10 MB.
-                    </p>
-                  </div>
+                    </FAQAnswer>
+                  </FAQCard>
 
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard>
+                    <FAQStaticQuestion>
                       What format will I download?
-                    </h3>
-                    <p className="text-gray-700">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       Profile Photo Maker generates a square PNG at the size selected in
                       the tool settings.
-                    </p>
-                  </div>
-                </div>
-              </div>
+                    </FAQAnswer>
+                  </FAQCard>
+                </FAQList>
+              </FAQPanel>
 
             </div>
           </section>

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useRef, useState } from 'react';
 import { Upload, AlertCircle, Shield } from 'lucide-react';
@@ -273,12 +274,12 @@ export default function EditPdfPage() {
             </div>
           </div>
 
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <FAQPanel>
+            <FAQHeading>
               Edit PDF FAQ
-            </h2>
+            </FAQHeading>
 
-            <div className="space-y-4">
+            <FAQList>
               {[
                 {
                   q: 'Can I edit PDF text online?',
@@ -297,13 +298,13 @@ export default function EditPdfPage() {
                   a: 'No. Edit PDF focuses on changing editable text, while Annotate PDF is intended for markup, notes, and annotations.',
                 },
               ].map((item) => (
-                <div key={item.q} className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.q}</h3>
-                  <p className="text-gray-600 leading-7">{item.a}</p>
-                </div>
+                <FAQCard key={item.q}>
+                  <FAQStaticQuestion>{item.q}</FAQStaticQuestion>
+                  <FAQAnswer>{item.a}</FAQAnswer>
+                </FAQCard>
               ))}
-            </div>
-          </div>
+            </FAQList>
+          </FAQPanel>
 
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-5">

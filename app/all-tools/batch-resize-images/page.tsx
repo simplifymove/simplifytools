@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -364,65 +366,65 @@ export default function BatchResizeImagesPage() {
       </div>
 
       {/* FAQ Section */}
-      <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+      <div className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 How many images can I resize at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can select up to 100 images in a batch operation. Processing time depends on the number of files, their dimensions and sizes, and your device performance.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>You can select up to 100 images in a batch operation. Processing time depends on the number of files, their dimensions and sizes, and your device performance.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What happens if I maintain aspect ratio?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">If maintaining aspect ratio is enabled, the tool will fit the image within your specified dimensions while preserving its original proportions. The final image may be slightly smaller than specified to avoid distortion.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>If maintaining aspect ratio is enabled, the tool will fit the image within your specified dimensions while preserving its original proportions. The final image may be slightly smaller than specified to avoid distortion.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What file formats are supported?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">The batch resizer is intended for image formats that the browser can decode. The current download workflow generates resized JPEG results.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The batch resizer is intended for image formats that the browser can decode. The current download workflow generates resized JPEG results.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will resizing reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Resizing changes the pixel dimensions and can affect visible quality. Enlarging an image does not reconstruct detail that is absent from the source.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Resizing changes the pixel dimensions and can affect visible quality. Enlarging an image does not reconstruct detail that is absent from the source.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is batch resizing really free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can resize multiple supported images using the available batch controls without creating an account.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>You can resize multiple supported images using the available batch controls without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Are my images stored on your servers?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Batch resizing is performed in the browser. When you download the generated results, the files are passed through the site's download-result flow.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>Batch resizing is performed in the browser. When you download the generated results, the files are passed through the site's download-result flow.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}

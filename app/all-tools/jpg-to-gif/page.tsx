@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -261,24 +262,24 @@ export default function JpgToGifPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 JPG to GIF FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['Does this make an animated GIF?', 'No. A single JPG or JPEG is converted into a single static GIF image.'],
                   ['Can I upload JPEG files?', 'Yes. The uploader supports JPG and JPEG image files.'],
                   ['Why might a photo lose some color detail?', 'GIF uses a limited color palette, so photographic images can look different after conversion.'],
                   ['Can I preview the GIF?', 'Yes. The result is displayed after conversion so you can review it before downloading.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-sm text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
       </main>

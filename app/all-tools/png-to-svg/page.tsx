@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -37,7 +39,7 @@ export default function PngToSvgPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     setError(null);
     setConversionTip('Vectorizing your image... This may take a moment depending on image complexity.');
@@ -263,31 +265,31 @@ export default function PngToSvgPage() {
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What is SVG format?</h3>
-                <p className="text-gray-600">SVG (Scalable Vector Graphics) represents graphics using vector geometry. This converter traces suitable raster artwork into SVG paths that can be scaled without raster pixelation.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Why convert PNG to SVG?</h3>
-                <p className="text-gray-600">Traced SVG paths can scale without raster pixelation and are useful for logos, icons, and simple artwork. File size and trace quality depend on the source image.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What's the difference between raster and vector?</h3>
-                <p className="text-gray-600">Raster images are made of pixels. This converter traces visible shapes into SVG paths, which can be scaled without the pixelation of the original raster image.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Can I edit the SVG file after conversion?</h3>
-                <p className="text-gray-600">The traced output contains SVG vector paths that can be edited in compatible vector software. Trace accuracy depends on the complexity and contrast of the source image.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What image types work best?</h3>
-                <p className="text-gray-600">Simple logos, icons, and illustrations with solid colors and clear shapes produce the best results. Complex photographs and gradient-heavy images may not convert as cleanly.</p>
-              </div>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQDisclosure>
+                <FAQQuestion>What is SVG format?</FAQQuestion>
+                <FAQAnswer>SVG (Scalable Vector Graphics) represents graphics using vector geometry. This converter traces suitable raster artwork into SVG paths that can be scaled without raster pixelation.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Why convert PNG to SVG?</FAQQuestion>
+                <FAQAnswer>Traced SVG paths can scale without raster pixelation and are useful for logos, icons, and simple artwork. File size and trace quality depend on the source image.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>What's the difference between raster and vector?</FAQQuestion>
+                <FAQAnswer>Raster images are made of pixels. This converter traces visible shapes into SVG paths, which can be scaled without the pixelation of the original raster image.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Can I edit the SVG file after conversion?</FAQQuestion>
+                <FAQAnswer>The traced output contains SVG vector paths that can be edited in compatible vector software. Trace accuracy depends on the complexity and contrast of the source image.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>What image types work best?</FAQQuestion>
+                <FAQAnswer>Simple logos, icons, and illustrations with solid colors and clear shapes produce the best results. Complex photographs and gradient-heavy images may not convert as cleanly.</FAQAnswer>
+              </FAQDisclosure>
+            </FAQList>
+          </FAQPanel>
         </div>
       </div>
     </main>

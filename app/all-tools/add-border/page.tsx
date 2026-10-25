@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -323,35 +324,35 @@ export default function AddBorderPage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Add Border FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-3">
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does processing improve the original image quality?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     The tool applies the selected transformation to the source
                     image. It does not recreate resolution or image detail
                     that is absent from the original file.
-                  </p>
-                </details>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Should I check the result before downloading?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Previewing the result helps you confirm that the
                     selected settings are appropriate for the particular
                     image you uploaded.
-                  </p>
-                </details>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>
@@ -374,64 +375,64 @@ export default function AddBorderPage() {
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 What are the border width limits?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can add borders from 5px to 100px. Choose based on your image size and preference.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>You can add borders from 5px to 100px. Choose based on your image size and preference.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I use custom border colors?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, use the color picker to choose any color you want. Supports full RGB spectrum.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, use the color picker to choose any color you want. Supports full RGB spectrum.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What file formats are supported?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Supported browser-readable images can be processed by the tool. The generated bordered result is downloaded as PNG.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Supported browser-readable images can be processed by the tool. The generated bordered result is downloaded as PNG.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I add borders only on specific sides?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">This tool adds borders on all sides equally. For partial borders, use advanced image editors.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>This tool adds borders on all sides equally. For partial borders, use advanced image editors.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Does adding borders reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Adding a border creates a new image with a larger canvas around the source content. It does not add detail or improve the source image itself.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Adding a border creates a new image with a larger canvas around the source content. It does not add detail or improve the source image itself.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is this border tool completely free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, You can use the tool to add borders to supported images.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, You can use the tool to add borders to supported images.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       <script type="application/ld+json">{JSON.stringify({

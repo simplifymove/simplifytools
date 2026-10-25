@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -358,57 +359,57 @@ export default function TiffToSvgPage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 TIFF to SVG FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does converting TIFF to SVG make the image vector?
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     The tool performs vector tracing and creates SVG paths from
                     shapes detected in the raster TIFF image. The quality and
                     complexity of those paths depend on the source artwork.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I upload both .tif and .tiff files?
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. The uploader accepts both .tif and .tiff filename
                     extensions.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Will a photograph become a simple vector illustration?
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Not necessarily. Photographs contain many colors, edges, and
                     fine details, which can result in complex traces. Simple,
                     high-contrast artwork is generally better suited to clean
                     vector tracing.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I enlarge the resulting SVG?
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     SVG paths are scalable, but scaling does not improve tracing
                     inaccuracies inherited from the original raster image. Review
                     the converted paths before using them at large sizes.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

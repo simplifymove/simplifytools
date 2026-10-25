@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -686,35 +687,35 @@ export default function UpscaleImagePage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between 2×, 3×, and 4× upscaling?</summary>
-              <p className="text-gray-700 mt-2">2× doubles the image dimensions, 3× triples them, and 4× quadruples them. Larger scales generally require more processing and create larger output files; visible detail depends on the source image.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Does upscaling reduce image quality?</summary>
-              <p className="text-gray-700 mt-2">AI upscaling attempts to reconstruct additional visual detail while increasing image dimensions. Results can vary depending on the source image, scale, and content.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-              <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), WebP (modern), or JPG (compressed).</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">When should I use photo vs. anime mode?</summary>
-              <p className="text-gray-700 mt-2">Photo mode is intended for photographic content, while Anime mode targets anime or illustration-style images. Auto mode lets the processing workflow select a mode based on the input.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Upscaling is performed through the tool's server-side processing workflow.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I use upscaled images commercially?</summary>
-              <p className="text-gray-700 mt-2">Upscaling does not change ownership or licensing rights. Use the processed image only when you own the source image or have the necessary permission, and follow any applicable copyright or licensing terms.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What's the difference between 2×, 3×, and 4× upscaling?</FAQQuestion>
+              <FAQAnswer>2× doubles the image dimensions, 3× triples them, and 4× quadruples them. Larger scales generally require more processing and create larger output files; visible detail depends on the source image.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Does upscaling reduce image quality?</FAQQuestion>
+              <FAQAnswer>AI upscaling attempts to reconstruct additional visual detail while increasing image dimensions. Results can vary depending on the source image, scale, and content.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What image formats are supported?</FAQQuestion>
+              <FAQAnswer>We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), WebP (modern), or JPG (compressed).</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>When should I use photo vs. anime mode?</FAQQuestion>
+              <FAQAnswer>Photo mode is intended for photographic content, while Anime mode targets anime or illustration-style images. Auto mode lets the processing workflow select a mode based on the input.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is my image data safe?</FAQQuestion>
+              <FAQAnswer>Upscaling is performed through the tool's server-side processing workflow.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I use upscaled images commercially?</FAQQuestion>
+              <FAQAnswer>Upscaling does not change ownership or licensing rights. Use the processed image only when you own the source image or have the necessary permission, and follow any applicable copyright or licensing terms.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}

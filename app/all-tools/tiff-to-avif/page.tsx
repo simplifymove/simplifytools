@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -35,7 +36,7 @@ export default function TiffToAvifPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     try {
       const formData = new FormData();
@@ -151,7 +152,7 @@ export default function TiffToAvifPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
-                    
+
                     {/* Quality */}
                     <div className="mb-6">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -307,12 +308,12 @@ export default function TiffToAvifPage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 TIFF to AVIF FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
+              <FAQList>
                 {[
                   {
                     q: 'What output format does this converter create?',
@@ -335,15 +336,15 @@ export default function TiffToAvifPage() {
                     a: 'Keeping the original is recommended when it is your source, archival, or highest-quality copy. Conversion creates a file for a different format and use case.',
                   },
                 ].map((item) => (
-                  <div key={item.q} className="border-b border-gray-200 pb-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard key={item.q}>
+                    <FAQStaticQuestion>
                       {item.q}
-                    </h3>
-                    <p className="text-gray-600 leading-7">{item.a}</p>
-                  </div>
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{item.a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-5">

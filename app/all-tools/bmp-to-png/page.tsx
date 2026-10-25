@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -206,36 +208,36 @@ export default function BmpToPngPage() {
       </div>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is BMP format?</h3>
-              <p className="text-gray-700">BMP (Bitmap) is an uncompressed image format that stores image data without compression, resulting in large file sizes. It's commonly used in older Windows systems but is rarely used on the web due to its large file size.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why convert BMP to PNG?</h3>
-              <p className="text-gray-700">PNG supports lossless compression and can represent transparency, although the result depends on information available in the source BMP. PNG is widely supported by modern browsers, image editors, document tools, and publishing workflows.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the converted image lose quality?</h3>
-              <p className="text-gray-700">PNG uses lossless image compression, so the conversion avoids the lossy compression used by formats such as JPG. The resulting PNG preserves the rendered pixel content supported by the source BMP.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple BMP files at once?</h3>
-              <p className="text-gray-700">The converter currently processes one BMP image at a time. To convert several files, upload and process them individually. Processing time can vary with file size, image dimensions, and current server workload.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What's the file size limit?</h3>
-              <p className="text-gray-700">Most image files can be converted without issues. For very large files (over 50MB), we recommend compressing them first using our image compression tool, then converting to PNG format.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my image kept private and secure?</h3>
-              <p className="text-gray-700">Your BMP file is uploaded for server-assisted conversion and processed only as needed to create the PNG output.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What is BMP format?</FAQQuestion>
+              <FAQAnswer>BMP (Bitmap) is an uncompressed image format that stores image data without compression, resulting in large file sizes. It's commonly used in older Windows systems but is rarely used on the web due to its large file size.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Why convert BMP to PNG?</FAQQuestion>
+              <FAQAnswer>PNG supports lossless compression and can represent transparency, although the result depends on information available in the source BMP. PNG is widely supported by modern browsers, image editors, document tools, and publishing workflows.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Will the converted image lose quality?</FAQQuestion>
+              <FAQAnswer>PNG uses lossless image compression, so the conversion avoids the lossy compression used by formats such as JPG. The resulting PNG preserves the rendered pixel content supported by the source BMP.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I convert multiple BMP files at once?</FAQQuestion>
+              <FAQAnswer>The converter currently processes one BMP image at a time. To convert several files, upload and process them individually. Processing time can vary with file size, image dimensions, and current server workload.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What's the file size limit?</FAQQuestion>
+              <FAQAnswer>Most image files can be converted without issues. For very large files (over 50MB), we recommend compressing them first using our image compression tool, then converting to PNG format.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is my image kept private and secure?</FAQQuestion>
+              <FAQAnswer>Your BMP file is uploaded for server-assisted conversion and processed only as needed to create the PNG output.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}

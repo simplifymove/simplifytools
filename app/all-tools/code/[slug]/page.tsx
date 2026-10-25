@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -820,46 +822,46 @@ export default function CodeToolPage() {
               </div>
 
               {/* FAQs Section */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-                <div className="space-y-3">
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+              <FAQPanel>
+                <FAQHeading>Frequently Asked Questions</FAQHeading>
+                <FAQList>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Is my data secure and private?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. All processing happens in your browser using client-side JavaScript. Your data is never sent to our servers and is not stored anywhere.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>Yes. All processing happens in your browser using client-side JavaScript. Your data is never sent to our servers and is not stored anywhere.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Can I use this tool offline?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. If you've loaded the page once, you can use it offline. All computation happens in your browser without any server connection.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>Yes. If you've loaded the page once, you can use it offline. All computation happens in your browser without any server connection.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       What browsers are supported?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge. It requires JavaScript to be enabled.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge. It requires JavaScript to be enabled.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Is there a limit on input size?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Input is limited only by your browser's available memory. Most browsers can handle files up to several MB without issues.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>Input is limited only by your browser's available memory. Most browsers can handle files up to several MB without issues.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Can I use this for commercial purposes?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. Feel free to use this tool for any purpose, including commercial projects. No attribution is required.</p>
-                  </details>
-                </div>
-              </div>
+
+                    </FAQQuestion>
+                    <FAQAnswer>Yes. Feel free to use this tool for any purpose, including commercial projects. No attribution is required.</FAQAnswer>
+                  </FAQDisclosure>
+                </FAQList>
+              </FAQPanel>
 
               {/* Best Practices Section */}
               <div>

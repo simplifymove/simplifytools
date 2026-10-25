@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -216,31 +217,31 @@ export default function WebpToTiffPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What is TIFF format?</h3>
-                  <p className="text-gray-600">TIFF (Tagged Image File Format) is a flexible image format that supports both lossless and lossy compression. It's widely used for high-quality image storage and professional applications.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Why convert WebP to TIFF?</h3>
-                  <p className="text-gray-600">TIFF supports lossless storage and is widely used in imaging, publishing, print, and archival workflows. Converting WebP to TIFF can be useful when a workflow or application specifically requires TIFF input.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Will my image lose quality?</h3>
-                  <p className="text-gray-600">The TIFF output uses lossless compression, so the conversion does not introduce additional lossy TIFF compression. If the source WebP was originally encoded with lossy compression, previously discarded detail cannot be restored.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
-                  <p className="text-gray-600">Processing time and memory use depend on the WebP dimensions, file size, and image complexity. Larger images generally require more processing resources.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">How is WebP to TIFF different from other conversions?</h3>
-                  <p className="text-gray-600">WebP images with transparency can be represented in TIFF when supported by the source image mode and conversion pipeline. Format-specific metadata or features may not transfer identically.</p>
-                </div>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>What is TIFF format?</FAQStaticQuestion>
+                  <FAQAnswer>TIFF (Tagged Image File Format) is a flexible image format that supports both lossless and lossy compression. It's widely used for high-quality image storage and professional applications.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Why convert WebP to TIFF?</FAQStaticQuestion>
+                  <FAQAnswer>TIFF supports lossless storage and is widely used in imaging, publishing, print, and archival workflows. Converting WebP to TIFF can be useful when a workflow or application specifically requires TIFF input.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Will my image lose quality?</FAQStaticQuestion>
+                  <FAQAnswer>The TIFF output uses lossless compression, so the conversion does not introduce additional lossy TIFF compression. If the source WebP was originally encoded with lossy compression, previously discarded detail cannot be restored.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What size files can I convert?</FAQStaticQuestion>
+                  <FAQAnswer>Processing time and memory use depend on the WebP dimensions, file size, and image complexity. Larger images generally require more processing resources.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>How is WebP to TIFF different from other conversions?</FAQStaticQuestion>
+                  <FAQAnswer>WebP images with transparency can be represented in TIFF when supported by the source image mode and conversion pipeline. Format-specific metadata or features may not transfer identically.</FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </div>
 
@@ -381,12 +382,12 @@ export default function WebpToTiffPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 WebP to TIFF FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
+              <FAQList>
                 {[
                   [
                     'Is the TIFF output lossless?',
@@ -409,18 +410,15 @@ export default function WebpToTiffPage() {
                     'After conversion completes, click Download TIFF. The converted image is registered with the SimplifyConvert download-result flow and you are taken to its download page.',
                   ],
                 ].map(([question, answer]) => (
-                  <div
-                    key={question}
-                    className="rounded-xl border border-gray-200 p-5"
-                  >
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>
                       {question}
-                    </h3>
-                    <p className="text-gray-600 leading-7">{answer}</p>
-                  </div>
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{answer}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
@@ -709,35 +710,35 @@ export default function RemoveWatermarkPage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What kind of watermarks can be removed?</summary>
-              <p className="text-gray-700 mt-2">The tool can process marked watermarks, logos, timestamps, text overlays, and other unwanted regions. Results depend on the size, texture, surrounding image content, and complexity of the marked area.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between Fast and Quality modes?</summary>
-              <p className="text-gray-700 mt-2">Fast mode uses quicker inpainting, while Quality mode applies more detailed processing and can take longer. Compare the result with the surrounding image before using the edited file.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">How accurate is the watermark removal?</summary>
-              <p className="text-gray-700 mt-2">Inpainting is generally easier when the marked region is surrounded by consistent visual information. Complex textures, patterns, large marked areas, or important objects behind the selection can produce visible artifacts. Precise brush marking helps limit processing to the intended area.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-              <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), JPG (compressed), or WebP (modern format).</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Images are processed as needed to perform the requested watermark-removal operation.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I use the edited images commercially?</summary>
-              <p className="text-gray-700 mt-2">Using this tool does not grant rights to an image. Only edit or use images when you own them or have the necessary permission, and follow any applicable copyright or licensing terms.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What kind of watermarks can be removed?</FAQQuestion>
+              <FAQAnswer>The tool can process marked watermarks, logos, timestamps, text overlays, and other unwanted regions. Results depend on the size, texture, surrounding image content, and complexity of the marked area.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What's the difference between Fast and Quality modes?</FAQQuestion>
+              <FAQAnswer>Fast mode uses quicker inpainting, while Quality mode applies more detailed processing and can take longer. Compare the result with the surrounding image before using the edited file.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>How accurate is the watermark removal?</FAQQuestion>
+              <FAQAnswer>Inpainting is generally easier when the marked region is surrounded by consistent visual information. Complex textures, patterns, large marked areas, or important objects behind the selection can produce visible artifacts. Precise brush marking helps limit processing to the intended area.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What image formats are supported?</FAQQuestion>
+              <FAQAnswer>We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), JPG (compressed), or WebP (modern format).</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is my image data safe?</FAQQuestion>
+              <FAQAnswer>Images are processed as needed to perform the requested watermark-removal operation.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I use the edited images commercially?</FAQQuestion>
+              <FAQAnswer>Using this tool does not grant rights to an image. Only edit or use images when you own them or have the necessary permission, and follow any applicable copyright or licensing terms.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}

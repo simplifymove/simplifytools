@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -538,12 +540,12 @@ export default function RemoveObjectPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Remove Object FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
+              <FAQList>
                 {[
                   [
                     'Does the tool automatically detect the object?',
@@ -570,16 +572,13 @@ export default function RemoveObjectPage() {
                     'The current server route returns the processed image as JPEG.',
                   ],
                 ].map(([question, answer]) => (
-                  <div
-                    key={question}
-                    className="border border-gray-200 rounded-xl p-5"
-                  >
-                    <h3 className="font-bold text-gray-900 mb-2">{question}</h3>
-                    <p className="text-sm text-gray-600 leading-6">{answer}</p>
-                  </div>
+                  <FAQDisclosure key={question}>
+                    <FAQQuestion>{question}</FAQQuestion>
+                    <FAQAnswer>{answer}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

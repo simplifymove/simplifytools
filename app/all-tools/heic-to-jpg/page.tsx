@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -259,54 +260,39 @@ export default function HeicToJpgPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-12 px-4 bg-white">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-4">
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>What is HEIC format?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">HEIC (High Efficiency Image Container) is Apple's modern image format used by iPhones and iPads. It provides better compression than JPG while maintaining quality, but it's not universally supported like JPG.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>Why does my iPhone use HEIC?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">HEIC is designed for efficient image storage and is commonly used by Apple devices. File-size differences compared with JPG depend on the image and encoding settings, while HEIC compatibility can vary across platforms and applications.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>Will the image quality decrease?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">JPG uses lossy compression, so some image information can change during conversion. The visible difference depends on the source HEIC image and the JPEG encoding used for the output.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>Can I convert multiple HEIC files at once?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">The converter processes one file at a time. To convert multiple HEIC files, upload and process them individually.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>Is my image data secure?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
+        <section className="">
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQDisclosure>
+                <FAQQuestion>What is HEIC format?</FAQQuestion>
+                <FAQAnswer>HEIC (High Efficiency Image Container) is Apple's modern image format used by iPhones and iPads. It provides better compression than JPG while maintaining quality, but it's not universally supported like JPG.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Why does my iPhone use HEIC?</FAQQuestion>
+                <FAQAnswer>HEIC is designed for efficient image storage and is commonly used by Apple devices. File-size differences compared with JPG depend on the image and encoding settings, while HEIC compatibility can vary across platforms and applications.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Will the image quality decrease?</FAQQuestion>
+                <FAQAnswer>JPG uses lossy compression, so some image information can change during conversion. The visible difference depends on the source HEIC image and the JPEG encoding used for the output.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Can I convert multiple HEIC files at once?</FAQQuestion>
+                <FAQAnswer>The converter processes one file at a time. To convert multiple HEIC files, upload and process them individually.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Is my image data secure?</FAQQuestion>
+                <FAQAnswer>Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>
                   <span>What's the file size limit?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">Files around 50MB or larger may exceed practical upload or processing constraints. Compress or resize very large images before converting them to JPG.</p>
-              </details>
-            </div>
-          </div>
+
+                </FAQQuestion>
+                <FAQAnswer>Files around 50MB or larger may exceed practical upload or processing constraints. Compress or resize very large images before converting them to JPG.</FAQAnswer>
+              </FAQDisclosure>
+            </FAQList>
+          </FAQPanel>
         </section>
 
         {/* JSON-LD FAQ Schema */}

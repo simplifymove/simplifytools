@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -262,24 +263,24 @@ export default function WebpToGifPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 WebP to GIF FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['Does this create an animated GIF?', 'No. This tool creates a static GIF image from the uploaded WebP file.'],
                   ['Can I preview the result?', 'Yes. The converted image is displayed on the page after successful processing.'],
                   ['Why can colors look different?', 'GIF uses a more limited color palette than formats such as WebP, so some images can change during conversion.'],
                   ['When is GIF useful?', 'GIF can be useful when a website, application, or older workflow specifically expects GIF images.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-sm text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
       </main>

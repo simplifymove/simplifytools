@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -284,36 +285,36 @@ export default function JpgToWebpPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is WebP supported by all browsers?</h3>
-              <p className="text-gray-700">Current major browsers support WebP. Check the target environment and provide an alternate format when compatibility with older browsers or software is required.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is WebP compared to JPG?</h3>
-              <p className="text-gray-700">WebP file size and visual quality depend on the source image and selected encoding settings.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will I lose quality when converting to WebP?</h3>
-              <p className="text-gray-700">WebP encoding can reduce file size while retaining good visual quality. Use the quality slider to choose the balance between compression and image fidelity.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can WebP replace JPG on my website?</h3>
-              <p className="text-gray-700">WebP can be used for many web images, but whether it should replace JPG depends on compatibility, image content, software, and delivery requirements.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is conversion secure and private?</h3>
-              <p className="text-gray-700">Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple JPG files?</h3>
-              <p className="text-gray-700">Currently our converter handles one file at a time. However, conversion is fast, so you can quickly process multiple files by uploading them sequentially.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>Is WebP supported by all browsers?</FAQStaticQuestion>
+              <FAQAnswer>Current major browsers support WebP. Check the target environment and provide an alternate format when compatibility with older browsers or software is required.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>How much smaller is WebP compared to JPG?</FAQStaticQuestion>
+              <FAQAnswer>WebP file size and visual quality depend on the source image and selected encoding settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will I lose quality when converting to WebP?</FAQStaticQuestion>
+              <FAQAnswer>WebP encoding can reduce file size while retaining good visual quality. Use the quality slider to choose the balance between compression and image fidelity.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can WebP replace JPG on my website?</FAQStaticQuestion>
+              <FAQAnswer>WebP can be used for many web images, but whether it should replace JPG depends on compatibility, image content, software, and delivery requirements.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is conversion secure and private?</FAQStaticQuestion>
+              <FAQAnswer>Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I batch convert multiple JPG files?</FAQStaticQuestion>
+              <FAQAnswer>Currently our converter handles one file at a time. However, conversion is fast, so you can quickly process multiple files by uploading them sequentially.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}

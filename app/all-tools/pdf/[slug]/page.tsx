@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, Suspense } from 'react';
 import dynamic from 'next/dynamic';
@@ -176,7 +177,7 @@ export default function PdfToolPage({ params }: PageProps) {
     try {
       const formData = new FormData();
       formData.append('tool', tool.id);
-      
+
       formData.append('options', JSON.stringify(submissionOptions));
 
       // Add files or URL
@@ -203,7 +204,7 @@ export default function PdfToolPage({ params }: PageProps) {
       router.push(downloadResult.downloadPageUrl);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred';
-      
+
       // Try to parse debug info from error message
       try {
         const debugInfo = JSON.parse(errorMsg);
@@ -470,7 +471,7 @@ export default function PdfToolPage({ params }: PageProps) {
                         <p className="text-sm text-red-700">{error}</p>
                       </div>
                     </div>
-                    
+
                     {/* Debug Logs */}
                     {result?.debug && (
                       <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
@@ -493,7 +494,7 @@ export default function PdfToolPage({ params }: PageProps) {
                         <p className="text-sm text-green-700">{result.message}</p>
                       </div>
                     </div>
-                    
+
                     {/* Debug Logs */}
                     {result.debug && (
                       <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
@@ -768,9 +769,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About Unlocking PDFs</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About Unlocking PDFs</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Is it legal to unlock a password-protected PDF?',
@@ -797,22 +798,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents or passwords.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools Section */}
             <div className="mb-16">
@@ -1033,9 +1030,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About Watermark Removal</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About Watermark Removal</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Is it legal to remove watermarks from PDFs?',
@@ -1062,22 +1059,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools Section */}
             <div className="mb-16">
@@ -1181,7 +1174,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Convert PDF pages to high-quality JPG images instantly with our free online PDF to JPG converter. Extract all pages from your PDF or <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">convert specific pages</Link> into individual JPG images. No software installation required—just upload, select your quality settings (72-600 DPI), and download your JPG images in seconds.
               </p>
-              
+
               {/* Preview Image Placeholder - Alt text ready */}
               {/* 
                 TODO: Add preview image here
@@ -1312,9 +1305,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">PDF to JPG Converter FAQs - Quick Answers & Guides</h2>
-              
+            <FAQPanel>
+              <FAQHeading>PDF to JPG Converter FAQs - Quick Answers & Guides</FAQHeading>
+
               {/* Before/After Comparison Placeholder - Alt text ready */}
               {/*
                 TODO: Add before/after comparison image here
@@ -1326,8 +1319,8 @@ export default function PdfToolPage({ params }: PageProps) {
                   />
                 </div>
               */}
-              
-              <div className="space-y-4">
+
+              <FAQList>
                 {[
                   {
                     q: 'What DPI setting should I choose?',
@@ -1354,22 +1347,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* Workflow Tips Section */}
             <div className="mb-16 p-6 bg-indigo-50 rounded-2xl border border-indigo-200">
@@ -1377,7 +1366,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-gray-700 mb-4">
                 Enhance your PDF to JPG conversion with complementary tools. If you need specific pages, use <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">split PDF</Link> to extract them first. For smaller file sizes after conversion, try <Link href="/all-tools/pdf/compress-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">compress PDF</Link>. If you're working with multiple PDF sources, <Link href="/all-tools/pdf/merge-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">merge PDF</Link> files together before converting for streamlined batch processing.
               </p>
-              
+
               {/* DPI Comparison Chart Placeholder - Alt text ready */}
               {/* 
                 TODO: Add DPI comparison chart image here
@@ -1494,7 +1483,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Convert PDF pages to high-quality PNG images with transparent backgrounds instantly with our free online PDF to PNG converter. Extract all pages from your PDF or <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">convert specific pages</Link> into individual PNG images. No software installation required—just upload, select your quality settings (72-600 DPI), and download your PNG images in seconds.
               </p>
-              
+
               {/* Preview Image Placeholder - Alt text ready */}
               {/* 
                 TODO: Add preview image here
@@ -1661,7 +1650,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   >
                     <div className="text-4xl mb-3">{format.icon}</div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">{format.format}</h3>
-                    
+
                     <div className="mb-4">
                       <p className="text-sm font-semibold text-indigo-600 mb-2">{format.best}</p>
                       <ul className="space-y-1">
@@ -1694,7 +1683,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   </motion.div>
                 ))}
               </div>
-              
+
               <div className="mt-8 p-4 bg-white rounded-lg border border-indigo-100">
                 <p className="text-gray-700">
                   <span className="font-semibold text-indigo-600">When to use PNG:</span> Convert PDF to PNG when you need transparent backgrounds, web-optimized graphics, or professional design files. PNG provides lossless quality perfect for logos, icons, and digital designs.
@@ -1708,7 +1697,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-gray-700 mb-4">
                 Enhance your PDF to PNG conversion with complementary tools. If you need specific pages, use <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">split PDF</Link> to extract them first. For smaller file sizes after conversion, try <Link href="/all-tools/pdf/compress-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">compress PDF</Link>. If you're working with multiple PDF sources, <Link href="/all-tools/pdf/merge-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">merge PDF</Link> files together before converting for streamlined batch processing.
               </p>
-              
+
               {/* DPI Comparison Chart Placeholder - Alt text ready */}
               {/* 
                 TODO: Add DPI comparison chart image here
@@ -1760,9 +1749,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Convert PDF Pages to PNG Images - Frequently Asked Questions</h2>
-              
+            <FAQPanel>
+              <FAQHeading>Convert PDF Pages to PNG Images - Frequently Asked Questions</FAQHeading>
+
               {/* Before/After Comparison Placeholder - Alt text ready */}
               {/*
                 TODO: Add before/after comparison image here
@@ -1774,8 +1763,8 @@ export default function PdfToolPage({ params }: PageProps) {
                   />
                 </div>
               */}
-              
-              <div className="space-y-4">
+
+              <FAQList>
                 {[
                   {
                     q: 'What is the difference between PNG and JPG?',
@@ -1802,22 +1791,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Your PDF is sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -1885,7 +1870,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Convert PDF pages to high-quality TIFF images online for free. Choose DPI settings (72–600) for archival storage, printing, or professional use. Fast, secure, and no installation required.
               </p>
-              
+
               {/* Preview Image Placeholder - Alt text ready */}
               {/* 
                 TODO: Add preview image here
@@ -2060,7 +2045,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   >
                     <div className="text-4xl mb-3">{format.icon}</div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">{format.format}</h3>
-                    
+
                     <div className="mb-4">
                       <p className="text-sm font-semibold text-indigo-600 mb-2">{format.best}</p>
                       <ul className="space-y-1">
@@ -2093,7 +2078,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   </motion.div>
                 ))}
               </div>
-              
+
               <div className="mt-8 p-4 bg-white rounded-lg border border-indigo-100">
                 <p className="text-gray-700">
                   <span className="font-semibold text-indigo-600">When to use TIFF:</span> Convert PDF to TIFF for professional archival storage, legal document preservation, medical records, and high-quality printing. TIFF is the industry standard for long-term document storage and compliance requirements.
@@ -2107,7 +2092,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-gray-700 mb-4">
                 Enhance your PDF to TIFF conversion with complementary tools. If you need specific pages, use <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">split PDF</Link> to extract them first. For smaller file sizes after conversion, try <Link href="/all-tools/pdf/compress-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">compress PDF</Link>. If you're working with multiple PDF sources, <Link href="/all-tools/pdf/merge-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">merge PDF</Link> files together before converting for streamlined batch processing.
               </p>
-              
+
               {/* DPI Comparison Chart Placeholder - Alt text ready */}
               {/* 
                 TODO: Add DPI comparison chart image here
@@ -2159,9 +2144,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Convert PDF Pages to TIFF - Frequently Asked Questions</h2>
-              
+            <FAQPanel>
+              <FAQHeading>Convert PDF Pages to TIFF - Frequently Asked Questions</FAQHeading>
+
               {/* Before/After Comparison Placeholder - Alt text ready */}
               {/*
                 TODO: Add before/after comparison image here
@@ -2173,8 +2158,8 @@ export default function PdfToolPage({ params }: PageProps) {
                   />
                 </div>
               */}
-              
-              <div className="space-y-4">
+
+              <FAQList>
                 {[
                   {
                     q: 'What is TIFF format and why should I use it?',
@@ -2201,22 +2186,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Your PDF is sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -2284,7 +2265,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Whether you're scanning documents, organizing photos, or preparing images for professional use, combining multiple JPG and PNG files into a single PDF is essential. Our free converter streamlines this process, allowing you to merge multiple images while maintaining quality control.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -2453,7 +2434,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   >
                     <div className="text-4xl mb-3">{format.icon}</div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">{format.format}</h3>
-                    
+
                     <div className="mb-4">
                       <p className="text-sm font-semibold text-indigo-600 mb-2">{format.best}</p>
                       <ul className="space-y-1">
@@ -2486,7 +2467,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   </motion.div>
                 ))}
               </div>
-              
+
               <div className="mt-8 p-4 bg-white rounded-lg border border-indigo-100">
                 <p className="text-gray-700">
                   <span className="font-semibold text-indigo-600">When to convert JPG to PDF:</span> Create PDFs from JPG images when you need a professional, multi-page document format. Perfect for combining photos, scans, or receipts into shareable PDF files.
@@ -2542,9 +2523,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">JPG to PDF Converter - Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>JPG to PDF Converter - Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple JPG images into one PDF?',
@@ -2571,22 +2552,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -2653,7 +2630,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 PNG files are commonly used for high-quality images, but managing multiple files can be difficult. Converting them into a single PDF makes sharing, printing, and organizing much easier. If you work with <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG images</Link>, we also offer a dedicated JPG to PDF converter for seamless conversion.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -2818,9 +2795,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">PNG to PDF Converter - Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>PNG to PDF Converter - Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple PNG images into one PDF?',
@@ -2847,22 +2824,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -2938,7 +2911,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 TIFF files are professional-grade image formats commonly used in scanning, archiving, and high-quality document storage. Converting multiple TIFF files into a single PDF makes sharing, printing, and organizing much easier. If you work with other image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link> and <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -3174,9 +3147,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">TIFF to PDF Converter - Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>TIFF to PDF Converter - Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple TIFF images into one PDF?',
@@ -3203,22 +3176,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -3286,7 +3255,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 GIF images are popular for animations, memes, and quick visual demonstrations, but they're not ideal for professional sharing or printing. Converting GIF files to PDF creates a static, printable document that's perfect for presentations and archives. Whether you have a single GIF or multiple animated images to merge, our GIF to PDF converter makes it quick and easy. If you work with other image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link>, <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link>, and <Link href="/all-tools/pdf/webp-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">WebP to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {[
@@ -3450,9 +3419,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About GIF to PDF Conversion</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About GIF to PDF Conversion</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple GIF images into one PDF?',
@@ -3479,21 +3448,16 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order, giving you complete control over the final document layout.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                    className="p-6 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
-                  >
-                    <motion.summary className="font-semibold text-gray-900 list-none flex justify-between items-center">
+                  <FAQDisclosure key={idx}>
+                    <FAQAnswer>
                       <span>{faq.q}</span>
                       <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
-                    </motion.summary>
-                    <p className="mt-3 text-gray-700 leading-relaxed text-sm">{faq.a}</p>
-                  </motion.details>
+                    </FAQAnswer>
+                    <FAQAnswer>{faq.a}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -3561,7 +3525,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 HEIC is Apple's modern image format used by iPhones, iPads, and Mac devices. While HEIC offers superior compression and quality, it's not universally compatible with all devices and applications. Converting HEIC files to PDF creates a universally readable document that works everywhere—perfect for sharing photos, creating archives, or printing. Batch convert multiple HEIC files in seconds. Whether you have a single HEIC image from your iPhone or want to batch convert multiple HEIC files to a single PDF document, our HEIC to PDF converter makes it quick and easy. If you work with other image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link>, <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link>, and <Link href="/all-tools/pdf/webp-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">WebP to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {[
@@ -3725,9 +3689,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About HEIC to PDF Conversion</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About HEIC to PDF Conversion</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple HEIC images into one PDF?',
@@ -3754,21 +3718,16 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order, giving you complete control over the final document layout.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                    className="p-6 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
-                  >
-                    <motion.summary className="font-semibold text-gray-900 list-none flex justify-between items-center">
+                  <FAQDisclosure key={idx}>
+                    <FAQAnswer>
                       <span>{faq.q}</span>
                       <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
-                    </motion.summary>
-                    <p className="mt-3 text-gray-700 leading-relaxed text-sm">{faq.a}</p>
-                  </motion.details>
+                    </FAQAnswer>
+                    <FAQAnswer>{faq.a}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -3850,7 +3809,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 EPS (Encapsulated PostScript) is a vector graphics format widely used by designers, artists, and print professionals for logos, illustrations, and technical drawings. While EPS files are powerful for design work, you need Adobe Illustrator or expensive design software to open them. Converting EPS files to PDF creates a shareable, universally readable document that preserves vector quality—perfect for opening EPS files on any device without Illustrator or design software. Batch convert multiple EPS files in seconds. Whether you have a single EPS graphic or multiple EPS files to batch convert to PDF, our EPS to PDF converter makes it quick and easy, working as an EPS file viewer and converter. If you work with other vector or image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link>, <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link>, and <Link href="/all-tools/pdf/webp-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">WebP to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {[
@@ -4025,9 +3984,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About EPS to PDF Conversion</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About EPS to PDF Conversion</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I batch convert multiple EPS files to PDF?',
@@ -4054,21 +4013,16 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Our converter supports EPS files from all major versions (EPS 2.0, 3.0, and higher) created by Adobe, CorelDRAW, Illustrator, and other professional design software. Vector quality is preserved across all versions.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                    className="p-6 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
-                  >
-                    <motion.summary className="font-semibold text-gray-900 list-none flex justify-between items-center">
+                  <FAQDisclosure key={idx}>
+                    <FAQAnswer>
                       <span>{faq.q}</span>
                       <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
-                    </motion.summary>
-                    <p className="mt-3 text-gray-700 leading-relaxed text-sm">{faq.a}</p>
-                  </motion.details>
+                    </FAQAnswer>
+                    <FAQAnswer>{faq.a}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -4150,7 +4104,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Converting images to PDF is one of the most practical tasks for document creation and sharing. Whether you have JPG photos, PNG screenshots, GIF animations, WEBP images, TIFF documents, or HEIC files from your iPhone, our free batch image-to-PDF converter makes it simple to merge multiple images into a single, professional PDF document. Convert photos to PDF, combine pictures into a single document, or create scanned documents from images instantly. Create PDFs from images without downloading software or signing up for an account. Perfect for creating photo albums, scanned documents, digital presentations, and more. Our converter supports all major image formats and lets you adjust compression levels to balance file size with quality. Merge multiple images and convert with just a few clicks.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {[
@@ -4375,9 +4329,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About Image to PDF Conversion</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About Image to PDF Conversion</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple images of different formats into one PDF?',
@@ -4404,21 +4358,16 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'No account required! You can start converting images to PDF immediately. No registration, no sign-up, no email verification needed. It\'s completely free and anonymous.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                    className="p-6 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
-                  >
-                    <motion.summary className="font-semibold text-gray-900 list-none flex justify-between items-center">
+                  <FAQDisclosure key={idx}>
+                    <FAQAnswer>
                       <span>{faq.q}</span>
                       <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
-                    </motion.summary>
-                    <p className="mt-3 text-gray-700 leading-relaxed text-sm">{faq.a}</p>
-                  </motion.details>
+                    </FAQAnswer>
+                    <FAQAnswer>{faq.a}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -4500,7 +4449,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Converting PDF to Word is one of the most practical tasks for document editing and repurposing. Whether you have scanned documents, generated PDFs, or other text files, our free PDF to Word converter makes it simple to extract text and convert it into editable Microsoft Word documents. Convert PDF to editable Word documents (DOCX) instantly. Use this free PDF to Word converter online without email or registration. Convert PDFs to DOCX format without installing software or signing up for an account. Perfect for editing documents, reusing content, extracting data from PDFs, and more. Our converter preserves formatting and structure to ensure your documents remain professional and properly formatted. Convert PDFs with just a few clicks.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -4678,9 +4627,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'What file formats does the PDF to Word converter support?',
@@ -4707,22 +4656,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'No account required! No signup or email required—convert PDFs to Word instantly and securely. No registration, no email verification, no sign-up needed. It\'s completely free and anonymous.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all cursor-pointer"
-                    whileHover={{ borderColor: 'rgb(99, 102, 241)' }}
-                  >
-                    <summary className="p-4 font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       {faq.q}
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
-                    </summary>
-                    <div className="px-4 pb-4 text-gray-700 border-t border-gray-100">
+
+                    </FAQQuestion>
+                    <FAQAnswer>
                       {faq.a}
-                    </div>
-                  </motion.details>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -5209,7 +5154,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 WebP is a modern, optimized image format that delivers superior compression and quality compared to older formats. Converting WebP files into PDF makes sharing, printing, and organizing much easier. If you work with other image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link> and <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -5437,9 +5382,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">WebP to PDF Converter - Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>WebP to PDF Converter - Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple WebP images into one PDF?',
@@ -5466,22 +5411,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -5550,7 +5491,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Need to rotate PDF pages? Our free online PDF rotation tool lets you rotate any PDF by 90°, 180°, or 270° in seconds. Rotate PDF pages while preserving quality, no signup required, and supports files up to 100MB. Whether you need to fix scanned document orientation or rotate individual pages, our PDF page rotator handles it all instantly.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-8">
                 <div className="flex items-start gap-3">

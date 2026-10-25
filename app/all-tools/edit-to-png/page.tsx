@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -252,24 +253,24 @@ export default function EditToPngPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 Convert to PNG FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['What does this tool create?', 'It creates a PNG version of a supported source image.'],
                   ['Does PNG use lossless encoding?', 'Yes. PNG uses lossless image compression.'],
                   ['Will converting to PNG improve image quality?', 'No. Conversion can change the file format, but it cannot restore detail that is missing from the original image.'],
                   ['Can this tool crop or resize my image?', 'No. This page currently performs format conversion only. Use the dedicated crop or resize tools when you need those operations.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">

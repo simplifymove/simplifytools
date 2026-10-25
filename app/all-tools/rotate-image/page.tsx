@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -402,35 +403,35 @@ export default function RotateImagePage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Rotate Image FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-3">
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does processing improve the original image quality?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     The tool applies the selected transformation to the source
                     image. It does not recreate resolution or image detail
                     that is absent from the original file.
-                  </p>
-                </details>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Should I check the result before downloading?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Previewing the result helps you confirm that the
                     selected settings are appropriate for the particular
                     image you uploaded.
-                  </p>
-                </details>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>
@@ -478,64 +479,64 @@ export default function RotateImagePage() {
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I rotate images by any angle?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, use the slider for 1° precision from 0-360° or enter custom degrees manually for exact control.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, use the slider for 1° precision from 0-360° or enter custom degrees manually for exact control.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What formats does the image rotator support?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">All common formats: JPG, PNG, WebP, GIF, BMP, and more. Output is saved as PNG.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>All common formats: JPG, PNG, WebP, GIF, BMP, and more. Output is saved as PNG.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will my image quality be affected by rotation?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Rotation changes image orientation and the result is encoded again as PNG. Depending on the angle, canvas geometry and pixel mapping can differ from the source, so review the generated image before use.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Rotation changes image orientation and the result is encoded again as PNG. Depending on the angle, canvas geometry and pixel mapping can differ from the source, so review the generated image before use.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 How do I rotate an image 45 degrees?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Use the custom angle slider or enter "45" in the degree input field for precise rotation.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Use the custom angle slider or enter "45" in the degree input field for precise rotation.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I preview before downloading?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, after clicking Rotate Image, you'll see the success message and can download immediately.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, after clicking Rotate Image, you'll see the success message and can download immediately.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is image rotation completely free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, You can use the tool to rotate supported images to the required orientation.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, You can use the tool to rotate supported images to the required orientation.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       <script type="application/ld+json">{JSON.stringify({

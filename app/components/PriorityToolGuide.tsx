@@ -1,3 +1,4 @@
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 import Link from 'next/link';
 
 type ToolId =
@@ -661,10 +662,10 @@ export function PriorityToolGuide({ toolId }: { toolId: ToolId }) {
           {guide.guideLink && <p className="mt-5"><Link href={guide.guideLink.href} className="font-semibold text-blue-700 underline">{guide.guideLink.label}</Link></p>}
         </div>
 
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Questions about this specific tool</h2>
-          <div className="mt-5 space-y-3">{guide.faqs.map((faq) => <details key={faq.question} className="rounded-lg border border-gray-200 p-4"><summary className="cursor-pointer font-semibold text-gray-900">{faq.question}</summary><p className="mt-3 leading-7 text-gray-700">{faq.answer}</p></details>)}</div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Questions about this specific tool</FAQHeading>
+          <FAQList>{guide.faqs.map((faq) => <FAQDisclosure key={faq.question}><FAQQuestion>{faq.question}</FAQQuestion><FAQAnswer>{faq.answer}</FAQAnswer></FAQDisclosure>)}</FAQList>
+        </FAQPanel>
       </div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
     </section>

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -252,35 +253,35 @@ export default function BrightnessContrastPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between brightness and contrast?</summary>
-                  <p className="text-gray-700 mt-2">Brightness adds or removes light overall. Contrast adjusts the difference between light and dark areas.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">When should I adjust these?</summary>
-                  <p className="text-gray-700 mt-2">Use brightness for overexposed/underexposed photos. Use contrast for flat or dull images.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo format.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, adjusted images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">The processed result is exported as a JPEG. Visible quality depends on the source image and processing.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the difference between brightness and contrast?</FAQQuestion>
+                  <FAQAnswer>Brightness adds or removes light overall. Contrast adjusts the difference between light and dark areas.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>When should I adjust these?</FAQQuestion>
+                  <FAQAnswer>Use brightness for overexposed/underexposed photos. Use contrast for flat or dull images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo format.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, adjusted images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Yes, local browser processing only.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>The processed result is exported as a JPEG. Visible quality depends on the source image and processing.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -354,33 +355,33 @@ Upload an image and adjust the brightness and contrast
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 brightness and contrast adjustment works FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does this effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. It changes existing pixel values and does not recreate
                     missing detail or increase the source resolution.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I preview the effect first?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Review the available preview before downloading the
                     processed result.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

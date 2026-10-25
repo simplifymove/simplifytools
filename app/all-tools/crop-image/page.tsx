@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
@@ -630,35 +631,35 @@ export default function CropImagePage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">How do I drag the crop box?</summary>
-              <p className="text-gray-700 mt-2">Click and drag any of the 8 handles around the crop box to resize it. Click inside the box to move it. The preview updates in real-time.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What aspect ratios are available?</summary>
-              <p className="text-gray-700 mt-2">We support free crop, square (1:1), standard (4:3), widescreen (16:9), and classic (3:2) aspect ratios.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I undo a crop?</summary>
-              <p className="text-gray-700 mt-2">Yes! Click "Start Over" to upload a new image or adjust your crop settings again.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">How fast is the processing?</summary>
-              <p className="text-gray-700 mt-2">Processing time depends on the image and device. After cropping, the generated result can be prepared for download.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What output formats are supported?</summary>
-              <p className="text-gray-700 mt-2">We support PNG (lossless), JPG (compressed), and WebP (modern format) exports.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">The crop operation itself is performed in your browser. When you continue to download, the generated result is passed through the site's download-result flow.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>How do I drag the crop box?</FAQQuestion>
+              <FAQAnswer>Click and drag any of the 8 handles around the crop box to resize it. Click inside the box to move it. The preview updates in real-time.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What aspect ratios are available?</FAQQuestion>
+              <FAQAnswer>We support free crop, square (1:1), standard (4:3), widescreen (16:9), and classic (3:2) aspect ratios.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I undo a crop?</FAQQuestion>
+              <FAQAnswer>Yes! Click "Start Over" to upload a new image or adjust your crop settings again.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>How fast is the processing?</FAQQuestion>
+              <FAQAnswer>Processing time depends on the image and device. After cropping, the generated result can be prepared for download.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What output formats are supported?</FAQQuestion>
+              <FAQAnswer>We support PNG (lossless), JPG (compressed), and WebP (modern format) exports.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is my image data safe?</FAQQuestion>
+              <FAQAnswer>The crop operation itself is performed in your browser. When you continue to download, the generated result is passed through the site's download-result flow.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}

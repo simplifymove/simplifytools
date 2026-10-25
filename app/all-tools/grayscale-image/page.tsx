@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -247,35 +248,35 @@ export default function GrayscaleImagePage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Grayscale Image FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-3">
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does processing improve the original image quality?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     The tool applies the selected transformation to the source
                     image. It does not recreate resolution or image detail
                     that is absent from the original file.
-                  </p>
-                </details>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Should I check the result before downloading?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Previewing the result helps you confirm that the
                     selected settings are appropriate for the particular
                     image you uploaded.
-                  </p>
-                </details>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>
@@ -323,64 +324,64 @@ export default function GrayscaleImagePage() {
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 What does grayscale conversion do exactly?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Grayscale conversion removes all color information, creating a black and white image with shades of gray based on brightness values.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Grayscale conversion removes all color information, creating a black and white image with shades of gray based on brightness values.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is grayscale the same as black and white?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Grayscale includes shades of gray for smooth tones, while true black and white only has pure black and pure white. Our tool creates grayscale.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Grayscale includes shades of gray for smooth tones, while true black and white only has pure black and pure white. Our tool creates grayscale.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What image formats are supported?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Supported browser-readable images can be processed by the tool. The generated result is downloaded as a JPG image.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Supported browser-readable images can be processed by the tool. The generated result is downloaded as a JPG image.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I convert back from grayscale to color?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Not automatically. Grayscale removes color data permanently. Use your original image to revert, or use colorization tools for artistic effects.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Not automatically. Grayscale removes color data permanently. Use your original image to revert, or use colorization tools for artistic effects.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Does grayscale reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Grayscale conversion changes the image pixels by removing color information, and the generated result is encoded again as JPG. Review the output if image fidelity is important.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Grayscale conversion changes the image pixels by removing color information, and the generated result is encoded again as JPG. Review the output if image fidelity is important.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is grayscale conversion completely free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, You can use the tool to convert supported images to grayscale.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, You can use the tool to convert supported images to grayscale.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       <script type="application/ld+json">{JSON.stringify({

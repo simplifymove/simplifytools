@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -111,7 +112,7 @@ export default function OilPaintEffectPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -163,7 +164,7 @@ export default function OilPaintEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Oil Paint Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -281,35 +282,35 @@ export default function OilPaintEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 5 for balanced effect. Lower for subtle, higher for strong painting style.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this work on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Results vary by image content and detail.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use for commercial art?</summary>
-                  <p className="text-gray-700 mt-2">Commercial-use rights depend on the rights and license attached to the source image and any other material used in your project.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the output quality?</summary>
-                  <p className="text-gray-700 mt-2">The processed result is exported as JPEG. The effect intentionally smooths and changes image detail, and JPEG encoding can introduce additional compression changes.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image private?</summary>
-                  <p className="text-gray-700 mt-2">The visual effect is processed locally in the browser. When you choose Download, the generated JPEG is sent through the download-result service so the download page can be prepared.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I edit further?</summary>
-                  <p className="text-gray-700 mt-2">Yes, download and use image editors for additional modifications.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 5 for balanced effect. Lower for subtle, higher for strong painting style.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this work on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo. Results vary by image content and detail.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use for commercial art?</FAQQuestion>
+                  <FAQAnswer>Commercial-use rights depend on the rights and license attached to the source image and any other material used in your project.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the output quality?</FAQQuestion>
+                  <FAQAnswer>The processed result is exported as JPEG. The effect intentionally smooths and changes image detail, and JPEG encoding can introduce additional compression changes.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed locally in the browser. When you choose Download, the generated JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I edit further?</FAQQuestion>
+                  <FAQAnswer>Yes, download and use image editors for additional modifications.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

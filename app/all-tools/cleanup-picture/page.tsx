@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -632,42 +634,42 @@ export default function CleanupPicturePage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Cleanup Picture FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does Cleanup Picture remove objects?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     No. It provides denoise, smoothing, and contrast
                     adjustments rather than object-removal processing.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Should every cleanup option be enabled?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     No. Use the controls that match the visible issue and
                     compare the preview before processing.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     What output format is generated?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     The processed result is generated as PNG.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

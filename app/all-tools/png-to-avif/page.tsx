@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -293,36 +294,36 @@ export default function PngToAvifPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will PNG transparency be preserved?</h3>
-              <p className="text-gray-700">AVIF supports alpha transparency. Transparent areas from the PNG can be retained when supported by the conversion pipeline, but the result should be checked after conversion.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than PNG?</h3>
-              <p className="text-gray-700">AVIF and PNG use different encoding methods, so file-size differences depend on image content and conversion settings.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF supported by modern browsers?</h3>
-              <p className="text-gray-700">AVIF is supported by Chrome 85+, Firefox 93+, and Safari 16+. For older browsers, use PNG as a fallback with HTML picture tags.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is this suitable for web graphics and logos?</h3>
-              <p className="text-gray-700">AVIF can be used for web graphics when the required browser and application support is available. Conversion results depend on the source image and settings.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my data kept private?</h3>
-              <p className="text-gray-700">The PNG file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple files?</h3>
-              <p className="text-gray-700">This converter currently processes one PNG file at a time. Additional files can be converted individually.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>Will PNG transparency be preserved?</FAQStaticQuestion>
+              <FAQAnswer>AVIF supports alpha transparency. Transparent areas from the PNG can be retained when supported by the conversion pipeline, but the result should be checked after conversion.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>How much smaller is AVIF than PNG?</FAQStaticQuestion>
+              <FAQAnswer>AVIF and PNG use different encoding methods, so file-size differences depend on image content and conversion settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is AVIF supported by modern browsers?</FAQStaticQuestion>
+              <FAQAnswer>AVIF is supported by Chrome 85+, Firefox 93+, and Safari 16+. For older browsers, use PNG as a fallback with HTML picture tags.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is this suitable for web graphics and logos?</FAQStaticQuestion>
+              <FAQAnswer>AVIF can be used for web graphics when the required browser and application support is available. Conversion results depend on the source image and settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is my data kept private?</FAQStaticQuestion>
+              <FAQAnswer>The PNG file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I batch convert multiple files?</FAQStaticQuestion>
+              <FAQAnswer>This converter currently processes one PNG file at a time. Additional files can be converted individually.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}

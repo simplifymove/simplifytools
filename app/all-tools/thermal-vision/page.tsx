@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -257,35 +258,35 @@ export default function ThermalVisionPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-red-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">The intensity setting controls how strongly the simulated heat-map colors replace the original appearance. Choose a value according to the visual result you want.</p>
-                </details>
-                <details className="border-l-4 border-red-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Color mapping explained?</summary>
-                  <p className="text-gray-700 mt-2">The visual mapping assigns blue/cyan tones to darker ranges and yellow/red tones to brighter ranges. These colors do not represent measured temperatures.</p>
-                </details>
-                <details className="border-l-4 border-red-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, maps brightness to thermal colors.</p>
-                </details>
-                <details className="border-l-4 border-red-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, thermal images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-red-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
-                </details>
-                <details className="border-l-4 border-red-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Real thermal imaging?</summary>
-                  <p className="text-gray-700 mt-2">Simulates thermal effect using brightness mapping.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity should I use?</FAQQuestion>
+                  <FAQAnswer>The intensity setting controls how strongly the simulated heat-map colors replace the original appearance. Choose a value according to the visual result you want.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Color mapping explained?</FAQQuestion>
+                  <FAQAnswer>The visual mapping assigns blue/cyan tones to darker ranges and yellow/red tones to brighter ranges. These colors do not represent measured temperatures.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>Yes, maps brightness to thermal colors.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, thermal images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Real thermal imaging?</FAQQuestion>
+                  <FAQAnswer>Simulates thermal effect using brightness mapping.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

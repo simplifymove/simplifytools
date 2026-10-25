@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
@@ -487,49 +488,49 @@ export default function BlurBackgroundPage() {
                 </div>
               </div>
 
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              <FAQPanel>
+                <FAQHeading>
                   Blur Background FAQ
-                </h2>
-                <div className="space-y-4">
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                </FAQHeading>
+                <FAQList>
+                  <FAQCard>
+                    <FAQStaticQuestion>
                       Does the tool blur the whole image?
-                    </h3>
-                    <p className="text-gray-700">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       No. It attempts to keep the extracted foreground subject sharp while
                       applying the blur to the background copy of the original photo.
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                    </FAQAnswer>
+                  </FAQCard>
+                  <FAQCard>
+                    <FAQStaticQuestion>
                       What does edge feathering change?
-                    </h3>
-                    <p className="text-gray-700">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       Edge feathering softens the boundary of the foreground mask so the sharp
                       subject blends more gradually into the blurred background.
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                    </FAQAnswer>
+                  </FAQCard>
+                  <FAQCard>
+                    <FAQStaticQuestion>
                       Does Portrait Mode increase the blur?
-                    </h3>
-                    <p className="text-gray-700">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       No. Portrait Mode does not change the selected blur strength. It slightly
                       darkens the blurred background before the final composite is created.
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                    </FAQAnswer>
+                  </FAQCard>
+                  <FAQCard>
+                    <FAQStaticQuestion>
                       What file format is the result?
-                    </h3>
-                    <p className="text-gray-700">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       The processed image is returned and downloaded as a JPEG while retaining
                       the original image dimensions.
-                    </p>
-                  </div>
-                </div>
-              </div>
+                    </FAQAnswer>
+                  </FAQCard>
+                </FAQList>
+              </FAQPanel>
 
             </div>
           </section>

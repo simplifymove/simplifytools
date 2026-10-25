@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -34,7 +35,7 @@ export default function VsdxToPdfPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     try {
       const formData = new FormData();
@@ -148,7 +149,7 @@ export default function VsdxToPdfPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
-                    
+
                     <p className="text-sm text-gray-600 mb-6">
                       Your VSDX diagram is rendered to PDF using server-assisted
                       document conversion.
@@ -255,24 +256,24 @@ export default function VsdxToPdfPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 VSDX to PDF FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['What does this tool convert?', 'It accepts a VSDX diagram and produces PDF output through server-assisted document conversion.'],
                   ['Why convert a Visio diagram to PDF?', 'PDF is convenient for sharing, reviewing, printing, and archiving diagrams when editing the original VSDX is not required.'],
                   ['Can the PDF replace my original VSDX?', 'Keep the VSDX if you need future diagram editing. PDF is primarily useful as a viewing and distribution format.'],
                   ['Should I inspect the converted PDF?', 'Yes. Review text, shapes, connectors, page layout, and other important diagram details after conversion.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-sm text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
       </main>

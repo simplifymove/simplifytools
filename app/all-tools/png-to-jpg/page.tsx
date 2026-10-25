@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -433,64 +434,64 @@ export default function PngToJpgPage() {
 
     {/* FAQ Section */}
     <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-        <div className="space-y-4">
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+      <FAQPanel>
+        <FAQHeading>Frequently Asked Questions</FAQHeading>
+        <FAQList>
+          <FAQDisclosure>
+            <FAQQuestion>
               What happens to transparency when converting PNG to JPG?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">JPG does not support transparency. Transparent or partially transparent pixels must be flattened when the browser creates the JPEG output, so transparency is not preserved.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>JPG does not support transparency. Transparent or partially transparent pixels must be flattened when the browser creates the JPEG output, so transparency is not preserved.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               What quality setting should I use?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">There is no single quality setting that is best for every image. Start with a moderate-to-high setting, inspect text, edges, gradients, and fine detail, then adjust according to the resulting file size and visible artifacts.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>There is no single quality setting that is best for every image. Start with a moderate-to-high setting, inspect text, edges, gradients, and fine detail, then adjust according to the resulting file size and visible artifacts.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               How much smaller will my file be?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">File-size differences depend on the image content and selected JPG quality. Photographs and graphics can produce different results.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>File-size differences depend on the image content and selected JPG quality. Photographs and graphics can produce different results.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               Are my files stored or shared?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               Can I convert multiple PNG files at once?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">Currently, this tool processes one image at a time. For batch conversion of multiple files, check out our Batch Convert Images tool.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>Currently, this tool processes one image at a time. For batch conversion of multiple files, check out our Batch Convert Images tool.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               Is this converter really free?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">You can use the available PNG-to-JPG conversion controls without creating an account.</p>
-          </details>
-        </div>
-      </div>
+
+
+            </FAQQuestion>
+            <FAQAnswer>You can use the available PNG-to-JPG conversion controls without creating an account.</FAQAnswer>
+          </FAQDisclosure>
+        </FAQList>
+      </FAQPanel>
     </div>
 
     {/* FAQ Schema */}

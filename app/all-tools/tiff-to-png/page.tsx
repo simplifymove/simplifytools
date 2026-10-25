@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -266,24 +267,24 @@ export default function TiffToPngPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 TIFF to PNG FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['Does PNG use lossless compression?', 'Yes. PNG uses lossless image compression, so its encoding does not intentionally discard image information in the way lossy formats such as JPEG can.'],
                   ['Can I upload .tif files?', 'Yes. The converter is intended for TIFF images, including files that use the .tif extension.'],
                   ['Will converting increase image resolution?', 'No. Format conversion does not create additional detail or resolution that was not present in the source image.'],
                   ['Why use PNG instead of TIFF?', 'PNG is widely supported in browsers and many everyday image workflows, which can make it more convenient for viewing and sharing.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">

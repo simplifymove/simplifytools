@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -387,9 +388,9 @@ export default function BlackWhitePage() {
                 </p>
               </section>
 
-              <section className="bg-white rounded-lg border border-gray-200 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-                <div className="space-y-4">
+              <FAQPanel>
+                <FAQHeading>Frequently Asked Questions</FAQHeading>
+                <FAQList>
                   {[
                     {
                       q: 'Which grayscale method should I use?',
@@ -408,13 +409,13 @@ export default function BlackWhitePage() {
                       a: 'Yes. You can convert images to black and white for free without signing up.',
                     },
                   ].map((faq) => (
-                    <details key={faq.q} className="p-4 border border-gray-200 rounded-lg">
-                      <summary className="font-semibold text-gray-900 cursor-pointer">{faq.q}</summary>
-                      <p className="text-gray-700 mt-3 text-sm">{faq.a}</p>
-                    </details>
+                    <FAQDisclosure key={faq.q}>
+                      <FAQQuestion>{faq.q}</FAQQuestion>
+                      <FAQAnswer>{faq.a}</FAQAnswer>
+                    </FAQDisclosure>
                   ))}
-                </div>
-              </section>
+                </FAQList>
+              </FAQPanel>
 
               <RelatedToolsSection family="image" toolId="black-white" limit={8} />
             </div>

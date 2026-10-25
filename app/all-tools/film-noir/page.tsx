@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -236,35 +237,35 @@ export default function FilmNoirPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What contrast should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced noir. Higher for more dramatic.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Portraits work especially well.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, noir images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent contrast.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">True black and white?</summary>
-                  <p className="text-gray-700 mt-2">Yes, grayscale conversion with contrast.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What contrast should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for balanced noir. Higher for more dramatic.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo. Portraits work especially well.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, noir images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>High-quality JPEG with excellent contrast.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Yes, local browser processing only.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>True black and white?</FAQQuestion>
+                  <FAQAnswer>Yes, grayscale conversion with contrast.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -337,31 +338,31 @@ Upload an image and apply the available film noir controls.
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 the Film Noir effect works FAQ
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does the effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. The tool changes the appearance of existing image
                     pixels; it does not reconstruct missing source detail.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                  </FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I preview the result before downloading?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Use the on-page preview and available controls to
                     inspect the processed image before downloading it.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
 

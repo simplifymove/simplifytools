@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -234,27 +235,27 @@ export default function JpgToTiffPage() {
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What is TIFF format?</h3>
-                <p className="text-gray-600">TIFF (Tagged Image File Format) is a flexible image format that supports both lossless and lossy compression. It's widely used for high-quality image storage and professional applications.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Why convert JPG to TIFF?</h3>
-                <p className="text-gray-600">TIFF supports lossless storage and is commonly used in workflows where avoiding additional lossy compression is useful. The converted TIFF preserves the pixels decoded from the JPG, but it cannot restore detail already removed by JPEG compression.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Will my image lose quality?</h3>
-                <p className="text-gray-600">The TIFF output uses lossless compression, so the conversion does not introduce additional lossy TIFF compression. However, details already discarded by the original JPG compression cannot be restored.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
-                <p className="text-gray-600">Conversion time and memory use depend on the image dimensions and file size. Very large images can require more processing resources than smaller photographs.</p>
-              </div>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQCard>
+                <FAQStaticQuestion>What is TIFF format?</FAQStaticQuestion>
+                <FAQAnswer>TIFF (Tagged Image File Format) is a flexible image format that supports both lossless and lossy compression. It's widely used for high-quality image storage and professional applications.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Why convert JPG to TIFF?</FAQStaticQuestion>
+                <FAQAnswer>TIFF supports lossless storage and is commonly used in workflows where avoiding additional lossy compression is useful. The converted TIFF preserves the pixels decoded from the JPG, but it cannot restore detail already removed by JPEG compression.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Will my image lose quality?</FAQStaticQuestion>
+                <FAQAnswer>The TIFF output uses lossless compression, so the conversion does not introduce additional lossy TIFF compression. However, details already discarded by the original JPG compression cannot be restored.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What size files can I convert?</FAQStaticQuestion>
+                <FAQAnswer>Conversion time and memory use depend on the image dimensions and file size. Very large images can require more processing resources than smaller photographs.</FAQAnswer>
+              </FAQCard>
+            </FAQList>
+          </FAQPanel>
         </div>
       </div>
 
@@ -396,12 +397,12 @@ export default function JpgToTiffPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            <FAQPanel>
+              <FAQHeading>
                 JPG to TIFF FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
+              <FAQList>
                 {[
                   [
                     'Does the converter use lossless TIFF compression?',
@@ -424,20 +425,17 @@ export default function JpgToTiffPage() {
                     'The converter returns a TIFF image with the image/tiff MIME type and the download flow saves the result with a TIFF filename.',
                   ],
                 ].map(([question, answer]) => (
-                  <div
-                    key={question}
-                    className="border border-gray-200 rounded-xl p-5"
-                  >
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>
                       {question}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-6">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       {answer}
-                    </p>
-                  </div>
+                    </FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

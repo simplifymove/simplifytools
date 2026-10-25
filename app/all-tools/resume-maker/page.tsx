@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React from 'react';
 import Link from 'next/link';
@@ -253,57 +254,57 @@ export default function ResumeMakerPage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            <FAQPanel>
+              <FAQHeading>
                 Resume Maker FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div className="bg-white border border-gray-200 rounded-xl p-6">
-                  <h3 className="font-bold text-gray-900 mb-2">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     What format does Resume Maker download?
-                  </h3>
-                  <p className="text-gray-700">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Resume Maker currently downloads the completed resume as a DOCX file.
                     You can open the document in software that supports DOCX and make
                     additional edits if necessary.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="bg-white border border-gray-200 rounded-xl p-6">
-                  <h3 className="font-bold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does the job-match score guarantee an interview?
-                  </h3>
-                  <p className="text-gray-700">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. The score is a comparison and editing aid based on factors such as
                     skills, experience, resume completeness, and keyword overlap. Hiring
                     decisions depend on the employer and the specific role.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="bg-white border border-gray-200 rounded-xl p-6">
-                  <h3 className="font-bold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I customize the resume before downloading?
-                  </h3>
-                  <p className="text-gray-700">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. You can edit core resume sections, add or remove experience and
                     education entries, change skills, choose an available design template,
                     and preview the result before downloading.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="bg-white border border-gray-200 rounded-xl p-6">
-                  <h3 className="font-bold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Should I add every missing skill suggested by the matcher?
-                  </h3>
-                  <p className="text-gray-700">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. Only include skills and experience that truthfully represent your
                     background. Missing-skill information can help you understand a job
                     description, but it should not be used to add qualifications you do not have.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
             <div className="text-center">
               <Link

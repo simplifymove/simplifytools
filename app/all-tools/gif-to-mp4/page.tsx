@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -349,11 +350,11 @@ export default function GifToMp4Page() {
               </ul>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 GIF to MP4 FAQ
-              </h2>
-              <div className="space-y-5">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['What file does this tool accept?', 'This converter is designed for GIF input and produces an MP4 video.'],
                   ['Can I change the output frame rate?', 'Yes. The page provides an FPS control ranging from 15 to 60 frames per second.'],
@@ -361,15 +362,15 @@ export default function GifToMp4Page() {
                   ['Why would I use MP4 instead of GIF?', 'MP4 can be useful when a website, application, presentation, or other workflow expects a video file rather than an animated image.'],
                   ['Should I check the MP4 after conversion?', 'Yes. Preview the downloaded video to confirm that its animation and playback meet your needs.'],
                 ].map(([question, answer]) => (
-                  <div key={question}>
-                    <h3 className="font-semibold text-gray-900 mb-1">
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>
                       {question}
-                    </h3>
-                    <p className="text-gray-700 leading-7">{answer}</p>
-                  </div>
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{answer}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div className="bg-orange-50 rounded-xl border border-orange-100 p-6 md:p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-3">

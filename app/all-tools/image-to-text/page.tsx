@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -115,7 +116,7 @@ export default function ImageToTextPage() {
       );
       return;
     }
-    
+
     setProcessing(true);
     clearError();
     try {
@@ -261,7 +262,7 @@ export default function ImageToTextPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Extraction Settings</h3>
-                    
+
                     {/* Language Selection */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -467,12 +468,12 @@ export default function ImageToTextPage() {
               </ul>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 Image to Text FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-5">
+              <FAQList>
                 {[
                   ['What does Image to Text do?', 'It uses OCR processing to recognize text in an uploaded image and prepare the extracted result for viewing or download.'],
                   ['Which languages can I select?', 'The current interface provides English, Spanish, French, German, Simplified Chinese, Japanese, Italian, Portuguese, and Russian.'],
@@ -480,15 +481,15 @@ export default function ImageToTextPage() {
                   ['Is OCR always perfectly accurate?', 'No. Recognition accuracy depends on factors such as image clarity, resolution, text size, fonts, layout, language, and background quality.'],
                   ['Should I review extracted text?', 'Yes. Check important names, dates, numbers, addresses, punctuation, and other critical information before relying on or sharing OCR output.'],
                 ].map(([question, answer]) => (
-                  <div key={question}>
-                    <h3 className="font-semibold text-gray-900 mb-1">
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>
                       {question}
-                    </h3>
-                    <p className="text-gray-700 leading-7">{answer}</p>
-                  </div>
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{answer}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div className="bg-orange-50 rounded-xl border border-orange-100 p-6 md:p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-3">

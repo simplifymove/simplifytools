@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -193,7 +194,7 @@ export default function ChartMakerPage() {
     let currentAngle = 0;
     data.forEach((point, i) => {
       const sliceAngle = (point.value / total) * Math.PI * 2;
-      
+
       ctx.fillStyle = `hsl(${(i * 360) / data.length}, 70%, 60%)`;
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
@@ -328,7 +329,7 @@ export default function ChartMakerPage() {
             {/* Data Input Section */}
             <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Data Points</h2>
-              
+
               <div className="space-y-4">
                 {data.map((point, index) => (
                   <div key={index} className="flex gap-3 items-end">
@@ -515,12 +516,12 @@ export default function ChartMakerPage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 Chart Maker FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
+              <FAQList>
                 {[
                   {
                     q: 'Which chart types are available?',
@@ -539,18 +540,15 @@ export default function ChartMakerPage() {
                     a: 'Yes. Update the title, data points, or chart type and review the preview before downloading the final image.',
                   },
                 ].map((item) => (
-                  <div
-                    key={item.q}
-                    className="border-b border-gray-200 pb-4"
-                  >
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard key={item.q}>
+                    <FAQStaticQuestion>
                       {item.q}
-                    </h3>
-                    <p className="text-gray-600 leading-7">{item.a}</p>
-                  </div>
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{item.a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-3">

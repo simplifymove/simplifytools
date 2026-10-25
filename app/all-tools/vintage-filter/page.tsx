@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -267,35 +268,35 @@ export default function VintageFilterPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What file formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">The tool accepts supported browser-readable image files and processes the selected effect locally.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image data stored?</summary>
-                  <p className="text-gray-700 mt-2">The vintage-filter processing shown here runs locally in your browser using canvas.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I adjust the vintage effect after applying it?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Adjust the intensity slider to your preference before clicking "Apply Vintage Effect" to experiment with different levels.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What does the intensity slider do?</summary>
-                  <p className="text-gray-700 mt-2">The intensity slider controls how strong the vintage effect appears. Lower values (0-30%) give subtle effects, while higher values (70-100%) create more pronounced vintage looks.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use this on mobile devices?</summary>
-                  <p className="text-gray-700 mt-2">The filter can be used in many modern desktop and mobile browsers, but compatibility and practical image limits can vary by browser and device.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Do you offer batch processing?</summary>
-                  <p className="text-gray-700 mt-2">Currently, you can filter one image at a time. For multiple images, simply repeat the process for each photo.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What file formats are supported?</FAQQuestion>
+                  <FAQAnswer>The tool accepts supported browser-readable image files and processes the selected effect locally.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image data stored?</FAQQuestion>
+                  <FAQAnswer>The vintage-filter processing shown here runs locally in your browser using canvas.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I adjust the vintage effect after applying it?</FAQQuestion>
+                  <FAQAnswer>Yes! Adjust the intensity slider to your preference before clicking "Apply Vintage Effect" to experiment with different levels.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What does the intensity slider do?</FAQQuestion>
+                  <FAQAnswer>The intensity slider controls how strong the vintage effect appears. Lower values (0-30%) give subtle effects, while higher values (70-100%) create more pronounced vintage looks.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use this on mobile devices?</FAQQuestion>
+                  <FAQAnswer>The filter can be used in many modern desktop and mobile browsers, but compatibility and practical image limits can vary by browser and device.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Do you offer batch processing?</FAQQuestion>
+                  <FAQAnswer>Currently, you can filter one image at a time. For multiple images, simply repeat the process for each photo.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

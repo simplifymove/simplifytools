@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -276,35 +277,35 @@ export default function EpsToSvgPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What is EPS format?</h3>
-                  <p className="text-gray-600">EPS (Encapsulated PostScript) is a vector graphics format used primarily in professional design and printing. It's created by programs like Adobe Illustrator and contains scalable vector graphics.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Why convert EPS to SVG?</h3>
-                  <p className="text-gray-600">SVG is the standard for web graphics and is supported by all modern browsers without plugins. Converting EPS to SVG allows you to use professional vector artwork on websites and digital platforms.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Will the conversion preserve the quality?</h3>
-                  <p className="text-gray-600">Both EPS and SVG can represent vector artwork, but they support different features. Simple shapes and paths generally convert well, while complex effects, fonts, gradients, or PostScript-specific features may change during conversion.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
-                  <p className="text-gray-600">You can upload EPS files up to the current 500MB image-conversion limit. Processing time and output fidelity depend on file complexity.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Can I edit the SVG after conversion?</h3>
-                  <p className="text-gray-600">The generated SVG contains vector elements that can be edited in compatible SVG or vector-editing software. Editability depends on how the original EPS content is represented after conversion.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Is the conversion lossless?</h3>
-                  <p className="text-gray-600">EPS and SVG can both represent vector artwork, but they support different features. Simple vector paths may transfer well, while unsupported EPS features can be simplified or changed during conversion.</p>
-                </div>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>What is EPS format?</FAQStaticQuestion>
+                  <FAQAnswer>EPS (Encapsulated PostScript) is a vector graphics format used primarily in professional design and printing. It's created by programs like Adobe Illustrator and contains scalable vector graphics.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Why convert EPS to SVG?</FAQStaticQuestion>
+                  <FAQAnswer>SVG is the standard for web graphics and is supported by all modern browsers without plugins. Converting EPS to SVG allows you to use professional vector artwork on websites and digital platforms.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Will the conversion preserve the quality?</FAQStaticQuestion>
+                  <FAQAnswer>Both EPS and SVG can represent vector artwork, but they support different features. Simple shapes and paths generally convert well, while complex effects, fonts, gradients, or PostScript-specific features may change during conversion.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What size files can I convert?</FAQStaticQuestion>
+                  <FAQAnswer>You can upload EPS files up to the current 500MB image-conversion limit. Processing time and output fidelity depend on file complexity.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Can I edit the SVG after conversion?</FAQStaticQuestion>
+                  <FAQAnswer>The generated SVG contains vector elements that can be edited in compatible SVG or vector-editing software. Editability depends on how the original EPS content is represented after conversion.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Is the conversion lossless?</FAQStaticQuestion>
+                  <FAQAnswer>EPS and SVG can both represent vector artwork, but they support different features. Simple vector paths may transfer well, while unsupported EPS features can be simplified or changed during conversion.</FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </div>
       </main>

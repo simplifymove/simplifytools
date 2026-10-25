@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import { use, useState, useCallback } from 'react';
 import { notFound, useRouter } from 'next/navigation';
@@ -202,7 +204,7 @@ export default function DataToolPage({ params }: PageProps) {
     try {
       // Build options with defaults applied
       const optionsWithDefaults: Record<string, any> = {};
-      
+
       if (tool.options && tool.options.length > 0) {
         for (const option of tool.options) {
           // Use formData value if set, otherwise use default
@@ -212,7 +214,7 @@ export default function DataToolPage({ params }: PageProps) {
               : option.default;
         }
       }
-      
+
       // Merge with any user-set formData values
       let finalOptions = { ...optionsWithDefaults, ...formData };
 
@@ -224,7 +226,7 @@ export default function DataToolPage({ params }: PageProps) {
         numParts: 'num_parts',
         sheetMode: 'sheet_mode',
       };
-      
+
       const snakeCaseOptions: Record<string, any> = {};
       for (const [key, value] of Object.entries(finalOptions)) {
         const snakeKey = camelToSnakeMap[key] || key;
@@ -280,7 +282,7 @@ export default function DataToolPage({ params }: PageProps) {
   return (
     <>
       <HomeHeader />
-      
+
       {/* JSON-LD Schema Markup */}
       {!['csv-to-json', 'excel-to-csv', 'json-to-xml'].includes(tool.id) && <script
           type="application/ld+json"
@@ -667,17 +669,17 @@ export default function DataToolPage({ params }: PageProps) {
           </section>
 
           {/* FAQ Section */}
-          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6">
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
               {faqItems.map((faq, idx) => (
-                <div key={idx} className="border-b border-gray-200 pb-6 last:border-0">
-                  <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
-                  <p className="text-gray-700">{faq.a}</p>
-                </div>
+                <FAQDisclosure key={idx}>
+                  <FAQQuestion>{faq.q}</FAQQuestion>
+                  <FAQAnswer>{faq.a}</FAQAnswer>
+                </FAQDisclosure>
               ))}
-            </div>
-          </section>
+            </FAQList>
+          </FAQPanel>
 
           <RelatedToolsSection
             family="data"

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -346,12 +347,12 @@ export default function BmpToJpgPage() {
               </p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <FAQPanel>
+              <FAQHeading>
                 BMP to JPG FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="divide-y divide-gray-200">
+              <FAQList>
                 {[
                   {
                     q: 'Does converting BMP to JPG reduce file size?',
@@ -370,15 +371,15 @@ export default function BmpToJpgPage() {
                     a: 'Yes. JPG is one of the most widely supported image formats and can be opened by modern browsers, phones, computers, and common image applications.',
                   },
                 ].map((item) => (
-                  <div key={item.q} className="py-5 first:pt-0 last:pb-0">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard key={item.q}>
+                    <FAQStaticQuestion>
                       {item.q}
-                    </h3>
-                    <p className="text-gray-600 leading-7">{item.a}</p>
-                  </div>
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{item.a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div className="text-sm text-gray-600">
               Need lossless output instead?{' '}

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -234,35 +235,35 @@ export default function MirrorImagePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between horizontal and vertical flip?</summary>
-                  <p className="text-gray-700 mt-2">Horizontal flips left-to-right. Vertical flips top-to-bottom.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use flipped images commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all flipped images can be used for any purpose.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does quality change when flipping?</summary>
-                  <p className="text-gray-700 mt-2">The image dimensions are retained during the flip, and the downloaded result is encoded as a JPEG.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">The upload control supports JPG, PNG, and WebP images.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image stored?</summary>
-                  <p className="text-gray-700 mt-2">The image flip itself happens in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I flip multiple times?</summary>
-                  <p className="text-gray-700 mt-2">Yes, download and upload again to apply more flips.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the difference between horizontal and vertical flip?</FAQQuestion>
+                  <FAQAnswer>Horizontal flips left-to-right. Vertical flips top-to-bottom.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use flipped images commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, all flipped images can be used for any purpose.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does quality change when flipping?</FAQQuestion>
+                  <FAQAnswer>The image dimensions are retained during the flip, and the downloaded result is encoded as a JPEG.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What formats are supported?</FAQQuestion>
+                  <FAQAnswer>The upload control supports JPG, PNG, and WebP images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image stored?</FAQQuestion>
+                  <FAQAnswer>The image flip itself happens in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I flip multiple times?</FAQQuestion>
+                  <FAQAnswer>Yes, download and upload again to apply more flips.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

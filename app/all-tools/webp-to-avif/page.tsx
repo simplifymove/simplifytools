@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -261,36 +262,36 @@ export default function WebpToAvifPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than WebP?</h3>
-              <p className="text-gray-700">File-size differences between AVIF and WebP depend on the source image, encoder, and conversion settings.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF better than WebP?</h3>
-              <p className="text-gray-700">AVIF is a modern image format that can provide efficient compression. Results vary depending on image content and encoding settings.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Are both formats supported by browsers?</h3>
-              <p className="text-gray-700">Both WebP and AVIF are supported by modern browsers. AVIF support is growing rapidly with Chrome 85+, Firefox 93+, and Safari 16+.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will quality be lost in conversion?</h3>
-              <p className="text-gray-700">AVIF conversion can change image data because the source is decoded and encoded again. Visual quality depends on the source image and conversion settings.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-              <p className="text-gray-700">The WebP file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Should I convert all WebP files to AVIF?</h3>
-              <p className="text-gray-700">For web optimization, converting WebP to AVIF is beneficial for modern browsers. Use HTML picture tags with fallbacks for maximum compatibility.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>How much smaller is AVIF than WebP?</FAQStaticQuestion>
+              <FAQAnswer>File-size differences between AVIF and WebP depend on the source image, encoder, and conversion settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is AVIF better than WebP?</FAQStaticQuestion>
+              <FAQAnswer>AVIF is a modern image format that can provide efficient compression. Results vary depending on image content and encoding settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Are both formats supported by browsers?</FAQStaticQuestion>
+              <FAQAnswer>Both WebP and AVIF are supported by modern browsers. AVIF support is growing rapidly with Chrome 85+, Firefox 93+, and Safari 16+.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will quality be lost in conversion?</FAQStaticQuestion>
+              <FAQAnswer>AVIF conversion can change image data because the source is decoded and encoded again. Visual quality depends on the source image and conversion settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+              <FAQAnswer>The WebP file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Should I convert all WebP files to AVIF?</FAQStaticQuestion>
+              <FAQAnswer>For web optimization, converting WebP to AVIF is beneficial for modern browsers. Use HTML picture tags with fallbacks for maximum compatibility.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}

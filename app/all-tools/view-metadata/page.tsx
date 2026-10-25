@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -77,7 +78,7 @@ export default function ViewMetadataPage() {
     const text = Object.entries(rawData)
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n');
-    
+
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -133,7 +134,7 @@ export default function ViewMetadataPage() {
                 {metadata && (
                   <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Image Metadata</h2>
-                    
+
                     {/* Quick Stats */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
                       <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
@@ -294,24 +295,24 @@ export default function ViewMetadataPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 Image Metadata Viewer FAQ
-              </h2>
-              <div className="space-y-4">
+              </FAQHeading>
+              <FAQList>
                 {[
                   ['Is my image uploaded to a conversion server?', 'The property-reading logic on this page uses browser FileReader and Image APIs to inspect the selected image locally.'],
                   ['Can I see image dimensions?', 'Yes. The tool displays the decoded image width and height in pixels.'],
                   ['Can I copy the displayed properties?', 'Yes. Use the Copy Metadata button after selecting a supported image.'],
                   ['Does the tool show camera model or GPS location?', 'No. Embedded EXIF and GPS fields are not extracted by the current viewer.'],
                 ].map(([q, a]) => (
-                  <div key={q} className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-                    <p className="text-gray-600">{a}</p>
-                  </div>
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">

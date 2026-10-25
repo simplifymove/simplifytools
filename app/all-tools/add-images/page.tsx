@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -627,41 +628,41 @@ export default function AddImagesPage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Add Images FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     How many images can I add?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     The current interface supports up to 10 images.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Are images stretched into squares?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. Images are fitted inside their placement areas while
                     preserving the source aspect ratio.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     What output format is generated?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     The completed composition is generated as PNG.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
@@ -619,42 +620,42 @@ export default function TranslateImagePage() {
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Translate Image FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Is OCR performed entirely in the browser?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. OCR and translation use a server-side processing
                     endpoint.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can translated text be edited?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Returned overlays can be edited before the final
                     image is generated.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div className="border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     What output format is generated?
-                  </h3>
-                  <p className="text-gray-600 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     The translated image is generated as PNG.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

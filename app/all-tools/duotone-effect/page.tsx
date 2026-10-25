@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -248,35 +250,35 @@ export default function DuotoneEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What colors should I pick?</summary>
-                  <p className="text-gray-700 mt-2">Choose contrasting colors for best effect. Dark for shadows, bright for highlights.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use any color combination?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Pick any two colors you like from the color picker.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Results vary based on content.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, duotone images can be used for commercial purposes.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What output format?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent color preservation.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What colors should I pick?</FAQQuestion>
+                  <FAQAnswer>Choose contrasting colors for best effect. Dark for shadows, bright for highlights.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use any color combination?</FAQQuestion>
+                  <FAQAnswer>Yes! Pick any two colors you like from the color picker.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo. Results vary based on content.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, duotone images can be used for commercial purposes.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Yes, all processing happens locally in your browser.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What output format?</FAQQuestion>
+                  <FAQAnswer>High-quality JPEG with excellent color preservation.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -349,31 +351,31 @@ Upload an image and choose the available duotone controls.
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 the Duotone Effect works FAQ
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              </FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does the effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     No. The tool changes the appearance of existing image
                     pixels; it does not reconstruct missing source detail.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                  </FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Can I preview the result before downloading?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Use the on-page preview and available controls to
                     inspect the processed image before downloading it.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
 

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -91,7 +92,7 @@ export default function PosterizeImagePage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -146,7 +147,7 @@ export default function PosterizeImagePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Posterize Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -230,35 +231,35 @@ export default function PosterizeImagePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What does posterize mean?</summary>
-                  <p className="text-gray-700 mt-2">Posterization is the process of reducing the number of distinct colors in an image to create a bold, artistic effect with flat color areas.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What color level should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start with 4-5 levels for moderate effects. Use 2-3 for very bold artwork, or 6-8 to maintain more photo detail.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use posterized images commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Images created with our tool are yours to use freely, including for commercial projects and prints.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What file formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">The tool accepts image formats that the browser can decode. The processed result is downloaded as JPEG.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is there a file size limit?</summary>
-                  <p className="text-gray-700 mt-2">Practical limits depend on the browser, available device memory, image dimensions, and file size.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I combine posterize with other effects?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Use the posterized image with other tools like color graders and filters for more creative effects.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What does posterize mean?</FAQQuestion>
+                  <FAQAnswer>Posterization is the process of reducing the number of distinct colors in an image to create a bold, artistic effect with flat color areas.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What color level should I use?</FAQQuestion>
+                  <FAQAnswer>Start with 4-5 levels for moderate effects. Use 2-3 for very bold artwork, or 6-8 to maintain more photo detail.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use posterized images commercially?</FAQQuestion>
+                  <FAQAnswer>Yes! Images created with our tool are yours to use freely, including for commercial projects and prints.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What file formats are supported?</FAQQuestion>
+                  <FAQAnswer>The tool accepts image formats that the browser can decode. The processed result is downloaded as JPEG.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is there a file size limit?</FAQQuestion>
+                  <FAQAnswer>Practical limits depend on the browser, available device memory, image dimensions, and file size.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I combine posterize with other effects?</FAQQuestion>
+                  <FAQAnswer>Yes! Use the posterized image with other tools like color graders and filters for more creative effects.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

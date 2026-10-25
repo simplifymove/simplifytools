@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -276,36 +277,36 @@ export default function PngToWebpPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Does WebP preserve PNG transparency?</h3>
-              <p className="text-gray-700">Yes, WebP supports alpha channel transparency, so transparent areas can be preserved during conversion.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is WebP compared to PNG?</h3>
-              <p className="text-gray-700">File-size differences vary by image content and encoding settings. You can compare the converted WebP result with the original PNG to see the difference.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the image quality be affected?</h3>
-              <p className="text-gray-700">WebP encoding can introduce compression depending on the selected quality. Use the slider to balance file size and visual quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is WebP suitable for web graphics and logos?</h3>
-              <p className="text-gray-700">WebP supports transparency and can be useful for web graphics, logos, and other images where reducing file size is helpful.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my conversion data kept private?</h3>
-              <p className="text-gray-700">Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple PNG files at once?</h3>
-              <p className="text-gray-700">This converter currently processes one PNG file at a time. To convert additional files, upload and process them individually.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>Does WebP preserve PNG transparency?</FAQStaticQuestion>
+              <FAQAnswer>Yes, WebP supports alpha channel transparency, so transparent areas can be preserved during conversion.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>How much smaller is WebP compared to PNG?</FAQStaticQuestion>
+              <FAQAnswer>File-size differences vary by image content and encoding settings. You can compare the converted WebP result with the original PNG to see the difference.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will the image quality be affected?</FAQStaticQuestion>
+              <FAQAnswer>WebP encoding can introduce compression depending on the selected quality. Use the slider to balance file size and visual quality.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is WebP suitable for web graphics and logos?</FAQStaticQuestion>
+              <FAQAnswer>WebP supports transparency and can be useful for web graphics, logos, and other images where reducing file size is helpful.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is my conversion data kept private?</FAQStaticQuestion>
+              <FAQAnswer>Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I convert multiple PNG files at once?</FAQStaticQuestion>
+              <FAQAnswer>This converter currently processes one PNG file at a time. To convert additional files, upload and process them individually.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}

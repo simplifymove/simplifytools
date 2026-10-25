@@ -1,3 +1,4 @@
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 import Link from 'next/link';
 
 type Faq = {
@@ -1250,26 +1251,23 @@ export function PdfToolSupportingContent({ toolId }: { toolId: string }) {
           </ul>
         </div>
 
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-5">
+        <FAQPanel>
+          <FAQHeading>
             Frequently asked questions
-          </h2>
-          <div className="space-y-4">
+          </FAQHeading>
+          <FAQList>
             {content.faqs.map((faq) => (
-              <details
-                key={faq.question}
-                className="rounded-xl border border-gray-200 bg-white p-5"
-              >
-                <summary className="cursor-pointer font-semibold text-gray-900">
+              <FAQDisclosure key={faq.question}>
+                <FAQQuestion>
                   {faq.question}
-                </summary>
-                <p className="mt-3 text-sm leading-6 text-gray-700">
+                </FAQQuestion>
+                <FAQAnswer>
                   {faq.answer}
-                </p>
-              </details>
+                </FAQAnswer>
+              </FAQDisclosure>
             ))}
-          </div>
-        </div>
+          </FAQList>
+        </FAQPanel>
 
         <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-5 text-sm leading-6 text-gray-700">
           Need another PDF operation?{' '}

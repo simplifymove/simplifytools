@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -245,35 +247,35 @@ export default function EmbossEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What strength should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced effect. Lower for subtle, higher for dramatic.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this work on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works best on detailed photos. Results vary by content.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, embossed images can be used for commercial purposes.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent effect preservation.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I undo changes?</summary>
-                  <p className="text-gray-700 mt-2">Upload again to start fresh with different settings.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What strength should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for balanced effect. Lower for subtle, higher for dramatic.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this work on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works best on detailed photos. Results vary by content.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, embossed images can be used for commercial purposes.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What output quality?</FAQQuestion>
+                  <FAQAnswer>High-quality JPEG with excellent effect preservation.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Yes, all processing happens locally in your browser.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I undo changes?</FAQQuestion>
+                  <FAQAnswer>Upload again to start fresh with different settings.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -347,33 +349,33 @@ The tool reads neighboring pixel values and emphasizes
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 the Emboss Effect works FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does this effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     No. It changes existing pixel values and does not recreate
                     missing detail or increase the source resolution.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Can I preview the effect first?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Review the available preview before downloading the
                     processed result.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

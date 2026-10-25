@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -98,7 +99,7 @@ export default function NeonGlowPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -150,7 +151,7 @@ export default function NeonGlowPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Neon Glow</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -268,35 +269,35 @@ export default function NeonGlowPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced effect. Higher for stronger glow.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Results vary by image content.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, neon glowed images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent color preservation.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in browser.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I apply multiple times?</summary>
-                  <p className="text-gray-700 mt-2">Yes, download and upload again for stronger effects.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for balanced effect. Higher for stronger glow.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo. Results vary by image content.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, neon glowed images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the output quality?</FAQQuestion>
+                  <FAQAnswer>High-quality JPEG with excellent color preservation.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image private?</FAQQuestion>
+                  <FAQAnswer>Yes, all processing happens locally in browser.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I apply multiple times?</FAQQuestion>
+                  <FAQAnswer>Yes, download and upload again for stronger effects.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

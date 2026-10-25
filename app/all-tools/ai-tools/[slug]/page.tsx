@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { use, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
@@ -33,7 +34,7 @@ function resolveToolId(slug: string): string {
   if (directTool) {
     return slug;
   }
-  
+
   const aliasedId = toolAliases[slug];
   if (aliasedId) {
     const aliasTool = getToolById(aliasedId);
@@ -41,7 +42,7 @@ function resolveToolId(slug: string): string {
       return aliasedId;
     }
   }
-  
+
   return '';
 }
 
@@ -1139,17 +1140,17 @@ export default function AIWriteToolPage({ params }: PageProps) {
           </section>
 
           {/* FAQ Section */}
-          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6">
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
               {faqItems.map((faq, idx) => (
-                <div key={idx} className="border-b border-gray-200 pb-6 last:border-0">
-                  <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
-                  <p className="text-gray-700">{faq.a}</p>
-                </div>
+                <FAQCard key={idx}>
+                  <FAQStaticQuestion>{faq.q}</FAQStaticQuestion>
+                  <FAQAnswer>{faq.a}</FAQAnswer>
+                </FAQCard>
               ))}
-            </div>
-          </section>
+            </FAQList>
+          </FAQPanel>
 
           {/* Related Tools Section */}
           <RelatedToolsSection

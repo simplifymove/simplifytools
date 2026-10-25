@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -271,36 +272,36 @@ export default function HeicToPngPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is HEIC format?</h3>
-              <p className="text-gray-700">HEIC (High Efficiency Image Container) is a modern image format used by Apple devices (iPhone, iPad, Mac) that provides excellent compression and quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why is PNG better than HEIC?</h3>
-              <p className="text-gray-700">PNG has broad support across browsers, platforms, and image applications, while HEIC support varies by platform and software.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will PNG be larger than HEIC?</h3>
-              <p className="text-gray-700">PNG files may be slightly larger than HEIC files. However, PNG's universal compatibility makes this worthwhile for sharing and cross-platform use.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple HEIC files?</h3>
-              <p className="text-gray-700">The converter handles one file at a time. To process multiple HEIC files, convert them individually.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion secure?</h3>
-              <p className="text-gray-700">Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the PNG output.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I edit the PNG after conversion?</h3>
-              <p className="text-gray-700">PNG files are supported by many image editors, and PNG uses lossless compression for subsequent storage.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>What is HEIC format?</FAQStaticQuestion>
+              <FAQAnswer>HEIC (High Efficiency Image Container) is a modern image format used by Apple devices (iPhone, iPad, Mac) that provides excellent compression and quality.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Why is PNG better than HEIC?</FAQStaticQuestion>
+              <FAQAnswer>PNG has broad support across browsers, platforms, and image applications, while HEIC support varies by platform and software.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will PNG be larger than HEIC?</FAQStaticQuestion>
+              <FAQAnswer>PNG files may be slightly larger than HEIC files. However, PNG's universal compatibility makes this worthwhile for sharing and cross-platform use.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I batch convert multiple HEIC files?</FAQStaticQuestion>
+              <FAQAnswer>The converter handles one file at a time. To process multiple HEIC files, convert them individually.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is the conversion secure?</FAQStaticQuestion>
+              <FAQAnswer>Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the PNG output.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I edit the PNG after conversion?</FAQStaticQuestion>
+              <FAQAnswer>PNG files are supported by many image editors, and PNG uses lossless compression for subsequent storage.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}

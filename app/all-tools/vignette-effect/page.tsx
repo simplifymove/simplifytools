@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -229,35 +230,35 @@ export default function VignetteEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is a vignette effect?</summary>
-                  <p className="text-gray-700 mt-2">A vignette is a darkening or fading of the edges of an image, often creating a fade-to-black effect that draws focus to the center.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Why use vignettes in photography?</summary>
-                  <p className="text-gray-700 mt-2">Vignettes darken image edges and can visually draw attention toward the central area of a photo.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What vignette strength should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start with 30-50% for subtle effects. Use 50-70% for moderate vignettes, or 80-100% for dramatic, pronounced effects.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photo types?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Vignettes work beautifully on portraits, landscapes, still life, and any photo type.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I remove vignette afterward?</summary>
-                  <p className="text-gray-700 mt-2">No, vignettes are permanent once applied. Always keep your original image as backup.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is the quality affected?</summary>
-                  <p className="text-gray-700 mt-2">Applying the vignette changes image pixels and creates a processed result. Review the output if preserving source detail is important.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is a vignette effect?</FAQQuestion>
+                  <FAQAnswer>A vignette is a darkening or fading of the edges of an image, often creating a fade-to-black effect that draws focus to the center.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Why use vignettes in photography?</FAQQuestion>
+                  <FAQAnswer>Vignettes darken image edges and can visually draw attention toward the central area of a photo.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What vignette strength should I use?</FAQQuestion>
+                  <FAQAnswer>Start with 30-50% for subtle effects. Use 50-70% for moderate vignettes, or 80-100% for dramatic, pronounced effects.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photo types?</FAQQuestion>
+                  <FAQAnswer>Yes! Vignettes work beautifully on portraits, landscapes, still life, and any photo type.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I remove vignette afterward?</FAQQuestion>
+                  <FAQAnswer>No, vignettes are permanent once applied. Always keep your original image as backup.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is the quality affected?</FAQQuestion>
+                  <FAQAnswer>Applying the vignette changes image pixels and creates a processed result. Review the output if preserving source detail is important.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -329,33 +330,33 @@ The tool adds a gradual darkening effect around the outer
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 the Vignette Effect works FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does this effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. It modifies the appearance of existing image pixels
                     and does not reconstruct missing source detail.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I preview changes before downloading?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Use the preview and available controls to review the
                     result before downloading it.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

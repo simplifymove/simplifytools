@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -341,54 +342,54 @@ export default function PsdToSvgPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 PSD to SVG FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-5">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Is the output a valid SVG file?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     The converter returns an SVG document containing the
                     rendered PSD image.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Will my Photoshop layers remain editable?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. Photoshop layers are not recreated as separate SVG
                     objects in the downloaded file.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does this tool vectorize logos or illustrations?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. It does not trace the PSD artwork into editable vector
                     paths. The rendered PSD image is embedded in the SVG.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Why might the converted file look different from Photoshop?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     PSD files can contain Photoshop-specific effects, fonts,
                     blending behavior, and other features. Review the converted
                     result when visual fidelity is important.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

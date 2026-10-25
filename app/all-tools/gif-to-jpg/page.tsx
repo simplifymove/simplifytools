@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -284,56 +285,56 @@ export default function GifToJpgPage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 GIF to JPG FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Will the JPG remain animated?
-                  </h3>
-                  <p className="text-gray-700 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. JPG does not support animation. The converter creates a
                     static JPG from the browser-decoded first frame of the GIF.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I choose a different GIF frame?
-                  </h3>
-                  <p className="text-gray-700 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. This converter does not currently provide manual frame
                     selection. It creates the JPG from the first frame used by
                     the browser image decoder.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does the quality setting affect the JPG?
-                  </h3>
-                  <p className="text-gray-700 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. The selected quality value is used when the browser
                     encodes the Canvas image as JPEG. Higher quality can retain
                     more detail while typically increasing file size.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Is my GIF uploaded for conversion?
-                  </h3>
-                  <p className="text-gray-700 leading-7">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     The GIF-to-JPG conversion itself happens in your browser.
                     When you continue to the download page, the generated JPG
                     is uploaded so the download result can be prepared.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </section>
 
 </main>

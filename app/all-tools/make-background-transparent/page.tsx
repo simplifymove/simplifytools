@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -896,35 +898,35 @@ export default function MakeBackgroundTransparentPage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Make Background Transparent FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-3">
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does processing improve the original image quality?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     The tool applies the selected transformation to the source
                     image. It does not recreate resolution or image detail
                     that is absent from the original file.
-                  </p>
-                </details>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="font-semibold text-gray-900 cursor-pointer">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Should I check the result before downloading?
-                  </summary>
-                  <p className="text-sm text-gray-600 leading-6 mt-3">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Previewing the result helps you confirm that the
                     selected settings are appropriate for the particular
                     image you uploaded.
-                  </p>
-                </details>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

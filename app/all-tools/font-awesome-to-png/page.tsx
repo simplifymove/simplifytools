@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
@@ -700,41 +701,43 @@ export default function FontAwesomeToPngPage() {
                 </div>
 
                 {/* FAQ Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Can I use these icons commercially?</h4>
-                      <p className="text-sm text-gray-600">Yes! The generated PNG files are yours to use. Font Awesome icons are freely available for use in both personal and commercial projects.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">What sizes should I use?</h4>
-                      <p className="text-sm text-gray-600">For web: 16px-32px, for buttons: 24px-48px, for large graphics: 128px-512px. PNG format scales well at any size.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Can I edit the generated PNG?</h4>
-                      <p className="text-sm text-gray-600">PNG files are raster images. For scalable editing, download as SVG or regenerate with different settings and re-export.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">What if I need an icon not in the library?</h4>
-                      <p className="text-sm text-gray-600">The library includes 200+ most popular Font Awesome icons. Visit fontawesome.com for the complete collection or check back for updates.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">What formats are available for download?</h4>
-                      <p className="text-sm text-gray-600 mb-2">We offer four download formats, each with specific advantages:</p>
-                      <ul className="text-sm text-gray-600 space-y-1 ml-4">
-                        <li><strong>PNG:</strong> Universal raster format, supports transparency, best for web</li>
-                        <li><strong>SVG:</strong> Scalable vector format, infinitely scalable, smallest file size, best for web graphics</li>
-                        <li><strong>JPG:</strong> Compressed raster format, good for photos, smaller file sizes</li>
-                        <li><strong>WEBP:</strong> Modern compressed format, smallest file sizes, excellent quality, best for performance-critical sites</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Can I customize the transparency?</h4>
-                      <p className="text-sm text-gray-600">The current version generates solid colors. For transparency effects, you can edit the PNG/SVG in design tools like Photoshop, Illustrator, or use online editors.</p>
-                    </div>
-                  </div>
-                </div>
+                <FAQPanel>
+                  <FAQHeading>Frequently Asked Questions</FAQHeading>
+                  <FAQList>
+                    <FAQCard>
+                      <FAQStaticQuestion>Can I use these icons commercially?</FAQStaticQuestion>
+                      <FAQAnswer>Yes! The generated PNG files are yours to use. Font Awesome icons are freely available for use in both personal and commercial projects.</FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>What sizes should I use?</FAQStaticQuestion>
+                      <FAQAnswer>For web: 16px-32px, for buttons: 24px-48px, for large graphics: 128px-512px. PNG format scales well at any size.</FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>Can I edit the generated PNG?</FAQStaticQuestion>
+                      <FAQAnswer>PNG files are raster images. For scalable editing, download as SVG or regenerate with different settings and re-export.</FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>What if I need an icon not in the library?</FAQStaticQuestion>
+                      <FAQAnswer>The library includes 200+ most popular Font Awesome icons. Visit fontawesome.com for the complete collection or check back for updates.</FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>What formats are available for download?</FAQStaticQuestion>
+                      <FAQAnswer>
+                        <p>We offer four download formats, each with specific advantages:</p>
+                        <ul className="mt-3 space-y-1 ml-4">
+                          <li><strong>PNG:</strong> Universal raster format, supports transparency, best for web</li>
+                          <li><strong>SVG:</strong> Scalable vector format, infinitely scalable, smallest file size, best for web graphics</li>
+                          <li><strong>JPG:</strong> Compressed raster format, good for photos, smaller file sizes</li>
+                          <li><strong>WEBP:</strong> Modern compressed format, smallest file sizes, excellent quality, best for performance-critical sites</li>
+                        </ul>
+                      </FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>Can I customize the transparency?</FAQStaticQuestion>
+                      <FAQAnswer>The current version generates solid colors. For transparency effects, you can edit the PNG/SVG in design tools like Photoshop, Illustrator, or use online editors.</FAQAnswer>
+                    </FAQCard>
+                  </FAQList>
+                </FAQPanel>
               </div>
             </div>
           </div>
@@ -788,32 +791,32 @@ export default function FontAwesomeToPngPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 Font Awesome to PNG FAQ
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Is the PNG still a vector image?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. PNG is raster-based. The Font Awesome icon is rendered
                     into pixels at the selected output size.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Should I choose the output size before downloading?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Selecting an appropriate output size helps avoid
                     unnecessary enlargement of the raster PNG later.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

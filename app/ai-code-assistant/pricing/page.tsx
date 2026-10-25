@@ -3,6 +3,7 @@
  */
 
 "use client";
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
@@ -265,9 +266,9 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ */}
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
             {[
               {
                 q: "What are credits?",
@@ -294,13 +295,13 @@ export default function PricingPage() {
                 a: "You can request more credits or wait for your monthly refresh. We'll send you reminders as you approach your limit.",
               },
             ].map((faq, index) => (
-              <div key={index} className="bg-white rounded-lg p-6 border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-3">{faq.q}</h3>
-                <p className="text-gray-600">{faq.a}</p>
-              </div>
+              <FAQCard key={index}>
+                <FAQStaticQuestion>{faq.q}</FAQStaticQuestion>
+                <FAQAnswer>{faq.a}</FAQAnswer>
+              </FAQCard>
             ))}
-          </div>
-        </div>
+          </FAQList>
+        </FAQPanel>
       </div>
     </div>
   );

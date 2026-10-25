@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -293,36 +294,36 @@ export default function JpgToAvifPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-12 px-4 bg-white">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF supported by all browsers?</h3>
-                <p className="text-gray-700">AVIF is supported by modern browsers including Chrome 85+, Firefox 93+, and Safari 16+. For older browsers, serve JPG as a fallback using HTML picture tags.</p>
-              </div>
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than JPG?</h3>
-                <p className="text-gray-700">AVIF file size and visual quality depend on the source image and selected encoding settings.</p>
-              </div>
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Will quality be compromised?</h3>
-                <p className="text-gray-700">AVIF encoding can change image quality depending on the selected setting and source image. Use the quality control to compare visual detail and output file size.</p>
-              </div>
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Can AVIF replace JPG on my website?</h3>
-                <p className="text-gray-700">AVIF can be used for supported browsers and applications. When compatibility with older software matters, keeping a JPG fallback can be useful.</p>
-              </div>
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-                <p className="text-gray-700">The JPG file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</p>
-              </div>
-              <div className="pb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple JPG files?</h3>
-                <p className="text-gray-700">This converter currently processes one JPG file at a time. Additional files can be converted individually.</p>
-              </div>
-            </div>
-          </div>
+        <section className="">
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQCard>
+                <FAQStaticQuestion>Is AVIF supported by all browsers?</FAQStaticQuestion>
+                <FAQAnswer>AVIF is supported by modern browsers including Chrome 85+, Firefox 93+, and Safari 16+. For older browsers, serve JPG as a fallback using HTML picture tags.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>How much smaller is AVIF than JPG?</FAQStaticQuestion>
+                <FAQAnswer>AVIF file size and visual quality depend on the source image and selected encoding settings.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Will quality be compromised?</FAQStaticQuestion>
+                <FAQAnswer>AVIF encoding can change image quality depending on the selected setting and source image. Use the quality control to compare visual detail and output file size.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Can AVIF replace JPG on my website?</FAQStaticQuestion>
+                <FAQAnswer>AVIF can be used for supported browsers and applications. When compatibility with older software matters, keeping a JPG fallback can be useful.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+                <FAQAnswer>The JPG file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Can I convert multiple JPG files?</FAQStaticQuestion>
+                <FAQAnswer>This converter currently processes one JPG file at a time. Additional files can be converted individually.</FAQAnswer>
+              </FAQCard>
+            </FAQList>
+          </FAQPanel>
         </section>
 
         {/* JSON-LD FAQ Schema */}

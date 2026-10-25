@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, use } from 'react';
 import { motion } from 'framer-motion';
@@ -66,7 +67,7 @@ function getActionText(toolId: string): string {
     'aac-to-mp4': 'Convert to MP4',
     'mp4-to-ogg': 'Convert to OGG',
     'mp4-to-webm': 'Convert to WebM',
-    
+
     // Editing tools
     'trim-video': 'Trim Video',
     'resize-video': 'Resize Video',
@@ -78,20 +79,20 @@ function getActionText(toolId: string): string {
     'compress-avi': 'Compress AVI',
     'compress-mkv': 'Compress MKV',
     'video-to-webp': 'Convert to WebP',
-    
+
     // Transcription tools
     'audio-to-text': 'Transcribe Audio',
     'video-to-text': 'Transcribe Video',
     'youtube-to-text': 'Download & Transcribe',
     'youtube-transcript': 'Get Transcript',
     'transcribe-podcast': 'Transcribe Podcast',
-    
+
     // Download tools
     'instagram-download': 'Download Video',
     'tiktok-video-download': 'Download TikTok Video',
     'twitter-download': 'Download Video',
     'facebook-download': 'Download Video',
-    
+
     // Special tools
     'summarize-podcast': 'Summarize Podcast',
     'add-subtitles': 'Add Subtitles',
@@ -111,13 +112,13 @@ export default function VideoToolPage({ params }: PageProps) {
   const router = useRouter();
   const resolvedParams = use(params);
   const tool = getToolById(resolvedParams.slug);
-  
+
   // Use centralized error handling
   const { error, isError, createAndHandleError, clearError } = useVideoToolErrors({
     toolId: resolvedParams.slug,
     toolName: tool?.title || 'Video Tool'
   });
-  
+
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [options, setOptions] = useState<Record<string, any>>({});
@@ -215,7 +216,7 @@ export default function VideoToolPage({ params }: PageProps) {
         const errorData = await response.json();
         const errorType = errorData.type || VideoToolErrorType.API_ERROR;
         const errorMessage = errorData.error || errorData.message || 'Processing failed';
-        
+
         // Log detailed error for debugging - use JSON.stringify for reliability
         const errorLogData = {
           status: response.status,
@@ -269,7 +270,7 @@ export default function VideoToolPage({ params }: PageProps) {
         stack: errorStack,
       };
       console.error(`[${resolvedParams.slug}] Network/Processing Error: ${JSON.stringify(errorLogData)}`);
-      
+
       createAndHandleError(VideoToolErrorType.NETWORK_ERROR, {
         networkError: errorMessage,
         errorType: err instanceof TypeError ? 'NETWORK_ERROR' : 'UNKNOWN_ERROR',
@@ -603,7 +604,7 @@ export default function VideoToolPage({ params }: PageProps) {
           {/* SEO Content Sections */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-12">
             <motion.h2 className="text-3xl font-bold text-gray-900 mb-6">How to {getActionText(resolvedParams.slug)}</motion.h2>
-            
+
             <div className="space-y-6 mb-12">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 1: {inputGuidance.heading}</h3>
@@ -611,7 +612,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   {inputGuidance.text}
                 </p>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 2: Configure Options (if needed)</h3>
                 <p className="text-gray-700 leading-relaxed">
@@ -621,14 +622,14 @@ export default function VideoToolPage({ params }: PageProps) {
                   }
                 </p>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 3: Click {getActionText(resolvedParams.slug)}</h3>
                 <p className="text-gray-700 leading-relaxed">
                   Submit the request to the server-side processing workflow. Completion time depends on the input, operation, and current service availability.
                 </p>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 4: Review Your Result</h3>
                 <p className="text-gray-700 leading-relaxed">
@@ -641,7 +642,7 @@ export default function VideoToolPage({ params }: PageProps) {
           {/* Why Use This Tool */}
           <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border border-pink-200 p-8 mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use {tool.title}?</h2>
-            
+
             <div className="grid md:grid-cols-2 gap-6">
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
@@ -654,7 +655,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   <p className="text-gray-700 text-sm">No subscription or credit card is required. Processing limits can vary by tool, file type, and file size.</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
@@ -666,7 +667,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   <p className="text-gray-700 text-sm">Works directly in your web browser. Use on Windows, Mac, iPhone, Android, or any device with internet.</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
@@ -678,7 +679,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   <p className="text-gray-700 text-sm">{qualityGuidance}</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
@@ -694,21 +695,21 @@ export default function VideoToolPage({ params }: PageProps) {
           </div>
 
           {/* FAQ Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8 mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-            
-            <div className="space-y-4">
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+
+            <FAQList>
               {faqItems.map((faq) => (
-                <details key={faq.q} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                  <summary className="font-semibold text-gray-900 flex items-center justify-between">
+                <FAQDisclosure key={faq.q}>
+                  <FAQQuestion>
                     {faq.q}
-                    <span className="text-pink-600">+</span>
-                  </summary>
-                  <p className="text-gray-700 mt-3 text-sm">{faq.a}</p>
-                </details>
+
+                  </FAQQuestion>
+                  <FAQAnswer>{faq.a}</FAQAnswer>
+                </FAQDisclosure>
               ))}
-            </div>
-          </div>
+            </FAQList>
+          </FAQPanel>
 
           <RelatedToolsSection
             family="video"

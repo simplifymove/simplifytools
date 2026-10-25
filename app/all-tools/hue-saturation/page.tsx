@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -309,35 +311,35 @@ export default function HueSaturationPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between these three adjustments?</summary>
-                  <p className="text-gray-700 mt-2">Hue shifts color tones, Saturation controls color intensity, and Lightness adjusts brightness.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I desaturate colors completely?</summary>
-                  <p className="text-gray-700 mt-2">Yes, set saturation to -100% to remove all color and create grayscale images.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What hue values produce what colors?</summary>
-                  <p className="text-gray-700 mt-2">0° is red, 120° is green, 240° is blue. Values between shift between these colors.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I undo changes?</summary>
-                  <p className="text-gray-700 mt-2">Upload again to reset. Each upload is independent with no persistent changes.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser. Images never reach our servers.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What image formats work?</summary>
-                  <p className="text-gray-700 mt-2">JPG, PNG, WebP, BMP, TIFF, and most standard image formats are supported.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the difference between these three adjustments?</FAQQuestion>
+                  <FAQAnswer>Hue shifts color tones, Saturation controls color intensity, and Lightness adjusts brightness.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I desaturate colors completely?</FAQQuestion>
+                  <FAQAnswer>Yes, set saturation to -100% to remove all color and create grayscale images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What hue values produce what colors?</FAQQuestion>
+                  <FAQAnswer>0° is red, 120° is green, 240° is blue. Values between shift between these colors.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I undo changes?</FAQQuestion>
+                  <FAQAnswer>Upload again to reset. Each upload is independent with no persistent changes.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my data private?</FAQQuestion>
+                  <FAQAnswer>Yes, all processing happens locally in your browser. Images never reach our servers.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What image formats work?</FAQQuestion>
+                  <FAQAnswer>JPG, PNG, WebP, BMP, TIFF, and most standard image formats are supported.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -409,33 +411,33 @@ Upload an image and adjust hue, saturation, and lightness.
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 hue and saturation adjustment works FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does this effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     No. It modifies the appearance of existing image pixels
                     and does not reconstruct missing source detail.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Can I preview changes before downloading?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Use the preview and available controls to review the
                     result before downloading it.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

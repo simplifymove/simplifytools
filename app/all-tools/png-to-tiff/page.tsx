@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -216,31 +217,31 @@ export default function PngToTiffPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What is TIFF format?</h3>
-                  <p className="text-gray-600">TIFF (Tagged Image File Format) is a flexible image format that supports both lossless and lossy compression. It's widely used for high-quality image storage and professional applications.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Why convert PNG to TIFF?</h3>
-                  <p className="text-gray-600">TIFF supports lossless storage and is widely used in imaging, publishing, print, and archival workflows. Converting a PNG to TIFF can be useful when a workflow or application specifically requires TIFF input.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Will my image lose quality?</h3>
-                  <p className="text-gray-600">The TIFF output uses lossless compression. Image data supported by both formats is preserved without introducing lossy TIFF compression, although metadata or format-specific features may differ.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
-                  <p className="text-gray-600">Image uploads are limited to 500MB by the current conversion API. Processing time and memory use can increase significantly with very large or high-resolution images.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">How is PNG to TIFF different from other conversions?</h3>
-                  <p className="text-gray-600">PNG images with transparency can be represented in TIFF when supported by the source image mode and conversion pipeline. Format-specific metadata or features may not transfer identically.</p>
-                </div>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>What is TIFF format?</FAQStaticQuestion>
+                  <FAQAnswer>TIFF (Tagged Image File Format) is a flexible image format that supports both lossless and lossy compression. It's widely used for high-quality image storage and professional applications.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Why convert PNG to TIFF?</FAQStaticQuestion>
+                  <FAQAnswer>TIFF supports lossless storage and is widely used in imaging, publishing, print, and archival workflows. Converting a PNG to TIFF can be useful when a workflow or application specifically requires TIFF input.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Will my image lose quality?</FAQStaticQuestion>
+                  <FAQAnswer>The TIFF output uses lossless compression. Image data supported by both formats is preserved without introducing lossy TIFF compression, although metadata or format-specific features may differ.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What size files can I convert?</FAQStaticQuestion>
+                  <FAQAnswer>Image uploads are limited to 500MB by the current conversion API. Processing time and memory use can increase significantly with very large or high-resolution images.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>How is PNG to TIFF different from other conversions?</FAQStaticQuestion>
+                  <FAQAnswer>PNG images with transparency can be represented in TIFF when supported by the source image mode and conversion pipeline. Format-specific metadata or features may not transfer identically.</FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </div>
 
@@ -389,12 +390,12 @@ export default function PngToTiffPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 PNG to TIFF FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
+              <FAQList>
                 {[
                   [
                     'Is PNG to TIFF conversion lossless?',
@@ -421,20 +422,17 @@ export default function PngToTiffPage() {
                     'The conversion API currently applies a 500MB limit to image uploads.',
                   ],
                 ].map(([question, answer]) => (
-                  <div
-                    key={question}
-                    className="border border-gray-200 rounded-xl p-5"
-                  >
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>
                       {question}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-6">
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
                       {answer}
-                    </p>
-                  </div>
+                    </FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

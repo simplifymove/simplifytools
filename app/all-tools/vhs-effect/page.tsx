@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -252,35 +253,35 @@ export default function VHSEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">5 is balanced. Higher for more glitch artifacts.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">JPG, PNG, and WebP images are supported by the upload control. Results vary by image.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, VHS images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">The processed result is exported as a JPEG with the VHS-style effect.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Realistic VHS?</summary>
-                  <p className="text-gray-700 mt-2">Simulates authentic VHS glitch artifacts.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity should I use?</FAQQuestion>
+                  <FAQAnswer>5 is balanced. Higher for more glitch artifacts.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>JPG, PNG, and WebP images are supported by the upload control. Results vary by image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, VHS images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>The processed result is exported as a JPEG with the VHS-style effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Realistic VHS?</FAQQuestion>
+                  <FAQAnswer>Simulates authentic VHS glitch artifacts.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

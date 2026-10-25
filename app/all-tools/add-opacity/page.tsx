@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -218,35 +220,35 @@ export default function AddOpacityPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What format is the output?</summary>
-                  <p className="text-gray-700 mt-2">Output is transparent PNG format for best transparency support.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use for watermarks?</summary>
-                  <p className="text-gray-700 mt-2">Yes. Adjusting opacity can be useful when preparing semi-transparent watermark graphics.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between 0% and 100%?</summary>
-                  <p className="text-gray-700 mt-2">0% is completely transparent, 100% is fully visible/opaque.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this support all image types?</summary>
-                  <p className="text-gray-700 mt-2">The tool is intended for supported browser-readable image files such as JPG, PNG, and WebP. Browser decoding support can vary for other formats.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image stored?</summary>
-                  <p className="text-gray-700 mt-2">No, all processing happens locally in your browser.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I adjust opacity of specific areas?</summary>
-                  <p className="text-gray-700 mt-2">This tool adjusts the entire image. Use an editor for selective opacity.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What format is the output?</FAQQuestion>
+                  <FAQAnswer>Output is transparent PNG format for best transparency support.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use for watermarks?</FAQQuestion>
+                  <FAQAnswer>Yes. Adjusting opacity can be useful when preparing semi-transparent watermark graphics.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the difference between 0% and 100%?</FAQQuestion>
+                  <FAQAnswer>0% is completely transparent, 100% is fully visible/opaque.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this support all image types?</FAQQuestion>
+                  <FAQAnswer>The tool is intended for supported browser-readable image files such as JPG, PNG, and WebP. Browser decoding support can vary for other formats.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image stored?</FAQQuestion>
+                  <FAQAnswer>No, all processing happens locally in your browser.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I adjust opacity of specific areas?</FAQQuestion>
+                  <FAQAnswer>This tool adjusts the entire image. Use an editor for selective opacity.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -319,31 +321,31 @@ Upload an image and use the opacity control to make the image
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 to adjust image opacity FAQ
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              </FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does the effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     No. The tool changes the appearance of existing image
                     pixels; it does not reconstruct missing source detail.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                  </FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Can I preview the result before downloading?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Use the on-page preview and available controls to
                     inspect the processed image before downloading it.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
 

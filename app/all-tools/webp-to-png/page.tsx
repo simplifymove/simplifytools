@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -255,55 +256,55 @@ export default function WebpToPngPage() {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            <FAQPanel>
+              <FAQHeading>
                 WebP to PNG FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-5">
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-2">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does PNG support transparent backgrounds?
-                  </h3>
-                  <p className="text-gray-700">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. PNG supports transparency, and transparent pixels in a
                     compatible WebP source can remain transparent in the output.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Why can the PNG file be larger than the WebP?
-                  </h3>
-                  <p className="text-gray-700">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     PNG and WebP use different compression methods. WebP is
                     optimized for efficient image delivery, so a losslessly
                     encoded PNG version can require more storage.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does converting to PNG improve the original image?
-                  </h3>
-                  <p className="text-gray-700">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. Changing the file format does not recreate detail that
                     is missing from the source image or increase its original
                     resolution.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-2">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Do I need to install conversion software?
-                  </h3>
-                  <p className="text-gray-700">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. The conversion runs through the browser, so separate
                     desktop conversion software is not required.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">

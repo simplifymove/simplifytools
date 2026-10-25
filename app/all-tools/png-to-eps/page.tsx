@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -311,12 +312,12 @@ export default function PngToEpsPage() {
               </ul>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 PNG to EPS FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-5">
+              <FAQList>
                 {[
                   ['Does this create real vector paths?', 'The converter traces raster shapes from the PNG and creates EPS vector paths from that tracing process.'],
                   ['Will the EPS look exactly like my PNG?', 'Not necessarily. Simple, high-contrast graphics generally trace better, while photographs and complex artwork can produce less accurate results.'],
@@ -324,13 +325,13 @@ export default function PngToEpsPage() {
                   ['Is PNG to EPS suitable for photographs?', 'The conversion can be attempted, but detailed photographs are not ideal for vector tracing and may create complicated results.'],
                   ['Where is the conversion performed?', 'The PNG is sent to the SimplifyConvert conversion service for processing, and the resulting EPS is then prepared for download.'],
                 ].map(([question, answer]) => (
-                  <div key={question}>
-                    <h3 className="font-semibold text-gray-900 mb-1">{question}</h3>
-                    <p className="text-gray-600">{answer}</p>
-                  </div>
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>{question}</FAQStaticQuestion>
+                    <FAQAnswer>{answer}</FAQAnswer>
+                  </FAQCard>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 md:p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">

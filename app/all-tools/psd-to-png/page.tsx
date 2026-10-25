@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import { useRouter } from 'next/navigation';
 import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
@@ -341,35 +342,35 @@ export default function PsdToPngPage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What is a PSD file?</summary>
-              <p className="text-gray-700 mt-2">A PSD (Photoshop Document) is Adobe's native file format for Photoshop. It contains layers, effects, and other editable elements. PNG is a universal image format that works everywhere.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Will transparency be preserved?</summary>
-              <p className="text-gray-700 mt-2">PNG supports transparency, and transparent PSD content is preserved when it is available in the rendered PSD image.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I convert large PSD files?</summary>
-              <p className="text-gray-700 mt-2">We support PSD files up to 200 MB. If your file is larger, consider reducing the image dimensions or exporting a smaller version before converting.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is this tool free?</summary>
-              <p className="text-gray-700 mt-2">The converter can be used online without installing Photoshop. Availability is subject to the site's normal file-size and server limits.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Do I need Adobe Photoshop installed?</summary>
-              <p className="text-gray-700 mt-2">No! Our online converter requires no software installation. Just upload your file and download the PNG. It works on any device with a web browser.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Are my files safe?</summary>
-              <p className="text-gray-700 mt-2">Files are uploaded to the conversion server and processed only as needed to create the PNG output.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What is a PSD file?</FAQQuestion>
+              <FAQAnswer>A PSD (Photoshop Document) is Adobe's native file format for Photoshop. It contains layers, effects, and other editable elements. PNG is a universal image format that works everywhere.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Will transparency be preserved?</FAQQuestion>
+              <FAQAnswer>PNG supports transparency, and transparent PSD content is preserved when it is available in the rendered PSD image.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I convert large PSD files?</FAQQuestion>
+              <FAQAnswer>We support PSD files up to 200 MB. If your file is larger, consider reducing the image dimensions or exporting a smaller version before converting.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is this tool free?</FAQQuestion>
+              <FAQAnswer>The converter can be used online without installing Photoshop. Availability is subject to the site's normal file-size and server limits.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Do I need Adobe Photoshop installed?</FAQQuestion>
+              <FAQAnswer>No! Our online converter requires no software installation. Just upload your file and download the PNG. It works on any device with a web browser.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Are my files safe?</FAQQuestion>
+              <FAQAnswer>Files are uploaded to the conversion server and processed only as needed to create the PNG output.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}

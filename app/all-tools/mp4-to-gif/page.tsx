@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -294,35 +295,35 @@ export default function Mp4ToGifPage() {
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What is GIF format?</h3>
-                <p className="text-gray-600">GIF (Graphics Interchange Format) is an animated image format that displays a sequence of frames to create an animation. It's widely supported across all browsers and social media platforms without requiring plugins.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Why convert MP4 to GIF?</h3>
-                <p className="text-gray-600">GIFs can be useful for sharing short visual animations on websites, messaging apps, and other compatible platforms. They autoplay, don't require plugins, and work everywhere. Plus, they're silent, so they're great for meme-worthy moments.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What's the file size of the resulting GIF?</h3>
-                <p className="text-gray-600">GIF file sizes vary based on video duration, frame rate, dimensions, and visual complexity. Animated GIFs can become significantly larger than the source video.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">How is the GIF generated?</h3>
-                <p className="text-gray-600">The converter generates the GIF at 10 frames per second and limits the output width while preserving the source aspect ratio. FFmpeg generates and applies a color palette for the animation.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What video formats are supported?</h3>
-                <p className="text-gray-600">Currently, we support MP4 files. If you have other formats like MOV, AVI, or WebM, you can use a video converter to convert them to MP4 first.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Will the GIF have audio?</h3>
-                <p className="text-gray-600">No, GIFs are silent image animations and cannot contain audio. We automatically remove all audio during conversion, so the resulting GIF will be a silent animation.</p>
-              </div>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQCard>
+                <FAQStaticQuestion>What is GIF format?</FAQStaticQuestion>
+                <FAQAnswer>GIF (Graphics Interchange Format) is an animated image format that displays a sequence of frames to create an animation. It's widely supported across all browsers and social media platforms without requiring plugins.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Why convert MP4 to GIF?</FAQStaticQuestion>
+                <FAQAnswer>GIFs can be useful for sharing short visual animations on websites, messaging apps, and other compatible platforms. They autoplay, don't require plugins, and work everywhere. Plus, they're silent, so they're great for meme-worthy moments.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What's the file size of the resulting GIF?</FAQStaticQuestion>
+                <FAQAnswer>GIF file sizes vary based on video duration, frame rate, dimensions, and visual complexity. Animated GIFs can become significantly larger than the source video.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>How is the GIF generated?</FAQStaticQuestion>
+                <FAQAnswer>The converter generates the GIF at 10 frames per second and limits the output width while preserving the source aspect ratio. FFmpeg generates and applies a color palette for the animation.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What video formats are supported?</FAQStaticQuestion>
+                <FAQAnswer>Currently, we support MP4 files. If you have other formats like MOV, AVI, or WebM, you can use a video converter to convert them to MP4 first.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Will the GIF have audio?</FAQStaticQuestion>
+                <FAQAnswer>No, GIFs are silent image animations and cannot contain audio. We automatically remove all audio during conversion, so the resulting GIF will be a silent animation.</FAQAnswer>
+              </FAQCard>
+            </FAQList>
+          </FAQPanel>
         </div>
       </div>
       </main>

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -269,35 +270,35 @@ export default function SwirlDistortionPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What angle should I use?</summary>
-                  <p className="text-gray-700 mt-2">45-90° for balanced swirl. Higher for more intense.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What radius works best?</summary>
-                  <p className="text-gray-700 mt-2">50% covers center. Higher includes more area.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">The upload control supports JPG, PNG, and WebP images.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, swirl images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Smooth distortion?</summary>
-                  <p className="text-gray-700 mt-2">Yes, smooth vortex transformation.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What angle should I use?</FAQQuestion>
+                  <FAQAnswer>45-90° for balanced swirl. Higher for more intense.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What radius works best?</FAQQuestion>
+                  <FAQAnswer>50% covers center. Higher includes more area.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>The upload control supports JPG, PNG, and WebP images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, swirl images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Smooth distortion?</FAQQuestion>
+                  <FAQAnswer>Yes, smooth vortex transformation.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

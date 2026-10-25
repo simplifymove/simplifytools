@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -513,12 +514,12 @@ export default function CollageMakerPage() {
             </div>
           </div>
 
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+          <FAQPanel>
+            <FAQHeading>
               Collage Maker FAQ
-            </h2>
+            </FAQHeading>
 
-            <div className="space-y-4">
+            <FAQList>
               {[
                 {
                   q: 'How many images can I add?',
@@ -541,18 +542,15 @@ export default function CollageMakerPage() {
                   a: 'The generated collage is exported as a PNG image.',
                 },
               ].map((item) => (
-                <div
-                  key={item.q}
-                  className="border-b border-gray-200 pb-4"
-                >
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                <FAQCard key={item.q}>
+                  <FAQStaticQuestion>
                     {item.q}
-                  </h3>
-                  <p className="text-gray-600 leading-7">{item.a}</p>
-                </div>
+                  </FAQStaticQuestion>
+                  <FAQAnswer>{item.a}</FAQAnswer>
+                </FAQCard>
               ))}
-            </div>
-          </div>
+            </FAQList>
+          </FAQPanel>
 
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-5">

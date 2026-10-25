@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -272,35 +273,35 @@ export default function SunburstPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Where should I place the sunburst?</summary>
-                  <p className="text-gray-700 mt-2">Place in light areas. Top-left or top-right is typical.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity works best?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced. Higher for dramatic effect.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, sunburst images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I add multiple sunbursts?</summary>
-                  <p className="text-gray-700 mt-2">Download and upload again to add more.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>Where should I place the sunburst?</FAQQuestion>
+                  <FAQAnswer>Place in light areas. Top-left or top-right is typical.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity works best?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for balanced. Higher for dramatic effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, sunburst images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Yes, local browser processing only.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I add multiple sunbursts?</FAQQuestion>
+                  <FAQAnswer>Download and upload again to add more.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -374,33 +375,33 @@ The Sunburst tool draws radial light-ray graphics over the
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 the Sunburst Effect works FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does this effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. The tool changes or overlays existing image pixels and
                     does not reconstruct missing source detail.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQCard>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I preview the effect before downloading?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Use the available controls and preview to inspect the
                     result before downloading it.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

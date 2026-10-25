@@ -1,3 +1,4 @@
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getServerSession } from 'next-auth';
@@ -473,23 +474,23 @@ export default async function AIStudioPage() {
           </section>
         )}
 
-        <section id="faq" className="scroll-mt-32 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto max-w-4xl">
+        <section id="faq" className="scroll-mt-32">
+          <FAQPanel>
             <div className="text-center">
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-800">FAQ</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Questions before you create</h2>
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-orange-600">FAQ</p>
+              <FAQHeading>Questions before you create</FAQHeading>
             </div>
-            <div className="mt-10 space-y-3">
+            <FAQList>
               {faqs.map((faq) => (
-                <details key={faq.question} className="group rounded-2xl border border-slate-200 bg-white p-5 open:border-cyan-300">
-                  <summary className="cursor-pointer list-none rounded-md pr-8 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">
+                <FAQDisclosure key={faq.question}>
+                  <FAQQuestion>
                     {faq.question}
-                  </summary>
-                  <p className="mt-4 leading-7 text-slate-600">{faq.answer}</p>
-                </details>
+                  </FAQQuestion>
+                  <FAQAnswer>{faq.answer}</FAQAnswer>
+                </FAQDisclosure>
               ))}
-            </div>
-          </div>
+            </FAQList>
+          </FAQPanel>
         </section>
 
         <section className="px-4 pb-20 sm:px-6 lg:px-8">

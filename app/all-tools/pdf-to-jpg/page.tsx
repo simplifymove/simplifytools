@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -280,46 +281,46 @@ export default function PdfToJpgPage() {
             </div>
 
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            <FAQPanel>
+              <FAQHeading>
                 PDF to JPG FAQ
-              </h2>
-              <div className="grid md:grid-cols-2 gap-5">
+              </FAQHeading>
+              <FAQList>
 
-              <div className="border border-gray-200 rounded-xl p-5">
-                <h3 className="font-semibold text-gray-900 mb-2">
+              <FAQCard>
+                <FAQStaticQuestion>
                   Does PDF to JPG create one image for each page?
-                </h3>
-                <p className="text-sm text-gray-600 leading-6">
+                </FAQStaticQuestion>
+                <FAQAnswer>
                   Yes. Each processed PDF page is rendered as a separate JPG image and the generated images are provided together for download.
-                </p>
-              </div>
-              <div className="border border-gray-200 rounded-xl p-5">
-                <h3 className="font-semibold text-gray-900 mb-2">
+                </FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>
                   What does the resolution setting change?
-                </h3>
-                <p className="text-sm text-gray-600 leading-6">
+                </FAQStaticQuestion>
+                <FAQAnswer>
                   The resolution setting controls how densely each PDF page is rendered into pixels. Higher settings can produce larger images with more visible detail.
-                </p>
-              </div>
-              <div className="border border-gray-200 rounded-xl p-5">
-                <h3 className="font-semibold text-gray-900 mb-2">
+                </FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>
                   Can JPG preserve selectable PDF text?
-                </h3>
-                <p className="text-sm text-gray-600 leading-6">
+                </FAQStaticQuestion>
+                <FAQAnswer>
                   No. JPG is an image format, so text in the converted page becomes part of the raster image rather than remaining selectable PDF text.
-                </p>
-              </div>
-              <div className="border border-gray-200 rounded-xl p-5">
-                <h3 className="font-semibold text-gray-900 mb-2">
+                </FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>
                   Why is the download provided as a ZIP file?
-                </h3>
-                <p className="text-sm text-gray-600 leading-6">
+                </FAQStaticQuestion>
+                <FAQAnswer>
                   A PDF can contain multiple pages. Packaging the generated JPG files into a ZIP makes it possible to download the page images together.
-                </p>
-              </div>
-              </div>
-            </div>
+                </FAQAnswer>
+              </FAQCard>
+              </FAQList>
+            </FAQPanel>
 
 
           </div>

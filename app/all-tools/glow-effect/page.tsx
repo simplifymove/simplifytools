@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -54,7 +56,7 @@ export default function GlowEffectPage() {
 
           // Draw original image
           ctx.drawImage(img, 0, 0);
-          
+
           // Create glow by brightening and blurring
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
@@ -79,7 +81,7 @@ export default function GlowEffectPage() {
                     const ny = Math.min(canvas.height - 1, Math.max(0, y + Math.round(dy)));
                     const nx = Math.min(canvas.width - 1, Math.max(0, x + Math.round(dx)));
                     const nIdx = (ny * canvas.width + nx) * 4;
-                    
+
                     sumR += data[nIdx];
                     sumG += data[nIdx + 1];
                     sumB += data[nIdx + 2];
@@ -123,7 +125,7 @@ export default function GlowEffectPage() {
   const handleDownload = async () => {
       if (!result || processing) return;
 
-      
+
       setProcessing(true);
 
       try {
@@ -175,7 +177,7 @@ export default function GlowEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Glow Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -308,35 +310,35 @@ export default function GlowEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What settings work best?</summary>
-                  <p className="text-gray-700 mt-2">Start with Intensity: 20-30 and Blur: 15-25 for balanced glow.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I make the glow stronger?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Increase Intensity for brighter glow and Blur for softer spread.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Best photo types for glow?</summary>
-                  <p className="text-gray-700 mt-2">Works great on portraits, landscapes, and any bright subjects.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What format is the output?</summary>
-                  <p className="text-gray-700 mt-2">The processed glow result is exported in JPEG format.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I undo and retry?</summary>
-                  <p className="text-gray-700 mt-2">Yes, upload again to start fresh with different settings.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What settings work best?</FAQQuestion>
+                  <FAQAnswer>Start with Intensity: 20-30 and Blur: 15-25 for balanced glow.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I make the glow stronger?</FAQQuestion>
+                  <FAQAnswer>Yes! Increase Intensity for brighter glow and Blur for softer spread.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Best photo types for glow?</FAQQuestion>
+                  <FAQAnswer>Works great on portraits, landscapes, and any bright subjects.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What format is the output?</FAQQuestion>
+                  <FAQAnswer>The processed glow result is exported in JPEG format.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image private?</FAQQuestion>
+                  <FAQAnswer>Yes, all processing happens locally in your browser.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I undo and retry?</FAQQuestion>
+                  <FAQAnswer>Yes, upload again to start fresh with different settings.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

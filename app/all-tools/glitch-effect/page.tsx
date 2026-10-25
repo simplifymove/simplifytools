@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -239,35 +240,35 @@ export default function GlitchEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 5 for subtle. Higher for more corruption.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">JPG, PNG, and WebP images are supported by the upload control. Results vary by image content.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, glitch images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What output quality?</summary>
-                  <p className="text-gray-700 mt-2">The processed result is exported as a JPEG with the glitch effect.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Different each time?</summary>
-                  <p className="text-gray-700 mt-2">Yes, glitches are randomly generated.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 5 for subtle. Higher for more corruption.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>JPG, PNG, and WebP images are supported by the upload control. Results vary by image content.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, glitch images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What output quality?</FAQQuestion>
+                  <FAQAnswer>The processed result is exported as a JPEG with the glitch effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Different each time?</FAQQuestion>
+                  <FAQAnswer>Yes, glitches are randomly generated.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

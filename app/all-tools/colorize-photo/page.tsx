@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -556,35 +557,35 @@ export default function ColorizePhotoPage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-              <p className="text-gray-700 mt-2">The tool accepts supported browser-readable image files and exports the processed result as PNG.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I colorize a color photo?</summary>
-              <p className="text-gray-700 mt-2">While designed for B&W photos, you can use this tool on color photos to apply tonal overlays. The grayscale values are calculated from existing RGB data.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between sepia, warm, and cool tones?</summary>
-              <p className="text-gray-700 mt-2">Sepia adds a classic brown tone (vintage look), Warm adds orange/gold (nostalgic feel), and Cool adds blue/cyan (modern touch). Custom lets you pick any color.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Does colorization affect photo quality?</summary>
-              <p className="text-gray-700 mt-2">The tool keeps the source image dimensions for processing, but applying the effect changes pixel values and the result is exported again as PNG.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is my photo data secure?</summary>
-              <p className="text-gray-700 mt-2">The colorization effect is processed locally in the browser using canvas.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I use colorized photos commercially?</summary>
-              <p className="text-gray-700 mt-2">Colorizing an image does not change its ownership or licensing rights. Use the processed image only when you own the source image or have the necessary permission.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What image formats are supported?</FAQQuestion>
+              <FAQAnswer>The tool accepts supported browser-readable image files and exports the processed result as PNG.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I colorize a color photo?</FAQQuestion>
+              <FAQAnswer>While designed for B&W photos, you can use this tool on color photos to apply tonal overlays. The grayscale values are calculated from existing RGB data.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What's the difference between sepia, warm, and cool tones?</FAQQuestion>
+              <FAQAnswer>Sepia adds a classic brown tone (vintage look), Warm adds orange/gold (nostalgic feel), and Cool adds blue/cyan (modern touch). Custom lets you pick any color.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Does colorization affect photo quality?</FAQQuestion>
+              <FAQAnswer>The tool keeps the source image dimensions for processing, but applying the effect changes pixel values and the result is exported again as PNG.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is my photo data secure?</FAQQuestion>
+              <FAQAnswer>The colorization effect is processed locally in the browser using canvas.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I use colorized photos commercially?</FAQQuestion>
+              <FAQAnswer>Colorizing an image does not change its ownership or licensing rights. Use the processed image only when you own the source image or have the necessary permission.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}

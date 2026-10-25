@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -252,36 +253,36 @@ export default function GifToPngPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will animated GIFs remain animated?</h3>
-              <p className="text-gray-700">No. PNG is a static image format and does not support animation. Our converter extracts the first frame of animated GIFs and converts it to a static PNG image. For animated formats, consider WEBP or APNG.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What happens to GIF transparency?</h3>
-              <p className="text-gray-700">PNG supports alpha transparency. When the browser decodes transparency from the selected GIF frame, the Canvas PNG export can preserve those transparent pixels. Animation and GIF-specific metadata are not preserved.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert GIFs with text or graphics?</h3>
-              <p className="text-gray-700">The converter can process many common GIF images, including graphics, photographs, logos, and text-based artwork. Animated GIFs use the first rendered frame.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What file size limits exist?</h3>
-              <p className="text-gray-700">Our converter can handle GIFs up to 50MB. For larger files, consider compressing them first or breaking them into smaller pieces.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-              <p className="text-gray-700">Image conversion is performed in the browser. When you continue to download, the generated PNG result is passed through the site's download-result flow.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Which GIF types are supported?</h3>
-              <p className="text-gray-700">Common static and animated GIF files can be converted. Animated GIFs produce a static PNG from the first rendered frame.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>Will animated GIFs remain animated?</FAQStaticQuestion>
+              <FAQAnswer>No. PNG is a static image format and does not support animation. Our converter extracts the first frame of animated GIFs and converts it to a static PNG image. For animated formats, consider WEBP or APNG.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>What happens to GIF transparency?</FAQStaticQuestion>
+              <FAQAnswer>PNG supports alpha transparency. When the browser decodes transparency from the selected GIF frame, the Canvas PNG export can preserve those transparent pixels. Animation and GIF-specific metadata are not preserved.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I convert GIFs with text or graphics?</FAQStaticQuestion>
+              <FAQAnswer>The converter can process many common GIF images, including graphics, photographs, logos, and text-based artwork. Animated GIFs use the first rendered frame.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>What file size limits exist?</FAQStaticQuestion>
+              <FAQAnswer>Our converter can handle GIFs up to 50MB. For larger files, consider compressing them first or breaking them into smaller pieces.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+              <FAQAnswer>Image conversion is performed in the browser. When you continue to download, the generated PNG result is passed through the site's download-result flow.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Which GIF types are supported?</FAQStaticQuestion>
+              <FAQAnswer>Common static and animated GIF files can be converted. Animated GIFs produce a static PNG from the first rendered frame.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}

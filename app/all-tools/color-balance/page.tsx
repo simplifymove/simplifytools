@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -144,7 +146,7 @@ export default function ColorBalancePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Adjust Color Balance</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -273,35 +275,35 @@ export default function ColorBalancePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What are RGB channels?</summary>
-                  <p className="text-gray-700 mt-2">Red, Green, Blue are primary color components in images.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">How to fix white balance?</summary>
-                  <p className="text-gray-700 mt-2">Increase opposite color: reduce red if too warm.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo format.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, color-balanced images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Reset to original?</summary>
-                  <p className="text-gray-700 mt-2">Set all sliders to 0 to return to original.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What are RGB channels?</FAQQuestion>
+                  <FAQAnswer>Red, Green, Blue are primary color components in images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>How to fix white balance?</FAQQuestion>
+                  <FAQAnswer>Increase opposite color: reduce red if too warm.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo format.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, color-balanced images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Yes, local browser processing only.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Reset to original?</FAQQuestion>
+                  <FAQAnswer>Set all sliders to 0 to return to original.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -254,35 +256,35 @@ export default function CartoonEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity level should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 30-40 for balanced effects. Lower for detail, higher for simplification.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this work on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, any photo works! Results vary based on image complexity and content.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use this for commercial purposes?</summary>
-                  <p className="text-gray-700 mt-2">Yes, you can use your processed images commercially without restrictions.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What file format is the output?</summary>
-                  <p className="text-gray-700 mt-2">Processed images are exported in JPEG format.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image kept private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser. No uploads to servers.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I edit further?</summary>
-                  <p className="text-gray-700 mt-2">Yes, download and use any image editor for additional tweaks.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity level should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 30-40 for balanced effects. Lower for detail, higher for simplification.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this work on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, any photo works! Results vary based on image complexity and content.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use this for commercial purposes?</FAQQuestion>
+                  <FAQAnswer>Yes, you can use your processed images commercially without restrictions.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What file format is the output?</FAQQuestion>
+                  <FAQAnswer>Processed images are exported in JPEG format.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image kept private?</FAQQuestion>
+                  <FAQAnswer>Yes, all processing happens locally in your browser. No uploads to servers.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I edit further?</FAQQuestion>
+                  <FAQAnswer>Yes, download and use any image editor for additional tweaks.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -356,33 +358,33 @@ The cartoon effect processes image pixels to simplify tonal
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 the Cartoon Effect works FAQ
-              </h2>
+              </FAQHeading>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Does this effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     No. It changes existing pixel values and does not recreate
                     missing detail or increase the source resolution.
-                  </p>
-                </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                <FAQDisclosure>
+                  <FAQQuestion>
                     Can I preview the effect first?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQQuestion>
+                  <FAQAnswer>
                     Yes. Review the available preview before downloading the
                     processed result.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
           </div>
         </section>

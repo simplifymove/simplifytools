@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { FileUp, Download, X, ZoomIn, ZoomOut, ChevronRight } from 'lucide-react';
@@ -135,12 +136,12 @@ function EsignSupportingContent() {
                 </div>
               </div>
 
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              <FAQPanel>
+                <FAQHeading>
                   E-Sign PDF FAQ
-                </h2>
+                </FAQHeading>
 
-                <div className="space-y-4">
+                <FAQList>
                   {[
                     {
                       q: 'Can I draw my signature directly on the PDF?',
@@ -167,13 +168,13 @@ function EsignSupportingContent() {
                       a: 'Yes. Check the document, signature placement, page selection, names, dates, and other important information before sharing the completed PDF.',
                     },
                   ].map((item) => (
-                    <div key={item.q} className="border border-gray-200 rounded-xl p-5">
-                      <h3 className="font-semibold text-gray-900 mb-2">{item.q}</h3>
-                      <p className="text-gray-600 leading-7">{item.a}</p>
-                    </div>
+                    <FAQCard key={item.q}>
+                      <FAQStaticQuestion>{item.q}</FAQStaticQuestion>
+                      <FAQAnswer>{item.a}</FAQAnswer>
+                    </FAQCard>
                   ))}
-                </div>
-              </div>
+                </FAQList>
+              </FAQPanel>
 
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-5">

@@ -1,3 +1,4 @@
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 type BatchOnePdfToolId =
   | 'merge-pdf'
   | 'split-pdf'
@@ -415,17 +416,17 @@ export function HumanizedPdfBatchOneContent({ toolId }: { toolId: string }) {
           </div>
         ))}
 
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Frequently Asked Questions</h2>
-          <div className="mt-5 space-y-4">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
             {content.faqs.map((faq) => (
-              <details key={faq.question} className="rounded-xl border border-gray-200 bg-white p-5">
-                <summary className="cursor-pointer font-semibold text-gray-900">{faq.question}</summary>
-                <p className="mt-3 leading-7 text-gray-700">{faq.answer}</p>
-              </details>
+              <FAQDisclosure key={faq.question}>
+                <FAQQuestion>{faq.question}</FAQQuestion>
+                <FAQAnswer>{faq.answer}</FAQAnswer>
+              </FAQDisclosure>
             ))}
-          </div>
-        </div>
+          </FAQList>
+        </FAQPanel>
       </div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
     </section>

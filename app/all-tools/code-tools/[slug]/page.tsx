@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import { use, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
@@ -894,46 +896,46 @@ export default function CodeToolPage({ params }: PageProps) {
               </div>
 
               {/* FAQs Section */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-                <div className="space-y-3">
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+              <FAQPanel>
+                <FAQHeading>Frequently Asked Questions</FAQHeading>
+                <FAQList>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Is my data secure and private?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Tool inputs are sent to our server for processing. Avoid entering passwords, private keys, access tokens, personal data, or other sensitive information.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>Tool inputs are sent to our server for processing. Avoid entering passwords, private keys, access tokens, personal data, or other sensitive information.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Can I use this tool offline?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">No. An internet connection is required because tool inputs are sent to our server for processing.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>No. An internet connection is required because tool inputs are sent to our server for processing.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       What browsers are supported?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Use a modern browser with JavaScript enabled. Behavior can vary by browser, device resources, input size, and the selected tool.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>Use a modern browser with JavaScript enabled. Behavior can vary by browser, device resources, input size, and the selected tool.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Is there a limit on input size?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Input limits depend on the selected tool and server processing constraints.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>Input limits depend on the selected tool and server processing constraints.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Can I use this for commercial purposes?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. Feel free to use this tool for any purpose, including commercial projects. No attribution is required.</p>
-                  </details>
-                </div>
-              </div>
+
+                    </FAQQuestion>
+                    <FAQAnswer>Yes. Feel free to use this tool for any purpose, including commercial projects. No attribution is required.</FAQAnswer>
+                  </FAQDisclosure>
+                </FAQList>
+              </FAQPanel>
 
               {/* Best Practices Section */}
               <div>

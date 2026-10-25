@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -240,35 +241,35 @@ export default function PixelateImagePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What pixel sizes are available?</summary>
-                  <p className="text-gray-700 mt-2">You can adjust pixel size from 2px to 50px. Smaller sizes create more detail, larger sizes create more blur.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is this good for hiding faces?</summary>
-                  <p className="text-gray-700 mt-2">Pixelation can reduce visible detail, but it should not be treated as a guaranteed anonymization method. Use a strong enough setting and review the processed result before sharing.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I customize the effect?</summary>
-                  <p className="text-gray-700 mt-2">Yes, the pixel size slider lets you adjust the effect from subtle to extreme.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image kept private?</summary>
-                  <p className="text-gray-700 mt-2">The pixelation effect itself is produced with browser-based image processing.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, BMP, and TIFF formats.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does pixelation reduce file size?</summary>
-                  <p className="text-gray-700 mt-2">File size can change after pixelation because the image pixels are modified and the result is encoded again. The final size depends on the source image, effect strength, dimensions, and output encoding.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What pixel sizes are available?</FAQQuestion>
+                  <FAQAnswer>You can adjust pixel size from 2px to 50px. Smaller sizes create more detail, larger sizes create more blur.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is this good for hiding faces?</FAQQuestion>
+                  <FAQAnswer>Pixelation can reduce visible detail, but it should not be treated as a guaranteed anonymization method. Use a strong enough setting and review the processed result before sharing.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I customize the effect?</FAQQuestion>
+                  <FAQAnswer>Yes, the pixel size slider lets you adjust the effect from subtle to extreme.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image kept private?</FAQQuestion>
+                  <FAQAnswer>The pixelation effect itself is produced with browser-based image processing.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What formats are supported?</FAQQuestion>
+                  <FAQAnswer>We support JPG, PNG, WebP, BMP, and TIFF formats.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does pixelation reduce file size?</FAQQuestion>
+                  <FAQAnswer>File size can change after pixelation because the image pixels are modified and the result is encoded again. The final size depends on the source image, effect strength, dimensions, and output encoding.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -341,31 +342,31 @@ Upload an image and adjust the pixel-size control to choose how
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <FAQPanel>
+              <FAQHeading>
                 to pixelate an image FAQ
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Does the effect increase image resolution?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     No. The tool changes the appearance of existing image
                     pixels; it does not reconstruct missing source detail.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
+                  </FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>
                     Can I preview the result before downloading?
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 leading-6">
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
                     Yes. Use the on-page preview and available controls to
                     inspect the processed image before downloading it.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </section>
 

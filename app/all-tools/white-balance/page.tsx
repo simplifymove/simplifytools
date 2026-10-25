@@ -1,4 +1,6 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -253,35 +255,35 @@ export default function WhiteBalancePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-blue-400 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is white balance?</summary>
-                  <p className="text-gray-700 mt-2">Adjusting the visible color temperature of images affected by different lighting conditions.</p>
-                </details>
-                <details className="border-l-4 border-blue-400 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">When to adjust temperature?</summary>
-                  <p className="text-gray-700 mt-2">Indoor lights (warm) use positive. Outdoor cloudy (cool) use negative.</p>
-                </details>
-                <details className="border-l-4 border-blue-400 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is tint?</summary>
-                  <p className="text-gray-700 mt-2">Green/magenta balance to correct fluorescent light shifts.</p>
-                </details>
-                <details className="border-l-4 border-blue-400 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo format.</p>
-                </details>
-                <details className="border-l-4 border-blue-400 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, corrected images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-blue-400 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">The color adjustment is performed locally in the browser. When you choose Download, the generated image is sent through the download-result service so the download page can be prepared.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is white balance?</FAQQuestion>
+                  <FAQAnswer>Adjusting the visible color temperature of images affected by different lighting conditions.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>When to adjust temperature?</FAQQuestion>
+                  <FAQAnswer>Indoor lights (warm) use positive. Outdoor cloudy (cool) use negative.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What is tint?</FAQQuestion>
+                  <FAQAnswer>Green/magenta balance to correct fluorescent light shifts.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo format.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, corrected images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The color adjustment is performed locally in the browser. When you choose Download, the generated image is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

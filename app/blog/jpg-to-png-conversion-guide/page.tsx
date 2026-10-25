@@ -1,3 +1,4 @@
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 import { Metadata } from 'next';
 import { BlogArticle } from '@/app/components/BlogArticle';
 import Link from 'next/link';
@@ -226,33 +227,35 @@ export default function JPGToPNGBlogPost() {
       </ul>
 
       {/* FAQ Section */}
-      <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Frequently Asked Questions</h2>
+      <FAQPanel>
+      <FAQHeading>Frequently Asked Questions</FAQHeading>
 
-      <div className="space-y-4">
-        <div className="border-l-4 border-blue-500 pl-4">
-          <h4 className="font-semibold text-gray-900 mb-2">Will I lose quality converting JPG to PNG?</h4>
-          <p className="text-gray-700">
+      <FAQList>
+        <FAQCard>
+          <FAQStaticQuestion>Will I lose quality converting JPG to PNG?</FAQStaticQuestion>
+          <FAQAnswer>
             No, PNG uses lossless compression. However, the original JPG may already have quality loss from its creation.
             If converting a high-quality JPG, the PNG will maintain that quality.
-          </p>
-        </div>
+          </FAQAnswer>
+        </FAQCard>
 
-        <div className="border-l-4 border-blue-500 pl-4">
-          <h4 className="font-semibold text-gray-900 mb-2">What's the difference in file size?</h4>
-          <p className="text-gray-700">
+        <FAQCard>
+          <FAQStaticQuestion>What's the difference in file size?</FAQStaticQuestion>
+          <FAQAnswer>
             PNG files are typically larger than JPG files because of lossless compression. For photos, JPG is more efficient.
             For graphics and images with transparency, PNG is better.
-          </p>
-        </div>
+          </FAQAnswer>
+        </FAQCard>
 
-        <div className="border-l-4 border-blue-500 pl-4">
-          <h4 className="font-semibold text-gray-900 mb-2">Can I add transparency when converting?</h4>
-          <p className="text-gray-700">
+        <FAQCard>
+          <FAQStaticQuestion>Can I add transparency when converting?</FAQStaticQuestion>
+          <FAQAnswer>
             Simple conversion won't create transparency. You need image editing software to select and remove the background,
             creating transparency in the PNG format.
-          </p>
-        </div>
-      </div>
+          </FAQAnswer>
+        </FAQCard>
+      </FAQList>
+      </FAQPanel>
 
       {/* CTA Section */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 my-12 text-center">
