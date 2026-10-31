@@ -368,6 +368,7 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
     { label: 'Video', href: '/all-tools/video-tools', detail: 'Convert, compress, trim, and extract media' },
     { label: 'Data', href: '/all-tools/data', detail: 'Move between spreadsheet and structured-data formats' },
     { label: 'Code', href: '/all-tools/code-tools', detail: 'Format, validate, encode, and transform developer text' },
+    { label: 'SEO', href: '/all-tools/seo-tools', detail: 'Check website SEO, metadata, links, and crawlability' },
     { label: 'AI Writing', href: '/all-tools/ai-tools', detail: 'Generate, rewrite, summarize, and analyze text' },
     { label: 'Calculators', href: '/all-tools/financial-calculators', detail: 'Explore startup, SaaS, loan, and India tax estimates' },
   ];

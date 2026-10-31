@@ -26,6 +26,26 @@ interface ScoredSearchIndexItem extends SearchIndexItem {
 
 const categoryItems: SearchIndexItem[] = [
   {
+    id: 'category-seo',
+    title: 'SEO Tools',
+    description: 'Audit website SEO, metadata, links, and crawlability',
+    category: 'Category',
+    href: '/all-tools/seo-tools',
+    route: '/all-tools/seo-tools',
+    type: 'category',
+    aliases: ['seo', 'seo checker', 'website seo'],
+  },
+  {
+    id: 'tool-website-seo-checker',
+    title: 'Website SEO Checker',
+    description: 'Analyze website metadata, links, sitemaps, robots.txt, and crawlability',
+    category: 'SEO',
+    href: '/all-tools/website-seo-checker',
+    route: '/all-tools/website-seo-checker',
+    type: 'tool',
+    aliases: ['seo audit', 'website audit', 'technical seo'],
+  },
+  {
     id: 'category-all-tools',
     title: 'All Tools',
     description: 'Browse every SimplifyConvert tool',

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { 
-  FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
+  FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2, Globe2,
   Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, ChevronDown, LogOut, Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -98,6 +98,16 @@ export function HomeHeader() {
       bgColor: 'bg-green-50',
       link: '/all-tools/code-tools',
       glowColor: 'group-hover:shadow-green-500/20'
+    },
+    {
+      id: 'seo',
+      title: 'SEO Tools',
+      description: 'Audit website SEO, metadata, links, and crawlability',
+      icon: Globe2,
+      color: 'from-teal-500 via-teal-600 to-teal-700',
+      bgColor: 'bg-teal-50',
+      link: '/all-tools/seo-tools',
+      glowColor: 'group-hover:shadow-teal-500/20'
     },
     {
       id: 'text-to-speech',

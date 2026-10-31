@@ -22,6 +22,7 @@ import {
   Video,
   Volume2,
   Zap,
+  Globe2,
 } from 'lucide-react';
 import { Footer } from './components/Footer';
 import { HomeHeader } from './components/HomeHeader';
@@ -76,6 +77,14 @@ const categories = [
     icon: Code2,
     accent: 'bg-emerald-100 text-emerald-700',
     link: '/all-tools/code-tools',
+  },
+  {
+    id: 'seo',
+    title: 'SEO Tools',
+    description: 'Explore tools',
+    icon: Globe2,
+    accent: 'bg-teal-100 text-teal-700',
+    link: '/all-tools/seo-tools',
   },
   {
     id: 'text-to-speech',

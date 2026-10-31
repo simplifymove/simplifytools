@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
-import { ChevronDown, Search, Menu, X, FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2, LogOut, Settings, Sparkles } from 'lucide-react';
+import { ChevronDown, Search, Menu, X, FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2, Globe2, LogOut, Settings, Sparkles } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -65,6 +65,13 @@ export function Header() {
       icon: Code2,
       color: 'from-green-500 to-green-700',
       link: '/all-tools/code-tools',
+    },
+    {
+      id: 'seo',
+      title: 'SEO Tools',
+      icon: Globe2,
+      color: 'from-teal-500 to-teal-700',
+      link: '/all-tools/seo-tools',
     },
     {
       id: 'text-to-speech',
