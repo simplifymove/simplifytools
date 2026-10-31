@@ -380,6 +380,82 @@ export default async function AIStudioPage() {
           </div>
         </section>
 
+        <section aria-labelledby="ai-studio-guide-title" className="border-b border-slate-200 bg-slate-50 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-3xl">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-800">
+                Practical creation guide
+              </p>
+              <h2 id="ai-studio-guide-title" className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                Get more useful results from your first draft
+              </h2>
+              <p className="mt-4 text-lg leading-8 text-slate-600">
+                AI Studio works best when you explain the purpose of your file, who will use it,
+                and which information must be included. A specific brief makes the generated
+                structure easier to review and customize.
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+              <article className="rounded-2xl border border-slate-200 bg-white p-6">
+                <h3 className="text-xl font-bold">For presentations</h3>
+                <p className="mt-3 leading-7 text-slate-600">
+                  Specify the audience, objective, approximate slide count, key messages,
+                  and preferred tone. For example, request a ten-slide project update
+                  covering progress, milestones, risks, and next steps.
+                </p>
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  After export, check the slide sequence, supporting facts, visual hierarchy,
+                  and whether each slide communicates one clear idea.
+                </p>
+              </article>
+
+              <article className="rounded-2xl border border-slate-200 bg-white p-6">
+                <h3 className="text-xl font-bold">For documents</h3>
+                <p className="mt-3 leading-7 text-slate-600">
+                  Identify the document type, intended reader, required sections, and
+                  source information. A proposal brief might include the problem,
+                  proposed approach, deliverables, timeline, and assumptions.
+                </p>
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  Review names, dates, quotations, claims, and commitments before
+                  sharing the editable Word document.
+                </p>
+              </article>
+
+              <article className="rounded-2xl border border-slate-200 bg-white p-6">
+                <h3 className="text-xl font-bold">For spreadsheets</h3>
+                <p className="mt-3 leading-7 text-slate-600">
+                  Describe the records you want to track, the columns you need,
+                  expected calculations, and any summary sheets. For example,
+                  outline a monthly expense tracker with categories and totals.
+                </p>
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  Check formulas, units, sample values, and calculations using
+                  your own data before relying on workbook results.
+                </p>
+              </article>
+            </div>
+
+            <div className="mt-8 rounded-2xl border border-cyan-100 bg-cyan-50 p-6 sm:p-8">
+              <h3 className="text-xl font-bold text-slate-950">
+                What to check before using an AI-generated file
+              </h3>
+              <p className="mt-3 leading-7 text-slate-700">
+                Generated content is a starting point, not a verified source of truth.
+                Check important facts against reliable sources, replace illustrative
+                examples with your own information, and review formatting in your
+                preferred application. Financial calculations, legal wording, and
+                other consequential material require particular care.
+              </p>
+              <p className="mt-4 leading-7 text-slate-700">
+                PowerPoint files use PPTX, Word documents use DOCX, and Excel
+                workbooks use XLSX. These editable formats let you continue
+                working after download instead of treating the first output as final.
+              </p>
+            </div>
+          </div>
+        </section>
         <section id="pricing" className="scroll-mt-32 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-5xl rounded-[2rem] border border-slate-200 bg-[linear-gradient(135deg,#ecfeff_0%,#ffffff_52%,#eef2ff_100%)] p-7 sm:p-10 lg:p-12">
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
