@@ -287,7 +287,7 @@ export default function SwirlDistortionPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I use commercially?</FAQQuestion>
-                  <FAQAnswer>Yes, swirl images can be used commercially.</FAQAnswer>
+                  <FAQAnswer>Commercial use depends on the rights and permissions associated with your original image.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Is data private?</FAQQuestion>
@@ -295,7 +295,7 @@ export default function SwirlDistortionPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Smooth distortion?</FAQQuestion>
-                  <FAQAnswer>Yes, smooth vortex transformation.</FAQAnswer>
+                  <FAQAnswer>The swirl uses pixel sampling to create a vortex effect. Fine details may show some pixelation, especially at stronger settings.</FAQAnswer>
                 </FAQDisclosure>
               </FAQList>
             </FAQPanel>

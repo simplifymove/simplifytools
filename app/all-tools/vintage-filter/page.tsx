@@ -277,7 +277,7 @@ export default function VintageFilterPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Is my image data stored?</FAQQuestion>
-                  <FAQAnswer>The vintage-filter processing shown here runs locally in your browser using canvas.</FAQAnswer>
+                  <FAQAnswer>Filtering runs locally in your browser. Selecting Download sends the generated JPEG to the download service to prepare the download page.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I adjust the vintage effect after applying it?</FAQQuestion>

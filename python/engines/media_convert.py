@@ -218,7 +218,8 @@ class MediaConvertEngine:
     def audio_extraction(input_path: str, output_path: str, options: Dict[str, Any]) -> str:
         """Extract audio from video"""
         quality = options.get('audioQuality')
-        extract_audio(input_path, output_path, quality=quality)
+        sample_rate = options.get('sampleRate')
+        extract_audio(input_path, output_path, quality=quality, sample_rate=sample_rate)
         return output_path
     
     @staticmethod
@@ -243,11 +244,34 @@ class MediaConvertEngine:
         output_format = Path(output_path).suffix
         fmt, v_codec, a_codec = get_output_format_and_codec(output_format)
         
-        # Use stream copy for quick conversion
+        # Apply selectable H.264 quality only to tools that expose it.
+        # Preserve the existing medium CRF 23 setting for MOV to MP4.
+        quality_args = []
+        input_format = Path(input_path).suffix.lower()
+        output_format_lower = output_format.lower()
+
+        if input_format == '.mov' and output_format_lower == '.mp4':
+            quality_key = 'videoQuality'
+        elif (
+            (input_format == '.avi' and output_format_lower == '.mp4')
+            or (input_format == '.mp4' and output_format_lower == '.avi')
+        ):
+            quality_key = 'quality'
+        else:
+            quality_key = None
+
+        if quality_key is not None:
+            quality = str(options.get(quality_key) or 'medium').lower()
+            crf_map = {'low': '28', 'medium': '23', 'high': '18'}
+            if quality not in crf_map:
+                raise ValueError(f'Unsupported video quality: {quality}')
+            quality_args = ['-crf', crf_map[quality]]
+
         args = [
             '-i', input_path,
             '-c:v', 'libx264',
             '-preset', 'fast',
+            *quality_args,
             '-c:a', 'aac',
             output_path
         ]

@@ -254,7 +254,7 @@ export default function SolarizeEffectPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I use commercially?</FAQQuestion>
-                  <FAQAnswer>Yes, solarized images can be used commercially.</FAQAnswer>
+                  <FAQAnswer>Commercial use depends on the rights and permissions associated with your original image.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Is data private?</FAQQuestion>
@@ -359,7 +359,7 @@ export default function SolarizeEffectPage() {
               <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
                 <li>Start with a clear source image at a useful resolution.</li>
                 <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
-                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Review the processed preview before downloading and compare it with your original image.</li>
                 <li>Remember that the final downloaded file is JPEG output.</li>
               </ul>
             </div>

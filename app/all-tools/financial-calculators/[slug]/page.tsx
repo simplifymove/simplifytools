@@ -205,6 +205,11 @@ export default function CalculatorPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (slug === 'india-tax') {
+      return;
+    }
+
     setLoading(true);
     setError('');
     setResult(null);

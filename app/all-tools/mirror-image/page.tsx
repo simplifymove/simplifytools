@@ -244,7 +244,7 @@ export default function MirrorImagePage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I use flipped images commercially?</FAQQuestion>
-                  <FAQAnswer>Yes, all flipped images can be used for any purpose.</FAQAnswer>
+                  <FAQAnswer>Flipping an image does not change its copyright or license. Use the result only when you have the necessary rights.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Does quality change when flipping?</FAQQuestion>

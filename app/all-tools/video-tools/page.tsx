@@ -225,7 +225,7 @@ export default function VideoToolsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Tools for Different Video Tasks</h3>
                     <p className="text-gray-700 text-sm">The category separates conversion, compression, trimming, extraction, and related workflows by intended result.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
@@ -233,7 +233,7 @@ export default function VideoToolsPage() {
                     <p className="text-gray-700 text-sm">Works directly in your browser. Use video tools on Windows, Mac, iPhone, Android, and any device with internet. No software downloads or complex setup.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Fast Processing</h3>
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Processing Time Varies</h3>
                     <p className="text-gray-700 text-sm">Video is server-processed. Upload and encoding time depend on duration, resolution, codec, operation, and network speed.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">

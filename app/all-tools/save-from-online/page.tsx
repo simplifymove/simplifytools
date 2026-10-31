@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Download, Loader2, CheckCircle, AlertCircle, Globe, FileText, Image as ImageIcon, Music, Archive, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
@@ -8,78 +8,199 @@ import { Footer } from '@/app/components/Footer';
 import { FAQ } from '@/app/components/FAQ';
 import Link from 'next/link';
 
+type DownloadFormat = {
+  id: string;
+  displayLabel: string;
+};
+
+type DownloadedFile = {
+  filename: string;
+  size: string;
+  mimeType: string;
+};
+
 export default function SaveFromOnline() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchingFormats, setFetchingFormats] = useState(false);
   const [status, setStatus] = useState('');
-  const [downloadedFile, setDownloadedFile] = useState<any>(null);
+  const [downloadedFile, setDownloadedFile] = useState<DownloadedFile | null>(null);
   const [error, setError] = useState('');
-  const [formats, setFormats] = useState<any[]>([]);
+  const [formats, setFormats] = useState<DownloadFormat[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<string>('');
   const [showFormats, setShowFormats] = useState(false);
+  const requestId = useRef(0);
+  const activeController = useRef<AbortController | null>(null);
+  const busyRef = useRef(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      requestId.current += 1;
+      activeController.current?.abort();
+    };
+  }, []);
+
+  const invalidateRequest = () => {
+    requestId.current += 1;
+    activeController.current?.abort();
+    activeController.current = null;
+    busyRef.current = false;
+    setBusy(false);
+    setLoading(false);
+    setFetchingFormats(false);
+  };
+
+  const parseApiError = async (response: Response, fallback: string) => {
+    const data = await response.json().catch(() => null);
+    return typeof data?.error === 'string'
+      ? data.error
+      : typeof data?.message === 'string'
+        ? data.message
+        : `${fallback} (HTTP ${response.status})`;
+  };
+
+  const validateUrl = () => {
+    try {
+      const parsed = new URL(url.trim());
+      return ['http:', 'https:'].includes(parsed.protocol)
+        ? parsed.href
+        : null;
+    } catch {
+      return null;
+    }
+  };
 
   // Handle URL input change
   const handleUrlChange = (value: string) => {
+    invalidateRequest();
     setUrl(value);
+    setError('');
+    setStatus('');
+    setDownloadedFile(null);
     setShowFormats(false);
     setFormats([]);
     setSelectedFormat('');
   };
 
   const handleFetchFormats = async () => {
-    if (!url.trim()) {
-      setError('Please enter a URL');
+    if (busyRef.current) return;
+
+    const validUrl = validateUrl();
+    if (!validUrl) {
+      setError('Enter a valid HTTP or HTTPS URL');
       return;
     }
 
-    // Fetch available formats dynamically
+    const currentId = ++requestId.current;
+    const controller = new AbortController();
+    activeController.current = controller;
+    busyRef.current = true;
+
+    setBusy(true);
     setFetchingFormats(true);
     setError('');
+    setStatus('');
+    setDownloadedFile(null);
     setFormats([]);
     setSelectedFormat('');
+    setShowFormats(false);
 
     try {
       const response = await fetch('/api/download/formats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url: validUrl }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch formats');
+        throw new Error(
+          await parseApiError(response, 'Failed to fetch formats')
+        );
       }
 
       const data = await response.json();
-      setFormats(data.formats || []);
-      setShowFormats(data.formats && data.formats.length > 0);
-      
-      if (data.formats && data.formats.length > 0) {
-        setSelectedFormat(data.formats[0].id);
+
+      if (currentId !== requestId.current) return;
+
+      const videoOptions = Array.isArray(data.videoOptions)
+        ? data.videoOptions
+        : [];
+
+      const audioOptions = Array.isArray(data.audioOptions)
+        ? data.audioOptions
+        : [];
+
+      const options: DownloadFormat[] = [
+        ...videoOptions.map((item: { formatId: string; label: string }) => ({
+          id: item.formatId,
+          displayLabel: `Video: ${item.label}`,
+        })),
+        ...audioOptions.map((item: { formatId: string; label: string }) => ({
+          id: item.formatId,
+          displayLabel: `Audio: ${item.label}`,
+        })),
+      ].filter(
+        item =>
+          typeof item.id === 'string' &&
+          item.id.length > 0 &&
+          typeof item.displayLabel === 'string'
+      );
+
+      setFormats(options);
+      setShowFormats(options.length > 0);
+      setSelectedFormat(options[0]?.id || '');
+
+      if (!options.length) {
+        setStatus(
+          'No selectable formats were found. You can still try downloading the source file.'
+        );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch available formats');
+      if (currentId !== requestId.current || controller.signal.aborted) return;
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch available formats'
+      );
       setShowFormats(false);
     } finally {
-      setFetchingFormats(false);
+      if (currentId === requestId.current) {
+        busyRef.current = false;
+        setBusy(false);
+        setFetchingFormats(false);
+        activeController.current = null;
+      }
     }
   };
 
   const handleDownload = async () => {
-    if (!url.trim()) {
-      setError('Please enter a URL');
+    if (busyRef.current) return;
+
+    const validUrl = validateUrl();
+    if (!validUrl) {
+      setError('Enter a valid HTTP or HTTPS URL');
       return;
     }
 
+    const currentId = ++requestId.current;
+    const controller = new AbortController();
+    activeController.current = controller;
+    busyRef.current = true;
+
+    setBusy(true);
     setLoading(true);
     setError('');
+    setDownloadedFile(null);
     setStatus('Starting download...');
 
     try {
-      const downloadBody: any = { url: url.trim() };
-      
-      // Pass formatId if we have a selected format
+      const downloadBody: { url: string; formatId?: string } = {
+        url: validUrl,
+      };
+
       if (selectedFormat) {
         downloadBody.formatId = selectedFormat;
       }
@@ -88,47 +209,79 @@ export default function SaveFromOnline() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(downloadBody),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Download failed');
+        throw new Error(
+          await parseApiError(response, 'Download failed')
+        );
       }
 
-      // Get the blob from the response
       const blob = await response.blob();
-      
-      // Extract filename from Content-Disposition header
-      const contentDisposition = response.headers.get('Content-Disposition');
+
+      if (currentId !== requestId.current) return;
+
+      if (!blob.size) {
+        throw new Error('The server returned an empty file.');
+      }
+
+      const disposition = response.headers.get('Content-Disposition');
+      const match = disposition?.match(/filename="([^"]+)"/);
+
       let fileName = 'download';
-      if (contentDisposition) {
-        const matches = contentDisposition.match(/filename="([^"]+)"/);
-        if (matches && matches[1]) {
-          fileName = matches[1];
+
+      if (match?.[1]) {
+        try {
+          fileName = decodeURIComponent(match[1]);
+        } catch {
+          fileName = match[1];
         }
       }
 
-      setStatus('Download complete!');
+      fileName = fileName
+        .replace(/[\\/\x00-\x1f\x7f]/g, '_')
+        .replace(/^\.+/, '')
+        .trim() || 'download';
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      try {
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+
+        try {
+          link.click();
+        } finally {
+          link.remove();
+        }
+      } finally {
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+      }
+
       setDownloadedFile({
         filename: fileName,
-        size: blob.size > 0 ? `${(blob.size / 1024 / 1024).toFixed(2)} MB` : `${(blob.size / 1024).toFixed(2)} KB`,
-        mimeType: blob.type,
+        size: `${(blob.size / 1024 / 1024).toFixed(2)} MB`,
+        mimeType: blob.type || 'application/octet-stream',
       });
 
-      // Create blob URL and trigger download
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
+      setStatus('Download prepared successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      if (currentId !== requestId.current || controller.signal.aborted) return;
+
+      setError(
+        err instanceof Error ? err.message : 'An error occurred'
+      );
       setStatus('');
     } finally {
-      setLoading(false);
+      if (currentId === requestId.current) {
+        busyRef.current = false;
+        setBusy(false);
+        setLoading(false);
+        activeController.current = null;
+      }
     }
   };
 
@@ -208,7 +361,12 @@ export default function SaveFromOnline() {
                   type="url"
                   value={url}
                   onChange={(e) => handleUrlChange(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleDownload()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      void handleDownload();
+                    }
+                  }}
                   placeholder="https://example.com/file.mp4 or public file URL"
                   className="w-full px-5 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 placeholder-gray-500"
                 />
@@ -222,7 +380,7 @@ export default function SaveFromOnline() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleFetchFormats}
-                  disabled={fetchingFormats || !url.trim()}
+                  disabled={busy || !url.trim()}
                   className="w-full bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 text-base shadow-lg"
                 >
                   {fetchingFormats ? <Loader2 className="animate-spin" size={20} /> : <Globe size={20} />}
@@ -258,7 +416,7 @@ export default function SaveFromOnline() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleDownload}
-                disabled={loading}
+                disabled={busy || !url.trim()}
                 className="w-full bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2 text-lg shadow-lg"
               >
                 {loading ? <Loader2 className="animate-spin" size={24} /> : <Download size={24} />}

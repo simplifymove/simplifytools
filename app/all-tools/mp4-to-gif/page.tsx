@@ -252,7 +252,7 @@ export default function Mp4ToGifPage() {
                   </p>
                   <ul className="text-xs text-purple-700 space-y-1">
                     <li>• No sound needed (silent animation)</li>
-                    <li>• Works on all platforms & browsers</li>
+                    <li>• Supported by major browsers and many messaging platforms</li>
                     <li>• Useful for short web and messaging animations</li>
                     <li>• GIF playback does not use video playback controls</li>
                   </ul>
@@ -304,7 +304,7 @@ export default function Mp4ToGifPage() {
               </FAQCard>
               <FAQCard>
                 <FAQStaticQuestion>Why convert MP4 to GIF?</FAQStaticQuestion>
-                <FAQAnswer>GIFs can be useful for sharing short visual animations on websites, messaging apps, and other compatible platforms. They autoplay, don't require plugins, and work everywhere. Plus, they're silent, so they're great for meme-worthy moments.</FAQAnswer>
+                <FAQAnswer>GIFs can be useful for sharing short visual animations on websites, messaging apps, and other compatible platforms. They typically animate automatically on compatible platforms without video controls. Plus, they're silent, so they're great for meme-worthy moments.</FAQAnswer>
               </FAQCard>
               <FAQCard>
                 <FAQStaticQuestion>What's the file size of the resulting GIF?</FAQStaticQuestion>

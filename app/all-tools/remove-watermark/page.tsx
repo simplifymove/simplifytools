@@ -727,7 +727,7 @@ export default function RemoveWatermarkPage() {
             </FAQDisclosure>
             <FAQDisclosure>
               <FAQQuestion>What image formats are supported?</FAQQuestion>
-              <FAQAnswer>We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), JPG (compressed), or WebP (modern format).</FAQAnswer>
+              <FAQAnswer>Supported input formats are JPG, PNG, and WebP. Output can be PNG (lossless), JPG (compressed), or WebP (modern format).</FAQAnswer>
             </FAQDisclosure>
             <FAQDisclosure>
               <FAQQuestion>Is my image data safe?</FAQQuestion>

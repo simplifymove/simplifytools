@@ -314,9 +314,9 @@ export default function GrayscaleImagePage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Grayscale Conversion?</h2>
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Classic aesthetic - black and white photos have timeless elegance and emotional impact</li>
-            <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Professional printing - grayscale reduces printing costs and works on any printer</li>
+            <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Print preparation - preview monochrome tones before using the image in a print layout</li>
             <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Focus on details - remove color distractions to emphasize composition and texture</li>
-            <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Reduce file sizes - grayscale images are smaller for web and archival</li>
+            <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Monochrome design - create grayscale versions for layouts, presentations, and visual projects</li>
             <li className="flex gap-2"><span className="text-gray-600 font-bold">•</span> Artistic expression - create dramatic moods with black and white photography</li>
           </ul>
         </div>
@@ -351,7 +351,7 @@ export default function GrayscaleImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Supported browser-readable images can be processed by the tool. The generated result is downloaded as a JPG image.</FAQAnswer>
+              <FAQAnswer>Supported image files are checked by the uploader and decoded in the browser. The converter requests the source image MIME type for its output Blob, although the download workflow currently uses a .jpg filename.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -369,7 +369,7 @@ export default function GrayscaleImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Grayscale conversion changes the image pixels by removing color information, and the generated result is encoded again as JPG. Review the output if image fidelity is important.</FAQAnswer>
+              <FAQAnswer>Grayscale conversion removes color information and re-encodes the image using the source MIME type when supported by the browser. Compression and output quality can vary by format.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -378,7 +378,7 @@ export default function GrayscaleImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Yes, You can use the tool to convert supported images to grayscale.</FAQAnswer>
+              <FAQAnswer>Yes. You can convert supported images to grayscale without paying or creating an account.</FAQAnswer>
             </FAQDisclosure>
           </FAQList>
         </FAQPanel>

@@ -256,7 +256,7 @@ export default function JpgToAvifPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Download Your AVIF</h3>
-                  <p className="text-gray-600 mt-2">After processing is complete, download the generated AVIF file. No signup is required for this conversion.</p>
+                  <p className="text-gray-600 mt-2">After conversion finishes, use Download AVIF to open the download page for the generated file. The uploader preview shows your original JPG, not the converted AVIF.</p>
                 </div>
               </div>
             </div>
@@ -308,7 +308,7 @@ export default function JpgToAvifPage() {
               </FAQCard>
               <FAQCard>
                 <FAQStaticQuestion>Will quality be compromised?</FAQStaticQuestion>
-                <FAQAnswer>AVIF encoding can change image quality depending on the selected setting and source image. Use the quality control to compare visual detail and output file size.</FAQAnswer>
+                <FAQAnswer>AVIF encoding can change visual detail depending on the source image and selected quality setting. Higher settings generally retain more detail but may produce larger files. Download and inspect the result to assess its quality.</FAQAnswer>
               </FAQCard>
               <FAQCard>
                 <FAQStaticQuestion>Can AVIF replace JPG on my website?</FAQStaticQuestion>
@@ -403,7 +403,7 @@ export default function JpgToAvifPage() {
               </Link>
               <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
-                <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency</p>
+                <p className="text-gray-600 text-sm mt-2">Convert JPG images to PNG format without adding transparency</p>
               </Link>
             </div>
           </div>

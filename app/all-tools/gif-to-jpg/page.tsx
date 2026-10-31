@@ -106,7 +106,7 @@ export default function GifToJpgPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">GIF to JPG Converter</h1>
-                <p className="text-lg text-white/90">Convert GIF images to static JPG files with adjustable JPEG quality. Animated GIFs use the browser-decoded first frame.</p>
+                <p className="text-lg text-white/90">Convert GIF images to static JPG files with adjustable JPEG quality. Animated GIFs become a single still image captured by the browser decoder.</p>
               </div>
             </div>
           </div>
@@ -191,7 +191,7 @@ export default function GifToJpgPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Browser-based GIF-to-JPG conversion</li>
-                      <li>• Uses first frame of animated GIFs</li>
+                      <li>• Animated GIFs become one static image</li>
                       <li>• Adjustable quality settings</li>
                       <li>• Conversion happens in your browser</li>
                     </ul>
@@ -228,9 +228,9 @@ export default function GifToJpgPage() {
               </h2>
               <p className="text-gray-700 leading-7 mb-4">
                 JPG is a static image format and cannot preserve GIF animation.
-                When an animated GIF is converted, the browser-decoded first
-                frame is rendered to a Canvas and encoded as a JPG image. The
-                remaining animation frames are not included in the JPG output.
+                When an animated GIF is converted, the browser-decoded image is
+                drawn onto a Canvas and encoded as a JPG. The converter
+                does not provide frame selection or preserve the animation.
               </p>
               <p className="text-gray-700 leading-7">
                 This makes the tool useful when you want a still image from the

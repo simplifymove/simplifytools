@@ -179,7 +179,7 @@ export default function EditToPngPage() {
                     <ul className="text-sm text-amber-800 space-y-1">
                       <li>• Lossless compression</li>
                       <li>• Supports transparency</li>
-                      <li>• Best for web</li>
+                      <li>• Useful for graphics with transparency or sharp edges</li>
                       <li>• Lossless PNG output encoding</li>
                     </ul>
                   </div>

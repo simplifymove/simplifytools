@@ -44,7 +44,7 @@ class SplitEngine:
             print(f"[DEBUG] CSV split mode: {mode}, delimiter: {repr(delimiter)}")
             
             # Read CSV
-            df = pd.read_csv(input_file, sep=delimiter, engine="python")
+            df = pd.read_csv(input_file, sep=delimiter, engine="python", dtype=str, keep_default_na=False)
             print(f"[DEBUG] CSV loaded: {len(df)} rows, {len(df.columns)} columns")
             
             if mode == 'by_rows':
@@ -65,7 +65,33 @@ class SplitEngine:
     def _split_excel(self, input_file: str, output_file: str, options: Dict[str, Any]):
         """Split Excel file based on specified mode"""
         
-        mode = options.get('split_mode', 'by_rows')  # by_rows, by_parts, by_sheet
+        mode = options.get('split_mode', 'by_sheet')
+
+        # Validate Excel options before calling the shared splitting methods.
+        if mode in ('by_rows', 'by_parts'):
+            if mode == 'by_rows':
+                value = options.get('rows_per_file', options.get('rowsPerFile', 1000))
+                minimum = 1
+                message = 'Rows Per File must be a positive whole number'
+                normalized_name = 'rows_per_file'
+            else:
+                value = options.get('num_parts', options.get('parts', 2))
+                minimum = 2
+                message = 'Number of Parts must be a whole number of at least 2'
+                normalized_name = 'num_parts'
+
+            if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+                raise ValueError(message)
+
+            try:
+                parsed = float(value)
+                if not parsed.is_integer() or parsed < minimum:
+                    raise ValueError(message)
+                normalized = int(parsed)
+            except (ValueError, OverflowError):
+                raise ValueError(message)
+
+            options = {**options, normalized_name: normalized}
         
         try:
             # Read Excel - get all sheets or specific sheet
@@ -140,7 +166,7 @@ class SplitEngine:
             num_parts = 2
         
         total_rows = len(df)
-        rows_per_part = (total_rows + num_parts - 1) // num_parts
+        base_rows, extra_rows = divmod(total_rows, num_parts)
         
         temp_files = []
         output_dir = os.path.dirname(output_file)
@@ -149,14 +175,13 @@ class SplitEngine:
         
         print(f"[DEBUG] Splitting into {num_parts} parts by part count. base_name='{base_name}', file_ext='{file_ext}'")
         
-        for i in range(num_parts):
-            start_idx = i * rows_per_part
-            end_idx = min((i + 1) * rows_per_part, total_rows)
-            
-            if start_idx >= total_rows:
-                break
-            
+        start_idx = 0
+        for i in range(min(num_parts, total_rows)):
+            part_size = base_rows + (1 if i < extra_rows else 0)
+            end_idx = start_idx + part_size
+
             part_df = df.iloc[start_idx:end_idx]
+            start_idx = end_idx
             
             # Create part filename
             part_filename = f"{base_name}_part_{i+1}{file_ext}"
@@ -196,10 +221,17 @@ class SplitEngine:
         print(f"[DEBUG] Splitting by column '{column_name}' into {num_groups} groups. base_name='{base_name}', file_ext='{file_ext}'")
         
         for i, value in enumerate(unique_values):
-            group_df = df[df[column_name] == value]
+            if pd.isna(value):
+                group_df = df[df[column_name].isna()]
+            else:
+                group_df = df[df[column_name] == value]
             
-            # Create filename for this group
-            part_filename = f"{base_name}_{str(value)[:20]}{file_ext}"
+            # Safe, unique filename for each group.
+            safe_value = self._sanitize_filename(str(value)).strip(" ._")
+            if not safe_value:
+                safe_value = "blank"
+
+            part_filename = f"{base_name}_part_{i+1}_{safe_value[:20]}{file_ext}"
             part_path = os.path.join(output_dir, part_filename)
             
             print(f"[DEBUG] Group {i+1} (value={repr(value)}): {part_filename} ({len(group_df)} rows)")
@@ -219,8 +251,8 @@ class SplitEngine:
         """Split Excel by sheets (export all sheets as separate files and zip)"""
         
         # Read all sheet names
-        excel_file = pd.ExcelFile(input_file)
-        sheet_names = excel_file.sheet_names
+        with pd.ExcelFile(input_file) as excel_file:
+            sheet_names = excel_file.sheet_names
         
         # Always create zip for split operations
         temp_files = []
@@ -266,7 +298,9 @@ class SplitEngine:
                         print(f"[DEBUG] Adding to ZIP: '{filename}' (size: {len(file_data)} bytes)")
                         zipf.writestr(filename, file_data, compress_type=zipfile.ZIP_STORED)
                     except Exception as e:
-                        print(f"[WARNING] Failed to add {filename} to ZIP: {str(e)}")
+                        raise RuntimeError(
+                            f"Failed to add {filename} to ZIP: {e}"
+                        ) from e
             
             # Write in-memory ZIP to disk
             zip_buffer.seek(0)

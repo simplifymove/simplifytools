@@ -255,7 +255,7 @@ export default function JpgToGifPage() {
                 Tips before downloading
               </h2>
               <ul className="list-disc pl-6 text-gray-600 space-y-2">
-                <li>Preview the GIF and compare important colors.</li>
+                <li>Open the downloaded GIF to check colors and image detail.</li>
                 <li>Keep the original JPG if image fidelity matters.</li>
                 <li>Use GIF when the target system specifically needs GIF.</li>
                 <li>For photographs, compare the result before replacing the original.</li>

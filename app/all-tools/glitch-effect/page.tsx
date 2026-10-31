@@ -265,7 +265,7 @@ export default function GlitchEffectPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Different each time?</FAQQuestion>
-                  <FAQAnswer>Yes, glitches are randomly generated.</FAQAnswer>
+                  <FAQAnswer>Yes. Each application uses randomized horizontal regions and pixel shifts, so processing the same image again can produce a different pattern even at the same intensity.</FAQAnswer>
                 </FAQDisclosure>
               </FAQList>
             </FAQPanel>
@@ -362,7 +362,7 @@ export default function GlitchEffectPage() {
               <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
                 <li>Start with a clear source image at a useful resolution.</li>
                 <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
-                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Try another intensity value and apply the effect again if the first result does not suit your image.</li>
                 <li>Remember that the final downloaded file is JPEG output.</li>
               </ul>
             </div>

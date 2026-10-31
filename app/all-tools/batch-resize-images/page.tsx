@@ -176,7 +176,7 @@ export default function BatchResizeImagesPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Batch Resize Images</h1>
-                <p className="text-lg text-white/90">Resize multiple supported images in one workflow using your chosen output dimensions. No signup is required.</p>
+                <p className="text-lg text-white/90">Resize up to 100 browser-supported images using custom dimensions and optional aspect-ratio preservation. Results are exported as JPEG files.</p>
               </div>
             </div>
           </div>
@@ -316,7 +316,7 @@ export default function BatchResizeImagesPage() {
                       <li>• Resize up to 100 images</li>
                       <li>• Process in your browser</li>
                       <li>• Maintain aspect ratio option</li>
-                      <li>• Browser-based resizing</li>
+                      <li>• JPEG output; downloading uploads generated files</li>
                     </ul>
                   </div>
                 </div>
@@ -394,7 +394,7 @@ export default function BatchResizeImagesPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>The batch resizer is intended for image formats that the browser can decode. The current download workflow generates resized JPEG results.</FAQAnswer>
+              <FAQAnswer>The tool accepts images your browser can decode and exports JPEG files. Transparent areas become white, and animated images are not preserved as animations.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -421,7 +421,7 @@ export default function BatchResizeImagesPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Batch resizing is performed in the browser. When you download the generated results, the files are passed through the site's download-result flow.</FAQAnswer>
+              <FAQAnswer>Resizing happens in your browser. When you select Download All, the generated JPEG files are uploaded to the site's download-result service to prepare their download pages.</FAQAnswer>
             </FAQDisclosure>
           </FAQList>
         </FAQPanel>

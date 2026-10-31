@@ -232,7 +232,7 @@ export default function TiffToSvgPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Server-assisted vector tracing</li>
-                      <li>• Creates SVG paths from raster shapes</li>
+                      <li>• Traces grayscale shapes into SVG paths; original colors are not retained</li>
                       <li>• Supports TIFF and TIF formats</li>
                       <li>• Files are temporarily processed for conversion</li>
                     </ul>

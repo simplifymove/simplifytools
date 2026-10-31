@@ -298,7 +298,7 @@ export default function BatchCompressImagesPage() {
                       <li>• Compress up to 100 images</li>
                       <li>• Process in your browser</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Browser-based compression</li>
+                      <li>• JPEG output; download preparation uploads the results</li>
                     </ul>
                   </div>
                 </div>
@@ -376,7 +376,7 @@ export default function BatchCompressImagesPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more. All images are compressed to optimal formats for web use.</FAQAnswer>
+              <FAQAnswer>The tool accepts images supported by your browser's image decoder and exports JPEG files. Transparent areas become white, and animations are not preserved. JPEG output can sometimes be larger than the original.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -394,7 +394,7 @@ export default function BatchCompressImagesPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Yes. Click "Download All" to download all compressed images. Your browser will download them individually with sequential delays to prevent blocking.</FAQAnswer>
+              <FAQAnswer>Click "Download All" to upload generated JPEG files to the download-result service and open a result page for each image. Your browser may block additional tabs, so allow pop-ups if needed.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>

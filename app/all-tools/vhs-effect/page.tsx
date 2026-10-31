@@ -375,7 +375,7 @@ export default function VHSEffectPage() {
               <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
                 <li>Start with a clear source image at a useful resolution.</li>
                 <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
-                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Review the processed image above before downloading; adjust intensity and apply again if needed.</li>
                 <li>Remember that the final downloaded file is JPEG output.</li>
               </ul>
             </div>

@@ -450,7 +450,7 @@ export default function MakeRoundImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Yes, set background opacity or use a transparent color. PNG format preserves transparency.</FAQAnswer>
+              <FAQAnswer>Yes. Enable the transparent background option to leave the corners outside the rounded shape transparent in the PNG output.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -459,7 +459,7 @@ export default function MakeRoundImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Use the border width slider (0-50px) and choose a color with the color picker. Borders wrap around the rounded shape.</FAQAnswer>
+              <FAQAnswer>Use the border width slider (0-50px at preview scale) and choose a color with the color picker. The border scales proportionally in the exported PNG.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>

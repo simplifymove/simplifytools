@@ -224,7 +224,7 @@ export default function ImageToolsPage() {
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Choose the Image Operation That Matches the Goal</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">Choose the Right Image Operation</h3>
+                    <h3 className="font-semibold text-gray-900 text-lg">Resize, Compress, or Convert?</h3>
                     <p className="text-gray-700">Resize changes pixel dimensions, compression targets file size, and conversion changes the format. Each choice affects quality differently.</p>
                   </div>
                   <div className="space-y-3">

@@ -31,7 +31,7 @@ const familyRoutes: Record<RelatedToolFamily, string> = {
   ai: '/all-tools/ai-tools',
   code: '/all-tools/code-tools',
   data: '/all-tools/data',
-  pdf: '/all-tools/pdf',
+  pdf: '/all-tools/pdf-tools',
   video: '/all-tools/video',
   image: '/all-tools',
 };

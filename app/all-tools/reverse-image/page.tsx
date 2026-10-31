@@ -19,99 +19,154 @@ export default function ReverseImagePage() {
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string>('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const operationId = useRef(0);
+  const processingRef = useRef(false);
+
+  const handleReverseTypeChange = (type: 'invert' | 'horizontalflip' | 'verticalflip') => {
+    if (type === reverseType) return;
+    operationId.current += 1;
+    processingRef.current = false;
+    setProcessing(false);
+    setResult(null);
+    setError('');
+    setReverseType(type);
+  };
 
   const handleFileSelect = (selectedFile: File) => {
+    operationId.current += 1;
+    processingRef.current = false;
+    setProcessing(false);
+    setPreview('');
     setFile(selectedFile);
     setError('');
     setResult(null);
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
+    const currentOperation = operationId.current;
+
+    reader.onload = () => {
+      if (currentOperation !== operationId.current) return;
+      if (typeof reader.result === 'string') {
+        setPreview(reader.result);
+      } else {
+        setError('Unable to read the selected image.');
+      }
     };
+
+    reader.onerror = () => {
+      if (currentOperation === operationId.current) {
+        setError('Unable to read the selected image.');
+      }
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    operationId.current += 1;
+    processingRef.current = false;
+    setProcessing(false);
+    setError('');
     setFile(null);
     setPreview('');
     setResult(null);
   };
 
   const reverseImage = async () => {
+    if (processingRef.current) return;
+
     if (!file || !preview) {
       setError('Please upload an image first');
       return;
     }
 
+    const currentOperation = ++operationId.current;
+    processingRef.current = true;
     setProcessing(true);
+    setResult(null);
     setError('');
+
+    const finish = () => {
+      if (currentOperation !== operationId.current) return;
+      processingRef.current = false;
+      setProcessing(false);
+    };
 
     try {
       const img = new Image();
+
       img.onload = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (currentOperation !== operationId.current) return;
 
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        try {
+          const canvas = canvasRef.current;
+          if (!canvas) throw new Error('Image canvas is unavailable.');
 
-        canvas.width = img.width;
-        canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Unable to initialize image processing.');
 
-        if (reverseType === 'invert') {
-          // Draw image normally first
-          ctx.drawImage(img, 0, 0);
-
-          // Get image data
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
-
-          // Invert each pixel's RGB values
-          for (let i = 0; i < data.length; i += 4) {
-            data[i] = 255 - data[i];     // Red
-            data[i + 1] = 255 - data[i + 1]; // Green
-            data[i + 2] = 255 - data[i + 2]; // Blue
-            // Alpha (i+3) remains unchanged
+          if (!img.naturalWidth || !img.naturalHeight) {
+            throw new Error('The selected image has invalid dimensions.');
           }
 
-          ctx.putImageData(imageData, 0, 0);
-        } else if (reverseType === 'horizontalflip') {
-          // Flip horizontally
-          ctx.save();
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(img, 0, 0);
-          ctx.restore();
-        } else if (reverseType === 'verticalflip') {
-          // Flip vertically
-          ctx.save();
-          ctx.translate(0, canvas.height);
-          ctx.scale(1, -1);
-          ctx.drawImage(img, 0, 0);
-          ctx.restore();
-        }
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
 
-        // Convert to blob
-        canvas.toBlob(
-          (blob) => {
+          if (reverseType === 'invert') {
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+              data[i] = 255 - data[i];
+              data[i + 1] = 255 - data[i + 1];
+              data[i + 2] = 255 - data[i + 2];
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+          } else if (reverseType === 'horizontalflip') {
+            ctx.save();
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(img, 0, 0);
+            ctx.restore();
+          } else {
+            ctx.save();
+            ctx.translate(0, canvas.height);
+            ctx.scale(1, -1);
+            ctx.drawImage(img, 0, 0);
+            ctx.restore();
+          }
+
+          canvas.toBlob((blob) => {
+            if (currentOperation !== operationId.current) return;
+
             if (blob) {
               setResult(blob);
+            } else {
+              setError('Unable to create the PNG image. Please try again.');
             }
-            setProcessing(false);
-          },
-          'image/png',
-          0.95
-        );
+
+            finish();
+          }, 'image/png');
+        } catch (error) {
+          if (currentOperation !== operationId.current) return;
+          setError(error instanceof Error ? error.message : 'Image processing failed.');
+          finish();
+        }
       };
+
       img.onerror = () => {
-        setError('Failed to load image');
-        setProcessing(false);
+        if (currentOperation !== operationId.current) return;
+        setError('Failed to load the selected image.');
+        finish();
       };
+
       img.src = preview;
-    } catch (err) {
-      setError('Error reversing image: ' + (err instanceof Error ? err.message : 'Unknown error'));
-      setProcessing(false);
+    } catch (error) {
+      if (currentOperation !== operationId.current) return;
+      setError(error instanceof Error ? error.message : 'Image processing failed.');
+      finish();
     }
   };
 
@@ -221,13 +276,13 @@ export default function ReverseImagePage() {
 
               {/* Reverse Type Selection */}
               <div className="space-y-3 mb-6">
-                <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-orange-300 transition" onClick={() => setReverseType('invert')}>
+                <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-orange-300 transition" onClick={() => handleReverseTypeChange('invert')}>
                   <input
                     type="radio"
                     name="reverseType"
                     value="invert"
                     checked={reverseType === 'invert'}
-                    onChange={(e) => setReverseType(e.target.value as 'invert' | 'horizontalflip' | 'verticalflip')}
+                    onChange={(e) => handleReverseTypeChange(e.target.value as 'invert' | 'horizontalflip' | 'verticalflip')}
                     className="w-4 h-4 accent-orange-500 cursor-pointer"
                   />
                   <div className="ml-3">
@@ -236,13 +291,13 @@ export default function ReverseImagePage() {
                   </div>
                 </label>
 
-                <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-orange-300 transition" onClick={() => setReverseType('horizontalflip')}>
+                <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-orange-300 transition" onClick={() => handleReverseTypeChange('horizontalflip')}>
                   <input
                     type="radio"
                     name="reverseType"
                     value="horizontalflip"
                     checked={reverseType === 'horizontalflip'}
-                    onChange={(e) => setReverseType(e.target.value as 'invert' | 'horizontalflip' | 'verticalflip')}
+                    onChange={(e) => handleReverseTypeChange(e.target.value as 'invert' | 'horizontalflip' | 'verticalflip')}
                     className="w-4 h-4 accent-orange-500 cursor-pointer"
                   />
                   <div className="ml-3">
@@ -251,13 +306,13 @@ export default function ReverseImagePage() {
                   </div>
                 </label>
 
-                <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-orange-300 transition" onClick={() => setReverseType('verticalflip')}>
+                <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-orange-300 transition" onClick={() => handleReverseTypeChange('verticalflip')}>
                   <input
                     type="radio"
                     name="reverseType"
                     value="verticalflip"
                     checked={reverseType === 'verticalflip'}
-                    onChange={(e) => setReverseType(e.target.value as 'invert' | 'horizontalflip' | 'verticalflip')}
+                    onChange={(e) => handleReverseTypeChange(e.target.value as 'invert' | 'horizontalflip' | 'verticalflip')}
                     className="w-4 h-4 accent-orange-500 cursor-pointer"
                   />
                   <div className="ml-3">

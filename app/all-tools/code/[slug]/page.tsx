@@ -827,17 +827,17 @@ export default function CodeToolPage() {
                 <FAQList>
                   <FAQDisclosure>
                     <FAQQuestion>
-                      Is my data secure and private?
+                      Is my input processed in the browser or on the server?
 
                     </FAQQuestion>
-                    <FAQAnswer>Yes. All processing happens in your browser using client-side JavaScript. Your data is never sent to our servers and is not stored anywhere.</FAQAnswer>
+                    <FAQAnswer>Submitted input is sent to our server for processing. Avoid entering passwords, private keys, or confidential information.</FAQAnswer>
                   </FAQDisclosure>
                   <FAQDisclosure>
                     <FAQQuestion>
                       Can I use this tool offline?
 
                     </FAQQuestion>
-                    <FAQAnswer>Yes. If you've loaded the page once, you can use it offline. All computation happens in your browser without any server connection.</FAQAnswer>
+                    <FAQAnswer>No. An internet connection is required because this tool uses server-side processing.</FAQAnswer>
                   </FAQDisclosure>
                   <FAQDisclosure>
                     <FAQQuestion>
@@ -851,7 +851,7 @@ export default function CodeToolPage() {
                       Is there a limit on input size?
 
                     </FAQQuestion>
-                    <FAQAnswer>Input is limited only by your browser's available memory. Most browsers can handle files up to several MB without issues.</FAQAnswer>
+                    <FAQAnswer>Input limits depend on the server and the selected operation. For large inputs, try a smaller sample first.</FAQAnswer>
                   </FAQDisclosure>
                   <FAQDisclosure>
                     <FAQQuestion>

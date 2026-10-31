@@ -320,7 +320,7 @@ export default function HueSaturationPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I desaturate colors completely?</FAQQuestion>
-                  <FAQAnswer>Yes, set saturation to -100% to remove all color and create grayscale images.</FAQAnswer>
+                  <FAQAnswer>Yes. Setting saturation to -100 reduces each pixel's HSL saturation to zero, producing grayscale color values in the exported image.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>What hue values produce what colors?</FAQQuestion>

@@ -317,7 +317,7 @@ export default function UpscaleImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">AI Image Upscaler</h1>
-                <p className="text-lg text-white/90">Enlarge images to 2×, 3×, or 4× using Real-ESRGAN processing. Visible detail and artifacts depend on the source image and selected settings.</p>
+                <p className="text-lg text-white/90">Enlarge images to 2×, 3×, or 4×. AI-based Real-ESRGAN processing is used when available, with alternative upscaling methods as fallback. Visible detail and artifacts depend on the source image and selected settings.</p>
               </div>
             </div>
           </div>
@@ -658,7 +658,7 @@ export default function UpscaleImagePage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Benefits of Our Upscale Tool</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-ESRGAN AI Technology</h3>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Optional Real-ESRGAN AI Technology</h3>
               <p className="text-gray-700">Real-ESRGAN increases image dimensions and generates additional pixel detail. The result can look clearer, but it cannot guarantee recovery of detail missing from the source.</p>
             </div>
             <div>

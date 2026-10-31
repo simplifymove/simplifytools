@@ -114,7 +114,7 @@ class MediaEditEngine:
         """Resize video"""
         width = int(options.get('width', 1920))
         height = int(options.get('height', 1080))
-        keep_aspect = options.get('keepAspect', True)
+        keep_aspect = str(options.get('keepAspect', True)).strip().lower() in ('true', '1', 'yes', 'on')
         
         resize_video(input_path, output_path, width, height, keep_aspect)
         return output_path
@@ -172,13 +172,17 @@ class MediaEditEngine:
         output_format = Path(output_path).suffix
         quality = options.get('quality', 'medium')
         
-        preset_map = {'low': 'superfast', 'medium': 'medium', 'high': 'slow'}
-        preset = preset_map.get(quality, 'medium')
+        crf_map = {'low': 40, 'medium': 32, 'high': 24}
+        if quality not in crf_map:
+            raise ValueError(f'Unsupported WebM quality: {quality}')
         
         args = [
             '-i', input_path,
             '-c:v', 'libvpx-vp9',
-            '-preset', preset,
+            '-b:v', '0',
+            '-crf', str(crf_map[quality]),
+            '-deadline', 'good',
+            '-cpu-used', '4',
             '-c:a', 'libopus',
             output_path
         ]
@@ -229,6 +233,8 @@ class MediaEditEngine:
             output_format = '.webp'
         elif tool_id == 'mp4-to-webm':
             output_format = '.webm'
+        elif tool_id == 'mute-video':
+            output_format = '.mp4'
         elif tool_id == 'extract-audio-from-video':
             output_format = f'.{options.get("outputFormat", "mp3")}'
         else:

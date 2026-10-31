@@ -283,7 +283,7 @@ export default function ThermalVisionPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Real thermal imaging?</FAQQuestion>
-                  <FAQAnswer>Simulates thermal effect using brightness mapping.</FAQAnswer>
+                  <FAQAnswer>No. This tool maps visible image brightness to a simulated thermal color palette. It cannot detect temperature, heat signatures, or infrared radiation.</FAQAnswer>
                 </FAQDisclosure>
               </FAQList>
             </FAQPanel>
@@ -380,7 +380,7 @@ export default function ThermalVisionPage() {
               <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
                 <li>Start with a clear source image at a useful resolution.</li>
                 <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
-                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Compare the original image and thermal-effect preview before downloading.</li>
                 <li>Remember that the final downloaded file is JPEG output.</li>
               </ul>
             </div>

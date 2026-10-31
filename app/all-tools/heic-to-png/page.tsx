@@ -234,7 +234,7 @@ export default function HeicToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download PNG File</h3>
-                <p className="text-gray-600 mt-2">Download the converted PNG after processing is complete.</p>
+                <p className="text-gray-600 mt-2">When conversion finishes, click "Continue to Download" to open the download page and save your PNG file.</p>
               </div>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function HeicToPngPage() {
             </FAQCard>
             <FAQCard>
               <FAQStaticQuestion>Will PNG be larger than HEIC?</FAQStaticQuestion>
-              <FAQAnswer>PNG files may be slightly larger than HEIC files. However, PNG's universal compatibility makes this worthwhile for sharing and cross-platform use.</FAQAnswer>
+              <FAQAnswer>PNG and HEIC use different compression approaches, so output file size varies with the source image and encoding. PNG files can be substantially larger than HEIC files, especially for photographs.</FAQAnswer>
             </FAQCard>
             <FAQCard>
               <FAQStaticQuestion>Can I batch convert multiple HEIC files?</FAQStaticQuestion>

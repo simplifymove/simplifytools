@@ -238,8 +238,8 @@ export default function BrightnessContrastPage() {
                   <p className="text-gray-700">Fine-tune brightness and contrast independently.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Real-time Preview</h3>
-                  <p className="text-gray-700">Adjust the controls and review the resulting tonal changes.</p>
+                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Apply Before Download</h3>
+                  <p className="text-gray-700">Set both sliders, apply the adjustment, and prepare the resulting JPEG for download.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Photo Enhancement</h3>
@@ -266,7 +266,7 @@ export default function BrightnessContrastPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Works on all images?</FAQQuestion>
-                  <FAQAnswer>Yes, works on any photo format.</FAQAnswer>
+                  <FAQAnswer>The file picker accepts images, but successful processing depends on whether your browser can decode the selected format. Common formats include JPG, PNG, and WebP. The adjusted output is a JPEG.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I use commercially?</FAQQuestion>

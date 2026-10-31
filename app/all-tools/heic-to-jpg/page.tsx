@@ -215,14 +215,14 @@ export default function HeicToJpgPage() {
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Click Convert to JPG</h3>
-                  <p className="text-gray-600 mt-2">Press the "Convert to JPG" button. Your HEIC file is securely processed to create a compatible JPG image.</p>
+                  <p className="text-gray-600 mt-2">Press the "Convert to JPG" button. The file is uploaded for server-assisted conversion, and a JPG result is prepared when processing succeeds.</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Download Your JPG</h3>
-                  <p className="text-gray-600 mt-2">Once converted, click "Download JPG" to save your image. JPG is widely supported across browsers, devices, image editors, document tools, and publishing workflows.</p>
+                  <p className="text-gray-600 mt-2">When conversion finishes, click "Continue to Download" to open the download page and save your JPG. JPG is widely supported by browsers, devices, image editors, and document tools.</p>
                 </div>
               </div>
               <div className="flex gap-4">

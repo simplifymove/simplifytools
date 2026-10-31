@@ -1,7 +1,7 @@
 'use client';
 import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Image, CheckCircle } from 'lucide-react';
@@ -30,7 +30,20 @@ export default function JpgToPngPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultPreviewUrl, setResultPreviewUrl] = useState<string | null>(null);
   const { error, clearError, createError } = useImageToolErrors();
+
+  useEffect(() => {
+    if (!result) {
+      setResultPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(result);
+    setResultPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [result]);
 
   const handleFileSelect = (selectedFile: File) => {
     clearError();
@@ -82,6 +95,7 @@ export default function JpgToPngPage() {
     }
 
     setFile(selectedFile);
+    setResult(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -220,7 +234,7 @@ export default function JpgToPngPage() {
                   {result ? (
                     <div className="space-y-4">
                       <img
-                        src={result as any}
+                        src={resultPreviewUrl || undefined}
                         alt="Converted PNG"
                         className="w-full rounded-lg border border-gray-200 object-cover"
                       />

@@ -210,7 +210,7 @@ export default function AIWriteToolPage() {
     return (
       <main className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 py-12">
-          <Link href="/all-tools?category=AI%20Write" className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 mb-8">
+          <Link href="/all-tools/ai-tools" className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 mb-8">
             <ArrowLeft className="w-4 h-4" />
             Back to AI Write Tools
           </Link>

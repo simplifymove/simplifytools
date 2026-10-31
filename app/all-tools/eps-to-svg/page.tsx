@@ -232,7 +232,7 @@ export default function EpsToSvgPage() {
                     </p>
                     <ul className="text-xs text-indigo-700 space-y-1">
                       <li>• Vector output can scale without raster pixelation</li>
-                      <li>• Smaller file sizes than EPS</li>
+                      <li>• File size depends on artwork complexity</li>
                       <li>• Compatible with all modern browsers</li>
                       <li>• Easy to edit and customize</li>
                     </ul>

@@ -292,7 +292,7 @@ export default function FinancialCalculatorsPage() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Four Focused Planning Calculators</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Three Active Calculators and One Under Review</h2>
               
               <p className="text-gray-700 leading-relaxed mb-6">
                 Explore a <Link href="/all-tools/financial-calculators/startup-runway" className="text-green-600 font-medium hover:underline">startup runway estimate</Link>, <Link href="/all-tools/financial-calculators/saas-profit" className="text-green-600 font-medium hover:underline">SaaS profit scenario</Link>, <Link href="/all-tools/financial-calculators/loan-optimizer" className="text-green-600 font-medium hover:underline">loan repayment comparison</Link>, or <Link href="/all-tools/financial-calculators/india-tax" className="text-green-600 font-medium hover:underline">Indian income tax estimate</Link>. Each calculator has a narrower purpose and depends on the figures and assumptions entered.

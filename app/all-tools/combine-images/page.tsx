@@ -263,7 +263,7 @@ export default function CombineImagesPage() {
                   <label htmlFor="file-input" className="cursor-pointer flex flex-col items-center gap-3">
                     <Plus size={40} className="text-gray-400" />
                     <div>
-                      <p className="text-gray-700 font-medium">Click to upload or drag and drop</p>
+                      <p className="text-gray-700 font-medium">Click to select images</p>
                       <p className="text-gray-500 text-sm">Multiple images supported</p>
                     </div>
                   </label>
@@ -447,7 +447,7 @@ export default function CombineImagesPage() {
                   <li>• Upload 2+ images</li>
                   <li>• Choose layout style</li>
                   <li>• Adjust spacing & colors</li>
-                  <li>• Preview the result</li>
+                  <li>• Click Combine Images to generate a preview and PNG result</li>
                   <li>• Download combined image</li>
                 </ul>
               </div>
@@ -456,10 +456,10 @@ export default function CombineImagesPage() {
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <h4 className="font-semibold text-purple-900 mb-2">Tips</h4>
                 <ul className="text-sm text-purple-800 space-y-1">
-                  <li>• Grid layout auto-centers</li>
+                  <li>• Grid layout places images in rows and columns</li>
                   <li>• Images maintain aspect ratios</li>
                   <li>• Customize spacing & background</li>
-                  <li>• PNG format preserves quality</li>
+                  <li>• PNG output avoids JPEG-style compression artifacts</li>
                 </ul>
               </div>
             </div>
@@ -545,7 +545,7 @@ export default function CombineImagesPage() {
             <FAQList>
               <FAQDisclosure>
                 <FAQQuestion>What image formats are supported?</FAQQuestion>
-                <FAQAnswer>Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The combined output is generated in PNG format.</FAQAnswer>
+                <FAQAnswer>Select image files your browser can decode, typically JPG, PNG, and WebP. Other formats depend on browser support. The combined result is exported as PNG.</FAQAnswer>
               </FAQDisclosure>
               <FAQDisclosure>
                 <FAQQuestion>How many images can I combine?</FAQQuestion>
@@ -565,7 +565,7 @@ export default function CombineImagesPage() {
               </FAQDisclosure>
               <FAQDisclosure>
                 <FAQQuestion>Can I reorder images?</FAQQuestion>
-                <FAQAnswer>Currently, images are arranged in the order you upload them. You can remove an image using the delete button and re-upload it in a different position.</FAQAnswer>
+                <FAQAnswer>There is no drag-to-reorder control. You can remove images and upload them again, but the current implementation draws images as they finish loading, so output order is not guaranteed.</FAQAnswer>
               </FAQDisclosure>
             </FAQList>
           </FAQPanel>

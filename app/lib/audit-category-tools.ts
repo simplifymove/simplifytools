@@ -202,7 +202,7 @@ function mapDataTools(): AuditToolTarget[] {
     strategy: 'file',
     fixtures: fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : [],
     optionValues: Object.fromEntries(tool.options.filter((option) => option.required).map((option) => [option.name, option.default ?? (option.name === 'itemTag' ? 'item' : '1')])),
-    resultFlow: 'download',
+    resultFlow: 'download-page',
     expectedOutput: outputContract(tool.output),
   }));
 }

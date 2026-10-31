@@ -532,12 +532,12 @@ export default function ColorizePhotoPage() {
               <p className="text-gray-700">Choose from preset tones like sepia, warm, and cool, or use a custom color for unique effects.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-Time Preview</h3>
-              <p className="text-gray-700">Preview changes as you adjust tone, color, and intensity.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Tone Preview</h3>
+              <p className="text-gray-700">Use the preview canvas to inspect a reduced-size tonal effect. Apply the effect to generate the downloadable image.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Apply Tones to Vintage Photos</h3>
-              <p className="text-gray-700">Bring old black and white photographs back to life with beautiful, natural-looking colors.</p>
+              <p className="text-gray-700">Give grayscale photographs a vintage or stylized appearance. The tool does not identify objects or reconstruct their original colors.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Adjustable Intensity</h3>

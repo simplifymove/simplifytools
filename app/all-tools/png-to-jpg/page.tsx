@@ -443,7 +443,7 @@ export default function PngToJpgPage() {
 
 
             </FAQQuestion>
-            <FAQAnswer>JPG does not support transparency. Transparent or partially transparent pixels must be flattened when the browser creates the JPEG output, so transparency is not preserved.</FAQAnswer>
+            <FAQAnswer>JPG does not support transparency. This converter places transparent or partially transparent PNG pixels over a white background before creating the JPEG. Transparency is not preserved.</FAQAnswer>
           </FAQDisclosure>
 
           <FAQDisclosure>

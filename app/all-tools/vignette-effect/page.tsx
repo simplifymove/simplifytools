@@ -224,7 +224,7 @@ export default function VignetteEffectPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-700 mb-2">Interactive Preview</h3>
-                  <p className="text-gray-700">See results immediately with our fast, browser-based processing.</p>
+                  <p className="text-gray-700">Review the generated image after processing, then download the JPEG result.</p>
                 </div>
               </div>
             </div>

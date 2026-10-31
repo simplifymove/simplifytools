@@ -262,7 +262,7 @@ export default function PixelateImagePage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>What formats are supported?</FAQQuestion>
-                  <FAQAnswer>We support JPG, PNG, WebP, BMP, and TIFF formats.</FAQAnswer>
+                  <FAQAnswer>You can upload JPG, PNG, and WebP images. The processed image is exported as JPEG.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Does pixelation reduce file size?</FAQQuestion>

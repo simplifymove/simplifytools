@@ -264,7 +264,7 @@ export default function WhiteBalancePage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>When to adjust temperature?</FAQQuestion>
-                  <FAQAnswer>Indoor lights (warm) use positive. Outdoor cloudy (cool) use negative.</FAQAnswer>
+                  <FAQAnswer>If your photo looks too warm or orange, move the temperature slider toward negative values to make it cooler. If your photo looks too cool or blue, move it toward positive values to make it warmer.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>What is tint?</FAQQuestion>
@@ -272,7 +272,7 @@ export default function WhiteBalancePage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Works on all images?</FAQQuestion>
-                  <FAQAnswer>Yes, works on any photo format.</FAQAnswer>
+                  <FAQAnswer>Works with image formats supported by your browser, such as JPG, PNG, and WebP. Some formats may not be supported.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I use commercially?</FAQQuestion>

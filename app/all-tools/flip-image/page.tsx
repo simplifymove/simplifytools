@@ -456,7 +456,7 @@ export default function FlipImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Supported browser-readable image files can be flipped. The processed result is exported as PNG.</FAQAnswer>
+              <FAQAnswer>The uploader accepts JPG, JPEG, PNG, WebP, GIF, BMP, SVG, AVIF, HEIC, ICO, TIFF, and TIF extensions. The image must also be readable by your browser to flip successfully. The result is exported as PNG.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -465,7 +465,7 @@ export default function FlipImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Processing capacity depends on the browser, available device memory, and the dimensions of the uploaded image.</FAQAnswer>
+              <FAQAnswer>The maximum upload size is 50 MB. Processing also depends on your browser, available device memory, and image dimensions.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>

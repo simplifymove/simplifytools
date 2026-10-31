@@ -167,7 +167,7 @@ export default function GifToPngPage() {
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Browser-based GIF-to-PNG conversion</li>
                       <li>• Supports transparency from the rendered GIF frame</li>
-                      <li>• Uses first frame of animated GIFs</li>
+                      <li>• Animated GIFs become one static image</li>
                       <li>• Browser-based image conversion</li>
                     </ul>
                   </div>
@@ -196,8 +196,8 @@ export default function GifToPngPage() {
                 <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">2</div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Adjust Quality Settings</h3>
-                <p className="text-gray-600 mt-2">The first rendered frame is converted to a static PNG image.</p>
+                <h3 className="text-lg font-semibold text-gray-900">Understand the Output</h3>
+                <p className="text-gray-600 mt-2">The browser-decoded GIF image is exported as a single PNG. This tool has no quality or frame-selection controls.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -230,7 +230,7 @@ export default function GifToPngPage() {
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Better Compression</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Lossless PNG Encoding</h3>
                 <p className="text-gray-600 text-sm">PNG uses lossless compression and is well suited to static graphics, screenshots, logos, and images requiring transparency.</p>
               </div>
             </div>
@@ -279,7 +279,7 @@ export default function GifToPngPage() {
             </FAQCard>
             <FAQCard>
               <FAQStaticQuestion>Which GIF types are supported?</FAQStaticQuestion>
-              <FAQAnswer>Common static and animated GIF files can be converted. Animated GIFs produce a static PNG from the first rendered frame.</FAQAnswer>
+              <FAQAnswer>Common static and animated GIF files can be converted. The output is one static PNG image, without animation or manual frame selection.</FAQAnswer>
             </FAQCard>
           </FAQList>
         </FAQPanel>
@@ -358,7 +358,7 @@ export default function GifToPngPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Convert images to PNG format</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file sizes with compression</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

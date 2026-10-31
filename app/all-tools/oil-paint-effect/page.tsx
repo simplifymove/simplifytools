@@ -299,7 +299,7 @@ export default function OilPaintEffectPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>What's the output quality?</FAQQuestion>
-                  <FAQAnswer>The processed result is exported as JPEG. The effect intentionally smooths and changes image detail, and JPEG encoding can introduce additional compression changes.</FAQAnswer>
+                  <FAQAnswer>The result is exported as JPEG at 92% quality. Images larger than 1,200 pixels on their longest side are resized, and transparent areas are not preserved as transparency in JPEG. The painting effect intentionally changes image details.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Is my image private?</FAQQuestion>

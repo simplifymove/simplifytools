@@ -1168,7 +1168,7 @@ export default function AIWriteToolPage({ params }: PageProps) {
                 <h3 className="font-semibold text-amber-900 mb-2">{isAiDetector ? 'Important: AI Detection Is Not Proof' : 'Important: Using AI Writing Tools Responsibly'}</h3>
                 {isAiDetector ? (
                   <ul className="text-amber-900 text-sm space-y-2 list-disc list-inside">
-                    <li>The result is probabilistic and cannot prove authorship</li>
+                    <li>The result is based on heuristic rules and cannot prove authorship</li>
                     <li>False positives and false negatives are possible</li>
                     <li>Writing style, editing, subject matter, language, and text length can affect the estimate</li>
                     <li>Do not use this output as the sole basis for academic, employment, disciplinary, legal, or other high-impact decisions</li>

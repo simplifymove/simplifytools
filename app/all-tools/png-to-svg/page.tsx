@@ -117,7 +117,7 @@ export default function PngToSvgPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to SVG Converter</h1>
-              <p className="text-lg text-white/90">Trace PNG artwork into SVG vector paths. High-contrast logos, icons, and simple graphics produce the clearest results.</p>
+              <p className="text-lg text-white/90">Convert clean PNG artwork into traced SVG vector paths. Simple icons, line drawings, and high-contrast shapes work best. Transparent areas and original colors may not be preserved.</p>
             </div>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function PngToSvgPage() {
                   </p>
                   <ul className="text-xs text-blue-700 space-y-1">
                     <li>• SVG vector-path output</li>
-                    <li>• Smaller file sizes than raster formats</li>
+                    <li>• File size depends on image complexity and traced paths</li>
                     <li>• Best suited to high-contrast logos, icons, and illustrations</li>
                     <li>• Vector paths can be edited in compatible SVG editors</li>
                   </ul>

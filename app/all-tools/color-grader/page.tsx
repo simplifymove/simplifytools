@@ -220,7 +220,7 @@ export default function ColorGraderPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-purple-600 mb-2">Adjustable Results</h3>
-                  <p className="text-gray-700">Achieve studio-quality color correction without expensive software.</p>
+                  <p className="text-gray-700">Adjust hue, saturation, and basic red or blue color shifts using browser-based image controls.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-purple-600 mb-2">Precise Control</h3>
@@ -228,7 +228,7 @@ export default function ColorGraderPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-purple-600 mb-2">Interactive Adjustments</h3>
-                  <p className="text-gray-700">See changes in real-time as you adjust the sliders.</p>
+                  <p className="text-gray-700">Choose your settings, then click Apply Color Grading to generate the adjusted JPEG image.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-purple-600 mb-2">100% Free Forever</h3>

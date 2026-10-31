@@ -309,7 +309,7 @@ export async function POST(request: NextRequest) {
       
       metadata_obj = {
         ...pyMetadata,
-        engine: 'OpenCV Advanced',
+        engine: pyMetadata.engine ?? 'OpenCV Advanced',
       };
       
       // Cleanup

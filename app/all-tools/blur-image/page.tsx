@@ -137,7 +137,7 @@ export default function BlurImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Blur Image</h1>
-                <p className="text-lg text-white/90">Apply an adjustable blur effect to soften details, backgrounds, or selected image workflows.</p>
+                <p className="text-lg text-white/90">Apply an adjustable blur across an entire image using your browser. Choose a blur amount from 1 to 50 pixels and export a JPEG.</p>
               </div>
             </div>
           </div>
@@ -289,9 +289,9 @@ export default function BlurImagePage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Blurring</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Privacy protection - blur sensitive information like license plates and faces</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Visual obscuring - soften faces, plates, or other details, but do not rely on blur alone to protect sensitive information</li>
             <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Artistic effects - soften image detail for creative compositions and backgrounds</li>
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Background softening - draw focus to main subject by blurring background</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Whole-image softening - reduce detail throughout the photo, including both subject and background</li>
             <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Social media preparation - create softened images for posts, stories, and graphics</li>
             <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Detail obscuring - reduce the visibility of information before sharing, while reviewing the result carefully</li>
           </ul>
@@ -352,7 +352,7 @@ export default function BlurImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>For subtle effects use 1-10px. For moderate blur use 10-25px. For heavy privacy blur use 25-50px. Experiment to find your preferred level.</FAQAnswer>
+              <FAQAnswer>Try 1-10px for gentle softening, 10-25px for a more noticeable effect, or 25-50px for strong whole-image blur. Higher values are not a guarantee that sensitive details are concealed.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -361,7 +361,7 @@ export default function BlurImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>This tool blurs the entire image. For selective blurring, crop the specific area first using our Crop Image tool, blur it, then combine it back.</FAQAnswer>
+              <FAQAnswer>No. This tool applies blur to the whole image and does not provide a selection brush or region mask. For subject-preserving background blur, use the separate Blur Background tool.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>

@@ -97,7 +97,7 @@ export const imageToolsRegistry: Record<string, ImageTool> = {
   'upscale-image': {
     id: 'upscale-image',
     title: 'Upscale Image',
-    description: 'Enhance and enlarge images without quality loss',
+    description: 'Enlarge images with optional AI processing; results depend on the source image',
     slug: 'upscale-image',
     type: 'ai',
     requiresValidation: true,

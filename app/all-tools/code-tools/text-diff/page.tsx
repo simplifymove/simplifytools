@@ -657,7 +657,7 @@ export default function TextDiffPage() {
                   <li>Paste your original text into the first text box or open a supported text file.</li>
                   <li>Paste the revised version into the changed-text box.</li>
                   <li>Select <strong>Find difference</strong> to compare the two versions.</li>
-                  <li>Review added, removed, and modified lines in the comparison results.</li>
+                  <li>Review added and removed lines. Replacements appear as a removal and an addition.</li>
                   <li>Export the comparison as PDF or CSV when you need a copy of the results.</li>
                 </ol>
               </div>
@@ -708,7 +708,7 @@ export default function TextDiffPage() {
                   </div>
 
                   <div className="rounded-xl bg-yellow-50 border border-yellow-100 p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">Modified lines</h3>
+                    <h3 className="font-semibold text-gray-900 mb-2">Replaced lines</h3>
                     <p className="text-sm text-gray-700 leading-6">
                       Modified content highlights lines whose text differs between the two
                       versions.

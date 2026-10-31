@@ -235,6 +235,7 @@ export default function EsignPdfPage() {
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [pdfPages, setPdfPages] = useState<HTMLCanvasElement[]>([]);
+  const [isLoadingMorePages, setIsLoadingMorePages] = useState(false);
   const [signatures, setSignatures] = useState<SignatureData[]>([]);
   const [selectedSig, setSelectedSig] = useState<number | null>(null);
   const [copiedSig, setCopiedSig] = useState<SignatureData | null>(null);
@@ -284,6 +285,60 @@ export default function EsignPdfPage() {
     }
   }, [showSignaturePad]);
 
+  const renderPdfPages = async (
+    pdf: any,
+    startPage: number,
+    endPage: number
+  ): Promise<HTMLCanvasElement[]> => {
+    const pages: HTMLCanvasElement[] = [];
+
+    for (let i = startPage; i <= endPage; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error(`Unable to render PDF page ${i}`);
+      }
+
+      try {
+        await page.render({ canvas, viewport }).promise;
+      } catch {
+        await page.render({
+          canvasContext: context,
+          viewport,
+        } as any).promise;
+      }
+
+      pages.push(canvas);
+    }
+
+    return pages;
+  };
+
+  const loadMorePages = async () => {
+    if (!pdfDoc || isLoadingMorePages || pdfPages.length >= totalPages) {
+      return;
+    }
+
+    setIsLoadingMorePages(true);
+
+    try {
+      const startPage = pdfPages.length + 1;
+      const endPage = Math.min(startPage + 9, totalPages);
+      const nextPages = await renderPdfPages(pdfDoc, startPage, endPage);
+
+      setPdfPages((previous) => [...previous, ...nextPages]);
+    } catch (error) {
+      alert('Unable to load more PDF pages: ' + (error as Error).message);
+    } finally {
+      setIsLoadingMorePages(false);
+    }
+  };
+
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || file.type !== 'application/pdf' || !pdfjsLib) return;
@@ -299,24 +354,11 @@ export default function EsignPdfPage() {
       setPdfDoc(pdf);
       setTotalPages(pdf.numPages);
 
-      const pages: HTMLCanvasElement[] = [];
-
-      for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const context = canvas.getContext('2d');
-        if (context) {
-          try {
-            await page.render({ canvas: canvas, viewport: viewport }).promise;
-          } catch (e) {
-            await page.render({ canvasContext: context, viewport: viewport } as any).promise;
-          }
-          pages.push(canvas);
-        }
-      }
+      const pages = await renderPdfPages(
+        pdf,
+        1,
+        Math.min(pdf.numPages, 10)
+      );
 
       setPdfPages(pages);
       console.log(`[ESIGN] PDF loaded: ${pdf.numPages} pages`);
@@ -746,7 +788,7 @@ export default function EsignPdfPage() {
               <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 hover:border-purple-500 hover:bg-purple-50 transition">
                 <FileUp className="w-8 h-8 text-purple-500 mx-auto mb-2" />
                 <p className="text-gray-700 font-medium">Click to upload PDF</p>
-                <p className="text-gray-500 text-sm">or drag and drop</p>
+                <p className="text-gray-500 text-sm">Choose a PDF from your device</p>
               </div>
             </label>
           </div>
@@ -905,6 +947,23 @@ export default function EsignPdfPage() {
                     </div>
                   );
                 })}
+                {pdfPages.length < totalPages && (
+                  <div className="py-6 text-center">
+                    <button
+                      type="button"
+                      onClick={loadMorePages}
+                      disabled={isLoadingMorePages}
+                      className="px-5 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 font-medium"
+                    >
+                      {isLoadingMorePages
+                        ? 'Loading pages...'
+                        : `Load next ${Math.min(10, totalPages - pdfPages.length)} pages`}
+                    </button>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Showing {pdfPages.length} of {totalPages} pages
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-gray-400 text-center py-12">
@@ -918,11 +977,11 @@ export default function EsignPdfPage() {
         <div className="w-80 bg-white rounded-lg shadow-md flex flex-col overflow-hidden">
           <div className="p-4 border-b border-gray-200">
             <label className="block cursor-pointer">
-              <input type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" />
-              <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">
+              <input type="file" accept=".pdf" onChange={handlePdfUpload} className="sr-only" />
+              <span className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">
                 <FileUp className="w-5 h-5" />
                 Change PDF
-              </button>
+              </span>
             </label>
           </div>
 

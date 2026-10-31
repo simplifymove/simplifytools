@@ -125,7 +125,7 @@ export default function BmpToJpgPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">BMP to JPG Converter</h1>
-              <p className="text-lg text-white/90">Convert BMP images to JPG format with efficient compression for web and everyday use.</p>
+              <p className="text-lg text-white/90">Upload a BMP image up to 50 MB and convert it to a compressed JPEG using server-side processing. Best suited to photographs and everyday sharing.</p>
             </div>
           </div>
         </div>

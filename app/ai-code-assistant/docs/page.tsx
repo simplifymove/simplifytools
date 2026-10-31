@@ -120,7 +120,7 @@ Authorization: Bearer sca_XXXXXXXXXXXXXXXX
             <div className="mt-4 space-y-3 text-sm">
               <div>
                 <strong className="text-gray-900">prompt</strong> (required, string):
-                <p className="text-gray-600">The code request or question (max 50,000 characters)</p>
+                <p className="text-gray-600">The code request or question (default maximum: 40,000 characters; server configuration may vary)</p>
               </div>
               <div>
                 <strong className="text-gray-900">machineId</strong> (required, string):
@@ -180,7 +180,7 @@ Authorization: Bearer sca_XXXXXXXXXXXXXXXX
                 {
                   code: 429,
                   message: "Rate limit exceeded",
-                  solution: "Wait a minute before making another request (30 req/min limit)",
+                  solution: "Wait for the rate-limit window to reset (default: 30 requests per minute; configurable)",
                 },
                 {
                   code: 500,
@@ -203,20 +203,20 @@ Authorization: Bearer sca_XXXXXXXXXXXXXXXX
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Credit System</h2>
           <p className="text-gray-600 mb-6">
-            Credits are deducted based on the size of your request:
+            Credits are deducted based on prompt length. The following are default limits; server configuration may vary. Requests above the configured maximum are rejected:
           </p>
           <div className="space-y-4">
             <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
               <p className="font-semibold text-gray-900">Tier 1: Small Requests</p>
-              <p className="text-gray-600">Up to 2,000 characters = <strong>1 credit</strong></p>
+              <p className="text-gray-600">Up to 8,000 characters = <strong>1 credit</strong></p>
             </div>
             <div className="bg-white border-2 border-blue-400 rounded-lg p-4">
               <p className="font-semibold text-gray-900">Tier 2: Medium Requests</p>
-              <p className="text-gray-600">2,001 - 10,000 characters = <strong>3 credits</strong></p>
+              <p className="text-gray-600">8,001 - 20,000 characters = <strong>2 credits</strong></p>
             </div>
             <div className="bg-white border-2 border-purple-400 rounded-lg p-4">
               <p className="font-semibold text-gray-900">Tier 3: Large Requests</p>
-              <p className="text-gray-600">10,001+ characters = <strong>5 credits</strong></p>
+              <p className="text-gray-600">20,001 - 40,000 characters = <strong>4 credits</strong></p>
             </div>
           </div>
           <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -330,7 +330,7 @@ generate_code("Create a Flask API endpoint for user login")`}</pre>
               <li>Go to your dashboard</li>
               <li>Find your API key</li>
               <li>Click "Reset Device Lock"</li>
-              <li>Make a request from your new device (max 3 times per month)</li>
+              <li>Make a request from your new device (device-lock resets default to 3 per month; server configuration may vary)</li>
             </ol>
           </div>
         </section>

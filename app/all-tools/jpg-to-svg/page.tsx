@@ -117,7 +117,7 @@ export default function JpgToSvgPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to SVG Converter</h1>
-              <p className="text-lg text-white/90">Trace JPG artwork into SVG vector paths. High-contrast logos, icons, and simple graphics produce the clearest results.</p>
+              <p className="text-lg text-white/90">Trace JPG artwork into scalable SVG paths. Sharp, high-contrast images work best; JPEG compression artifacts and blurred edges can reduce tracing accuracy.</p>
             </div>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function JpgToSvgPage() {
                   </p>
                   <ul className="text-xs text-blue-700 space-y-1">
                     <li>• SVG vector-path output</li>
-                    <li>• Smaller file sizes than raster formats</li>
+                    <li>• File size depends on image complexity and traced paths</li>
                     <li>• Best suited to high-contrast logos, icons, and illustrations</li>
                     <li>• Vector paths can be edited in compatible SVG editors</li>
                   </ul>

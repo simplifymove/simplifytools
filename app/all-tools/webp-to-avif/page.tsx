@@ -288,7 +288,7 @@ export default function WebpToAvifPage() {
             </FAQCard>
             <FAQCard>
               <FAQStaticQuestion>Should I convert all WebP files to AVIF?</FAQStaticQuestion>
-              <FAQAnswer>For web optimization, converting WebP to AVIF is beneficial for modern browsers. Use HTML picture tags with fallbacks for maximum compatibility.</FAQAnswer>
+              <FAQAnswer>Convert when the resulting AVIF offers a useful balance of file size and visual quality. Keep WebP or another supported fallback when compatibility matters.</FAQAnswer>
             </FAQCard>
           </FAQList>
         </FAQPanel>

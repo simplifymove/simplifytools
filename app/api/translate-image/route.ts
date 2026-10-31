@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
+import { randomUUID } from 'crypto';
 
 export const maxDuration = 300;
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024;
 
 interface TranslationResult {
   original: string;
   translated: string;
+  translationSuccess: boolean;
   x: number;
   y: number;
   confidence: number;
@@ -23,6 +26,7 @@ function spawnPythonProcess(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     let stderr = '';
+    let settled = false;
 
     // Clean environment to avoid Python subprocess conflicts
     const cleanEnv = { ...process.env };
@@ -43,12 +47,23 @@ function spawnPythonProcess(
       env: cleanEnv,
     });
 
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      pythonProcess.kill();
+      reject(new Error('Translation process timed out (exceeded 120s)'));
+    }, 120000);
+
     pythonProcess.stderr.on('data', (data) => {
       stderr += data.toString();
       console.error('[translate-image] stderr:', data.toString());
     });
 
     pythonProcess.on('close', (code) => {
+      clearTimeout(timeout);
+      if (settled) return;
+      settled = true;
+
       if (code !== 0) {
         reject(new Error(`Python script failed with code ${code}: ${stderr}`));
       } else {
@@ -57,14 +72,11 @@ function spawnPythonProcess(
     });
 
     pythonProcess.on('error', (error) => {
+      clearTimeout(timeout);
+      if (settled) return;
+      settled = true;
       reject(error);
     });
-
-    // Timeout handling
-    setTimeout(() => {
-      pythonProcess.kill();
-      reject(new Error('Translation process timed out (exceeded 120s)'));
-    }, 120000);
   });
 }
 
@@ -75,10 +87,17 @@ export async function POST(request: NextRequest): Promise<Response> {
     const sourceLanguage = (formData.get('sourceLanguage') as string) || 'en';
     const targetLanguage = (formData.get('targetLanguage') as string) || 'es';
 
-    if (!imageFile) {
+    if (!imageFile || typeof imageFile === 'string') {
       return NextResponse.json(
-        { error: 'Missing image file' },
+        { error: 'Missing or invalid image file' },
         { status: 400 }
+      );
+    }
+
+    if (imageFile.size > MAX_IMAGE_SIZE) {
+      return NextResponse.json(
+        { error: 'Image exceeds the 20 MB upload limit' },
+        { status: 413 }
       );
     }
 
@@ -88,12 +107,13 @@ export async function POST(request: NextRequest): Promise<Response> {
       fs.mkdirSync(tmpDir, { recursive: true });
     }
 
-    const timestamp = Date.now();
-    const inputImagePath = path.join(tmpDir, `translate_input_${timestamp}.jpg`);
-    const outputJsonPath = path.join(tmpDir, `translate_output_${timestamp}.json`);
+    const requestId = randomUUID();
+    const inputImagePath = path.join(tmpDir, `translate_input_${requestId}.jpg`);
+    const outputJsonPath = path.join(tmpDir, `translate_output_${requestId}.json`);
 
-    const imageBuffer = await imageFile.arrayBuffer();
-    fs.writeFileSync(inputImagePath, Buffer.from(imageBuffer));
+    try {
+      const imageBuffer = await imageFile.arrayBuffer();
+      fs.writeFileSync(inputImagePath, Buffer.from(imageBuffer));
 
     // Call Python script for OCR and translation
     const pythonScript = path.join(process.cwd(), 'python', 'translate_image_engine.py');
@@ -104,7 +124,6 @@ export async function POST(request: NextRequest): Promise<Response> {
     
     const pythonExe = fs.existsSync(venvPython) ? venvPython : 'python';
 
-    try {
       await spawnPythonProcess(
         pythonExe,
         pythonScript,
@@ -122,31 +141,23 @@ export async function POST(request: NextRequest): Promise<Response> {
       const resultData = fs.readFileSync(outputJsonPath, 'utf-8');
       const translations: TranslationResult[] = JSON.parse(resultData);
 
-      // Cleanup
-      try {
-        fs.unlinkSync(inputImagePath);
-        fs.unlinkSync(outputJsonPath);
-      } catch (err) {
-        console.error('Cleanup error:', err);
-      }
-
       return NextResponse.json({ translations });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error('[translate-image] execution error:', errorMessage);
 
-      // Cleanup on error
-      try {
-        if (fs.existsSync(inputImagePath)) fs.unlinkSync(inputImagePath);
-        if (fs.existsSync(outputJsonPath)) fs.unlinkSync(outputJsonPath);
-      } catch (err) {
-        console.error('Cleanup error:', err);
-      }
-
       return NextResponse.json(
         { error: `Translation failed: ${errorMessage}` },
         { status: 500 }
       );
+    } finally {
+      for (const filePath of [inputImagePath, outputJsonPath]) {
+        try {
+          fs.rmSync(filePath, { force: true });
+        } catch (cleanupError) {
+          console.error('[translate-image] cleanup error:', cleanupError);
+        }
+      }
     }
   } catch (error) {
     console.error('[translate-image] catch error:', error);

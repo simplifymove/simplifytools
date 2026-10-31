@@ -381,13 +381,10 @@ export default function AiDashboardPage() {
                   <p className="font-semibold text-gray-900">📚 Documentation</p>
                   <p className="text-sm text-gray-600">Learn how to use the API</p>
                 </Link>
-                <a
-                  href="#"
-                  className="block p-4 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition"
-                >
+                <div className="block p-4 border border-gray-200 rounded-lg">
                   <p className="font-semibold text-gray-900">💻 VS Code Extension</p>
                   <p className="text-sm text-gray-600">Coming soon</p>
-                </a>
+                </div>
               </div>
             </div>
           </div>

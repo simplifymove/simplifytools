@@ -415,8 +415,8 @@ function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPagePro
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             {categoryParam 
-              ? `Discover our powerful collection of ${categoryParam.toLowerCase()} tools`
-              : 'Browse our complete collection of free online tools'
+              ? `Browse available tools in this category or search for a specific task.`
+              : 'Explore PDF, image, video, data, code, and AI tools. Search for a specific task or browse by category.'
             }
           </motion.p>
         </div>

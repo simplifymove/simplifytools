@@ -255,7 +255,7 @@ export default function DreamEffectPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I use commercially?</FAQQuestion>
-                  <FAQAnswer>Yes, dream images can be used commercially.</FAQAnswer>
+                  <FAQAnswer>Commercial use depends on your rights to the original image and any applicable licenses or permissions. Applying the Dream Effect does not grant rights to copyrighted source material.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Output quality?</FAQQuestion>

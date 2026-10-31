@@ -292,7 +292,7 @@ export default function ImageCompressorPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>For web use and social media: 70-75%. For higher visual fidelity: consider a higher quality setting. For stronger compression with acceptable quality: 60-70%. Start with 75% and adjust based on your needs.</FAQAnswer>
+              <FAQAnswer>Start around 70% to 75% for JPEG or WebP images, then compare the resulting file size and appearance. Higher settings generally retain more detail but may produce larger files. PNG output may not change noticeably with the quality slider.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -301,7 +301,7 @@ export default function ImageCompressorPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>The tool accepts supported browser-readable image files up to 50MB and performs the compression step in the browser.</FAQAnswer>
+              <FAQAnswer>The uploader accepts supported image extensions up to 50 MB. JPG, PNG, and WebP are common choices, but successful processing depends on browser decoding and encoding support. The output format can depend on the source MIME type and browser.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -310,7 +310,7 @@ export default function ImageCompressorPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Currently, this tool processes one image at a time. For batch compression of multiple images, try our Batch Compress Images tool which handles hundreds of files simultaneously.</FAQAnswer>
+              <FAQAnswer>This tool processes one image at a time. For multiple files, use Batch Compress Images, which accepts up to 100 images per batch and processes them sequentially.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -319,7 +319,7 @@ export default function ImageCompressorPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>The image compression step itself is performed with browser-based processing.</FAQAnswer>
+              <FAQAnswer>Compression runs in your browser. When you click Download Image, the generated file is uploaded to our server to prepare its download page.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -328,7 +328,7 @@ export default function ImageCompressorPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>You can use the compression controls to process supported images and compare the resulting file size.</FAQAnswer>
+              <FAQAnswer>Yes. You can use the image compression controls without creating an account. The tool shows the original and processed file sizes so you can compare the result.</FAQAnswer>
             </FAQDisclosure>
           </FAQList>
         </FAQPanel>

@@ -138,7 +138,7 @@ export default function ImageEnhancerPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Image Enhancer</h1>
-                <p className="text-lg text-white/90">Adjust brightness, contrast, and color saturation and preview how these changes affect your image.</p>
+                <p className="text-lg text-white/90">Adjust brightness, contrast, and saturation in your browser, then generate a JPEG with your chosen settings.</p>
               </div>
             </div>
           </div>
@@ -350,7 +350,7 @@ export default function ImageEnhancerPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Brightness affects overall lightness. Contrast affects the difference between light and dark areas. Use both together for best results.</FAQAnswer>
+              <FAQAnswer>Brightness changes overall lightness, while contrast changes the separation between light and dark areas. Adjust each gradually and compare the result.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -359,7 +359,7 @@ export default function ImageEnhancerPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Saturation controls color intensity. 0% makes image black and white. 100% is normal. Higher values make colors more vivid.</FAQAnswer>
+              <FAQAnswer>Saturation controls color intensity. At 0%, the image becomes grayscale; 100% is unchanged, and values above 100% increase color intensity.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -368,7 +368,7 @@ export default function ImageEnhancerPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Click the Reset button anytime to return all sliders to default values (100%).</FAQAnswer>
+              <FAQAnswer>Reset returns the brightness, contrast, and saturation sliders to 100%. If you already generated an image, click Enhance Image again to create a result using the reset settings.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -386,7 +386,7 @@ export default function ImageEnhancerPage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Start with brightness (fix exposure), then adjust contrast (add punch), finally adjust saturation (make colors pop). Use Reset button to start over if needed.</FAQAnswer>
+              <FAQAnswer>There is no single adjustment sequence for every photo. Start with small brightness, contrast, or saturation changes, then click Enhance Image to generate the result. The on-page preview shows the original image.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>

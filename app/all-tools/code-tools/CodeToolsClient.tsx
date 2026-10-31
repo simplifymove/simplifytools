@@ -235,7 +235,7 @@ export default function CodeToolsPage() {
             {/* Popular Tools - Internal Linking */}
             <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Developer Tools</h2>
-              <p className="text-gray-700 mb-6">Quick access to our most-used code tools:</p>
+              <p className="text-gray-700 mb-6">Quick access to common code tools:</p>
               <div className="space-y-3">
                 <Link href="/all-tools/code-tools/code-minifier" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-green-500 hover:bg-green-50 transition">
                   <span className="text-green-600 font-semibold">→</span>
@@ -279,10 +279,10 @@ export default function CodeToolsPage() {
             }
           },
           {
-            name: 'What programming languages are supported?',
+            name: 'What languages and data formats do the tools support?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Our code tools support JavaScript, HTML, CSS, JSON, XML, YAML, SQL, Base64, and many more formats. You can format, minify, validate, encode, decode, and convert between different code formats with specialized tools for each language.'
+              text: 'Available tools cover JavaScript, HTML, CSS, SQL, structured data formats such as JSON, XML, and YAML, and text encoding methods such as Base64. Each utility supports a specific operation, such as formatting, minification, validation, encoding, decoding, or conversion. Check the selected tool for supported input formats and available options.'
             }
           },
           {
@@ -310,7 +310,7 @@ export default function CodeToolsPage() {
             name: 'What file sizes can the tools handle?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Our code tools can handle code up to 100MB depending on the tool and your internet connection. Large files may take longer to process, but our tools handle them efficiently without losing quality or accuracy.'
+              text: 'Input limits depend on the selected tool and server resources. These code tools accept pasted text rather than a general 100 MB file upload. For large inputs, try a smaller sample first and review the output before relying on it.'
             }
           }
         ]}

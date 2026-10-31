@@ -524,7 +524,7 @@ export default function WatermarkImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Any text up to 50 characters. Common options: © Year Name, Your Brand, Company Name, Photo Credit, or custom messages.</FAQAnswer>
+              <FAQAnswer>Any text up to 100 characters. Common options: © Year Name, Your Brand, Company Name, Photo Credit, or custom messages.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>
@@ -560,7 +560,7 @@ export default function WatermarkImagePage() {
 
 
               </FAQQuestion>
-              <FAQAnswer>Bottom-right is most common and least intrusive. Use center for full protection. Position depends on your image composition.</FAQAnswer>
+              <FAQAnswer>Bottom-right is most common and least intrusive. Use center for a more prominent watermark. Position depends on your image composition.</FAQAnswer>
             </FAQDisclosure>
 
             <FAQDisclosure>

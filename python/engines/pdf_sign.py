@@ -92,11 +92,11 @@ class PdfSignEngine:
                     
                     if sig_type != 'image':
                         print(f"[PDF_SIGN] WARNING: Unsupported signature type: {sig_type}")
-                        continue
+                        raise ValueError(f"Unsupported signature type: {sig_type}")
                     
                     if not image_data_b64:
                         print(f"[PDF_SIGN] WARNING: Image data is empty!")
-                        continue
+                        raise ValueError("Signature image data is empty")
                     
                     # Determine which pages to apply signature to
                     if page_param == 0 or page_param is None:
@@ -107,7 +107,7 @@ class PdfSignEngine:
                         page_num = page_param - 1 if page_param > 0 else 0
                         if page_num < 0 or page_num >= len(doc):
                             print(f"[PDF_SIGN] WARNING: Invalid page {page_param}, skipping")
-                            continue
+                            raise ValueError(f"Invalid signature page: {page_param}")
                         pages_to_sign = [page_num]
                         print(f"[PDF_SIGN] Applying signature to page {page_param} (0-indexed: {page_num})")
                     
@@ -122,11 +122,15 @@ class PdfSignEngine:
                         except Exception as page_error:
                             print(f"[PDF_SIGN] ERROR overlaying signature on page {page_idx}: {str(page_error)}", file=sys.stderr)
                             print(f"[PDF_SIGN] {traceback.format_exc()}", file=sys.stderr)
+                            raise
                 
                 except Exception as sig_error:
                     print(f"[PDF_SIGN] ERROR processing signature {sig_idx + 1}: {str(sig_error)}", file=sys.stderr)
                     print(f"[PDF_SIGN] {traceback.format_exc()}", file=sys.stderr)
+                    raise
             
+            if signatures_applied == 0:
+                raise ValueError("No signatures were applied to the PDF")
             print(f"[PDF_SIGN] Total signatures applied: {signatures_applied}")
             
             # Save PDF

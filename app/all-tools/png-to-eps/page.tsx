@@ -127,7 +127,7 @@ export default function PngToEpsPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to EPS Converter</h1>
-                <p className="text-lg text-white/90">Trace PNG artwork into EPS vector paths. Best results come from simple, high-contrast graphics.</p>
+                <p className="text-lg text-white/90">Trace PNG artwork into monochrome EPS vector paths. Best results come from simple, high-contrast graphics.</p>
               </div>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function PngToEpsPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Server-assisted vector tracing</li>
-                      <li>• Creates EPS vector paths from raster shapes</li>
+                      <li>• Creates monochrome EPS vector paths from raster shapes</li>
                       <li>• Best suited to logos, icons, and high-contrast artwork</li>
                       <li>• Complex photographs may not trace cleanly</li>
                       <li>• Files are temporarily processed for conversion</li>
@@ -305,7 +305,7 @@ export default function PngToEpsPage() {
               </h2>
               <ul className="space-y-3 text-gray-600">
                 <li>• Start with the highest-quality PNG available.</li>
-                <li>• Prefer graphics with clear boundaries and strong contrast.</li>
+                <li>• Prefer graphics with clear boundaries and strong contrast. Use artwork that works well in black and white because original colors are not preserved.</li>
                 <li>• Avoid unnecessary noise or very small details when possible.</li>
                 <li>• Inspect curves, corners, text-like shapes, and fine details after conversion.</li>
                 <li>• Keep the original PNG in case you need to compare it with the traced result.</li>

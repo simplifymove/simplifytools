@@ -35,13 +35,14 @@ export async function generateText(
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      signal: AbortSignal.timeout(20000),
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant', // Fast, high quality, currently supported
+        model: 'openai/gpt-oss-20b', // Fast, high quality, currently supported
         messages: [
           {
             role: 'system',

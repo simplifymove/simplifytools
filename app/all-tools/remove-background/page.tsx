@@ -1,7 +1,7 @@
 'use client';
 import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, Eraser } from 'lucide-react';
@@ -33,8 +33,29 @@ export default function RemoveBackgroundPage() {
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const { error, clearError, createError } = useImageToolErrors();
+  const requestRef = useRef<AbortController | null>(null);
+  const operationRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      operationRef.current++;
+      requestRef.current?.abort();
+    };
+  }, []);
+
+  const invalidateResult = () => {
+    operationRef.current++;
+    requestRef.current?.abort();
+    requestRef.current = null;
+    setResult(null);
+    setProcessingTime(null);
+    setProcessing(false);
+  };
 
   const handleFileSelect = (selectedFile: File) => {
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
     clearError();
 
     // Validate file
@@ -85,10 +106,15 @@ export default function RemoveBackgroundPage() {
 
     setFile(selectedFile);
     const reader = new FileReader();
+    const uploadOperation = operationRef.current;
     reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+      if (uploadOperation !== operationRef.current) return;
+      const value = e.target?.result;
+      if (typeof value === 'string') setPreview(value);
     };
     reader.onerror = () => {
+      if (uploadOperation !== operationRef.current) return;
+      setFile(null);
       createError(
         ImageToolErrorType.FILE_CORRUPTED,
         TOOL_ID,
@@ -101,6 +127,7 @@ export default function RemoveBackgroundPage() {
   };
 
   const handleClearPreview = () => {
+    invalidateResult();
     setFile(null);
     setPreview(null);
     setResult(null);
@@ -109,6 +136,7 @@ export default function RemoveBackgroundPage() {
   };
 
   const removeBackground = async () => {
+    if (processing) return;
     if (!file) {
       createError(
         ImageToolErrorType.EMPTY_FILE,
@@ -118,6 +146,10 @@ export default function RemoveBackgroundPage() {
       return;
     }
 
+    invalidateResult();
+    const operation = operationRef.current;
+    const controller = new AbortController();
+    requestRef.current = controller;
     setProcessing(true);
     clearError();
 
@@ -132,10 +164,12 @@ export default function RemoveBackgroundPage() {
       const response = await fetch('/api/bg-remove', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
+      if (operation !== operationRef.current) return;
+
       const processingTimeMs = Date.now() - startTime;
-      setProcessingTime(processingTimeMs);
 
       if (!response.ok) {
         let errorMessage = 'Failed to remove background';
@@ -153,17 +187,22 @@ export default function RemoveBackgroundPage() {
         throw new Error('Empty response from server');
       }
 
-      // Convert blob to data URL to avoid CSP issues with blob: URLs
-      const reader = new FileReader();
-      reader.onload = () => {
-        setResult(reader.result as string);
-      };
-      reader.onerror = () => {
-        throw new Error('Failed to read result image');
-      };
-      reader.readAsDataURL(blob);
+      const resultUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') resolve(reader.result);
+          else reject(new Error('Invalid result image'));
+        };
+        reader.onerror = () => reject(new Error('Failed to read result image'));
+        reader.readAsDataURL(blob);
+      });
+
+      if (operation !== operationRef.current) return;
+      setProcessingTime(processingTimeMs);
+      setResult(resultUrl);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (operation !== operationRef.current || controller.signal.aborted) return;
+      console.error('[remove-background] Processing failed:', err);
       createError(
         ImageToolErrorType.SHARP_FAILED,
         TOOL_ID,
@@ -172,7 +211,10 @@ export default function RemoveBackgroundPage() {
         { filename: file.name, size: file.size, mimeType: file.type }
       );
     } finally {
-      setProcessing(false);
+      if (operation === operationRef.current) {
+        requestRef.current = null;
+        setProcessing(false);
+      }
     }
   };
 
@@ -335,7 +377,10 @@ export default function RemoveBackgroundPage() {
                         <label className="text-sm font-medium text-gray-700 block mb-2">Output Format</label>
                         <select
                           value={outputFormat}
-                          onChange={(e) => setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp')}
+                          onChange={(e) => {
+                            invalidateResult();
+                            setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp');
+                          }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="png">PNG (transparent background)</option>
@@ -350,7 +395,10 @@ export default function RemoveBackgroundPage() {
                           type="checkbox"
                           id="hqMode"
                           checked={hqMode}
-                          onChange={(e) => setHqMode(e.target.checked)}
+                          onChange={(e) => {
+                            invalidateResult();
+                            setHqMode(e.target.checked);
+                          }}
                           className="w-4 h-4 cursor-pointer mt-0.5"
                         />
                         <label htmlFor="hqMode" className="flex-1 cursor-pointer">
@@ -384,6 +432,7 @@ export default function RemoveBackgroundPage() {
                   {/* Download Button */}
                   {result && (
                     <button
+                      disabled={processing}
                       onClick={handleDownload}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >

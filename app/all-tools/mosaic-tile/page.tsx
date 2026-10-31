@@ -266,7 +266,7 @@ export default function MosaicTilePage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I use commercially?</FAQQuestion>
-                  <FAQAnswer>Yes, mosaic images can be used commercially.</FAQAnswer>
+                  <FAQAnswer>Commercial use depends on your rights to the original image. Applying a mosaic effect does not change its copyright or license.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Output quality?</FAQQuestion>
@@ -278,7 +278,7 @@ export default function MosaicTilePage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Smooth blending?</FAQQuestion>
-                  <FAQAnswer>Smooth mosaic with color averaging per tile.</FAQAnswer>
+                  <FAQAnswer>Each tile uses the average color of its pixels, creating distinct blocks rather than a smooth blur.</FAQAnswer>
                 </FAQDisclosure>
               </FAQList>
             </FAQPanel>

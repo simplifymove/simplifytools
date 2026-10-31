@@ -263,11 +263,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           ok: false, 
-          error: result.error || 'Conversion failed',
-          debug: {
-            stdout: result.stdout || '',
-            stderr: result.stderr || '',
-          }
+          error: 'Conversion failed. Please check your input file and try again.',
         },
         { status: 500 }
       );
@@ -300,7 +296,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
+        error: 'An unexpected conversion error occurred. Please try again.',
       },
       { status: 500 }
     );

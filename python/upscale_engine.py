@@ -336,6 +336,8 @@ class UpscaleEngine:
         upscaled = cv2.addWeighted(upscaled, 0.8, sharpened, 0.2, 0)
         
         return np.clip(upscaled, 0, 255).astype(np.uint8)
+
+    def _enhance_faces(self, image: np.ndarray) -> np.ndarray:
         """Enhance facial features using sharpening and detail enhancement."""
         try:
             # Use unsharp masking for face enhancement

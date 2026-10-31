@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   }
 
   const baseUrl = 'https://simplifyconvert.com';
-  const canonicalUrl = `${baseUrl}/all-tools/image-tools/${slug}`;
+  const canonicalUrl = `${baseUrl}/all-tools/${tool.slug}`;
 
   return {
     title: `${tool.title} - Free Image Editing Tool | SimplifyConvert`,

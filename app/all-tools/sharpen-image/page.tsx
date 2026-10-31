@@ -127,7 +127,7 @@ export default function SharpenImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Sharpen Image</h1>
-                <p className="text-lg text-white/90">Apply an adjustable contrast-based sharpening effect to make edges and tonal differences appear more pronounced.</p>
+                <p className="text-lg text-white/90">Apply adjustable edge sharpening to emphasize existing image details without increasing resolution.</p>
               </div>
             </div>
           </div>

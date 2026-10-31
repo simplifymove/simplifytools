@@ -165,7 +165,7 @@ export default function BlackWhitePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Black & White</h1>
-                <p className="text-lg text-white/90">Convert your images to black and white with adjustable contrast.</p>
+                <p className="text-lg text-white/90">Convert a color image to grayscale using three methods and an adjustable brightness shift. Export the result as PNG.</p>
               </div>
             </div>
           </div>
@@ -234,7 +234,7 @@ export default function BlackWhitePage() {
                       />
                       <span className="ml-2 text-sm">
                         <span className="font-medium text-gray-700">Luminosity</span>
-                        <span className="text-gray-500 text-xs block">Most natural looking</span>
+                        <span className="text-gray-500 text-xs block">Weighted RGB brightness</span>
                       </span>
                     </label>
 
@@ -273,7 +273,7 @@ export default function BlackWhitePage() {
                 {/* Contrast Control */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Contrast: {contrast}%
+                    Brightness adjustment: {contrast}%
                   </label>
                   <input
                     type="range"
@@ -285,7 +285,7 @@ export default function BlackWhitePage() {
                   />
                   <div className="text-xs text-gray-500 mt-1 flex justify-between">
                     <span>50%</span>
-                    <span>100% (normal)</span>
+                    <span>100% (no shift)</span>
                     <span>150%</span>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export default function BlackWhitePage() {
                 <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
                   <li>Upload your image</li>
                   <li>Choose a grayscale conversion method</li>
-                  <li>Adjust contrast if needed</li>
+                  <li>Adjust the grayscale brightness if needed</li>
                   <li>Click "Convert" to preview changes</li>
                   <li>Download the result as PNG</li>
                 </ol>
@@ -337,7 +337,7 @@ export default function BlackWhitePage() {
                   <li>• <strong>Luminosity:</strong> Uses human eye sensitivity to colors (recommended)</li>
                   <li>• <strong>Average:</strong> Simple RGB channel average</li>
                   <li>• <strong>Lightness:</strong> Midpoint between min & max values</li>
-                  <li>• <strong>Contrast:</strong> Adjust darkness and brightness</li>
+                  <li>• <strong>Brightness adjustment:</strong> Shift grayscale values darker or lighter; this is not a conventional contrast adjustment</li>
                 </ul>
               </div>
             </div>
@@ -347,7 +347,7 @@ export default function BlackWhitePage() {
               <section className="bg-white rounded-lg border border-gray-200 p-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">What This Black and White Tool Does</h2>
                 <p className="text-gray-700 leading-relaxed">
-                  The Black and White tool converts color photos into monochrome images using adjustable grayscale methods and contrast control. It helps you create clean black-and-white portraits, product images, document-style scans, and artistic photo edits directly in your browser.
+                  This tool converts one browser-supported image to grayscale using luminosity, average, or lightness calculations. You can shift the resulting gray values darker or lighter before exporting a PNG. It is useful for comparing monochrome treatments of portraits, product photos, scanned graphics, and design assets.
                 </p>
               </section>
 
@@ -376,7 +376,7 @@ export default function BlackWhitePage() {
                   </div>
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2">Output</h3>
-                    <p className="text-gray-700 text-sm">A PNG image converted to black and white with your chosen grayscale method and contrast level.</p>
+                    <p className="text-gray-700 text-sm">A grayscale PNG produced using the selected method and brightness adjustment. The original image dimensions are retained.</p>
                   </div>
                 </div>
               </section>
@@ -384,7 +384,7 @@ export default function BlackWhitePage() {
               <section className="bg-blue-50 border border-blue-200 rounded-lg p-8">
                 <h2 className="text-3xl font-bold text-blue-900 mb-4">Privacy Note</h2>
                 <p className="text-blue-900 text-sm leading-relaxed">
-                  Black-and-white conversion runs in your browser using canvas processing. Your uploaded image is not sent to a server for this effect, and you can download the result locally.
+                  Grayscale processing happens in your browser. When you select Download PNG, the generated file is uploaded to the site's download-result service to prepare its download page. Avoid uploading sensitive images unless you are comfortable with that step.
                 </p>
               </section>
 
@@ -398,11 +398,11 @@ export default function BlackWhitePage() {
                     },
                     {
                       q: 'Can I adjust the contrast?',
-                      a: 'Yes. Use the contrast slider to make the black-and-white result softer or more dramatic before downloading.',
+                      a: 'The slider shifts grayscale values darker or lighter. At 100%, no brightness shift is applied. It does not perform a conventional contrast adjustment.',
                     },
                     {
                       q: 'What format is the output?',
-                      a: 'The converted image downloads as a PNG file so the result stays clean and easy to reuse.',
+                      a: 'The tool exports a PNG at the original image dimensions. Its pixel processing leaves the alpha channel unchanged, so transparency can be retained.',
                     },
                     {
                       q: 'Is this tool free?',
@@ -427,7 +427,7 @@ export default function BlackWhitePage() {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "Black and White Image Converter",
-        "description": "Convert color images to black and white online with grayscale methods and adjustable contrast.",
+        "description": "Convert color images to grayscale using luminosity, average, or lightness methods and an adjustable brightness shift. Export PNG results.",
         "url": "https://simplifyconvert.com/all-tools/black-white",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "Web",
@@ -447,12 +447,12 @@ export default function BlackWhitePage() {
           {
             "@type": "Question",
             "name": "Can I adjust the contrast?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Use the contrast slider to make the black-and-white result softer or more dramatic before downloading." }
+            "acceptedAnswer": { "@type": "Answer", "text": "The slider shifts grayscale values darker or lighter. At 100%, no brightness shift is applied. It does not perform a conventional contrast adjustment." }
           },
           {
             "@type": "Question",
             "name": "What format is the output?",
-            "acceptedAnswer": { "@type": "Answer", "text": "The converted image downloads as a PNG file." }
+            "acceptedAnswer": { "@type": "Answer", "text": "The tool exports PNG at the original image dimensions and retains the alpha channel during grayscale processing." }
           },
           {
             "@type": "Question",

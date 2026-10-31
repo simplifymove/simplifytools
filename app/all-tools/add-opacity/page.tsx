@@ -241,7 +241,7 @@ export default function AddOpacityPage() {
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Is my image stored?</FAQQuestion>
-                  <FAQAnswer>No, all processing happens locally in your browser.</FAQAnswer>
+                  <FAQAnswer>The opacity effect runs in your browser. When you download the result, the generated image is uploaded to our server for temporary download preparation.</FAQAnswer>
                 </FAQDisclosure>
                 <FAQDisclosure>
                   <FAQQuestion>Can I adjust opacity of specific areas?</FAQQuestion>

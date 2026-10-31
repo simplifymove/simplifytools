@@ -163,7 +163,7 @@ export default function HeicToAvifPage() {
                         onChange={(e) => setQuality(e.target.value)}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
+                      <p className="text-xs text-gray-500 mt-1">Higher quality generally means larger files</p>
                     </div>
 
                     {/* Convert Button */}

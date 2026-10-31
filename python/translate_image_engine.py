@@ -28,10 +28,10 @@ def detect_language_name_to_code(lang_name: str) -> str:
     }
     return lang_map.get(lang_name.lower(), 'en')
 
-def translate_text_deepl_api(text: str, source_lang: str, target_lang: str) -> str:
+def translate_text_deepl_api(text: str, source_lang: str, target_lang: str) -> tuple[str, bool]:
     """Translate using free MyMemory translation API"""
     if source_lang == target_lang:
-        return text
+        return text, True
     
     try:
         import requests
@@ -56,25 +56,29 @@ def translate_text_deepl_api(text: str, source_lang: str, target_lang: str) -> s
         tgt_code = lang_map.get(target_lang.lower(), 'en')
         
         # Use MyMemory API (free, no authentication required)
-        api_url = f"https://api.mymemory.translated.net/get?q={text}&langpair={src_code}|{tgt_code}"
+        api_url = "https://api.mymemory.translated.net/get"
+        params = {
+            "q": text,
+            "langpair": f"{src_code}|{tgt_code}",
+        }
         
         try:
-            response = requests.get(api_url, timeout=10)
+            response = requests.get(api_url, params=params, timeout=10)
             if response.status_code == 200:
                 result = response.json()
                 if result.get('responseStatus') == 200:
                     translated = result.get('responseData', {}).get('translatedText', '')
                     if translated:
-                        return translated
+                        return translated, True
         except Exception as api_err:
             print(f"MyMemory API error: {api_err}", file=sys.stderr)
         
-        # Fallback: return original text if translation fails
-        return text
+        # Preserve OCR text but explicitly mark translation failure.
+        return text, False
         
     except Exception as e:
         print(f"Translation error: {e}", file=sys.stderr)
-        return text
+        return text, False
 
 def extract_and_translate(input_path: str, output_path: str, source_lang: str, target_lang: str) -> None:
     """Extract text from image and translate it"""
@@ -100,11 +104,12 @@ def extract_and_translate(input_path: str, output_path: str, source_lang: str, t
         
         # Translate text
         print(f"Translating '{text}' from {source_lang} to {target_lang}...", file=sys.stderr)
-        translated = translate_text_deepl_api(text, source_lang, target_lang)
+        translated, translation_success = translate_text_deepl_api(text, source_lang, target_lang)
         
         translations.append({
             'original': text,
             'translated': translated,
+            'translationSuccess': translation_success,
             'x': x,
             'y': y,
             'confidence': float(confidence)

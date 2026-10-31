@@ -1,738 +1,649 @@
-'use client'
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import {
+  Activity,
+  ArrowRight,
+  CreditCard,
+  FileSpreadsheet,
+  FileText,
+  Presentation,
+  Sparkles,
+  UserRound,
+  WalletCards,
+} from 'lucide-react';
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { User, Lock, Shield, Trash2, Edit2, Check, X, Mail, Home, LogOut, AlertTriangle, CheckCircle2 } from 'lucide-react'
-import { HomeHeader } from '@/app/components/HomeHeader'
-import { Footer } from '@/app/components/Footer'
+import { Header } from '@/app/components/Header';
+import { authOptions } from '@/lib/auth/config';
+import { prisma } from '@/lib/prisma';
 
-export default function AccountPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('profile')
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [editName, setEditName] = useState('')
-  const [editBio, setEditBio] = useState('')
-  const [saveMessage, setSaveMessage] = useState('')
-  const [passwordStatusLoading, setPasswordStatusLoading] = useState(true)
-  const [hasPassword, setHasPassword] = useState<boolean | null>(null)
-  const [canCreatePassword, setCanCreatePassword] = useState(false)
-  const [usesGoogleSignIn, setUsesGoogleSignIn] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmNewPassword, setConfirmNewPassword] = useState('')
-  const [passwordMessage, setPasswordMessage] = useState('')
-  const [passwordError, setPasswordError] = useState('')
-  const [isChangingPassword, setIsChangingPassword] = useState(false)
+export const dynamic = 'force-dynamic';
 
-  useEffect(() => {
-    console.log('[Account Page] Session status:', status)
-    console.log('[Account Page] Session data:', session)
-    
-    if (status === 'loading') {
-      console.log('[Account Page] Still loading session...')
-      return
-    }
-    
-    if (!session?.user) {
-      console.log('[Account Page] No session found, redirecting to signin')
-      router.push('/auth/signin?callbackUrl=/account')
-      return
-    }
-    
-    console.log('[Account Page] Session exists for user:', session.user.email)
-    setLoading(false)
-    setEditName(session.user.name || '')
-    setEditBio(session.user.bio || '')
+function formatCredits(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
-    let cancelled = false
-    setPasswordStatusLoading(true)
-    fetch('/api/user/change-password')
-      .then(async (response) => {
-        if (!response.ok) throw new Error('Unable to load account security status')
-        return response.json() as Promise<{
-          hasPassword?: boolean
-          usesGoogleSignIn?: boolean
-          canCreatePassword?: boolean
-        }>
-      })
-      .then((data) => {
-        if (!cancelled) {
-          setHasPassword(Boolean(data.hasPassword))
-          setUsesGoogleSignIn(Boolean(data.usesGoogleSignIn))
-          setCanCreatePassword(Boolean(data.canCreatePassword))
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setHasPassword(null)
-          setUsesGoogleSignIn(false)
-          setCanCreatePassword(false)
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setPasswordStatusLoading(false)
-      })
+function formatDate(value: Date | null | undefined) {
+  if (!value) return 'Not available';
 
-    return () => {
-      cancelled = true
-    }
-  }, [session, status, router])
+  return new Intl.DateTimeFormat('en', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(value);
+}
 
-  const handleSaveProfile = async () => {
-    if (!editName.trim()) {
-      setSaveMessage('Name cannot be empty')
-      return
-    }
+function titleCase(value: string) {
+  return value
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .join(' ');
+}
 
-    setIsSaving(true)
-    try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: editName,
-          bio: editBio,
-        }),
-      })
+function getInitials(name: string | null | undefined, email: string) {
+  if (name?.trim()) {
+    const parts = name.trim().split(/\s+/);
 
-      if (response.ok) {
-        setSaveMessage('Profile updated successfully!')
-        setIsEditing(false)
-        setTimeout(() => setSaveMessage(''), 3000)
-        router.refresh()
-      } else {
-        setSaveMessage('Failed to update profile')
-      }
-    } catch (error) {
-      console.error('Save error:', error)
-      setSaveMessage('Error updating profile')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const getInitials = (name: string | null | undefined): string => {
-    if (!name) return 'U'
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
+    return parts
       .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
   }
 
-  const formatDate = (date: string | Date | null | undefined): string => {
-    if (!date) return 'Not available'
-    const d = new Date(date)
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  return email.charAt(0).toUpperCase();
+}
+
+async function getAccountData(email: string) {
+  const user = await prisma.user.findFirst({
+    where: {
+      email: {
+        equals: email.trim().toLowerCase(),
+        mode: 'insensitive',
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    return null;
   }
 
-  const handleChangePassword = async () => {
-    setPasswordMessage('')
-    setPasswordError('')
+  const [wallet, purchases, usageLogs] = await Promise.all([
+    prisma.aiStudioWallet.findUnique({
+      where: { userId: user.id },
+      select: {
+        balanceCredits: true,
+        reservedCredits: true,
+        lifetimeCreditsAdded: true,
+        lifetimeCreditsUsed: true,
+        updatedAt: true,
+      },
+    }),
 
-    const isCreatingPassword = canCreatePassword && hasPassword === false
+    prisma.aiStudioPlanPurchase.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        planId: true,
+        status: true,
+        creditsGranted: true,
+        createdAt: true,
+        paidAt: true,
+        providerPaymentId: true,
+      },
+    }),
 
-    if ((!isCreatingPassword && !currentPassword) || !newPassword || !confirmNewPassword) {
-      setPasswordError('All password fields are required.')
-      return
-    }
+    prisma.aiStudioUsageLog.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        topic: true,
+        toolType: true,
+        status: true,
+        actualCredits: true,
+        reservedCredits: true,
+        estimatedCredits: true,
+        createdAt: true,
+      },
+    }),
+  ]);
 
-    if (newPassword.length < 8) {
-      setPasswordError('New password must be at least 8 characters.')
-      return
-    }
+  return {
+    user,
+    wallet,
+    purchases,
+    usageLogs,
+  };
+}
 
-    if (newPassword !== confirmNewPassword) {
-      setPasswordError('Confirm new password must match.')
-      return
-    }
+export default async function AccountPage() {
+  const session = await getServerSession(authOptions);
 
-    if (!isCreatingPassword && currentPassword === newPassword) {
-      setPasswordError('New password must be different from your current password.')
-      return
-    }
-
-    setIsChangingPassword(true)
-
-    try {
-      const response = await fetch('/api/user/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-          confirmNewPassword,
-        }),
-      })
-      const result = await response.json().catch(() => ({})) as { error?: string }
-
-      if (!response.ok) {
-        setPasswordError(result.error || 'Unable to change password right now.')
-        return
-      }
-
-      setPasswordMessage(isCreatingPassword ? 'Password created successfully.' : 'Password changed successfully.')
-      setHasPassword(true)
-      setCanCreatePassword(false)
-      setCurrentPassword('')
-      setNewPassword('')
-      setConfirmNewPassword('')
-    } catch {
-      setPasswordError('Unable to change password right now.')
-    } finally {
-      setIsChangingPassword(false)
-    }
+  if (!session?.user?.email) {
+    redirect('/auth/signin?callbackUrl=/account');
   }
 
-  if (loading || !session?.user) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"></div>
-          <p className="text-gray-600">Loading account settings...</p>
-        </div>
-      </div>
-    )
+  const email = session.user.email;
+  const account = await getAccountData(email);
+
+  if (!account) {
+    redirect('/auth/signin?callbackUrl=/account');
   }
 
-  const user = session.user
-  const navItems = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'security', label: 'Security', icon: Lock },
-    { id: 'account', label: 'Account', icon: Mail },
-  ]
+  const balanceCredits = account.wallet?.balanceCredits.toNumber() ?? 0;
+  const reservedCredits = account.wallet?.reservedCredits.toNumber() ?? 0;
+  const lifetimeAdded =
+    account.wallet?.lifetimeCreditsAdded.toNumber() ?? 0;
+  const lifetimeUsed =
+    account.wallet?.lifetimeCreditsUsed.toNumber() ?? 0;
 
-  const renderPasswordSection = (isMobile = false) => {
-    const isCreatingPassword = canCreatePassword && hasPassword === false
-    const canManagePassword = hasPassword === true || isCreatingPassword
-    const passwordSubmitLabel = isChangingPassword
-      ? isCreatingPassword ? 'Creating...' : 'Changing...'
-      : isCreatingPassword ? 'Create Password' : 'Change Password'
+  const latestPaidPurchase = account.purchases.find(
+    (purchase) =>
+      purchase.status === 'paid' ||
+      Boolean(purchase.paidAt) ||
+      Boolean(purchase.providerPaymentId),
+  );
 
-    return (
-      <div className={`${isMobile ? 'pb-4' : 'pb-6'} border-b border-gray-200`}>
-      <div className="mb-4">
-        <div className="flex items-center gap-2 mb-2">
-          <h3 className={`${isMobile ? 'font-semibold' : 'text-lg font-semibold'} text-gray-900`}>
-            {isCreatingPassword ? 'Create Password' : 'Change Password'}
-          </h3>
-          {usesGoogleSignIn && (
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-              Google Sign-In
-            </span>
-          )}
-        </div>
-        <p className="text-gray-600 text-sm">
-          {isCreatingPassword
-            ? 'Create a password to sign in with either Google or email and password.'
-            : 'Change your password to keep your account secure.'}
-        </p>
-      </div>
+  const hasPremiumHistory =
+    Boolean(latestPaidPurchase) ||
+    lifetimeAdded > 0 ||
+    balanceCredits > 0;
 
-      {passwordStatusLoading && (
-        <p className="text-sm text-gray-500">Loading password settings...</p>
-      )}
+  const planLabel = latestPaidPurchase
+    ? titleCase(latestPaidPurchase.planId)
+    : hasPremiumHistory
+      ? 'AI Studio'
+      : 'Free Account';
 
-      {!passwordStatusLoading && canManagePassword && (
-        <div className="space-y-4">
-          {!isCreatingPassword && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(event) => setCurrentPassword(event.target.value)}
-                autoComplete="current-password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-              autoComplete="new-password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
-            <input
-              type="password"
-              value={confirmNewPassword}
-              onChange={(event) => setConfirmNewPassword(event.target.value)}
-              autoComplete="new-password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
-          </div>
+  const displayName =
+    session.user.name?.trim() ||
+    'SimplifyConvert User';
 
-          {passwordError && (
-            <div className="p-4 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200">
-              {passwordError}
-            </div>
-          )}
-          {passwordMessage && (
-            <div className="p-4 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-200">
-              {passwordMessage}
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={handleChangePassword}
-            disabled={isChangingPassword}
-            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium disabled:opacity-50"
-          >
-            {passwordSubmitLabel}
-          </button>
-        </div>
-      )}
-
-      {!passwordStatusLoading && hasPassword === false && !canCreatePassword && (
-        <div className="p-4 rounded-lg text-sm font-medium bg-gray-50 text-gray-700 border border-gray-200">
-          Password management is not available for this account.
-        </div>
-      )}
-
-      {!passwordStatusLoading && hasPassword === null && (
-        <div className="p-4 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200">
-          Unable to load password settings right now.
-        </div>
-      )}
-      </div>
-    )
-  }
+  const recentUsage = account.usageLogs.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <HomeHeader />
-      
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-          <p className="text-gray-600 mt-1">Manage your account and preferences</p>
-        </div>
+    <>
+      <Header />
 
-        {/* Mobile Tabs */}
-        <div className="md:hidden mb-6 flex gap-2 overflow-x-auto pb-2">
-          {navItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition ${
-                activeTab === item.id
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Desktop Layout: Sidebar + Content */}
-        <div className="hidden md:grid md:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
-          <div className="col-span-1">
-            <nav className="space-y-1 sticky top-8">
-              {navItems.map(item => {
-                const Icon = item.icon
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${
-                      activeTab === item.id
-                        ? 'bg-orange-50 text-orange-600 border-l-4 border-orange-600'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon size={20} />
-                    {item.label}
-                  </button>
-                )
-              })}
-            </nav>
-          </div>
-
-          {/* Content Area */}
-          <div className="col-span-3 space-y-6">
-            {/* Profile Section */}
-            {activeTab === 'profile' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm"
-              >
-                <div className="flex items-start justify-between mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900">Profile</h2>
-                  {!isEditing && (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium"
-                    >
-                      <Edit2 size={18} />
-                      Edit Profile
-                    </button>
-                  )}
+      <main className="min-h-screen bg-slate-50 text-slate-950">
+        <section className="border-b border-slate-200 bg-white px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-950 text-lg font-bold text-white">
+                  {getInitials(displayName, email)}
                 </div>
 
-                {/* Avatar */}
-                <div className="mb-8">
-                  {user.image ? (
-                    <img
-                      src={user.image}
-                      alt={user.name || 'User'}
-                      className="w-32 h-32 rounded-full border-4 border-orange-600 shadow-lg object-cover"
-                    />
-                  ) : (
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-5xl font-bold border-4 border-orange-600 shadow-lg">
-                      {getInitials(user.name)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Form */}
-                <div className="space-y-6">
-                  {/* Name */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="Enter your full name"
-                      />
-                    ) : (
-                      <p className="text-gray-900 font-medium">{editName || 'Not provided'}</p>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                    <div className="flex items-center justify-between px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-gray-900">{user.email}</p>
-                      <CheckCircle2 size={20} className="text-green-600" />
-                    </div>
-                  </div>
-
-                  {/* Bio */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
-                    {isEditing ? (
-                      <textarea
-                        value={editBio}
-                        onChange={(e) => setEditBio(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="Tell us about yourself (optional)"
-                        rows={3}
-                      />
-                    ) : (
-                      <p className="text-gray-600">{editBio || 'No bio added yet'}</p>
-                    )}
-                  </div>
-
-                  {/* Save/Cancel */}
-                  {isEditing && (
-                    <div className="flex gap-3 pt-4 border-t border-gray-200">
-                      <button
-                        onClick={handleSaveProfile}
-                        disabled={isSaving}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium disabled:opacity-50"
-                      >
-                        <Check size={18} />
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsEditing(false)
-                          setEditName(session.user?.name || '')
-                          setEditBio(session.user?.bio || '')
-                        }}
-                        className="flex-1 px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition font-medium"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Message */}
-                  {saveMessage && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className={`p-4 rounded-lg text-sm font-medium ${
-                        saveMessage.includes('successfully')
-                          ? 'bg-green-50 text-green-700 border border-green-200'
-                          : 'bg-red-50 text-red-700 border border-red-200'
-                      }`}
-                    >
-                      {saveMessage}
-                    </motion.div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Security Section */}
-            {activeTab === 'security' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm space-y-6"
-              >
-                <h2 className="text-2xl font-bold text-gray-900">Security</h2>
-
-                {renderPasswordSection()}
-
-                {/* Two-Factor Authentication */}
                 <div>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Two-Factor Authentication</h3>
-                      <p className="text-gray-600 text-sm mt-1">Add an extra layer of security to your account</p>
-                    </div>
-                    <button disabled className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg cursor-not-allowed font-medium whitespace-nowrap">
-                      Coming Soon
-                    </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+                      {displayName}
+                    </h1>
+
+                    {hasPremiumHistory ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-700 ring-1 ring-inset ring-orange-200">
+                        <Sparkles size={13} />
+                        PREMIUM
+                      </span>
+                    ) : null}
                   </div>
+
+                  <p className="mt-1 text-sm text-slate-600">{email}</p>
                 </div>
-              </motion.div>
-            )}
+              </div>
 
-            {/* Account Section */}
-            {activeTab === 'account' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm space-y-6"
-              >
-                <h2 className="text-2xl font-bold text-gray-900">Account Information</h2>
+              <div className="flex flex-wrap gap-3">
+                {hasPremiumHistory ? (
+                  <>
+                    <Link
+                      href="/ai-studio"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      <Sparkles size={16} />
+                      Open AI Studio
+                    </Link>
 
-                {/* Created Date */}
-                <div className="pb-6 border-b border-gray-200">
-                  <label className="text-sm font-semibold text-gray-700">Account Created</label>
-                  <p className="text-gray-900 font-medium mt-2">{formatDate(session.user?.createdAt)}</p>
-                </div>
-
-                {/* Last Login */}
-                <div className="pb-6 border-b border-gray-200">
-                  <label className="text-sm font-semibold text-gray-700">Last Sign In</label>
-                  <p className="text-gray-900 font-medium mt-2">{formatDate(session.user?.lastLoginAt)}</p>
-                </div>
-
-                {/* Sign Out */}
-                <div>
-                  <label className="text-sm font-semibold text-gray-700 block mb-3">Session</label>
-                  <button
-                    onClick={() => router.push('/api/auth/signout')}
-                    className="px-4 py-2 flex items-center gap-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition font-medium"
-                  >
-                    <LogOut size={18} />
-                    Sign Out
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-
-          </div>
-        </div>
-
-        {/* Mobile Content */}
-        <div className="md:hidden">
-          {activeTab === 'profile' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-white rounded-xl border border-gray-200 p-6 space-y-6"
-            >
-              <h2 className="text-xl font-bold text-gray-900">Profile</h2>
-
-              {/* Avatar */}
-              <div>
-                {user.image ? (
-                  <img
-                    src={user.image}
-                    alt={user.name || 'User'}
-                    className="w-24 h-24 rounded-full border-4 border-orange-600 shadow-lg object-cover mx-auto"
-                  />
+                    <Link
+                      href="/ai-studio/pricing"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                    >
+                      <CreditCard size={16} />
+                      Buy Credits
+                    </Link>
+                  </>
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-3xl font-bold border-4 border-orange-600 shadow-lg mx-auto">
-                    {getInitials(user.name)}
-                  </div>
+                  <>
+                    <Link
+                      href="/ai-studio/pricing"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-orange-500 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
+                    >
+                      <Sparkles size={16} />
+                      Upgrade to Premium
+                    </Link>
+
+                    <Link
+                      href="/ai-studio"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                    >
+                      Explore AI Studio
+                    </Link>
+                  </>
                 )}
               </div>
+            </div>
+          </div>
+        </section>
 
-              {/* Form */}
-              <div className="space-y-4">
+        <section className="px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl space-y-6">
+
+            <section className="relative overflow-hidden rounded-2xl bg-slate-950 p-6 text-white shadow-xl sm:p-8">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(249,115,22,0.30),transparent_32%)]" />
+
+              <div className="relative grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  ) : (
-                    <p className="text-gray-900 font-medium">{editName || 'Not provided'}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                  <p className="text-gray-900">{user.email}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
-                  {isEditing ? (
-                    <textarea
-                      value={editBio}
-                      onChange={(e) => setEditBio(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      rows={3}
-                    />
-                  ) : (
-                    <p className="text-gray-600">{editBio || 'No bio added'}</p>
-                  )}
-                </div>
-
-                {isEditing && (
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      onClick={handleSaveProfile}
-                      disabled={isSaving}
-                      className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition font-medium"
-                    >
-                      Cancel
-                    </button>
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-orange-100">
+                    <Sparkles size={14} />
+                    {hasPremiumHistory
+                      ? 'SimplifyConvert Premium'
+                      : 'SimplifyConvert Account'}
                   </div>
-                )}
 
-                {!isEditing && (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium"
+                  <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                    {hasPremiumHistory
+                      ? 'Your AI workspace is ready.'
+                      : 'Unlock Premium AI Studio'}
+                  </h2>
+
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+                    {hasPremiumHistory
+                      ? 'Create presentations, documents and spreadsheets while keeping your AI credits, usage and billing activity together in one account.'
+                      : 'Upgrade to Premium to create AI-powered presentations, documents and spreadsheets with SimplifyConvert credits and access to the complete AI Studio workspace.'}
+                  </p>
+
+                  {!hasPremiumHistory ? (
+                    <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-200">
+                      <span>✓ AI Presentation Maker</span>
+                      <span>✓ AI Document Maker</span>
+                      <span>✓ AI Spreadsheet Maker</span>
+                      <span>✓ Credit-based AI generation</span>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    {hasPremiumHistory ? (
+                      <>
+                        <Link
+                          href="/ai-studio"
+                          className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-orange-500 px-5 text-sm font-bold text-white transition hover:bg-orange-600"
+                        >
+                          Open AI Studio
+                          <ArrowRight size={16} />
+                        </Link>
+
+                        <Link
+                          href="/ai-studio/billing"
+                          className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-5 text-sm font-semibold text-white transition hover:bg-white/15"
+                        >
+                          Billing & Usage
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href="/ai-studio/pricing"
+                          className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-orange-500 px-5 text-sm font-bold text-white transition hover:bg-orange-600"
+                        >
+                          Upgrade to Premium
+                          <ArrowRight size={16} />
+                        </Link>
+
+                        <Link
+                          href="/ai-studio"
+                          className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-5 text-sm font-semibold text-white transition hover:bg-white/15"
+                        >
+                          Explore AI Studio
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+                  {hasPremiumHistory ? (
+                    <>
+                      <p className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                        Current AI Credits
+                      </p>
+
+                      <div className="mt-2 flex items-end gap-2">
+                        <span className="text-4xl font-bold">
+                          {formatCredits(balanceCredits)}
+                        </span>
+                        <span className="pb-1 text-sm text-slate-300">
+                          available
+                        </span>
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-2 gap-3">
+                        <div className="rounded-lg bg-black/20 p-3">
+                          <p className="text-xs text-slate-400">Reserved</p>
+                          <p className="mt-1 font-bold">
+                            {formatCredits(reservedCredits)}
+                          </p>
+                        </div>
+
+                        <div className="rounded-lg bg-black/20 p-3">
+                          <p className="text-xs text-slate-400">Plan</p>
+                          <p className="mt-1 truncate font-bold">{planLabel}</p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs font-bold uppercase tracking-wider text-orange-200">
+                        Premium AI Studio
+                      </p>
+
+                      <p className="mt-3 text-2xl font-bold">
+                        Ready when you are
+                      </p>
+
+                      <p className="mt-2 text-sm leading-6 text-slate-300">
+                        Choose a Premium plan to receive AI credits and start creating with all three AI Studio makers.
+                      </p>
+
+                      <Link
+                        href="/ai-studio/pricing"
+                        className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-orange-300 transition hover:text-orange-200"
+                      >
+                        View Premium Plans
+                        <ArrowRight size={15} />
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                {
+                  label: 'Available Credits',
+                  value: formatCredits(balanceCredits),
+                  detail: 'Ready to use',
+                  icon: WalletCards,
+                },
+                {
+                  label: 'Credits Used',
+                  value: formatCredits(lifetimeUsed),
+                  detail: 'Lifetime AI Studio usage',
+                  icon: Activity,
+                },
+                {
+                  label: 'Credits Added',
+                  value: formatCredits(lifetimeAdded),
+                  detail: 'Purchases and adjustments',
+                  icon: Sparkles,
+                },
+                {
+                  label: 'Account',
+                  value: hasPremiumHistory ? 'Premium' : 'Free',
+                  detail: latestPaidPurchase
+                    ? `Latest purchase ${formatDate(
+                        latestPaidPurchase.paidAt ||
+                          latestPaidPurchase.createdAt,
+                      )}`
+                    : 'No paid AI Studio purchase yet',
+                  icon: UserRound,
+                },
+              ].map((stat) => {
+                const Icon = stat.icon;
+
+                return (
+                  <div
+                    key={stat.label}
+                    className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
                   >
-                    Edit Profile
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
+                      <Icon size={20} />
+                    </div>
 
-          {activeTab === 'security' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-white rounded-xl border border-gray-200 p-6 space-y-4"
-            >
-              <h2 className="text-xl font-bold text-gray-900">Security</h2>
-              <div className="space-y-4">
-                {renderPasswordSection(true)}
+                    <p className="mt-4 text-xs font-bold uppercase tracking-wide text-slate-500">
+                      {stat.label}
+                    </p>
+
+                    <p className="mt-1 text-2xl font-bold text-slate-950">
+                      {stat.value}
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      {stat.detail}
+                    </p>
+                  </div>
+                );
+              })}
+            </section>
+
+            <section className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+
+              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold">AI Studio</h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {hasPremiumHistory
+                        ? 'Start your next AI-assisted file.'
+                        : 'Premium tools for creating presentations, documents and spreadsheets.'}
+                    </p>
+                  </div>
+
+                  <Link
+                    href={hasPremiumHistory ? '/ai-studio' : '/ai-studio/pricing'}
+                    className="text-sm font-bold text-orange-600 hover:text-orange-700"
+                  >
+                    {hasPremiumHistory ? 'View Studio' : 'View Premium Plans'}
+                  </Link>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  {[
+                    {
+                      title: 'Presentation',
+                      detail: 'Create slide decks',
+                      href: '/ai-studio/presentation-maker',
+                      icon: Presentation,
+                    },
+                    {
+                      title: 'Document',
+                      detail: 'Create documents',
+                      href: '/ai-studio/document-maker',
+                      icon: FileText,
+                    },
+                    {
+                      title: 'Spreadsheet',
+                      detail: 'Create spreadsheets',
+                      href: '/ai-studio/spreadsheet-maker',
+                      icon: FileSpreadsheet,
+                    },
+                  ].map((tool) => {
+                    const Icon = tool.icon;
+
+                    return (
+                      <Link
+                        key={tool.title}
+                        href={hasPremiumHistory ? tool.href : '/ai-studio/pricing'}
+                        className="group rounded-xl border border-slate-200 p-4 transition hover:border-orange-300 hover:bg-orange-50/40"
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-950 text-white">
+                          <Icon size={19} />
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                          <h3 className="font-bold text-slate-950">
+                            {tool.title}
+                          </h3>
+
+                          {!hasPremiumHistory ? (
+                            <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-orange-700 ring-1 ring-inset ring-orange-200">
+                              Premium
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                          {tool.detail}
+                        </p>
+
+                        <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-orange-600">
+                          {hasPremiumHistory ? 'Open' : 'Upgrade to access'}
+                          <ArrowRight
+                            size={14}
+                            className="transition group-hover:translate-x-0.5"
+                          />
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 className="text-xl font-bold">Account details</h2>
+
+                <div className="mt-5 space-y-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Name
+                    </p>
+                    <p className="mt-1 font-semibold text-slate-900">
+                      {displayName}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Email
+                    </p>
+                    <p className="mt-1 break-all font-semibold text-slate-900">
+                      {email}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                      AI Studio plan
+                    </p>
+                    <p className="mt-1 font-semibold text-slate-900">
+                      {planLabel}
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/ai-studio/billing"
+                    className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-orange-600 hover:text-orange-700"
+                  >
+                    Manage billing
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-semibold text-gray-900">2FA</h3>
-                  <p className="text-gray-600 text-sm mt-1">Coming Soon</p>
+                  <h2 className="text-xl font-bold">Recent AI activity</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Your latest AI Studio generations.
+                  </p>
                 </div>
-              </div>
-            </motion.div>
-          )}
 
-          {activeTab === 'account' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-white rounded-xl border border-gray-200 p-6 space-y-4"
-            >
-              <h2 className="text-xl font-bold text-gray-900">Account</h2>
-              <div className="space-y-4">
-                <div className="pb-4 border-b border-gray-200">
-                  <label className="text-sm font-semibold text-gray-700">Created</label>
-                  <p className="text-gray-900 font-medium mt-1">{formatDate(session.user?.createdAt)}</p>
-                </div>
-                <div className="pb-4 border-b border-gray-200">
-                  <label className="text-sm font-semibold text-gray-700">Last Sign In</label>
-                  <p className="text-gray-900 font-medium mt-1">{formatDate(session.user?.lastLoginAt)}</p>
-                </div>
-                <button
-                  onClick={() => router.push('/api/auth/signout')}
-                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition font-medium"
+                <Link
+                  href="/ai-studio/billing"
+                  className="inline-flex items-center gap-1 text-sm font-bold text-orange-600 hover:text-orange-700"
                 >
-                  Sign Out
-                </button>
+                  View full history
+                  <ArrowRight size={14} />
+                </Link>
               </div>
-            </motion.div>
-          )}
 
+              {recentUsage.length > 0 ? (
+                <div className="mt-5 divide-y divide-slate-100">
+                  {recentUsage.map((usage) => {
+                    const credits =
+                      usage.actualCredits?.toNumber() ??
+                      usage.reservedCredits.toNumber() ??
+                      usage.estimatedCredits.toNumber();
 
-        </div>
+                    return (
+                      <div
+                        key={usage.id}
+                        className="grid gap-3 py-4 sm:grid-cols-[1fr_auto_auto] sm:items-center"
+                      >
+                        <div>
+                          <p className="font-semibold text-slate-950">
+                            {usage.topic || 'Untitled AI Studio generation'}
+                          </p>
+
+                          <p className="mt-1 text-sm text-slate-500">
+                            {titleCase(usage.toolType)} ·{' '}
+                            {formatDate(usage.createdAt)}
+                          </p>
+                        </div>
+
+                        <span className="w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+                          {titleCase(usage.status)}
+                        </span>
+
+                        <p className="text-sm font-bold text-slate-800">
+                          {formatCredits(credits)} credits
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+                  <Sparkles
+                    size={28}
+                    className="mx-auto text-slate-400"
+                  />
+
+                  <h3 className="mt-3 font-bold text-slate-900">
+                    No AI activity yet
+                  </h3>
+
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                    Your recent presentation, document and spreadsheet
+                    generations will appear here.
+                  </p>
+
+                  <Link
+                    href={hasPremiumHistory ? '/ai-studio' : '/ai-studio/pricing'}
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-orange-600"
+                  >
+                    {hasPremiumHistory ? 'Start creating' : 'Upgrade to start creating'}
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              )}
+            </section>
+
+          </div>
+        </section>
       </main>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-xl p-8 max-w-md w-full shadow-xl"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle size={24} className="text-red-600" />
-              <h3 className="text-2xl font-bold text-gray-900">Delete Account?</h3>
-            </div>
-            <p className="text-gray-600 mb-6">
-              This action cannot be undone. All your data will be permanently deleted.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-900 font-medium rounded-lg hover:bg-gray-200 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false)
-                  // TODO: Implement account deletion
-                }}
-                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition"
-              >
-                Delete
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      <Footer />
-    </div>
-  )
+    </>
+  );
 }

@@ -36,6 +36,16 @@ const categoryItems: SearchIndexItem[] = [
     aliases: ['tools', 'search tools'],
   },
   {
+    id: 'category-pdf',
+    title: 'PDF Tools',
+    description: 'Convert, merge, compress, and edit PDF files',
+    category: 'Category',
+    href: '/all-tools/pdf-tools',
+    route: '/all-tools/pdf-tools',
+    type: 'category',
+    aliases: ['pdf', 'pdf utilities'],
+  },
+  {
     id: 'category-image',
     title: 'Image Tools',
     description: 'Edit, convert, enhance, and optimize images',
@@ -95,6 +105,7 @@ const aliasById: Record<string, string[]> = {
   'remove-background': ['remove bg', 'background remover', 'remove image background'],
   'merge-pdf': ['pdf merge', 'combine pdf', 'combine pdf files'],
   'compress-pdf': ['pdf compressor', 'reduce pdf size', 'pdf compress'],
+  'compress-video': ['video compressor', 'reduce video size', 'video compression'],
   'jwt-decoder': ['decode jwt', 'jwt parser', 'jwt token decoder'],
   'xml-to-json': ['convert xml to json', 'xml json converter'],
   'presentation-maker': ['ppt maker', 'presentation maker', 'slide maker'],
@@ -277,9 +288,12 @@ function scoreSearchItem(item: SearchIndexItem, query: string): ScoredSearchInde
     );
 
     if (matchedWords.length > 0) {
-      score = 1000 + matchedWords.length * 250;
-      if (matchedWords.length === queryWords.length && queryWords.length > 1 && item.type === 'tool') {
-        score += 1500;
+      const completeMatch = matchedWords.length === queryWords.length;
+      if (queryWords.length === 1 || completeMatch) {
+        score = 1000 + matchedWords.length * 250;
+        if (completeMatch && queryWords.length > 1 && item.type === 'tool') {
+          score += 1500;
+        }
       }
     }
   }
