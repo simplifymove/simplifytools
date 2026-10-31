@@ -93,13 +93,18 @@ export default function ContactPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            Have questions? Send us a message and we&apos;ll respond as soon as possible.
+            Ask about a tool, account, payment, privacy practice, or technical problem.
           </motion.p>
         </div>
       </section>
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="mb-8 rounded-2xl border border-orange-200 bg-orange-50 p-6 text-gray-700">
+            <h2 className="text-xl font-bold text-gray-900">Before you send a support request</h2>
+            <p className="mt-2 leading-7">Include the tool page URL, input format and approximate file size, the result you expected, and any error message. Do not send passwords, payment credentials, API keys, or other secrets.</p>
+            <p className="mt-3">You can also email <a className="font-semibold text-orange-700 underline" href="mailto:info@simplifyconvert.com">info@simplifyconvert.com</a>.</p>
+          </div>
           <motion.div
             className="bg-gray-50 p-8 rounded-2xl"
             initial={{ opacity: 0, y: 20 }}
@@ -109,8 +114,9 @@ export default function ContactPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Name</label>
+                <label htmlFor="contact-name" className="block text-gray-700 font-semibold mb-2">Name</label>
                 <input
+                  id="contact-name"
                   type="text"
                   name="name"
                   value={formData.name}
@@ -121,8 +127,9 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Email</label>
+                <label htmlFor="contact-email" className="block text-gray-700 font-semibold mb-2">Email</label>
                 <input
+                  id="contact-email"
                   type="email"
                   name="email"
                   value={formData.email}
@@ -133,8 +140,9 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Subject</label>
+                <label htmlFor="contact-subject" className="block text-gray-700 font-semibold mb-2">Subject</label>
                 <input
+                  id="contact-subject"
                   type="text"
                   name="subject"
                   value={formData.subject}
@@ -145,8 +153,9 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Message</label>
+                <label htmlFor="contact-message" className="block text-gray-700 font-semibold mb-2">Message</label>
                 <textarea
+                  id="contact-message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
@@ -171,7 +180,7 @@ export default function ContactPage() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  ✓ Message sent successfully! We'll get back to you soon.
+                  ✓ Message sent successfully. We've received your request.
                 </motion.div>
               )}
               {error && (
@@ -192,6 +201,4 @@ export default function ContactPage() {
     </main>
   );
 }
-
-
 

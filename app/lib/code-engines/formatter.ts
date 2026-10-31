@@ -54,13 +54,13 @@ export async function beautifyCode(
   try {
     switch (language.toLowerCase()) {
       case 'javascript':
-        return beautifyJavaScript(code, indent);
+        return await beautifyWithPrettier(code, 'babel', indent);
       case 'json':
         return beautifyJSON(code, indent);
       case 'html':
-        return beautifyHTML(code, indent);
+        return await beautifyWithPrettier(code, 'html', indent);
       case 'css':
-        return beautifyCSS(code, indent);
+        return await beautifyWithPrettier(code, 'css', indent);
       case 'xml':
         return beautifyXML(code, indent);
       case 'sql':
@@ -73,6 +73,28 @@ export async function beautifyCode(
       `Beautification error: ${error instanceof Error ? error.message : String(error)}`
     );
   }
+}
+
+// Syntax-aware formatting for JavaScript, HTML, and CSS.
+async function beautifyWithPrettier(
+  code: string,
+  parser: 'babel' | 'html' | 'css',
+  indent: number
+): Promise<FormatterResult> {
+  const prettier = await import('prettier');
+  const formatted = await prettier.format(code, {
+    parser,
+    tabWidth: Math.max(1, Math.min(16, Math.trunc(indent))),
+    useTabs: false,
+  });
+
+  return {
+    result: formatted,
+    meta: {
+      originalSize: code.length,
+      newSize: formatted.length,
+    },
+  };
 }
 
 // JavaScript minification using Terser (lightweight version using regex)
@@ -334,96 +356,235 @@ function beautifyCSS(
   }
 }
 
-// XML minification - simple regex-based approach
+// Conservative XML minification: preserve XML data and quoted values.
 function minifyXML(code: string): FormatterResult {
-  try {
-    const minified = code
-      .replace(/\n/g, '')
-      .replace(/\t/g, '')
-      .replace(/>\s+</g, '><')
-      .trim();
+  const sax = require('sax') as typeof import('sax');
 
-    return {
-      result: minified,
-      meta: {
-        originalSize: code.length,
-        newSize: minified.length,
-        compression: Math.round(
-          ((code.length - minified.length) / code.length) * 100
-        ),
-      },
-    };
-  } catch (error) {
-    throw error;
-  }
-}
+  const parser = sax.parser(true, {
+    trim: false,
+    normalize: false,
+  });
 
-// XML beautification
-function beautifyXML(code: string, indent: number): FormatterResult {
-  try {
-    let formatted = '';
-    let level = 0;
-    const indentStr = ' '.repeat(indent);
+  // Reject malformed XML before transforming anything.
+  parser.write(code).close();
 
-    // Simple XML parser
-    const regex = /(<[^>]+>)/g;
-    const parts = code.split(regex).filter((part) => part.trim());
+  let result = '';
+  let index = 0;
 
-    for (const part of parts) {
-      if (part.startsWith('<?')) {
-        formatted += part + '\n';
-      } else if (part.startsWith('</')) {
-        level--;
-        formatted += indentStr.repeat(Math.max(0, level)) + part + '\n';
-      } else if (part.startsWith('<') && part.endsWith('/>')) {
-        formatted += indentStr.repeat(level) + part + '\n';
-      } else if (part.startsWith('<')) {
-        formatted += indentStr.repeat(level) + part + '\n';
-        if (!part.endsWith('/>') && !part.includes('</')) {
-          level++;
-        }
-      } else {
-        const text = part.trim();
-        if (text) {
-          formatted += indentStr.repeat(level) + text + '\n';
-        }
+  while (index < code.length) {
+    if (code[index] !== '<') {
+      result += code[index++];
+      continue;
+    }
+
+    // Preserve comments, CDATA, declarations and processing instructions.
+    if (
+      code.startsWith('<!--', index) ||
+      code.startsWith('<![CDATA[', index) ||
+      code.startsWith('<!', index) ||
+      code.startsWith('<?', index)
+    ) {
+      const prefix = code.startsWith('<!--', index)
+        ? '-->'
+        : code.startsWith('<![CDATA[', index)
+          ? ']]>'
+          : code.startsWith('<?', index)
+            ? '?>'
+            : '>';
+
+      const end = code.indexOf(prefix, index);
+      if (end < 0) {
+        throw new Error('Invalid XML declaration');
+      }
+
+      result += code.slice(index, end + prefix.length);
+      index = end + prefix.length;
+      continue;
+    }
+
+    // Locate the tag end without treating > inside quotes as a delimiter.
+    let end = index + 1;
+    let quote: string | null = null;
+
+    for (; end < code.length; end++) {
+      const char = code[end];
+
+      if (quote) {
+        if (char === quote) quote = null;
+      } else if (char === '"' || char === "'") {
+        quote = char;
+      } else if (char === '>') {
+        break;
       }
     }
 
+    if (end >= code.length) {
+      throw new Error('Unterminated XML tag');
+    }
+
+    const tag = code.slice(index, end + 1);
+
+    let normalized = '';
+    let pendingSpace = false;
+    quote = null;
+
+    for (let i = 0; i < tag.length; i++) {
+      const char = tag[i];
+
+      if (quote) {
+        normalized += char;
+        if (char === quote) quote = null;
+        continue;
+      }
+
+      if (char === '"' || char === "'") {
+        if (pendingSpace) {
+          normalized += ' ';
+          pendingSpace = false;
+        }
+        normalized += char;
+        quote = char;
+        continue;
+      }
+
+      if (/\s/.test(char)) {
+        pendingSpace = true;
+        continue;
+      }
+
+      if (pendingSpace) {
+        // No whitespace is needed before a tag terminator.
+        if (char !== '>' && char !== '/') {
+          normalized += ' ';
+        }
+        pendingSpace = false;
+      }
+
+      normalized += char;
+    }
+
+    result += normalized;
+    index = end + 1;
+  }
+
+  return {
+    result,
+    meta: {
+      originalSize: code.length,
+      newSize: result.length,
+      compression: code.length
+        ? Math.round((1 - result.length / code.length) * 100)
+        : 0,
+    },
+  };
+}
+
+// Conservative XML formatting: avoid changing meaningful XML content.
+function beautifyXML(code: string, indent: number): FormatterResult {
+  const sax = require('sax') as typeof import('sax');
+
+  const parser = sax.parser(true, {
+    trim: false,
+    normalize: false,
+  });
+
+  let containsText = false;
+  let containsCdata = false;
+  let containsSpecialMarkup = false;
+
+  parser.ontext = (text: string) => {
+    if (text.length > 0) containsText = true;
+  };
+
+  parser.oncdata = () => {
+    containsCdata = true;
+  };
+
+  parser.oncomment = () => {
+    containsSpecialMarkup = true;
+  };
+
+  parser.onprocessinginstruction = () => {
+    containsSpecialMarkup = true;
+  };
+
+  parser.ondoctype = () => {
+    containsSpecialMarkup = true;
+  };
+
+  parser.write(code).close();
+
+  // Preserve documents where formatting could alter meaningful data.
+  if (
+    containsText ||
+    containsCdata ||
+    containsSpecialMarkup ||
+    code.includes('<?') ||
+    code.includes('<!')
+  ) {
     return {
-      result: formatted.trimEnd(),
+      result: code,
       meta: {
         originalSize: code.length,
-        newSize: formatted.length,
+        newSize: code.length,
       },
     };
-  } catch (error) {
-    throw error;
   }
+
+  const indentStr = ' '.repeat(
+    Math.max(0, Math.min(16, Number(indent) || 2))
+  );
+
+  let level = 0;
+
+  const formatted = code
+    .replace(/>\s*</g, '><')
+    .replace(/></g, '>\n<')
+    .split('\n')
+    .map((line) => {
+      if (line.startsWith('</')) {
+        level = Math.max(0, level - 1);
+      }
+
+      const output = indentStr.repeat(level) + line;
+
+      if (
+        line.startsWith('<') &&
+        !line.startsWith('</') &&
+        !line.endsWith('/>')
+      ) {
+        level++;
+      }
+
+      return output;
+    })
+    .join('\n');
+
+  return {
+    result: formatted,
+    meta: {
+      originalSize: code.length,
+      newSize: formatted.length,
+    },
+  };
 }
 
 // SQL beautification - simple line formatting
 function beautifySQL(code: string, indent: number): FormatterResult {
-  try {
-    const keywords =
-      /\b(SELECT|FROM|WHERE|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AND|OR|ORDER BY|GROUP BY|HAVING|LIMIT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|TABLE|DATABASE|INDEX)\b/gi;
+  const { format } = require('sql-formatter') as typeof import('sql-formatter');
 
-    const formatted = code
-      .replace(keywords, (match) => '\n' + match.toUpperCase())
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line)
-      .join('\n');
+  const formatted = format(code, {
+    language: 'sql',
+    tabWidth: Math.max(1, Math.min(16, Math.trunc(Number(indent) || 2))),
+    keywordCase: 'upper',
+  });
 
-    return {
-      result: formatted,
-      meta: {
-        originalSize: code.length,
-        newSize: formatted.length,
-      },
-    };
-  } catch (error) {
-    throw error;
-  }
+  return {
+    result: formatted,
+    meta: {
+      originalSize: code.length,
+      newSize: formatted.length,
+    },
+  };
 }
 

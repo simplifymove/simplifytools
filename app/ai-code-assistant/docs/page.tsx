@@ -2,12 +2,37 @@
  * AI Code Assistant Documentation Page
  */
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Code2, Terminal, Book, Zap } from "lucide-react";
 
-export const metadata = {
-  title: "API Documentation - AI Code Assistant",
-  description: "Complete API documentation and setup guide for SimplifyConvert AI Code Assistant",
+export const metadata: Metadata = {
+  title: "AI Code Assistant API Documentation | SimplifyConvert",
+  description: "Complete API documentation and setup guide for SimplifyConvert AI Code Assistant.",
+  alternates: {
+    canonical: "https://simplifyconvert.com/ai-code-assistant/docs",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://simplifyconvert.com/ai-code-assistant/docs",
+    siteName: "SimplifyConvert",
+    title: "AI Code Assistant API Documentation",
+    description: "Complete API documentation and setup guide for SimplifyConvert AI Code Assistant.",
+    images: [
+      {
+        url: "https://simplifyconvert.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "AI Code Assistant API documentation",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Code Assistant API Documentation",
+    description: "Complete API documentation and setup guide for SimplifyConvert AI Code Assistant.",
+    images: ["https://simplifyconvert.com/og-image.jpg"],
+  },
 };
 
 export default function DocsPage() {
@@ -29,7 +54,10 @@ export default function DocsPage() {
         <section className="mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">Documentation</h1>
           <p className="text-xl text-gray-600">
-            Learn how to integrate SimplifyConvert AI Code Assistant into your workflow.
+            Learn how to call SimplifyConvert's server-side AI API. An internet connection, active API credentials, and sufficient credits are required.
+          </p>
+          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            This page documents the implemented API contract. Runtime access still depends on account status and current server/provider availability.
           </p>
         </section>
 
@@ -41,10 +69,10 @@ export default function DocsPage() {
           </h2>
           <ol className="space-y-4 text-gray-700 ml-6 list-decimal">
             <li>
-              <strong>Sign up:</strong> Create an account and purchase a monthly subscription
+              <strong>Review access:</strong> Sign in and check the current pricing page for available account options
             </li>
             <li>
-              <strong>Get API key:</strong> Your API key is displayed in your dashboard after purchase
+              <strong>Get API credentials:</strong> An API key is available in the dashboard after eligible paid access is successfully provisioned
             </li>
             <li>
               <strong>Use the API:</strong> Send requests to POST /api/ai/generate with your API key
@@ -92,7 +120,7 @@ Authorization: Bearer sca_XXXXXXXXXXXXXXXX
             <div className="mt-4 space-y-3 text-sm">
               <div>
                 <strong className="text-gray-900">prompt</strong> (required, string):
-                <p className="text-gray-600">The code request or question (max 50,000 characters)</p>
+                <p className="text-gray-600">The code request or question (default maximum: 40,000 characters; server configuration may vary)</p>
               </div>
               <div>
                 <strong className="text-gray-900">machineId</strong> (required, string):
@@ -152,7 +180,7 @@ Authorization: Bearer sca_XXXXXXXXXXXXXXXX
                 {
                   code: 429,
                   message: "Rate limit exceeded",
-                  solution: "Wait a minute before making another request (30 req/min limit)",
+                  solution: "Wait for the rate-limit window to reset (default: 30 requests per minute; configurable)",
                 },
                 {
                   code: 500,
@@ -175,20 +203,20 @@ Authorization: Bearer sca_XXXXXXXXXXXXXXXX
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Credit System</h2>
           <p className="text-gray-600 mb-6">
-            Credits are deducted based on the size of your request:
+            Credits are deducted based on prompt length. The following are default limits; server configuration may vary. Requests above the configured maximum are rejected:
           </p>
           <div className="space-y-4">
             <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
               <p className="font-semibold text-gray-900">Tier 1: Small Requests</p>
-              <p className="text-gray-600">Up to 2,000 characters = <strong>1 credit</strong></p>
+              <p className="text-gray-600">Up to 8,000 characters = <strong>1 credit</strong></p>
             </div>
             <div className="bg-white border-2 border-blue-400 rounded-lg p-4">
               <p className="font-semibold text-gray-900">Tier 2: Medium Requests</p>
-              <p className="text-gray-600">2,001 - 10,000 characters = <strong>3 credits</strong></p>
+              <p className="text-gray-600">8,001 - 20,000 characters = <strong>2 credits</strong></p>
             </div>
             <div className="bg-white border-2 border-purple-400 rounded-lg p-4">
               <p className="font-semibold text-gray-900">Tier 3: Large Requests</p>
-              <p className="text-gray-600">10,001+ characters = <strong>5 credits</strong></p>
+              <p className="text-gray-600">20,001 - 40,000 characters = <strong>4 credits</strong></p>
             </div>
           </div>
           <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -302,7 +330,7 @@ generate_code("Create a Flask API endpoint for user login")`}</pre>
               <li>Go to your dashboard</li>
               <li>Find your API key</li>
               <li>Click "Reset Device Lock"</li>
-              <li>Make a request from your new device (max 3 times per month)</li>
+              <li>Make a request from your new device (device-lock resets default to 3 per month; server configuration may vary)</li>
             </ol>
           </div>
         </section>

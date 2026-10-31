@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
+import { randomUUID } from 'crypto';
 
 const execAsync = promisify(exec);
 
@@ -10,16 +11,24 @@ export async function POST(request: NextRequest) {
   try {
     const { text, language, emotion, speed, pitch, voice } = await request.json();
 
-    if (!text || !language) {
+    if (typeof text !== 'string' || !text.trim() ||
+        typeof language !== 'string' || !language.trim()) {
       return NextResponse.json(
         { error: 'Text and language are required' },
         { status: 400 }
       );
     }
 
-    // Generate unique filename for audio
-    const timestamp = Date.now();
-    const audioFileName = `tts_${timestamp}_${Math.random().toString(36).substr(2, 9)}.mp3`;
+    if (text.length > 10000) {
+      return NextResponse.json(
+        { error: 'Text must not exceed 10,000 characters.' },
+        { status: 400 }
+      );
+    }
+
+    // Unique identifier prevents concurrent requests sharing temporary files.
+    const timestamp = randomUUID();
+    const audioFileName = `tts_${timestamp}.mp3`;
     const audioPath = path.join(process.cwd(), 'tmp', audioFileName);
 
     // Ensure tmp directory exists
@@ -104,7 +113,13 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    const voiceConfig = voiceMap[language] || voiceMap['en-US'];
+    const voiceConfig = voiceMap[language];
+    if (!voiceConfig) {
+      return NextResponse.json(
+        { error: 'Unsupported language.' },
+        { status: 400 }
+      );
+    }
     const selectedVoice = voice && voiceConfig.voices.includes(voice) ? voice : voiceConfig.default;
 
     // Emotion settings with rate adjustments
@@ -120,8 +135,19 @@ export async function POST(request: NextRequest) {
     };
 
     const emotionConfig = emotionSettings[emotion] || emotionSettings.neutral;
-    const rateValue = emotionConfig.rate * (speed || 1);
-    const pitchValue = (pitch || 1);
+    const requestedSpeed = typeof speed === 'number' && Number.isFinite(speed)
+      ? Math.min(2, Math.max(0.5, speed))
+      : 1;
+    const requestedPitch = typeof pitch === 'number' && Number.isFinite(pitch)
+      ? Math.min(2, Math.max(0.5, pitch))
+      : 1;
+
+    const effectiveRate = Math.min(2, Math.max(0.5, emotionConfig.rate * requestedSpeed));
+    const ratePercent = Math.round((effectiveRate - 1) * 100);
+    const pitchHz = Math.round((requestedPitch - 1) * 50);
+
+    const rateArgument = `${ratePercent >= 0 ? '+' : ''}${ratePercent}%`;
+    const pitchArgument = `${pitchHz >= 0 ? '+' : ''}${pitchHz}Hz`;
 
     // Convert paths to forward slashes for Python compatibility
     const audioPathEscaped = audioPath.replace(/\\/g, '/');
@@ -149,8 +175,13 @@ async def generate_speech():
         
         voice = '${selectedVoice}'
         
-        # Use simple communicate call - text and voice only
-        communicate_instance = communicate.Communicate(text_content, voice)
+        # Apply validated rate and pitch to Edge TTS synthesis.
+        communicate_instance = communicate.Communicate(
+            text_content,
+            voice,
+            rate='${rateArgument}',
+            pitch='${pitchArgument}'
+        )
         
         # Collect all audio chunks 
         audio_buffer = io.BytesIO()

@@ -1,5 +1,5 @@
 /**
- * Industry-Standard AI Content Detection
+ * Rule-Based AI Writing Pattern Analysis
  * 
  * Combines multiple detection methods:
  * 1. Statistical Analysis (entropy, word patterns, consistency)
@@ -327,7 +327,7 @@ export function formatDetectionResult(result: AIDetectionResult): string {
 
   return `
 ${emoji} **Detection Verdict: ${verdict}**
-**Confidence: ${result.confidence}%**
+**Heuristic Score Strength: ${result.confidence}%**
 
 **Detailed Analysis:**
 ${result.analysis.reasoning.map((r) => `• ${r}`).join('\n')}
@@ -346,7 +346,7 @@ ${result.analysis.reasoning.map((r) => `• ${r}`).join('\n')}
 • Repeated Phrase Ratio: ${(result.metrics.repeatPhraseRatio * 100).toFixed(2)}%
 
 **Disclaimer:**
-This analysis is probabilistic and not definitive. AI detection has inherent limitations.
+This analysis uses heuristic scoring and is not definitive. AI detection has inherent limitations.
 Multiple factors affect accuracy including: text domain, author style, and generative model used.
   `.trim();
 }

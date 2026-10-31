@@ -1,14 +1,17 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function BmpToPngPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -37,8 +40,36 @@ export default function BmpToPngPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'bmp',
+          to_format: 'png',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Conversion failed');
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/png') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -46,16 +77,33 @@ export default function BmpToPngPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'bmp-to-png',
+        originalName: file.name,
+        outputName: `${baseName}.png`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -81,7 +129,7 @@ export default function BmpToPngPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">BMP to PNG Converter</h1>
-              <p className="text-lg text-white/90">Convert BMP images to PNG format with transparency support and lossless quality.</p>
+              <p className="text-lg text-white/90">Convert BMP images to PNG format with lossless PNG compression and broad compatibility.</p>
             </div>
           </div>
         </div>
@@ -123,16 +171,16 @@ export default function BmpToPngPage() {
                         <button
                           onClick={handleDownload}
                           className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
-                        >
+                      disabled={processing}>
                           <Download size={18} />
-                          Download PNG
+                          {processing ? 'Preparing Download...' : 'Continue to Download'}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
                       <Image size={32} className="mx-auto text-orange-400 mb-3" />
-                      <p className="text-sm text-orange-800">Preview will appear here</p>
+                      <p className="text-sm text-orange-800">Upload a BMP image and select Convert to PNG to prepare your download.</p>
                     </div>
                   )}
                 </div>
@@ -158,37 +206,85 @@ export default function BmpToPngPage() {
         </div>
       </div>
 
-      {/* FAQ Section */}
+      {/* BMP to PNG usage guide */}
       <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is BMP format?</h3>
-              <p className="text-gray-700">BMP (Bitmap) is an uncompressed image format that stores image data without compression, resulting in large file sizes. It's commonly used in older Windows systems but is rarely used on the web due to its large file size.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why convert BMP to PNG?</h3>
-              <p className="text-gray-700">PNG format offers several advantages over BMP: it supports transparency, provides lossless compression (reducing file size), and is universally supported by web browsers and modern applications. PNG is ideal for web use, graphics, and images requiring transparency.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the converted image lose quality?</h3>
-              <p className="text-gray-700">No. Our converter uses lossless conversion, meaning the image quality remains identical to the original. PNG's compression is lossless, so you retain all the original image data while reducing file size.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple BMP files at once?</h3>
-              <p className="text-gray-700">Currently, our converter processes one image at a time. However, you can quickly convert multiple files by uploading and converting them individually. Each conversion is fast and takes just seconds.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What's the file size limit?</h3>
-              <p className="text-gray-700">Most image files can be converted without issues. For very large files (over 50MB), we recommend compressing them first using our image compression tool, then converting to PNG format.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my image kept private and secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen in your browser locally. Your images are never uploaded to our servers or stored anywhere. Your files remain completely private and secure.</p>
-            </div>
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              How to Convert BMP to PNG
+            </h2>
+            <ol className="list-decimal pl-6 space-y-3 text-gray-700">
+              <li>
+                <strong>Upload your BMP:</strong> Select or drag in one BMP
+                image up to 50 MB. The uploader displays the selected image
+                before conversion when your browser supports its preview.
+              </li>
+              <li>
+                <strong>Convert the image:</strong> Select Convert to PNG.
+                The BMP file is uploaded to the server, where it is saved
+                as a PNG using lossless compression.
+              </li>
+              <li>
+                <strong>Download the PNG:</strong> Once conversion finishes,
+                select Continue to Download to open the download page
+                and save the converted image.
+              </li>
+            </ol>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              BMP vs PNG: What Changes?
+            </h2>
+            <p className="text-gray-700 mb-3">
+              BMP and PNG are raster image formats. Many BMP files store
+              pixels without compression, while PNG uses lossless
+              compression to reduce storage without introducing JPEG-style
+              compression artifacts. PNG is widely supported by browsers,
+              image editors, and document applications.
+            </p>
+            <p className="text-gray-700">
+              A converted PNG may be smaller than its BMP source, but the
+              exact file size depends on image content and the original BMP
+              encoding. PNG supports transparency, but converting an opaque
+              BMP does not automatically remove its background or create
+              transparent areas.
+            </p>
           </div>
         </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>What is BMP format?</FAQStaticQuestion>
+              <FAQAnswer>BMP (Bitmap) is a raster image format commonly associated with Windows. BMP files often store pixel data without compression, which can make them large, although some BMP variants support compression.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Why convert BMP to PNG?</FAQStaticQuestion>
+              <FAQAnswer>PNG supports lossless compression and can represent transparency, although the result depends on information available in the source BMP. PNG is widely supported by modern browsers, image editors, document tools, and publishing workflows.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will the converted image lose quality?</FAQStaticQuestion>
+              <FAQAnswer>PNG uses lossless image compression, so the conversion avoids the lossy compression used by formats such as JPG. The resulting PNG preserves the rendered pixel content supported by the source BMP.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I convert multiple BMP files at once?</FAQStaticQuestion>
+              <FAQAnswer>The converter currently processes one BMP image at a time. To convert several files, upload and process them individually. Processing time can vary with file size, image dimensions, and current server workload.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>What's the file size limit?</FAQStaticQuestion>
+              <FAQAnswer>You can upload a BMP image up to 50 MB. Larger files are rejected by the uploader. For oversized BMP images, reduce their dimensions or file size before uploading. Reducing image dimensions may affect detail.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is my image kept private and secure?</FAQStaticQuestion>
+              <FAQAnswer>Your BMP file is uploaded for server-assisted conversion and processed only as needed to create the PNG output.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}
@@ -202,7 +298,7 @@ export default function BmpToPngPage() {
               "name": "What is BMP format?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "BMP (Bitmap) is an uncompressed image format that stores image data without compression, resulting in large file sizes. It's commonly used in older Windows systems but is rarely used on the web due to its large file size."
+                "text": "BMP (Bitmap) is a raster image format commonly associated with Windows. BMP files often store pixel data without compression, which can make them large, although some BMP variants support compression."
               }
             },
             {
@@ -210,7 +306,7 @@ export default function BmpToPngPage() {
               "name": "Why convert BMP to PNG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG format offers several advantages over BMP: it supports transparency, provides lossless compression (reducing file size), and is universally supported by web browsers and modern applications. PNG is ideal for web use, graphics, and images requiring transparency."
+                "text": "PNG supports lossless compression and can represent transparency, although the result depends on information available in the source BMP. PNG is widely supported by modern browsers, image editors, document tools, and publishing workflows."
               }
             },
             {
@@ -218,7 +314,7 @@ export default function BmpToPngPage() {
               "name": "Will the converted image lose quality?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. Our converter uses lossless conversion, meaning the image quality remains identical to the original. PNG's compression is lossless, so you retain all the original image data while reducing file size."
+                "text": "PNG uses lossless image compression, so the conversion avoids the lossy compression used by formats such as JPG. The resulting PNG preserves the rendered pixel content supported by the source BMP."
               }
             },
             {
@@ -226,7 +322,7 @@ export default function BmpToPngPage() {
               "name": "Can I convert multiple BMP files at once?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Currently, our converter processes one image at a time. However, you can quickly convert multiple files by uploading and converting them individually. Each conversion is fast and takes just seconds."
+                "text": "The converter currently processes one BMP image at a time. To convert several files, upload and process them individually. Processing time can vary with file size, image dimensions, and current server workload."
               }
             },
             {
@@ -234,7 +330,7 @@ export default function BmpToPngPage() {
               "name": "What's the file size limit?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Most image files can be converted without issues. For very large files (over 50MB), we recommend compressing them first using our image compression tool, then converting to PNG format."
+                "text": "You can upload a BMP image up to 50 MB. Larger files are rejected by the uploader. For oversized BMP images, reduce their dimensions or file size before uploading. Reducing image dimensions may affect detail."
               }
             },
             {
@@ -242,7 +338,7 @@ export default function BmpToPngPage() {
               "name": "Is my image kept private and secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen in your browser locally. Your images are never uploaded to our servers or stored anywhere. Your files remain completely private and secure."
+                "text": "Your BMP file is uploaded for server-assisted conversion and processed only as needed to create the PNG output."
               }
             }
           ]
@@ -260,11 +356,11 @@ export default function BmpToPngPage() {
             </Link>
             <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
-              <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency</p>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG images to PNG format</p>
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file sizes with compression options</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

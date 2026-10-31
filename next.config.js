@@ -158,6 +158,18 @@ const nextConfig = {
         destination: '/all-tools/:path*',
         permanent: true, // 301 redirect
       },
+      // Legacy OCR-to-Text -> canonical PDF OCR tool
+      {
+        source: '/all-tools/pdf/ocr-to-text',
+        destination: '/all-tools/pdf/pdf-ocr',
+        permanent: true,
+      },
+      // Standalone Code Minifier -> canonical Code Tools route
+      {
+        source: '/all-tools/code-minifier',
+        destination: '/all-tools/code-tools/code-minifier',
+        permanent: true,
+      },
       // /all-tools/code -> /all-tools/code-tools (canonical code tools route)
       {
         source: '/all-tools/code',
@@ -207,6 +219,57 @@ const nextConfig = {
         source: '/all-tools/video',
         destination: '/all-tools/video-tools',
         permanent: true, // 301 redirect
+      },
+      {
+        source: '/all-tools/video-tools/universal-downloader',
+        destination: '/all-tools/save-from-online',
+        permanent: true,
+      },
+      {
+        source: '/tools/video',
+        destination: '/all-tools/video-tools',
+        permanent: true,
+      },
+      // Consolidate duplicate-purpose URLs onto the established canonical routes.
+      {
+        source: '/all-tools/pdf-to-jpg',
+        destination: '/all-tools/pdf/pdf-to-jpg',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/pdf-to-text',
+        destination: '/all-tools/pdf/pdf-to-text',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/image-compressor',
+        destination: '/all-tools/compress-image',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/mp4-to-gif',
+        destination: '/all-tools/video/mp4-to-gif',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/pdf',
+        destination: '/all-tools/pdf-tools',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/ai-image-generator',
+        destination: '/ai-studio',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/ai-write',
+        destination: '/all-tools/ai-tools',
+        statusCode: 301,
+      },
+      {
+        source: '/all-tools/ai-write/:path*',
+        destination: '/all-tools/ai-tools/:path*',
+        statusCode: 301,
       },
     ];
   },

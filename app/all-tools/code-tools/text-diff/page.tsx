@@ -1,12 +1,15 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { ChevronRight, Upload, Play, Loader2, Copy, Download, Trash2, Share2, Lightbulb, Save } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { uploadBrowserTextDownloadResult } from '@/app/lib/download-result-client';
 
 interface DiffResult {
   valid: boolean;
@@ -16,13 +19,19 @@ interface DiffResult {
     changes: number;
     lines1: number;
     lines2: number;
-    added: number[];
-    removed: number[];
-    modified: { line1: number; line2: number }[];
+    added: number;
+    removed: number;
+    modified: number;
+    diff: {
+      added: number[];
+      removed: number[];
+      modified: { line1: number; line2: number }[];
+    };
   };
 }
 
 export default function TextDiffPage() {
+  const router = useRouter();
   const [text1, setText1] = useState('');
   const [text2, setText2] = useState('');
   const [diffResult, setDiffResult] = useState<DiffResult | null>(null);
@@ -95,7 +104,7 @@ export default function TextDiffPage() {
       setError('Please run comparison first');
       return;
     }
-    
+
     try {
       const pdf = new jsPDF();
       let yPosition = 10;
@@ -115,14 +124,14 @@ export default function TextDiffPage() {
       pdf.setFont('helvetica', 'bold');
       pdf.text('Summary:', marginLeft, yPosition);
       yPosition += 7;
-      
+
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(9);
       const summaryText = [
         `Total Changes: ${diffResult.meta.changes}`,
-        `Added Lines: ${Array.isArray(diffResult.meta.added) ? diffResult.meta.added.length : 0}`,
-        `Removed Lines: ${Array.isArray(diffResult.meta.removed) ? diffResult.meta.removed.length : 0}`,
-        `Modified Lines: ${Array.isArray(diffResult.meta.modified) ? diffResult.meta.modified.length : 0}`,
+        `Added Lines: ${diffResult.meta.added}`,
+        `Removed Lines: ${diffResult.meta.removed}`,
+
       ];
 
       summaryText.forEach((text) => {
@@ -143,7 +152,7 @@ export default function TextDiffPage() {
 
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'normal');
-      const originalLines = text1.split('\n').slice(0, 10); // Limit to first 10 lines
+      const originalLines = text1.split('\n');
       originalLines.forEach((line) => {
         if (yPosition > pageHeight - 20) {
           pdf.addPage();
@@ -163,7 +172,7 @@ export default function TextDiffPage() {
 
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'normal');
-      const changedLines = text2.split('\n').slice(0, 10); // Limit to first 10 lines
+      const changedLines = text2.split('\n');
       changedLines.forEach((line) => {
         if (yPosition > pageHeight - 20) {
           pdf.addPage();
@@ -182,7 +191,7 @@ export default function TextDiffPage() {
     }
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (!diffResult) {
       setError('Please run comparison first');
       return;
@@ -190,29 +199,68 @@ export default function TextDiffPage() {
     // CSV export (Excel compatible)
     const lines1 = text1.split('\n');
     const lines2 = text2.split('\n');
-    
-    let csv = 'Line,Original Text,Changed Text,Status\n';
-    const maxLines = Math.max(lines1.length, lines2.length);
-    
-    const removed = Array.isArray(diffResult.meta.removed) ? diffResult.meta.removed : [];
-    const added = Array.isArray(diffResult.meta.added) ? diffResult.meta.added : [];
-    
-    for (let i = 0; i < maxLines; i++) {
-      const status = removed.includes(i + 1) ? 'Removed' : 
-                    added.includes(i + 1) ? 'Added' :
-                    lines1[i] !== lines2[i] ? 'Modified' : 'Same';
-      csv += `${i + 1},"${(lines1[i] || '').replace(/"/g, '""')}","${(lines2[i] || '').replace(/"/g, '""')}","${status}"\n`;
+
+    let csv = 'Original Line,Changed Line,Original Text,Changed Text,Status\n';
+
+    const removed = new Set(diffResult.meta.diff?.removed ?? []);
+    const added = new Set(diffResult.meta.diff?.added ?? []);
+
+    const escapeCsv = (value: string | number) =>
+      `"${String(value).replace(/"/g, '""')}"`;
+
+    const appendRow = (
+      originalIndex: number | null,
+      changedIndex: number | null,
+      status: 'Same' | 'Added' | 'Removed',
+    ) => {
+      csv += [
+        originalIndex === null ? '' : originalIndex + 1,
+        changedIndex === null ? '' : changedIndex + 1,
+        originalIndex === null ? '' : lines1[originalIndex],
+        changedIndex === null ? '' : lines2[changedIndex],
+        status,
+      ].map(escapeCsv).join(',') + '\n';
+    };
+
+    let originalIndex = 0;
+    let changedIndex = 0;
+
+    while (originalIndex < lines1.length || changedIndex < lines2.length) {
+      if (originalIndex < lines1.length && removed.has(originalIndex)) {
+        appendRow(originalIndex, null, 'Removed');
+        originalIndex++;
+      } else if (changedIndex < lines2.length && added.has(changedIndex)) {
+        appendRow(null, changedIndex, 'Added');
+        changedIndex++;
+      } else if (originalIndex < lines1.length && changedIndex < lines2.length) {
+        appendRow(originalIndex, changedIndex, 'Same');
+        originalIndex++;
+        changedIndex++;
+      } else {
+        throw new Error('Unable to align the comparison result for CSV export.');
+      }
     }
-    
-    const element = document.createElement('a');
-    const file = new Blob([csv], { type: 'text/csv' });
-    element.href = URL.createObjectURL(file);
-    element.download = 'diff-comparison.csv';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    setSuccess('✓ Exported as Excel');
-    setTimeout(() => setSuccess(''), 2000);
+    const outputName = 'diff-comparison.csv';
+
+    try {
+      const download = await uploadBrowserTextDownloadResult({
+        text: csv,
+        mimeType: 'text/csv',
+        toolSlug: 'text-diff',
+        originalName: outputName,
+        outputName,
+      });
+
+      setSuccess('✓ Exported as Excel');
+      setTimeout(() => setSuccess(''), 2000);
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the export.',
+      );
+    }
   };
 
   const handleSave = () => {
@@ -243,16 +291,16 @@ export default function TextDiffPage() {
       setError('Please run comparison first');
       return;
     }
-    alert(`Comparison Summary:\n\nTotal Changes: ${diffResult.meta.changes}\nAdded Lines: ${diffResult.meta.added.length}\nRemoved Lines: ${diffResult.meta.removed.length}\nModified Lines: ${diffResult.meta.modified.length}\n\nThis diff shows the differences between your two text inputs. Red background indicates removed lines, green indicates added lines, and yellow indicates modified lines.`);
+    alert(`Comparison Summary:\n\nTotal Changes: ${diffResult.meta.changes}\nAdded Lines: ${diffResult.meta.added}\nRemoved Lines: ${diffResult.meta.removed}\nReplaced lines appear as one removal and one addition.\n\nRed highlights indicate removed lines; green highlights indicate added lines.`);
   };
 
   // Simple word-level diff - split into words and mark differences
   const getWordDifferences = (str1: string, str2: string) => {
     const words1 = str1.split(/\b/).filter(w => w.length > 0);
     const words2 = str2.split(/\b/).filter(w => w.length > 0);
-    
+
     const result: { type: 'equal' | 'removed' | 'added'; value: string }[] = [];
-    
+
     let i = 0, j = 0;
     while (i < words1.length || j < words2.length) {
       // If words match, add as equal
@@ -273,7 +321,7 @@ export default function TextDiffPage() {
       // Try to find matching words ahead
       else {
         let found1 = -1, found2 = -1;
-        
+
         // Look for words1[i] in upcoming words2
         for (let k = j; k < Math.min(j + 3, words2.length); k++) {
           if (words1[i] === words2[k]) {
@@ -281,7 +329,7 @@ export default function TextDiffPage() {
             break;
           }
         }
-        
+
         // Look for words2[j] in upcoming words1
         for (let k = i; k < Math.min(i + 3, words1.length); k++) {
           if (words2[j] === words1[k]) {
@@ -289,7 +337,7 @@ export default function TextDiffPage() {
             break;
           }
         }
-        
+
         // Prefer closer matches and handle accordingly
         if (found1 !== -1 && (found2 === -1 || found1 - j <= found2 - i)) {
           result.push({ type: 'removed', value: words1[i] });
@@ -305,42 +353,30 @@ export default function TextDiffPage() {
         }
       }
     }
-    
+
     return result;
   };
 
   const renderTextWithLineNumbers = (text: string, isOriginal: boolean) => {
     const lines = text.split('\n');
-    const otherText = isOriginal ? text2 : text1;
-    const otherLines = otherText.split('\n');
+    const changedIndexes = isOriginal
+      ? diffResult?.meta.diff?.removed ?? []
+      : diffResult?.meta.diff?.added ?? [];
+
+    const changedSet = new Set(changedIndexes);
 
     return lines.map((line, idx) => {
-      const lineNum = idx + 1;
-      const isRemoved =
-        Array.isArray(diffResult?.meta.removed) && diffResult?.meta.removed.includes(lineNum);
-      const isAdded =
-        Array.isArray(diffResult?.meta.added) && diffResult?.meta.added.includes(lineNum);
-      
-      // Check if line is modified
-      let isModified = Array.isArray(diffResult?.meta.modified) &&
-        diffResult?.meta.modified.some((m) =>
-          isOriginal ? m.line1 === lineNum : m.line2 === lineNum
-        );
-      
-      // Also check if this line simply differs from the corresponding line
-      if (!isModified && idx < otherLines.length && line !== otherLines[idx]) {
-        isModified = true;
-      }
-
-      let lineClass = '';
-      if (isRemoved) lineClass = 'bg-red-200 border-l-4 border-red-600';
-      else if (isAdded) lineClass = 'bg-green-200 border-l-4 border-green-600';
-      else if (isModified) lineClass = 'bg-yellow-200 border-l-4 border-yellow-600';
+      const isChanged = changedSet.has(idx);
+      const lineClass = isChanged
+        ? isOriginal
+          ? 'bg-red-200 border-l-4 border-red-600'
+          : 'bg-green-200 border-l-4 border-green-600'
+        : '';
 
       return (
         <div key={idx} className={`flex ${lineClass} hover:bg-opacity-75 transition`}>
           <div className="w-12 flex-shrink-0 bg-gray-100 text-gray-600 text-right pr-4 py-1 font-mono text-xs border-r border-gray-300 select-none">
-            {lineNum}
+            {idx + 1}
           </div>
           <div className="flex-1 px-4 py-1 font-mono text-sm text-gray-800 break-words whitespace-pre-wrap">
             {line || '\u00A0'}
@@ -349,7 +385,6 @@ export default function TextDiffPage() {
       );
     });
   };
-
   return (
     <>
       <HomeHeader />
@@ -583,23 +618,20 @@ export default function TextDiffPage() {
                   {/* Summary */}
                   <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Comparison Summary</h3>
-                    <div className="grid md:grid-cols-4 gap-4">
+                    <div className="grid md:grid-cols-3 gap-4">
                       <div className="bg-blue-50 rounded-lg p-4 text-center">
                         <div className="text-2xl font-bold text-blue-600">{diffResult.meta.changes ?? 0}</div>
                         <div className="text-sm text-gray-600 mt-1">Total Changes</div>
                       </div>
                       <div className="bg-green-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-green-600">{(Array.isArray(diffResult.meta.added) ? diffResult.meta.added.length : diffResult.meta.added) ?? 0}</div>
+                        <div className="text-2xl font-bold text-green-600">{diffResult.meta.added ?? 0}</div>
                         <div className="text-sm text-gray-600 mt-1">Added Lines</div>
                       </div>
                       <div className="bg-red-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-red-600">{(Array.isArray(diffResult.meta.removed) ? diffResult.meta.removed.length : diffResult.meta.removed) ?? 0}</div>
+                        <div className="text-2xl font-bold text-red-600">{diffResult.meta.removed ?? 0}</div>
                         <div className="text-sm text-gray-600 mt-1">Removed Lines</div>
                       </div>
-                      <div className="bg-yellow-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-yellow-600">{(Array.isArray(diffResult.meta.modified) ? diffResult.meta.modified.length : 0) ?? 0}</div>
-                        <div className="text-sm text-gray-600 mt-1">Modified Lines</div>
-                      </div>
+
                     </div>
                   </div>
 
@@ -629,6 +661,130 @@ export default function TextDiffPage() {
                 </motion.div>
               )}
             </motion.div>
+
+            {/* Supporting content */}
+            <section className="max-w-7xl mx-auto mt-14 space-y-10">
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How to compare two texts
+                </h2>
+                <ol className="space-y-3 text-gray-700 list-decimal pl-5">
+                  <li>Paste your original text into the first text box or open a supported text file.</li>
+                  <li>Paste the revised version into the changed-text box.</li>
+                  <li>Select <strong>Find difference</strong> to compare the two versions.</li>
+                  <li>Review added and removed lines. Replacements appear as a removal and an addition.</li>
+                  <li>Export the comparison as PDF or CSV when you need a copy of the results.</li>
+                </ol>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">
+                    What is a text diff checker?
+                  </h2>
+                  <p className="text-gray-700 leading-7">
+                    A text diff checker compares two versions of text and identifies where
+                    they differ. It can help you spot lines that were added, removed, or
+                    changed without manually reading both versions from beginning to end.
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">
+                    When is text comparison useful?
+                  </h2>
+                  <p className="text-gray-700 leading-7">
+                    Text comparison is useful when reviewing edited documents, configuration
+                    files, source code, JSON, CSV data, notes, drafts, or other plain-text
+                    content. It provides a quick way to check what changed between versions.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                  Understanding the comparison results
+                </h2>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="rounded-xl bg-green-50 border border-green-100 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Added lines</h3>
+                    <p className="text-sm text-gray-700 leading-6">
+                      Added content identifies lines that appear in the changed version.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-red-50 border border-red-100 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Removed lines</h3>
+                    <p className="text-sm text-gray-700 leading-6">
+                      Removed content identifies lines from the original version that are
+                      no longer present.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-yellow-50 border border-yellow-100 p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Replaced lines</h3>
+                    <p className="text-sm text-gray-700 leading-6">
+                      When a line is replaced, the original is marked as removed and the new
+                      line is marked as added. Replacements are not counted separately.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <FAQPanel>
+                <FAQHeading>
+                  Text Diff Checker FAQ
+                </FAQHeading>
+
+                <FAQList>
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      Can I compare files instead of pasting text?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      Yes. You can open supported text-based files in either comparison
+                      field, including formats such as TXT, Markdown, CSV, JSON, XML,
+                      HTML, JavaScript, TypeScript, Python, Java, C++, and C#.
+                    </FAQAnswer>
+                  </FAQCard>
+
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      Can I export the comparison?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      Yes. After running a comparison, you can export a PDF report or
+                      create a CSV file that can be opened in spreadsheet applications.
+                    </FAQAnswer>
+                  </FAQCard>
+
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      What kinds of changes does the tool show?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      The comparison summary reports added and removed lines,
+                      while the detailed view highlights the differences between the
+                      original and changed text.
+                    </FAQAnswer>
+                  </FAQCard>
+                </FAQList>
+              </FAQPanel>
+
+              <div className="bg-blue-50 rounded-2xl border border-blue-100 p-6 md:p-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Tips for accurate text comparison
+                </h2>
+                <p className="text-gray-700 leading-7">
+                  Compare versions that use similar formatting when possible. Changes in
+                  line breaks, spacing, or formatting can appear as differences even when
+                  the underlying wording is similar. For structured files such as JSON or
+                  source code, formatting both versions consistently can make the results
+                  easier to review.
+                </p>
+              </div>
+            </section>
           </div>
         </div>
       </main>
@@ -636,4 +792,3 @@ export default function TextDiffPage() {
     </>
   );
 }
-

@@ -22,8 +22,10 @@ import {
   validateToolInputs,
   type AIWriteTool 
 } from '@/app/lib/ai-tools';
-import { generateText, generateTextMock, analyzeText } from '@/app/lib/ai-client';
+import { generateText, analyzeText } from '@/app/lib/ai-client';
 import { detectAI } from '@/app/lib/ai-detector';
+
+import { enforceAiWriteRateLimit } from '@/lib/ai-write/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
         meta: {
           timestamp: new Date().toISOString(),
           methodName: 'Statistical + Linguistic Analysis',
-          version: '2.0-industry-standard',
+          version: '2.0-rule-based',
         },
       });
     }
@@ -84,11 +86,38 @@ export async function POST(request: NextRequest) {
     // Build user prompt from tool config
     const userPrompt = tool.buildPrompt(inputs);
 
-    // Call LLM (use mock if no API key)
-    const hasApiKey = !!process.env.GROQ_API_KEY;
-    const generateFn = hasApiKey ? generateText : generateTextMock;
+    // Avoid consuming Redis quota when AI generation is not configured.
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json(
+        { ok: false, error: 'AI generation is temporarily unavailable.' },
+        { status: 503 }
+      );
+    }
 
-    const aiResponse = await generateFn({
+    let rateLimit;
+
+    try {
+      rateLimit = await enforceAiWriteRateLimit(request);
+    } catch (error) {
+      console.error('[AI Write] Rate limiter unavailable:', error);
+      return NextResponse.json(
+        { ok: false, error: 'AI generation is temporarily unavailable.' },
+        { status: 503 }
+      );
+    }
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { ok: false, error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateLimit.retryAfter) },
+        }
+      );
+    }
+
+
+    const aiResponse = await generateText({
       systemPrompt: tool.systemPrompt,
       userPrompt,
       temperature: 0.7,
@@ -103,7 +132,7 @@ export async function POST(request: NextRequest) {
       meta: {
         tokensUsed: aiResponse.tokensUsed,
         model: aiResponse.model,
-        usingMock: !hasApiKey,
+        usingMock: false,
       },
     });
   } catch (error) {
@@ -112,7 +141,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
+        error: 'Unable to process this request right now.',
       },
       { status: 500 }
     );

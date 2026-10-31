@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -7,8 +8,11 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { compressImage } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ImageCompressorPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [quality, setQuality] = useState(0.7);
@@ -37,7 +41,7 @@ export default function ImageCompressorPage() {
 
   const handleCompress = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     try {
       const result = await compressImage(file, quality);
@@ -50,16 +54,38 @@ export default function ImageCompressorPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'compressed.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+
+    setProcessing(true);
+
+    try {
+      const extension = result.type === 'image/jpeg' ? 'jpg'
+        : result.type === 'image/png' ? 'png'
+        : result.type === 'image/webp' ? 'webp'
+        : null;
+      if (!extension) throw new Error('Unsupported compressed image format');
+
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'image-compressor',
+          originalName: file?.name || `compressed.${extension}`,
+          outputName: `compressed.${extension}`,
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      console.error('Download preparation failed:', caughtError);
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const reduction = originalSize > 0 ? (((originalSize - compressedSize) / originalSize) * 100).toFixed(1) : 0;
@@ -87,7 +113,7 @@ export default function ImageCompressorPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Image Compressor</h1>
-                <p className="text-lg text-white/90">Reduce image file size while maintaining visual quality with adjustable compression settings.</p>
+                <p className="text-lg text-white/90">Re-encode an image in your browser with an adjustable quality setting. Compare the original and processed file sizes before downloading.</p>
               </div>
             </div>
           </div>
@@ -120,7 +146,7 @@ export default function ImageCompressorPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Compression Settings</h3>
-                    
+
                     {/* Quality Slider */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -200,10 +226,10 @@ export default function ImageCompressorPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant compression in your browser</li>
-                      <li>• Adjustable quality settings</li>
-                      <li>• Maintains visual quality</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Browser-based image compression</li>
+                      <li>• Quality slider from 10% to 100%</li>
+                      <li>• Actual size reduction depends on the image format and content</li>
+                      <li>• Download preparation uploads the processed file to the server</li>
                     </ul>
                   </div>
                 </div>
@@ -224,15 +250,15 @@ export default function ImageCompressorPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">2</div>
-              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose compression level from 10% (smallest) to 100% (best quality)</p></div>
+              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose a quality setting from 10% to 100%. Lower settings can produce smaller JPEG or WebP files, but results vary. PNG encoding may not respond to this setting.</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Compress Image:</strong> Processing happens instantly in your browser</p></div>
+              <div><p className="text-gray-700"><strong>Click Compress Image:</strong> Apply the selected browser encoding settings</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download your result:</strong> Save your compressed image and check the file size reduction</p></div>
+              <div><p className="text-gray-700"><strong>Download your result:</strong> Compare the original and processed sizes, then use Download Image to prepare the file for download</p></div>
             </div>
           </div>
         </div>
@@ -243,75 +269,75 @@ export default function ImageCompressorPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Compression</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Faster website loading - compressed images load 50% faster</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Save storage space - reduce backup and cloud storage needs</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Better for email - smaller attachments that send instantly</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Social media optimization - upload faster on Instagram, Facebook, Twitter</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Mobile friendly - reduce data usage for users on limited connections</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Prepare website images - smaller files may reduce transfer size and improve loading performance</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Compare storage needs - check whether the processed file is smaller before replacing an original</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Better for email - smaller files can be easier to attach and send</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Prepare social media images - compare file sizes and check each platform's format requirements</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Reduce data transfer when possible - smaller image files may use less bandwidth</li>
           </ul>
         </div>
       </div>
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will compression reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, but intelligently. Using quality settings 75-85%, you'll see minimal quality loss while achieving significant file size reduction. Our compression algorithm uses smart techniques to preserve important details.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Compression can reduce image quality. Lower settings generally reduce file size more, while higher settings usually retain more visible detail.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What quality setting should I use?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">For web use and social media: 70-75%. For professional use or printing: 85-90%. For maximum compression with acceptable quality: 60-70%. Start with 75% and adjust based on your needs.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Start around 70% to 75% for JPEG or WebP images, then compare the resulting file size and appearance. Higher settings generally retain more detail but may produce larger files. PNG output may not change noticeably with the quality slider.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What file formats are supported?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support JPG, PNG, WebP, GIF, and most common image formats. Maximum file size is 50MB. All formats are compressed in your browser.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The uploader accepts supported image extensions up to 50 MB. JPG, PNG, and WebP are common choices, but successful processing depends on browser decoding and encoding support. The output format can depend on the source MIME type and browser.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I compress multiple images at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Currently, this tool processes one image at a time. For batch compression of multiple images, try our Batch Compress Images tool which handles hundreds of files simultaneously.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>This tool processes one image at a time. For multiple files, use Batch Compress Images, which accepts up to 100 images per batch and processes them sequentially.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Are my images stored on your servers?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. Compression happens entirely in your browser. Your images are never uploaded to or stored on our servers. Complete privacy guaranteed.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Compression runs in your browser. When you click Download Image, the generated file is uploaded to our server to prepare its download page.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is image compression really free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Compress as many images as you want, no signup required, no watermarks, no hidden costs.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>Yes. You can use the image compression controls without creating an account. The tool shows the original and processed file sizes so you can compare the result.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}
@@ -324,7 +350,7 @@ export default function ImageCompressorPage() {
             "name": "Will compression reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, but intelligently using smart compression techniques to preserve important details. Quality settings 75-85% provide minimal visible loss."
+              "text": "Compression can reduce image quality. Lower settings generally reduce file size more, while higher settings usually retain more visible detail."
             }
           },
           {
@@ -332,7 +358,7 @@ export default function ImageCompressorPage() {
             "name": "What quality setting should I use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "For web/social: 70-75%. For professional/printing: 85-90%. For maximum compression: 60-70%."
+              "text": "Start around 70% to 75% for JPEG or WebP images, then compare the resulting file size and appearance. Higher settings generally retain more detail but may produce larger files. PNG output may not change noticeably with the quality slider."
             }
           },
           {
@@ -340,7 +366,7 @@ export default function ImageCompressorPage() {
             "name": "What file formats are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "We support JPG, PNG, WebP, GIF, and most common image formats up to 50MB."
+              "text": "The uploader accepts supported image extensions up to 50 MB. JPG, PNG, and WebP are common choices, but successful processing depends on browser decoding and encoding support. The output format can depend on the source MIME type and browser."
             }
           },
           {
@@ -348,7 +374,7 @@ export default function ImageCompressorPage() {
             "name": "Can I compress multiple images at once?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Currently one at a time. For batch compression, try our Batch Compress Images tool."
+              "text": "This tool processes one image at a time. For multiple files, use Batch Compress Images, which accepts up to 100 images per batch and processes them sequentially."
             }
           },
           {
@@ -356,7 +382,7 @@ export default function ImageCompressorPage() {
             "name": "Are my images stored on your servers?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Compression happens in your browser. Images are never uploaded or stored on our servers."
+              "text": "Compression runs in your browser. When you click Download Image, the generated file is uploaded to our server to prepare its download page."
             }
           },
           {
@@ -364,7 +390,7 @@ export default function ImageCompressorPage() {
             "name": "Is image compression really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup, no watermarks, no hidden costs."
+              "text": "Yes. You can use the image compression controls without creating an account. The tool shows the original and processed file sizes so you can compare the result."
             }
           }
         ]

@@ -7,13 +7,14 @@ import { useRouter } from 'next/navigation';
 import { uploadBrowserPdfResult } from '@/app/lib/download-result-client';
 
 interface Props {
+  totalPages: number;
   file: File;
   edits: PdfEdit[];
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ExportModal({ file, edits, isOpen, onClose }: Props) {
+export default function ExportModal({ file, edits, totalPages, isOpen, onClose }: Props) {
   const router = useRouter();
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +67,7 @@ export default function ExportModal({ file, edits, isOpen, onClose }: Props) {
           <ul className="text-xs space-y-1 ml-4">
             <li>• Total edits: {edits.length}</li>
             <li>• Pages affected: {new Set(edits.map((e) => e.pageNumber)).size}</li>
-            <li>• Document pages: {edits.length > 0 ? Math.max(...edits.map((e) => e.pageNumber)) : 1}</li>
+            <li>• Document pages: {totalPages}</li>
           </ul>
         </div>
 
@@ -74,7 +75,7 @@ export default function ExportModal({ file, edits, isOpen, onClose }: Props) {
         {edits.some((e) => e.type === 'drawing') && (
           <div className="bg-yellow-900/30 border border-yellow-500 rounded p-3 flex gap-2 text-sm text-yellow-200">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <p>Drawing edits are exported as placeholder lines. Full path support coming soon.</p>
+            <p>Drawing paths are exported as connected line segments. Very short marks or single-point dots may not appear in the exported PDF.</p>
           </div>
         )}
 

@@ -2,7 +2,7 @@
 
 export const metadata: Metadata = {
   title: 'White Balance Tool - Free Color Temperature Adjuster',
-  description: 'Adjust white balance and color temperature. Fix color casts and correct warm or cool lighting in photos.',
+  description: 'Adjust image color temperature and tint to reduce or change visible warm and cool color casts.',
   keywords: [
     'white balance',
     'color temperature',

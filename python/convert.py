@@ -28,6 +28,7 @@ CONVERSION_ROUTES = {
     # Raster conversions
     ('jpg', 'png'): convert_raster,
     ('jpg', 'webp'): convert_raster,
+    ('jpg', 'gif'): convert_raster,
     ('jpg', 'bmp'): convert_raster,
     ('jpg', 'tiff'): convert_raster,
     ('png', 'jpg'): convert_raster,
@@ -38,6 +39,7 @@ CONVERSION_ROUTES = {
     ('webp', 'png'): convert_raster,
     ('webp', 'bmp'): convert_raster,
     ('webp', 'tiff'): convert_raster,
+    ('webp', 'gif'): convert_raster,
     ('bmp', 'jpg'): convert_raster,
     ('bmp', 'png'): convert_raster,
     ('bmp', 'webp'): convert_raster,
@@ -59,10 +61,12 @@ CONVERSION_ROUTES = {
     ('pdf', 'png'): vector_render,
     ('eps', 'jpg'): vector_render,
     ('eps', 'png'): vector_render,
+    ('eps', 'svg'): vector_render,
     
     # Raster to Vector
     ('jpg', 'svg'): vector_trace,
     ('png', 'svg'): vector_trace,
+    ('png', 'eps'): vector_trace,
     ('bmp', 'svg'): vector_trace,
     ('tiff', 'svg'): vector_trace,
     
@@ -86,12 +90,8 @@ CONVERSION_ROUTES = {
     
     # Document
     ('vsdx', 'pdf'): document_convert,
-    ('vsdx', 'docx'): document_convert,
-    ('vsdx', 'pptx'): document_convert,
     ('vsdx', 'jpg'): document_convert,
     ('vsd', 'pdf'): document_convert,
-    ('vsd', 'docx'): document_convert,
-    ('vsd', 'pptx'): document_convert,
     ('psd', 'jpg'): document_convert,
     ('psd', 'png'): document_convert,
     ('psd', 'svg'): document_convert,

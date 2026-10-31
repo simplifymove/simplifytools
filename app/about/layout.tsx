@@ -1,16 +1,16 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About SimplifyConvert - Free Online Tools for Everyone',
-  description: 'Learn about SimplifyConvert, the platform offering 100+ free online tools for image conversion, video editing, PDF manipulation, AI writing, and data transformation.',
+  title: 'About SimplifyConvert - Online Utility Library',
+  description: 'Learn how SimplifyConvert organizes free PDF, image, video, data, code, and calculator utilities alongside a separate credit-based Premium AI Studio.',
   keywords: ['about SimplifyConvert', 'online tools platform', 'free converter tools'],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://simplifyconvert.com/about',
     siteName: 'SimplifyConvert',
-    title: 'About SimplifyConvert - Free Online Tools',
-    description: 'Learn about SimplifyConvert and our mission to provide free online tools for everyone.',
+    title: 'About SimplifyConvert - Online Utility Library',
+    description: 'Learn about SimplifyConvert, its utility categories, processing model, and Premium AI Studio.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'About SimplifyConvert - Free Online Tools',
-    description: 'Learn about SimplifyConvert and our mission.',
+    title: 'About SimplifyConvert - Online Utility Library',
+    description: 'Learn about SimplifyConvert, its utility categories, and Premium AI Studio.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
   alternates: {

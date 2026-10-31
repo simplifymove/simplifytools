@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ImageEnhancerPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [brightness, setBrightness] = useState(100);
@@ -79,16 +83,32 @@ export default function ImageEnhancerPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'enhanced.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+
+    setProcessing(true);
+
+    try {
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'image-enhancer',
+          originalName: 'enhanced.jpg',
+          outputName: 'enhanced.jpg',
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      console.error('Download preparation failed:', caughtError);
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const resetSliders = () => {
@@ -118,7 +138,7 @@ export default function ImageEnhancerPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Image Enhancer</h1>
-                <p className="text-lg text-white/90">Adjust brightness, contrast, and color saturation to improve your images. Perfect for photo enhancement and professional editing.</p>
+                <p className="text-lg text-white/90">Adjust brightness, contrast, and saturation in your browser, then generate a JPEG with your chosen settings.</p>
               </div>
             </div>
           </div>
@@ -132,7 +152,7 @@ export default function ImageEnhancerPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-pink-400 transition cursor-pointer mb-6">
                     <input
                       type="file"
@@ -143,8 +163,8 @@ export default function ImageEnhancerPage() {
                     />
                     <label htmlFor="file-input" className="cursor-pointer">
                       <Wand2 size={40} className="mx-auto text-gray-400 mb-3" />
-                      <p className="text-lg font-semibold text-gray-700 mb-1">Click to upload or drag and drop</p>
-                      <p className="text-sm text-gray-500">PNG, JPG, WebP and other formats</p>
+                      <p className="text-lg font-semibold text-gray-700 mb-1">Click to select an image</p>
+                      <p className="text-sm text-gray-500">Select a browser-readable image; the processed output is JPEG</p>
                     </label>
                   </div>
 
@@ -173,7 +193,7 @@ export default function ImageEnhancerPage() {
                         Reset
                       </button>
                     </div>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -267,10 +287,10 @@ export default function ImageEnhancerPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">Tips</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Adjust multiple at once</li>
+                      <li>• Adjust brightness, contrast, and saturation together</li>
                       <li>• Reset to defaults anytime</li>
-                      <li>• Live preview support</li>
-                      <li>• Instant processing</li>
+                      <li>• The preview shows your original uploaded image</li>
+                      <li>• The processed JPEG is uploaded when preparing a download</li>
                     </ul>
                   </div>
                 </div>
@@ -287,19 +307,19 @@ export default function ImageEnhancerPage() {
           <div className="space-y-4">
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold text-sm">1</div>
-              <div><p className="text-gray-700"><strong>Upload your image:</strong> Click upload or drag and drop your image file</p></div>
+              <div><p className="text-gray-700"><strong>Upload your image:</strong> Click the upload area and select an image that your browser can decode</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold text-sm">2</div>
-              <div><p className="text-gray-700"><strong>Adjust brightness:</strong> Move slider to make image lighter or darker as needed</p></div>
+              <div><p className="text-gray-700"><strong>Adjust brightness:</strong> Move the brightness slider between 50% and 150% to change overall lightness</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Tweak contrast and saturation:</strong> Fine-tune contrast and color vibrancy to taste</p></div>
+              <div><p className="text-gray-700"><strong>Tweak contrast and saturation:</strong> Adjust contrast from 50% to 150% and saturation from 0% to 200%</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download enhanced image:</strong> Save your improved image instantly</p></div>
+              <div><p className="text-gray-700"><strong>Generate and download:</strong> Click Enhance Image to apply your settings, then Download to prepare the JPEG file</p></div>
             </div>
           </div>
         </div>
@@ -310,75 +330,75 @@ export default function ImageEnhancerPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Enhancement</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Fix underexposed images - brighten dark photos instantly</li>
-            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Improve composition - enhance contrast for better visual impact</li>
-            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Make colors pop - increase saturation for vibrant, vivid images</li>
-            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Professional look - achieve polished results for social media</li>
-            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Creative control - fine-tune every aspect with precise sliders</li>
+            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Adjust darker images - increase brightness using the available control</li>
+            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Adjust tonal separation - change contrast between lighter and darker areas</li>
+            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Control color intensity - decrease saturation for muted colors or increase it for a more vivid appearance</li>
+            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Visual adjustments - tune the image appearance for different uses</li>
+            <li className="flex gap-2"><span className="text-pink-600 font-bold">•</span> Keep original dimensions - the canvas uses the source image width and height</li>
           </ul>
         </div>
       </div>
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 What's the difference between brightness and contrast?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Brightness affects overall lightness. Contrast affects the difference between light and dark areas. Use both together for best results.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Brightness changes overall lightness, while contrast changes the separation between light and dark areas. Adjust each gradually and compare the result.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What is saturation?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Saturation controls color intensity. 0% makes image black and white. 100% is normal. Higher values make colors more vivid.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Saturation controls color intensity. At 0%, the image becomes grayscale; 100% is unchanged, and values above 100% increase color intensity.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I undo my changes?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Click the Reset button anytime to return all sliders to default values (100%).</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Reset returns the brightness, contrast, and saturation sliders to 100%. If you already generated an image, click Enhance Image again to create a result using the reset settings.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will enhancement affect image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Enhancement is applied non-destructively at 90% JPG quality. Extreme adjustments may introduce artifacts.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Brightness, contrast, and saturation adjustments change the rendered pixels, and the result is encoded again as JPEG. Strong adjustments can introduce clipping, color shifts, or other visible artifacts.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What's the best way to enhance photos?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Start with brightness (fix exposure), then adjust contrast (add punch), finally adjust saturation (make colors pop). Use Reset button to start over if needed.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>There is no single adjustment sequence for every photo. Start with small brightness, contrast, or saturation changes, then click Enhance Image to generate the result. The on-page preview shows the original image.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is the enhancer tool really free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Enhance as many images as you want, no signup required, no watermarks, no hidden costs.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>You can use the available image-enhancement controls without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}
@@ -391,7 +411,7 @@ export default function ImageEnhancerPage() {
             "name": "What's the difference between brightness and contrast?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Brightness affects overall lightness. Contrast affects the difference between light and dark areas."
+              "text": "Brightness changes overall lightness, while contrast changes the separation between light and dark areas. Adjust each gradually and compare the result."
             }
           },
           {
@@ -399,7 +419,7 @@ export default function ImageEnhancerPage() {
             "name": "What is saturation?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Saturation controls color intensity. 0% is black and white. 100% is normal. Higher values make colors more vivid."
+              "text": "Saturation controls color intensity. At 0%, the image becomes grayscale; 100% is unchanged, and values above 100% increase color intensity."
             }
           },
           {
@@ -407,7 +427,7 @@ export default function ImageEnhancerPage() {
             "name": "Can I undo my changes?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, click the Reset button anytime to return all sliders to default values (100%)."
+              "text": "Reset returns the brightness, contrast, and saturation sliders to 100%. If you already generated an image, click Enhance Image again to create a result using the reset settings."
             }
           },
           {
@@ -415,7 +435,7 @@ export default function ImageEnhancerPage() {
             "name": "Will enhancement affect image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Enhancement is applied non-destructively at 90% JPG quality. Extreme adjustments may introduce artifacts."
+              "text": "Brightness, contrast, and saturation adjustments change the rendered pixels, and the result is encoded again as JPEG. Strong adjustments can introduce clipping, color shifts, or other visible artifacts."
             }
           },
           {
@@ -423,7 +443,7 @@ export default function ImageEnhancerPage() {
             "name": "What's the best way to enhance photos?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Start with brightness (fix exposure), adjust contrast (add punch), then adjust saturation (make colors pop)."
+              "text": "There is no single adjustment sequence for every photo. Start with small brightness, contrast, or saturation changes, then click Enhance Image to generate the result. The on-page preview shows the original image."
             }
           },
           {
@@ -431,7 +451,7 @@ export default function ImageEnhancerPage() {
             "name": "Is the enhancer tool really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can use the available image-enhancement controls without creating an account."
             }
           }
         ]

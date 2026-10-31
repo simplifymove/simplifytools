@@ -31,7 +31,7 @@ const familyRoutes: Record<RelatedToolFamily, string> = {
   ai: '/all-tools/ai-tools',
   code: '/all-tools/code-tools',
   data: '/all-tools/data',
-  pdf: '/all-tools/pdf',
+  pdf: '/all-tools/pdf-tools',
   video: '/all-tools/video',
   image: '/all-tools',
 };
@@ -98,6 +98,21 @@ const fallbackIds: Record<RelatedToolFamily, string[]> = {
     'remove-background',
   ],
 };
+
+const UNAVAILABLE_RELATED_TOOL_IDS = new Set([
+  'webp-to-tiff',
+]);
+
+const RESTRICTED_RELATED_TOOL_PATTERNS = ['instagram', 'tiktok', 'youtube'];
+
+function isRecommendableTool(tool: RelatedToolCandidate): boolean {
+  const normalizedId = tool.id.toLowerCase();
+
+  return (
+    !UNAVAILABLE_RELATED_TOOL_IDS.has(normalizedId) &&
+    !RESTRICTED_RELATED_TOOL_PATTERNS.some((pattern) => normalizedId.includes(pattern))
+  );
+}
 
 function normalizeLimit(limit = 8): number {
   return Math.max(6, Math.min(limit, 10));
@@ -172,7 +187,7 @@ function normalizeCandidates(): RelatedToolCandidate[] {
     ...pdfCandidates,
     ...videoCandidates,
     ...imageCandidates,
-  ];
+  ].filter(isRecommendableTool);
 }
 
 function getReverseConversionId(toolId: string): string | null {

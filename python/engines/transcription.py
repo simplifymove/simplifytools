@@ -221,8 +221,12 @@ class TranscriptionEngine:
                 pass
         
         elif config['input_type'] == 'url':
-            # Download and transcribe (would need yt-dlp)
-            raise NotImplementedError('YouTube transcription requires download engine integration')
+            # Fail closed until downloader network isolation is enforced.
+            # URL validation alone cannot prevent redirects or DNS rebinding.
+            raise RuntimeError(
+                'YouTube transcription is temporarily unavailable while '
+                'secure download isolation is being configured.'
+            )
         
         else:  # audio
             transcription = self.transcribe_audio(input_path, language, output_format)

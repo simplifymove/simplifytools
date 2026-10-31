@@ -1,122 +1,156 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs';
-import * as path from 'path';
-import { exec } from 'child_process';
+import { randomUUID } from 'crypto';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
-const execAsync = promisify(exec);
+export const runtime = 'nodejs';
+
+const execFileAsync = promisify(execFile);
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_MASK_SIZE = 10 * 1024 * 1024;
 const tmpDir = path.join(process.cwd(), 'tmp');
 
-// Ensure tmp directory exists
-if (!fs.existsSync(tmpDir)) {
-  fs.mkdirSync(tmpDir, { recursive: true });
-}
-
 export async function POST(request: NextRequest) {
+  let workDir: string | null = null;
+
   try {
     const formData = await request.formData();
-    const imageFile = formData.get('image') as File;
-    const maskFile = formData.get('mask') as File;
-    const method = (formData.get('method') as string) || 'telea';
-    const radius = parseInt((formData.get('radius') as string) || '3');
+    const imageFile = formData.get('image');
+    const maskFile = formData.get('mask');
+    const method = formData.get('method') ?? 'telea';
+    const radiusValue = formData.get('radius') ?? '3';
 
-    // Validate inputs
-    if (!imageFile || !maskFile) {
+    if (!(imageFile instanceof File) || !(maskFile instanceof File)) {
       return NextResponse.json(
-        { error: 'Missing image or mask file' },
-        { status: 400 }
+        { error: 'Please upload an image and a mask.' },
+        { status: 400 },
       );
     }
 
-    if (!['telea', 'ns'].includes(method)) {
+    if (
+      imageFile.size === 0 ||
+      maskFile.size === 0 ||
+      imageFile.size > MAX_FILE_SIZE ||
+      maskFile.size > MAX_MASK_SIZE
+    ) {
       return NextResponse.json(
-        { error: 'Invalid method. Use "telea" or "ns"' },
-        { status: 400 }
+        { error: 'Image and mask must each be between 1 byte and 10 MB.' },
+        { status: 400 },
       );
     }
 
-    if (radius < 1 || radius > 20) {
+    const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedImageTypes.includes(imageFile.type) || maskFile.type !== 'image/png') {
       return NextResponse.json(
-        { error: 'Radius must be between 1 and 20' },
-        { status: 400 }
+        { error: 'Use a JPG, PNG, or WebP image and a PNG mask.' },
+        { status: 400 },
       );
     }
 
-    // Save uploaded files to temp directory
-    const timestamp = Date.now();
-    const inputImagePath = path.join(tmpDir, `input_${timestamp}.jpg`);
-    const inputMaskPath = path.join(tmpDir, `mask_${timestamp}.png`);
-    const outputImagePath = path.join(tmpDir, `output_${timestamp}.jpg`);
+    if (typeof method !== 'string' || !['telea', 'ns'].includes(method)) {
+      return NextResponse.json(
+        { error: 'Invalid inpainting method.' },
+        { status: 400 },
+      );
+    }
 
-    // Write image file
-    const imageBuffer = await imageFile.arrayBuffer();
-    fs.writeFileSync(inputImagePath, Buffer.from(imageBuffer));
+    if (typeof radiusValue !== 'string' || !/^[0-9]+$/.test(radiusValue)) {
+      return NextResponse.json(
+        { error: 'Invalid inpainting radius.' },
+        { status: 400 },
+      );
+    }
 
-    // Write mask file
-    const maskBuffer = await maskFile.arrayBuffer();
-    fs.writeFileSync(inputMaskPath, Buffer.from(maskBuffer));
+    const radius = Number(radiusValue);
+    if (!Number.isInteger(radius) || radius < 1 || radius > 20) {
+      return NextResponse.json(
+        { error: 'Radius must be between 1 and 20.' },
+        { status: 400 },
+      );
+    }
 
-    // Call Python script
+    await fs.mkdir(tmpDir, { recursive: true });
+    workDir = await fs.mkdtemp(path.join(tmpDir, `remove-object-${randomUUID()}-`));
+
+    // Preserve the uploaded image's format for OpenCV decoding.
+    const extension =
+      imageFile.type === 'image/png'
+        ? '.png'
+        : imageFile.type === 'image/webp'
+          ? '.webp'
+          : '.jpg';
+
+    const inputImagePath = path.join(workDir, `input${extension}`);
+    const inputMaskPath = path.join(workDir, 'mask.png');
+    const outputImagePath = path.join(workDir, 'output.jpg');
+
+    await fs.writeFile(inputImagePath, Buffer.from(await imageFile.arrayBuffer()));
+    await fs.writeFile(inputMaskPath, Buffer.from(await maskFile.arrayBuffer()));
+
     const pythonScript = path.join(process.cwd(), 'remove_object.py');
-    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
-    const command = `${pythonExe} "${pythonScript}" --input "${inputImagePath}" --mask "${inputMaskPath}" --output "${outputImagePath}" --method ${method} --radius ${radius}`;
+    const pythonExe =
+      process.platform === 'win32'
+        ? 'python'
+        : '/var/www/simplifyconvertapp/venv/bin/python';
 
     try {
-      const { stdout, stderr } = await execAsync(command, { timeout: 30000 });
-      
-      // Check if output file was created
-      if (!fs.existsSync(outputImagePath)) {
-        console.error('Python output:', stdout, stderr);
-        return NextResponse.json(
-          { error: 'Failed to generate output image' },
-          { status: 500 }
-        );
+      await execFileAsync(
+        pythonExe,
+        [
+          pythonScript,
+          '--input',
+          inputImagePath,
+          '--mask',
+          inputMaskPath,
+          '--output',
+          outputImagePath,
+          '--method',
+          method,
+          '--radius',
+          String(radius),
+        ],
+        {
+          timeout: 30000,
+          maxBuffer: 1024 * 1024,
+          windowsHide: true,
+        },
+      );
+
+      const resultBuffer = await fs.readFile(outputImagePath);
+
+      if (resultBuffer.length === 0) {
+        throw new Error('Empty output image');
       }
 
-      // Read result file
-      const resultBuffer = fs.readFileSync(outputImagePath);
-
-      // Clean up temp files
-      try {
-        fs.unlinkSync(inputImagePath);
-        fs.unlinkSync(inputMaskPath);
-        fs.unlinkSync(outputImagePath);
-      } catch (err) {
-        console.error('Failed to clean up temp files:', err);
-      }
-
-      // Return result as response
-      return new NextResponse(resultBuffer, {
+      return new NextResponse(new Uint8Array(resultBuffer), {
         headers: {
           'Content-Type': 'image/jpeg',
-          'Content-Length': resultBuffer.length.toString(),
+          'Content-Length': String(resultBuffer.length),
+          'Cache-Control': 'no-store',
         },
       });
-    } catch (execError) {
-      // Clean up on error
-      try {
-        if (fs.existsSync(inputImagePath)) fs.unlinkSync(inputImagePath);
-        if (fs.existsSync(inputMaskPath)) fs.unlinkSync(inputMaskPath);
-        if (fs.existsSync(outputImagePath)) fs.unlinkSync(outputImagePath);
-      } catch {
-        // Ignore cleanup errors
-      }
-
-      const errorMessage = execError instanceof Error ? execError.message : 'Unknown error';
-      console.error('Python execution error:', errorMessage);
-      
+    } catch (error) {
+      console.error('Remove Object processing failed:', error);
       return NextResponse.json(
-        { error: `Processing failed: ${errorMessage}` },
-        { status: 500 }
+        { error: 'Unable to process the image. Check the mask and try again.' },
+        { status: 500 },
       );
     }
   } catch (error) {
-    console.error('API error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Remove Object request failed:', error);
     return NextResponse.json(
-      { error: `Server error: ${errorMessage}` },
-      { status: 500 }
+      { error: 'Unable to process the uploaded files.' },
+      { status: 500 },
     );
+  } finally {
+    if (workDir) {
+      try {
+        await fs.rm(workDir, { recursive: true, force: true });
+      } catch (error) {
+        console.error('Remove Object temporary-file cleanup failed:', error);
+      }
+    }
   }
 }
-

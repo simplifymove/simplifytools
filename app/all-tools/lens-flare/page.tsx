@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function LensFlarePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [posX, setPosX] = useState(50);
@@ -14,23 +18,67 @@ export default function LensFlarePage() {
   const [intensity, setIntensity] = useState(50);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultPreviewUrl, setResultPreviewUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!result) {
+      setResultPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(result);
+    setResultPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [result]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+
+    if (!selectedFile) return;
+
+    const supported =
+      /\.(jpe?g|png|webp)$/i.test(selectedFile.name) &&
+      ['image/jpeg', 'image/png', 'image/webp', ''].includes(selectedFile.type);
+
+    if (!supported) {
+      setError('Please select a JPG, PNG, or WebP image.');
+      return;
     }
+
+    if (selectedFile.size === 0) {
+      setError('The selected image is empty.');
+      return;
+    }
+
+    setFile(selectedFile);
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      setPreview(event.target?.result as string);
+    };
+
+    reader.onerror = () => {
+      setError('Unable to read the selected image.');
+    };
+
+    reader.readAsDataURL(selectedFile);
   };
 
   const applyLensFlare = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processing) return;
+
     setProcessing(true);
+    setResult(null);
+    setError(null);
 
     try {
       const img = new Image();
@@ -50,7 +98,7 @@ export default function LensFlarePage() {
           }
 
           ctx.drawImage(img, 0, 0);
-          
+
           const flareX = (posX / 100) * canvas.width;
           const flareY = (posY / 100) * canvas.height;
           const scale = (intensity / 50) * 2;
@@ -60,7 +108,7 @@ export default function LensFlarePage() {
           mainGradient.addColorStop(0, `rgba(255, 255, 200, ${0.6 * (intensity / 100)})`);
           mainGradient.addColorStop(0.5, `rgba(255, 200, 100, ${0.3 * (intensity / 100)})`);
           mainGradient.addColorStop(1, 'rgba(255, 150, 50, 0)');
-          
+
           ctx.fillStyle = mainGradient;
           ctx.fillRect(flareX - 150 * scale, flareY - 150 * scale, 300 * scale, 300 * scale);
 
@@ -68,7 +116,7 @@ export default function LensFlarePage() {
           const secondaryGradient = ctx.createRadialGradient(flareX, flareY, 0, flareX, flareY, 100 * scale);
           secondaryGradient.addColorStop(0, `rgba(200, 220, 255, ${0.4 * (intensity / 100)})`);
           secondaryGradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
-          
+
           ctx.fillStyle = secondaryGradient;
           ctx.fillRect(flareX - 100 * scale, flareY - 100 * scale, 200 * scale, 200 * scale);
 
@@ -80,7 +128,7 @@ export default function LensFlarePage() {
 
           canvas.toBlob((blob) => {
             if (!blob) {
-              console.error('Failed to create blob');
+              setError('Unable to export the lens flare image.');
               setProcessing(false);
               return;
             }
@@ -89,30 +137,50 @@ export default function LensFlarePage() {
           }, 'image/jpeg', 0.95);
         } catch (error) {
           console.error('Error in image onload:', error);
+          setError('Unable to process this image.');
           setProcessing(false);
         }
       };
       img.onerror = () => {
         console.error('Error loading image');
+        setError('The selected image could not be decoded.');
         setProcessing(false);
       };
       img.src = preview;
     } catch (error) {
       console.error('Error applying lens flare:', error);
+      setError('Unable to apply the lens flare effect.');
       setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `lens-flare-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'lens-flare',
+            originalName: `lens-flare-${Date.now()}.jpg`,
+            outputName: `lens-flare-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -130,7 +198,7 @@ export default function LensFlarePage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">✨ Lens Flare</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Add optical lens flare effects to photos. Create stunning lens flare artifacts with customizable positioning.
+              Add a stylized lens-flare effect with customizable positioning.
             </p>
           </div>
         </div>
@@ -141,12 +209,12 @@ export default function LensFlarePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Add Lens Flare Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                   onChange={handleFileSelect}
                   className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-yellow-400 transition"
                 />
@@ -164,7 +232,10 @@ export default function LensFlarePage() {
                         min="0"
                         max="100"
                         value={posX}
-                        onChange={(e) => setPosX(Number(e.target.value))}
+                        onChange={(e) => {
+                          setPosX(Number(e.target.value));
+                          setResult(null);
+                        }}
                         className="w-full"
                       />
                     </div>
@@ -177,7 +248,10 @@ export default function LensFlarePage() {
                         min="0"
                         max="100"
                         value={posY}
-                        onChange={(e) => setPosY(Number(e.target.value))}
+                        onChange={(e) => {
+                          setPosY(Number(e.target.value));
+                          setResult(null);
+                        }}
                         className="w-full"
                       />
                     </div>
@@ -192,7 +266,10 @@ export default function LensFlarePage() {
                       min="0"
                       max="100"
                       value={intensity}
-                      onChange={(e) => setIntensity(Number(e.target.value))}
+                      onChange={(e) => {
+                        setIntensity(Number(e.target.value));
+                        setResult(null);
+                      }}
                       className="w-full"
                     />
                     <p className="text-sm text-gray-600 mt-2">0 = no flare, 100 = intense flare</p>
@@ -209,9 +286,29 @@ export default function LensFlarePage() {
                 </>
               )}
 
+              {error && (
+                <p role="alert" className="mb-4 text-sm text-red-600">
+                  {error}
+                </p>
+              )}
+
+              {resultPreviewUrl && (
+                <div className="mb-4">
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    Lens Flare Preview
+                  </h3>
+                  <img
+                    src={resultPreviewUrl}
+                    alt="Generated image with a stylized lens flare"
+                    className="w-full max-h-96 object-contain rounded-lg border border-gray-200"
+                  />
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
+                  disabled={processing}
                   className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Download size={20} />
@@ -237,7 +334,7 @@ export default function LensFlarePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Optical Effects</h3>
-                  <p className="text-gray-700">Create professional lens flare artifacts.</p>
+                  <p className="text-gray-700">Create customizable lens-flare-style overlays.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Custom Position</h3>
@@ -255,35 +352,35 @@ export default function LensFlarePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Where should I place the flare?</summary>
-                  <p className="text-gray-700 mt-2">Place in light areas for natural effect. Top-left or top-right is typical.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity looks best?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced. Higher for dramatic, lower for subtle.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Results vary by image.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, flare images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in browser.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I add multiple flares?</summary>
-                  <p className="text-gray-700 mt-2">Download and upload again to add more flares.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>Where should I place the flare?</FAQQuestion>
+                  <FAQAnswer>Place in light areas for natural effect. Top-left or top-right is typical.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity looks best?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for balanced. Higher for dramatic, lower for subtle.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo. Results vary by image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on your rights to the original image. Adding a flare does not change the source image's license.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is generated in your browser. When you choose Download, the generated image is sent to the server to prepare the download page.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I add multiple flares?</FAQQuestion>
+                  <FAQAnswer>Download and upload again to add more flares.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -307,7 +404,87 @@ export default function LensFlarePage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Lens Flare effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tool draws stylized flare elements over the uploaded image
+                using browser Canvas graphics. Position and other available
+                controls determine where the simulated light artifacts appear.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect is generated with browser image and Canvas
+                  processing. No separate server conversion step is used for
+                  the visual effect itself.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The flare is a visual overlay effect; it does not analyze the camera lens or recreate optical flare from real scene data.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and moderate intensity.
+                Apply the effect, inspect the generated preview, and adjust
+                the position or intensity before generating another version.
+                Stronger flare settings can obscure parts of the original image.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                the Lens Flare effect works FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. The tool changes or overlays existing image pixels and
+                    does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Apply the effect to generate a result preview,
+                    then inspect the image before downloading it.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

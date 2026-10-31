@@ -1,32 +1,60 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function PngToAvifPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [quality, setQuality] = useState(85);
+  const requestGeneration = useRef(0);
 
   const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
+    const generation = ++requestGeneration.current;
+    setFile(null);
+    setPreview(null);
+    setResult(null);
     setError(null);
+
+    if (
+      selectedFile.type !== 'image/png' ||
+      !selectedFile.name.toLowerCase().endsWith('.png')
+    ) {
+      setError('Please select a valid PNG image.');
+      return;
+    }
+
+    setFile(selectedFile);
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+
+    reader.onload = (event) => {
+      if (generation !== requestGeneration.current) return;
+      setPreview(event.target?.result as string);
     };
+
+    reader.onerror = () => {
+      if (generation !== requestGeneration.current) return;
+      setFile(null);
+      setPreview(null);
+      setError('Unable to read the selected PNG image.');
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    requestGeneration.current += 1;
     setFile(null);
     setPreview(null);
     setResult(null);
@@ -34,31 +62,75 @@ export default function PngToAvifPage() {
   };
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!file || processing) return;
 
+    const generation = ++requestGeneration.current;
+    setResult(null);
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/webp');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('config', JSON.stringify({
+        from_format: 'png',
+        to_format: 'avif',
+        options: { quality },
+      }));
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || 'AVIF conversion failed');
+      }
+
+      const blob = await response.blob();
+      if (blob.type !== 'image/avif') {
+        throw new Error('Unexpected AVIF output type: ' + (blob.type || 'unknown'));
+      }
+
+      if (generation === requestGeneration.current) {
+        setResult(blob);
+      }
     } catch (err) {
-      setError((err as Error).message || 'Error converting file');
+      if (generation === requestGeneration.current) {
+        setError(
+          err instanceof Error ? err.message : 'Error converting file'
+        );
+      }
     } finally {
       setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.webp';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+      setError(null);
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'png-to-avif',
+            originalName: 'converted.avif',
+            outputName: 'converted.avif',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -83,7 +155,7 @@ export default function PngToAvifPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to AVIF Converter</h1>
-                <p className="text-lg text-white/90">Convert PNG images to AVIF format for superior compression with transparency support and faster web delivery.</p>
+                <p className="text-lg text-white/90">Convert PNG images to AVIF format with adjustable quality settings and server-assisted processing.</p>
               </div>
             </div>
           </div>
@@ -105,7 +177,7 @@ export default function PngToAvifPage() {
                   />
                   {error && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-600">{error}</p>
+                      <p role="alert" className="text-sm text-red-600">{error}</p>
                     </div>
                   )}
                 </div>
@@ -117,7 +189,7 @@ export default function PngToAvifPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
+
                     {/* Quality */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -129,7 +201,12 @@ export default function PngToAvifPage() {
                         max="95"
                         step="5"
                         value={quality}
-                        onChange={(e) => setQuality(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          requestGeneration.current += 1;
+                          setQuality(parseInt(e.target.value, 10));
+                          setResult(null);
+                          setError(null);
+                        }}
                         className="w-full"
                       />
                       <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
@@ -156,7 +233,8 @@ export default function PngToAvifPage() {
                   {result && (
                     <button
                       onClick={handleDownload}
-                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                      disabled={processing}
+                      className="w-full py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
                       Download AVIF
@@ -167,10 +245,10 @@ export default function PngToAvifPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Superior compression ratio</li>
+                      <li>• Server-assisted AVIF conversion</li>
+                      <li>• Adjustable AVIF quality</li>
                       <li>• Supports PNG transparency</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Files are temporarily processed for conversion</li>
                     </ul>
                   </div>
                 </div>
@@ -190,7 +268,7 @@ export default function PngToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Upload Your PNG File</h3>
-                <p className="text-gray-600 mt-2">Click or drag and drop your PNG image. Transparency will be preserved in the AVIF format.</p>
+                <p className="text-gray-600 mt-2">Click or drag and drop your PNG image. AVIF supports transparency, and the converted result depends on the source image and encoder.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -208,7 +286,7 @@ export default function PngToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Start Conversion</h3>
-                <p className="text-gray-600 mt-2">Click "Convert to AVIF" to instantly transform your PNG using advanced compression algorithms.</p>
+                <p className="text-gray-600 mt-2">Click "Convert to AVIF" to start the server-assisted conversion.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -217,7 +295,7 @@ export default function PngToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download Your File</h3>
-                <p className="text-gray-600 mt-2">Download the converted AVIF file instantly. Free, secure, and no signup required.</p>
+                <p className="text-gray-600 mt-2">Download the converted AVIF file after processing is complete.</p>
               </div>
             </div>
           </div>
@@ -233,21 +311,21 @@ export default function PngToAvifPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Significantly Smaller Files</h3>
-                <p className="text-gray-600 text-sm">AVIF provides 40-60% better compression than PNG while preserving superior transparency and quality.</p>
+                <p className="text-gray-600 text-sm">AVIF can produce smaller files than PNG for some images. File size and visual quality depend on the image and selected quality setting.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Full Transparency Support</h3>
-                <p className="text-gray-600 text-sm">AVIF preserves PNG transparency perfectly while using far fewer bytes, ideal for graphics and logos.</p>
+                <p className="text-gray-600 text-sm">AVIF supports alpha transparency and can produce smaller files for some graphics and logos, depending on the source image and encoding settings.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Better Performance</h3>
-                <p className="text-gray-600 text-sm">Dramatically faster page loads, improved SEO rankings, and superior user experience across all devices.</p>
+                <p className="text-gray-600 text-sm">Smaller image files can reduce transferred bytes and may help page-loading performance when the AVIF file is supported and appropriately encoded.</p>
               </div>
             </div>
           </div>
@@ -255,36 +333,36 @@ export default function PngToAvifPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will PNG transparency be preserved?</h3>
-              <p className="text-gray-700">Yes, absolutely. AVIF fully supports alpha channel transparency. If your PNG has a transparent background, it will be perfectly preserved in the AVIF file.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than PNG?</h3>
-              <p className="text-gray-700">AVIF files are typically 40-60% smaller than PNG files while maintaining the same transparency and image quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF supported by modern browsers?</h3>
-              <p className="text-gray-700">AVIF is supported by Chrome 85+, Firefox 93+, and Safari 16+. For older browsers, use PNG as a fallback with HTML picture tags.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is this suitable for web graphics and logos?</h3>
-              <p className="text-gray-700">Absolutely! AVIF is perfect for logos, icons, and web graphics. It provides excellent compression while preserving transparency and quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my data kept private?</h3>
-              <p className="text-gray-700">Yes, complete privacy guaranteed. All conversions happen in your browser. Your PNG files never leave your device and no data is stored.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple files?</h3>
-              <p className="text-gray-700">Our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files one after another.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>Will PNG transparency be preserved?</FAQStaticQuestion>
+              <FAQAnswer>AVIF supports alpha transparency. Transparent areas from the PNG can be retained when supported by the conversion pipeline, but the result should be checked after conversion.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>How much smaller is AVIF than PNG?</FAQStaticQuestion>
+              <FAQAnswer>AVIF and PNG use different encoding methods, so file-size differences depend on image content and conversion settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is AVIF supported by modern browsers?</FAQStaticQuestion>
+              <FAQAnswer>AVIF is supported by Chrome 85+, Firefox 93+, and Safari 16+. For older browsers, use PNG as a fallback with HTML picture tags.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is this suitable for web graphics and logos?</FAQStaticQuestion>
+              <FAQAnswer>AVIF can be used for web graphics when the required browser and application support is available. Conversion results depend on the source image and settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is my data kept private?</FAQStaticQuestion>
+              <FAQAnswer>The PNG file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I batch convert multiple files?</FAQStaticQuestion>
+              <FAQAnswer>This converter currently processes one PNG file at a time. Additional files can be converted individually.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}
@@ -298,7 +376,7 @@ export default function PngToAvifPage() {
               "name": "Will PNG transparency be preserved?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, absolutely. AVIF fully supports alpha channel transparency. If your PNG has a transparent background, it will be perfectly preserved in the AVIF file."
+                "text": "AVIF supports alpha transparency. Transparent areas from the PNG can be retained when supported by the conversion pipeline, but the result should be checked after conversion."
               }
             },
             {
@@ -306,7 +384,7 @@ export default function PngToAvifPage() {
               "name": "How much smaller is AVIF than PNG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "AVIF files are typically 40-60% smaller than PNG files while maintaining the same transparency and image quality."
+                "text": "AVIF and PNG use different encoding methods, so file-size differences depend on image content and conversion settings."
               }
             },
             {
@@ -322,7 +400,7 @@ export default function PngToAvifPage() {
               "name": "Is this suitable for web graphics and logos?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Absolutely! AVIF is perfect for logos, icons, and web graphics. It provides excellent compression while preserving transparency and quality."
+                "text": "AVIF can be used for web graphics when the required browser and application support is available. Conversion results depend on the source image and settings."
               }
             },
             {
@@ -330,7 +408,7 @@ export default function PngToAvifPage() {
               "name": "Is my data kept private?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, complete privacy guaranteed. All conversions happen in your browser. Your PNG files never leave your device and no data is stored."
+                "text": "The PNG file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy."
               }
             },
             {
@@ -338,7 +416,7 @@ export default function PngToAvifPage() {
               "name": "Can I batch convert multiple files?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files one after another."
+                "text": "This converter currently processes one PNG file at a time. Additional files can be converted individually."
               }
             }
           ]
@@ -360,7 +438,7 @@ export default function PngToAvifPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with adjustable compression</p>
             </Link>
             <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>

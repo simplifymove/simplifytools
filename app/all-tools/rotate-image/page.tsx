@@ -1,6 +1,7 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, RotateCw } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
@@ -16,30 +17,54 @@ import {
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { ErrorAlert } from '@/app/components/error-components';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'rotate-image';
 const TOOL_NAME = 'Rotate Image';
 
 export default function RotateImagePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [rotation, setRotation] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const operationId = useRef(0);
+  const processingRef = useRef(false);
+
+  const updateRotation = (angle: number) => {
+    const normalized = ((angle % 360) + 360) % 360;
+    operationId.current += 1;
+    processingRef.current = false;
+    setProcessing(false);
+    setResult(null);
+    setRotation(normalized);
+  };
   const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    operationId.current += 1;
+    processingRef.current = false;
+    setProcessing(false);
+    setResult(null);
+    setPreview(null);
     clearError();
     setFile(selectedFile);
     setRotation(0);
     const reader = new FileReader();
+    const currentOperation = operationId.current;
     reader.onload = (e) => {
+      if (currentOperation !== operationId.current) return;
       setPreview(e.target?.result as string);
     };
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    operationId.current += 1;
+    processingRef.current = false;
+    setProcessing(false);
     setFile(null);
     setPreview(null);
     setResult(null);
@@ -48,10 +73,12 @@ export default function RotateImagePage() {
   };
 
   const quickRotate = (degrees: number) => {
-    setRotation((prev) => (prev + degrees) % 360);
+    updateRotation(rotation + degrees);
   };
 
   const handleRotate = async () => {
+    if (processingRef.current) return;
+
     if (!file) {
       createError(
         ImageToolErrorType.EMPTY_FILE,
@@ -122,11 +149,17 @@ export default function RotateImagePage() {
       return;
     }
 
+    const currentOperation = ++operationId.current;
+    processingRef.current = true;
     setProcessing(true);
+    setResult(null);
+
     try {
-      const result = await rotateImage(file, rotation);
-      setResult(result.blob);
+      const rotated = await rotateImage(file, rotation);
+      if (currentOperation !== operationId.current) return;
+      setResult(rotated.blob);
     } catch (err) {
+      if (currentOperation !== operationId.current) return;
       const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
       createError(
         ImageToolErrorType.SHARP_FAILED,
@@ -140,21 +173,40 @@ export default function RotateImagePage() {
         }
       );
     } finally {
-      setProcessing(false);
+      if (currentOperation === operationId.current) {
+        processingRef.current = false;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `rotated-${rotation}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'rotate-image',
+            originalName: `rotated-${rotation}.png`,
+            outputName: `rotated-${rotation}.png`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -222,7 +274,7 @@ export default function RotateImagePage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Rotation Settings</h3>
-                    
+
                     {/* Quick Rotate Buttons */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -248,7 +300,7 @@ export default function RotateImagePage() {
                           +270°
                         </button>
                         <button
-                          onClick={() => setRotation(0)}
+                          onClick={() => updateRotation(0)}
                           className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
                         >
                           Reset
@@ -266,7 +318,7 @@ export default function RotateImagePage() {
                         min="0"
                         max="360"
                         value={rotation}
-                        onChange={(e) => setRotation(parseInt(e.target.value))}
+                        onChange={(e) => updateRotation(parseInt(e.target.value, 10))}
                         className="w-full"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-2">
@@ -286,7 +338,7 @@ export default function RotateImagePage() {
                         min="0"
                         max="360"
                         value={rotation}
-                        onChange={(e) => setRotation(parseInt(e.target.value) % 360 || 0)}
+                        onChange={(e) => updateRotation(parseInt(e.target.value, 10) || 0)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       />
                     </div>
@@ -345,7 +397,50 @@ export default function RotateImagePage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-9">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to rotate an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+
+                Upload an image and choose the required rotation angle. The
+                tool changes the orientation of the image and provides a
+                preview so you can check the result before downloading it.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the tool changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Rotation changes image orientation. Depending on the angle and output encoding, the processed file may differ from the original in dimensions, file size, or encoded pixel values.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Check the preview
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Review the processed image before downloading it. The final
+                  appearance depends on the source image and the settings you
+                  select.
+                </p>
+              </div>
+            </div>
+
+
+
+          </div>
+        </section>
+
+</main>
 
       {/* How To Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
@@ -362,7 +457,7 @@ export default function RotateImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Rotate Image:</strong> Process your image instantly in the browser</p></div>
+              <div><p className="text-gray-700"><strong>Click Rotate Image:</strong> Apply the selected rotation using the browser image-processing workflow</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -378,74 +473,74 @@ export default function RotateImagePage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Rotate Images?</h2>
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Fix sideways photos - correct images taken in the wrong orientation</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Adjust composition - rotate any angle (not just 90°) for perfect framing</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Adjust composition - rotate by the required angle and review the resulting frame</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Prepare for printing - get images to the right orientation before printing</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Align graphics - rotate logos and designs to match your layout</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> No quality loss - rotation preserves full image quality</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Rotation changes image orientation while retaining the visible source content</li>
           </ul>
         </div>
       </div>
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I rotate images by any angle?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, use the slider for 1° precision from 0-360° or enter custom degrees manually for exact control.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, use the slider for 1° precision from 0-360° or enter custom degrees manually for exact control.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What formats does the image rotator support?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">All common formats: JPG, PNG, WebP, GIF, BMP, and more. Output is saved as PNG.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>All common formats: JPG, PNG, WebP, GIF, BMP, and more. Output is saved as PNG.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will my image quality be affected by rotation?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, rotation doesn't reduce quality. Your image maintains full resolution and clarity.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Rotation changes image orientation and the result is encoded again as PNG. Depending on the angle, canvas geometry and pixel mapping can differ from the source, so review the generated image before use.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 How do I rotate an image 45 degrees?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Use the custom angle slider or enter "45" in the degree input field for precise rotation.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Use the custom angle slider or enter "45" in the degree input field for precise rotation.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I preview before downloading?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, after clicking Rotate Image, you'll see the success message and can download immediately.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, after clicking Rotate Image, you'll see the success message and can download immediately.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is image rotation completely free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Rotate unlimited images, no signup or hidden costs.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>Yes, You can use the tool to rotate supported images to the required orientation.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       <script type="application/ld+json">{JSON.stringify({
@@ -454,10 +549,10 @@ export default function RotateImagePage() {
         "mainEntity": [
           { "@type": "Question", "name": "Can I rotate images by any angle?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, use the slider for 1° precision from 0-360° or enter custom degrees." } },
           { "@type": "Question", "name": "What formats does the image rotator support?", "acceptedAnswer": { "@type": "Answer", "text": "All common formats including JPG, PNG, WebP, GIF, BMP." } },
-          { "@type": "Question", "name": "Will my image quality be affected by rotation?", "acceptedAnswer": { "@type": "Answer", "text": "No, rotation doesn't reduce quality. Full resolution maintained." } },
+          { "@type": "Question", "name": "Will my image quality be affected by rotation?", "acceptedAnswer": { "@type": "Answer", "text": "Rotation changes image orientation and the result is encoded again as PNG. Review the generated image because angle, canvas geometry, and pixel mapping can affect the output." } },
           { "@type": "Question", "name": "How do I rotate an image 45 degrees?", "acceptedAnswer": { "@type": "Answer", "text": "Use the custom angle slider or enter 45 in the degree input field." } },
           { "@type": "Question", "name": "Can I preview before downloading?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, after clicking Rotate Image, you'll see the success message." } },
-          { "@type": "Question", "name": "Is image rotation completely free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+          { "@type": "Question", "name": "Is image rotation completely free?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the tool to rotate supported images." } }
         ]
       })}</script>
 

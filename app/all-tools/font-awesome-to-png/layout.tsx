@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Font-Awesome to PNG - Free Icon Converter | SimplifyConvert',
-  description: 'Convert Font Awesome icons to PNG images. Export as high-quality pictures.',
+  title: 'Font Awesome to PNG - Convert Icons to PNG | SimplifyConvert',
+  description: 'Render Font Awesome icons as PNG images with configurable size, color, and background settings.',
   keywords: ['font awesome to png', 'icon converter', 'export icons', 'free tool'],
   openGraph: {
     type: 'website',

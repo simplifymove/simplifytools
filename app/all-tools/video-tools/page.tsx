@@ -71,13 +71,13 @@ export default function VideoToolsPage() {
               </div>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free Video Tools Online</h1>
                 <p className="text-lg text-white/90 max-w-3xl">
-                  Use our free video tools to convert, compress, trim, and edit videos instantly. Convert MP4, WebM, MKV, and more formats. No signup required, no watermarks, completely free.
+                  Use our free video tools to convert, compress, trim, and edit supported formats such as MP4, WebM, and MKV. No signup is required; output depends on the selected tool and source.
                 </p>
               </motion.div>
             </div>
@@ -88,7 +88,7 @@ export default function VideoToolsPage() {
             <div className="max-w-7xl mx-auto">
               <motion.div
                 className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
@@ -217,28 +217,28 @@ export default function VideoToolsPage() {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Video Tools?</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Choose a Video Workflow by Output</h2>
                 
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  SimplifyConvert offers a complete suite of free video tools to handle all your multimedia needs. Whether you need to convert videos between formats, compress large files for sharing, trim unwanted sections, or edit video properties, our free video tools deliver professional results without any cost, signup, or software installation.
+                  Convert when a player or platform needs another container, compress when file size matters, trim when only a time range is needed, and extract audio when the picture track is unnecessary. Re-encoding can change quality, compatibility, and processing time.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
-                    <p className="text-gray-700 text-sm">All 58 video tools are permanently free. No hidden charges, premium tiers, or surprise fees. Use unlimited video conversions without payment or credit card.</p>
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Tools for Different Video Tasks</h3>
+                    <p className="text-gray-700 text-sm">The category separates conversion, compression, trimming, extraction, and related workflows by intended result.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
                     <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
-                    <p className="text-gray-700 text-sm">Works directly in your browser. Use video tools on Windows, Mac, iPhone, Android, and any device with internet. No software downloads or complex setup.</p>
+                    <p className="text-gray-700 text-sm">Access video tools through a web browser without installing separate software. Compatibility and available features may vary by device, browser, file format, and selected tool.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Fast Processing</h3>
-                    <p className="text-gray-700 text-sm">Convert, compress, and edit videos in seconds. Advanced processing handles large files quickly without lag or delays. Get results instantly.</p>
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Processing Time Varies</h3>
+                    <p className="text-gray-700 text-sm">Video is server-processed. Upload and encoding time depend on duration, resolution, codec, operation, and network speed.</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg border border-pink-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                    <p className="text-gray-700 text-sm">Your video files are processed securely and never stored on servers. HTTPS encryption protects all transfers. Complete privacy guaranteed.</p>
+                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Processing Information</h3>
+                    <p className="text-gray-700 text-sm">Uploads use HTTPS and are retained temporarily for processing and download. Media cleanup is scheduled after approximately one hour.</p>
                   </div>
                 </div>
 
@@ -268,7 +268,7 @@ export default function VideoToolsPage() {
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Free Video Tools</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Using SimplifyConvert video tools is simple and straightforward. Select the tool you need from our 58 options, upload your video file, configure options if needed, and click process. The tool handles complex video operations in seconds while maintaining quality. Download your converted or edited video instantly. No signup required, no registration needed, no learning curve.
+                  Select the video tool you need, upload a supported file, configure the available options, and start processing. Processing time and output characteristics depend on the selected operation, source file, settings, and current service availability. When processing is complete, use the available result or download option.
                 </p>
               </motion.div>
             </div>
@@ -281,42 +281,42 @@ export default function VideoToolsPage() {
                 name: 'Are all video tools really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes! All video tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any video tool unlimited times without payment.'
+                  text: 'The listed video utilities do not require Premium AI Studio credits. File-size, duration, format, and rate limits can vary by tool.'
                 }
               },
               {
                 name: 'What video formats do you support?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'We support most common video formats including MP4, WebM, MKV, AVI, MOV, FLV, and more. Our video tools can convert between any formats while maintaining quality and preserving video properties.'
+                  text: 'Available format support depends on the selected tool. Common video formats used across the collection include MP4, WebM, MKV, AVI, MOV, and others. Check the individual tool for its accepted input and generated output formats.'
                 }
               },
               {
                 name: 'Is my video data safe?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Your videos are processed securely and never stored on our servers. We use HTTPS encryption for all transfers. Videos are processed immediately and deleted after download.'
+                  text: 'Videos are uploaded over HTTPS for server processing and temporary download. Media cleanup is scheduled after approximately one hour; do not submit content you are not authorized to process.'
                 }
               },
               {
                 name: 'Can I use video tools on mobile?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. All video tools work on iOS, Android, tablets, and mobile browsers. No app installation required. Simply visit SimplifyConvert from your mobile device and start using any tool.'
+                  text: 'Many video tools can be used through modern mobile browsers without installing an app. Compatibility, upload limits, and processing behavior may vary by device, browser, file format, and selected tool.'
                 }
               },
               {
                 name: 'How large can video files be?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Our video tools can handle files up to several gigabytes depending on your internet connection. Large files may take longer to process, but the tools handle them efficiently without losing quality.'
+                  text: 'The media API currently validates uploads up to 500 MB, and individual tools may use lower limits. Larger, longer, or high-resolution files take more time and can fail if resources are unavailable.'
                 }
               },
               {
                 name: 'Which video tools are most popular?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Video compression, MP4 conversion, video trimming, and video to GIF conversion are our most popular tools. All are free, fast, and work without signup or installation. Perfect for social media, web design, and general video editing.'
+                  text: 'The collection includes video compression, MP4 conversion, trimming, video-to-GIF conversion, audio extraction, transcription, and other media-processing tools. Availability, supported formats, and processing limits vary by tool.'
                 }
               }
             ]}
@@ -357,10 +357,6 @@ export default function VideoToolsPage() {
     </>
   );
 }
-
-
-
-
 
 
 

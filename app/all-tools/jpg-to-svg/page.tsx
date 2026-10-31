@@ -1,11 +1,15 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function JpgToSvgPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -13,10 +17,28 @@ export default function JpgToSvgPage() {
   const [error, setError] = useState<string | null>(null);
   const [conversionTip, setConversionTip] = useState<string>('');
 
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    };
+  }, [downloadUrl]);
+
   const handleFileSelect = (selectedFile: File) => {
+    setDownloadUrl(null);
+    setFile(null);
+    setPreview(null);
+    setConversionTip('');
+
+    const isJpeg = /\.jpe?g$/i.test(selectedFile.name) &&
+      (selectedFile.type === 'image/jpeg' || selectedFile.type === '');
+
+    if (!isJpeg) {
+      setError('Please upload a JPG or JPEG image.');
+      return;
+    }
+
     setFile(selectedFile);
     setError(null);
-    setConversionTip('');
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -34,8 +56,9 @@ export default function JpgToSvgPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
+    setDownloadUrl(null);
     setError(null);
     setConversionTip('Vectorizing your image... This may take a moment depending on image complexity.');
     try {
@@ -44,10 +67,7 @@ export default function JpgToSvgPage() {
       formData.append('config', JSON.stringify({
         from_format: 'jpg',
         to_format: 'svg',
-        options: {
-          quality: 100,
-          trace_threshold: 128,
-        },
+        options: {},
       }));
 
       const response = await fetch('/api/convert', {
@@ -61,6 +81,12 @@ export default function JpgToSvgPage() {
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/svg+xml') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setConversionTip('✓ Vectorization complete! Your SVG is ready to download.');
@@ -72,14 +98,20 @@ export default function JpgToSvgPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!downloadUrl) return;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'converted.svg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+
+      if (!downloadUrl) return;
+
+      const blob = await fetch(downloadUrl).then((response) => response.blob());
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: "jpg-to-svg",
+        originalName: "converted.svg",
+        outputName: "converted.svg",
+      });
+
+      router.push(downloadResult.downloadPageUrl);
   };
 
   return (
@@ -103,7 +135,7 @@ export default function JpgToSvgPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to SVG Converter</h1>
-              <p className="text-lg text-white/90">Convert JPG images to scalable SVG vector format. Perfect for logos, icons, and graphics that need infinite scalability.</p>
+              <p className="text-lg text-white/90">Trace JPG artwork into scalable SVG paths. Sharp, high-contrast images work best; JPEG compression artifacts and blurred edges can reduce tracing accuracy.</p>
             </div>
           </div>
         </div>
@@ -117,8 +149,10 @@ export default function JpgToSvgPage() {
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Step 1: Upload JPG</h2>
-                <p className="text-gray-600 mb-6 text-sm">Works best with clear, high-contrast images. Logos and icons produce excellent results.</p>
+                <p className="text-gray-600 mb-6 text-sm">Use a sharp, high-quality JPG with distinct edges. Heavy compression and blurry details can create unwanted traced shapes.</p>
                 <ImageUploader
+                  accept=".jpg,.jpeg,image/jpeg"
+                  toolId="jpg-to-svg"
                   onFileSelect={handleFileSelect}
                   preview={preview}
                   onClearPreview={handleClearPreview}
@@ -207,10 +241,10 @@ export default function JpgToSvgPage() {
                     <strong>💡 SVG Benefits:</strong>
                   </p>
                   <ul className="text-xs text-blue-700 space-y-1">
-                    <li>• Infinitely scalable without quality loss</li>
-                    <li>• Smaller file sizes than raster formats</li>
-                    <li>• Perfect for logos, icons, and illustrations</li>
-                    <li>• Editable in any vector design tool</li>
+                    <li>• SVG vector-path output</li>
+                    <li>• File size depends on image complexity and traced paths</li>
+                    <li>• Best suited to high-contrast logos, icons, and illustrations</li>
+                    <li>• Vector paths can be edited in compatible SVG editors</li>
                   </ul>
                 </div>
               </div>
@@ -226,12 +260,12 @@ export default function JpgToSvgPage() {
                   <span className="text-lg">✓</span> What Works Best
                 </h3>
                 <ul className="space-y-2 text-gray-600 text-sm">
-                  <li>• Simple logos with solid colors</li>
-                  <li>• Icons and symbols</li>
-                  <li>• High-contrast images</li>
-                  <li>• Geometric designs</li>
-                  <li>• Clean illustrations</li>
-                  <li>• Simple line drawings</li>
+                  <li>• Sharp JPG logos with clearly separated shapes</li>
+                  <li>• High-contrast symbols with minimal JPEG artifacts</li>
+                  <li>• JPG images with strong foreground-background contrast</li>
+                  <li>• Geometric designs with clearly defined edges</li>
+                  <li>• Simple illustrations saved at high JPG quality</li>
+                  <li>• Bold line drawings without noticeable compression noise</li>
                 </ul>
               </div>
               <div>
@@ -244,42 +278,42 @@ export default function JpgToSvgPage() {
                   <li>• Low-contrast images</li>
                   <li>• Noise and texture-rich images</li>
                   <li>• Very detailed illustrations</li>
-                  <li>• Compressed JPEGs</li>
+                  <li>• Heavily compressed JPGs with visible blockiness or edge artifacts</li>
                 </ul>
               </div>
             </div>
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What is SVG format?</h3>
-                <p className="text-gray-600">SVG (Scalable Vector Graphics) is a vector image format that uses mathematical equations to define shapes and lines. This allows images to scale infinitely without pixelation.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Why convert JPG to SVG?</h3>
-                <p className="text-gray-600">SVG files are infinitely scalable, have smaller file sizes, and are perfect for logos, icons, and graphics that need to work at any size. They're also easier to edit and customize.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What's the difference between raster and vector?</h3>
-                <p className="text-gray-600">Raster images (JPG, PNG) are made of pixels and lose quality when enlarged. Vector images (SVG) are made of shapes and mathematical curves, so they scale perfectly to any size without quality loss.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Can I edit the SVG file after conversion?</h3>
-                <p className="text-gray-600">Yes! SVG files can be edited in any vector design tool like Adobe Illustrator, Inkscape, Figma, or Adobe XD. You can modify colors, shapes, and other properties.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What image types work best?</h3>
-                <p className="text-gray-600">Simple logos, icons, and illustrations with solid colors and clear shapes produce the best results. Complex photographs and gradient-heavy images may not convert as cleanly.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">How is JPG to SVG different from PNG to SVG?</h3>
-                <p className="text-gray-600">Both processes use the same vectorization technique. JPG is compressed and has no transparency, while PNG supports transparency. Choose based on your source image format. PNG may produce slightly cleaner results for images with transparency needs.</p>
-              </div>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQCard>
+                <FAQStaticQuestion>What is SVG format?</FAQStaticQuestion>
+                <FAQAnswer>SVG (Scalable Vector Graphics) represents graphics using vector geometry. This converter traces suitable raster artwork into SVG paths that can be scaled without raster pixelation.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Why convert JPG to SVG?</FAQStaticQuestion>
+                <FAQAnswer>JPG-to-SVG tracing is useful when you have a sharp raster logo, symbol, or simple illustration and need editable vector paths. It cannot restore details already lost through JPEG compression, and photographs generally produce less useful traces.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What's the difference between raster and vector?</FAQStaticQuestion>
+                <FAQAnswer>Raster images are made of pixels. This converter traces visible shapes into SVG paths, which can be scaled without the pixelation of the original raster image.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Can I edit the SVG file after conversion?</FAQStaticQuestion>
+                <FAQAnswer>The traced output contains SVG vector paths that can be edited in compatible vector software. Trace accuracy depends on the complexity and contrast of the source image.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What image types work best?</FAQStaticQuestion>
+                <FAQAnswer>Choose a JPG with sharp edges, strong contrast, and minimal compression artifacts. The engine traces grayscale shapes rather than retaining the original colors or gradients. JPEG noise, blurry boundaries, and photographic textures may create inaccurate or overly complex paths.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>How is JPG to SVG different from PNG to SVG?</FAQStaticQuestion>
+                <FAQAnswer>Both tools trace raster images into SVG paths using the same grayscale process. PNG can retain crisp edges and transparency in the source, while JPG uses lossy compression and has no alpha transparency. Compression artifacts in JPG images may affect the traced outlines; neither converter guarantees preservation of the original colors or transparent background.</FAQAnswer>
+              </FAQCard>
+            </FAQList>
+          </FAQPanel>
         </div>
       </div>
     </main>

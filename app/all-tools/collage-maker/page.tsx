@@ -1,10 +1,13 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Download, ChevronRight, Combine, X, Plus } from 'lucide-react';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 type CollageLayout = '2x2' | '3x3' | '1x4' | '4x1';
 
@@ -15,6 +18,7 @@ interface CollageImage {
 }
 
 export default function CollageMakerPage() {
+    const router = useRouter();
   const [images, setImages] = useState<CollageImage[]>([]);
   const [layout, setLayout] = useState<CollageLayout>('2x2');
   const [spacing, setSpacing] = useState(10);
@@ -150,18 +154,32 @@ export default function CollageMakerPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+      if (!result || processing) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `collage-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+      setError("");
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'collage-maker',
+            originalName: `collage-${Date.now()}.png`,
+            outputName: `collage-${Date.now()}.png`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   const maxImagesForLayout = layout === '2x2' ? 4 : layout === '3x3' ? 9 : 4;
 
@@ -348,7 +366,247 @@ export default function CollageMakerPage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
-      </main>
+
+      <section className="bg-white border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-16 space-y-12">
+
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              How to make a photo collage online
+            </h2>
+
+            <div className="grid md:grid-cols-4 gap-4">
+              {[
+                ['1', 'Choose images', 'Upload the photos or images you want to include in the collage.'],
+                ['2', 'Select a layout', 'Choose a 2x2, 3x3, 1x4, or 4x1 grid based on how many images you want to arrange.'],
+                ['3', 'Adjust spacing', 'Increase or reduce the gap between images to match the look you want.'],
+                ['4', 'Create and download', 'Generate the collage, review the preview, then select Download PNG to open the download page.'],
+              ].map(([number, title, text]) => (
+                <div
+                  key={number}
+                  className="border border-gray-200 rounded-xl p-5"
+                >
+                  <div className="w-9 h-9 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold mb-3">
+                    {number}
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                  <p className="text-sm text-gray-600 leading-6">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Choosing the right collage layout
+              </h2>
+
+              <div className="space-y-3 text-gray-600 leading-7">
+                <p>
+                  <strong className="text-gray-900">2x2:</strong>{' '}
+                  Arrange up to four images in a balanced square grid.
+                </p>
+                <p>
+                  <strong className="text-gray-900">3x3:</strong>{' '}
+                  Combine up to nine images when you need a denser photo grid.
+                </p>
+                <p>
+                  <strong className="text-gray-900">1x4:</strong>{' '}
+                  Place up to four images in a single horizontal row.
+                </p>
+                <p>
+                  <strong className="text-gray-900">4x1:</strong>{' '}
+                  Place up to four images in a single vertical column.
+                </p>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                How images fit inside the collage
+              </h2>
+
+              <p className="text-gray-600 leading-7">
+                Each image is scaled to fit inside a 300 x 300 pixel collage cell while preserving its proportions. Images are not stretched to fill the cell, so unused space may remain around them. Output dimensions depend on the selected grid and spacing rather than the original image resolutions.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              What does the spacing control do?
+            </h2>
+
+            <p className="text-gray-600 leading-7">
+              The spacing control changes the gap between neighboring collage
+              cells. Use a small value for a compact grid or increase the
+              spacing when you want more separation between photos. Select Create Collage again after changing the layout or spacing to regenerate the preview with your updated settings.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Common uses for photo collages
+            </h2>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  title: 'Photo collections',
+                  text: 'Combine several related photos into one easy-to-share image.',
+                },
+                {
+                  title: 'Social posts',
+                  text: 'Create a single visual containing multiple moments or products.',
+                },
+                {
+                  title: 'Before and after',
+                  text: 'Place comparison images together in a consistent layout.',
+                },
+                {
+                  title: 'Project summaries',
+                  text: 'Group screenshots, references, or progress images into one graphic.',
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="bg-slate-50 border border-slate-200 rounded-xl p-5"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Tips for better collages
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                'Choose images with similar visual themes when you want a more consistent result.',
+                'Use a layout that matches the number of images you actually need.',
+                'Reduce spacing for a tighter photo grid and increase it for more visual separation.',
+                'Review image order before generating the final collage.',
+                'Use higher-resolution source images when the collage will be viewed at a larger size.',
+                'Check the preview before downloading the PNG output.',
+              ].map((tip) => (
+                <div
+                  key={tip}
+                  className="flex gap-3 border border-gray-200 rounded-lg p-4"
+                >
+                  <span className="text-orange-600 font-bold">✓</span>
+                  <p className="text-gray-600">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <FAQPanel>
+            <FAQHeading>
+              Collage Maker FAQ
+            </FAQHeading>
+
+            <FAQList>
+              {[
+                {
+                  q: 'How many images can I add?',
+                  a: 'The maximum depends on the selected layout. The 2x2, 1x4, and 4x1 layouts support up to four images, while the 3x3 layout supports up to nine.',
+                },
+                {
+                  q: 'Which layouts are available?',
+                  a: 'You can choose from 2x2, 3x3, 1x4, and 4x1 collage layouts.',
+                },
+                {
+                  q: 'Can I change the gap between images?',
+                  a: 'Yes. Use the spacing slider to adjust the distance between collage cells before generating the output.',
+                },
+                {
+                  q: 'Will my images be stretched?',
+                  a: 'The tool scales each image while preserving its aspect ratio so it can fit within the assigned collage cell.',
+                },
+                {
+                  q: 'What format is the collage downloaded in?',
+                  a: 'The generated collage is exported as a PNG image.',
+                },
+              ].map((item) => (
+                <FAQCard key={item.q}>
+                  <FAQStaticQuestion>
+                    {item.q}
+                  </FAQStaticQuestion>
+                  <FAQAnswer>{item.a}</FAQAnswer>
+                </FAQCard>
+              ))}
+            </FAQList>
+          </FAQPanel>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Related image tools
+            </h2>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link
+                href="/all-tools/combine-images"
+                className="border border-gray-200 rounded-xl p-5 hover:border-orange-400 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Combine Images
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Join multiple images into a combined result.
+                </p>
+              </Link>
+
+              <Link
+                href="/all-tools/resize-image"
+                className="border border-gray-200 rounded-xl p-5 hover:border-orange-400 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Resize Image
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Change image dimensions before using them in a collage.
+                </p>
+              </Link>
+
+              <Link
+                href="/all-tools/crop-image"
+                className="border border-gray-200 rounded-xl p-5 hover:border-orange-400 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Crop Image
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Trim unwanted areas from an image.
+                </p>
+              </Link>
+
+              <Link
+                href="/all-tools/compress-image"
+                className="border border-gray-200 rounded-xl p-5 hover:border-orange-400 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Compress Image
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Reduce image size for easier sharing.
+                </p>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+</main>
 
       <Footer />
     </div>

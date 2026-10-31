@@ -11,6 +11,8 @@ import csv
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import json
+import re
+import zipfile
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import openpyxl
@@ -67,20 +69,60 @@ class SpreadsheetConvertEngine:
     # ==================== CSV Conversions ====================
     
     def _csv_to_excel(self, input_file: str, output_file: str, options: Dict[str, Any]):
-        """Convert CSV to Excel (XLSX)"""
+        """Convert CSV to Excel (XLSX) using the selected CSV and worksheet options."""
         try:
-            delimiter = normalize_delimiter(options.get('delimiter', ','))
-            
-            # Read CSV
-            df = pd.read_csv(input_file, sep=delimiter, engine="python")
-            print(f"[DEBUG] CSV loaded: {len(df)} rows, {len(df.columns)} columns")
-            
-            # Write to Excel
-            df.to_excel(output_file, sheet_name='Sheet1', index=False)
-            
+            delimiter = normalize_delimiter(options.get('delimiter', 'comma'))
+            encoding = options.get('encoding') or 'utf-8'
+            sheet_name = options.get('sheetName') or 'Data'
+            auto_size = options.get('autoSize', True)
+
+            allowed_encodings = {'utf-8', 'latin-1', 'iso-8859-1', 'cp1252'}
+            if encoding not in allowed_encodings:
+                raise ValueError('Unsupported CSV encoding')
+
+            if not isinstance(sheet_name, str):
+                raise ValueError('Worksheet name must be text')
+
+            if (
+                not sheet_name.strip()
+                or len(sheet_name) > 31
+                or any(char in sheet_name for char in '[]:*?/\\')
+                or sheet_name.startswith("'")
+                or sheet_name.endswith("'")
+            ):
+                raise ValueError('Invalid Excel worksheet name')
+
+            if not isinstance(auto_size, bool):
+                raise ValueError('Auto-size Columns must be true or false')
+
+            df = pd.read_csv(
+                input_file,
+                sep=delimiter,
+                encoding=encoding,
+                engine="python",
+            )
+
+            with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+                if auto_size:
+                    worksheet = writer.sheets[sheet_name]
+
+                    for column in worksheet.columns:
+                        letter = column[0].column_letter
+                        max_length = max(
+                            (len(str(cell.value)) for cell in column
+                             if cell.value is not None),
+                            default=0,
+                        )
+                        worksheet.column_dimensions[letter].width = min(
+                            max(max_length + 2, 10),
+                            60,
+                        )
+
         except Exception as e:
             raise ValueError(f"CSV to Excel conversion failed: {e}")
-    
+
     def _excel_to_csv(self, input_file: str, output_file: str, options: Dict[str, Any]):
         """Convert Excel to CSV"""
         try:
@@ -96,30 +138,43 @@ class SpreadsheetConvertEngine:
             print(f"[DEBUG] Input file exists, size: {os.path.getsize(input_file)} bytes", flush=True)
             
             # Determine which sheet to export
-            sheet_mode = options.get('sheet_mode', 'first')  # first or all
+            sheet_mode = options.get('sheet_mode', 'first')  # first or zip
             print(f"[DEBUG] Sheet mode: {sheet_mode}", flush=True)
             
-            if sheet_mode == 'all':
-                # Export all sheets as single CSV with all rows (first sheet only for CSV format)
+            delimiter = normalize_delimiter(options.get('delimiter', 'comma'))
+
+            if sheet_mode in ('zip', 'all'):
+                # A CSV can represent one table, so export every worksheet as its own
+                # UTF-8 CSV and package the complete workbook inventory in a ZIP.
                 print(f"[DEBUG] Reading all sheets from Excel...", flush=True)
-                df = pd.read_excel(input_file, sheet_name=None)  # Get all sheets as dict
-                print(f"[DEBUG] Found {len(df)} sheet(s)", flush=True)
-                # For CSV, we can only export the first sheet
-                # So concatenate all sheets or just use first
-                df = pd.read_excel(input_file, sheet_name=0)
-                print(f"[DEBUG] Using first sheet with {len(df)} rows", flush=True)
+                sheets = pd.read_excel(input_file, sheet_name=None, dtype=object)
+                print(f"[DEBUG] Found {len(sheets)} sheet(s)", flush=True)
+                used_names = set()
+
+                with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as archive:
+                    for index, (sheet_name, frame) in enumerate(sheets.items(), start=1):
+                        safe_base = re.sub(r'[^A-Za-z0-9._-]+', '_', str(sheet_name)).strip('._')
+                        safe_base = safe_base or f'sheet_{index}'
+                        candidate = safe_base[:100]
+                        suffix = 2
+                        while candidate.casefold() in used_names:
+                            tail = f'_{suffix}'
+                            candidate = f'{safe_base[:100-len(tail)]}{tail}'
+                            suffix += 1
+                        used_names.add(candidate.casefold())
+                        csv_bytes = frame.to_csv(index=False, sep=delimiter, lineterminator='\n').encode('utf-8-sig')
+                        archive.writestr(f'{candidate}.csv', csv_bytes)
+                print(f"[DEBUG] ZIP written successfully to {output_file}", flush=True)
             else:
                 # Export first sheet
                 print(f"[DEBUG] Reading first sheet from Excel...", flush=True)
-                df = pd.read_excel(input_file, sheet_name=0)
+                df = pd.read_excel(input_file, sheet_name=0, dtype=object)
                 print(f"[DEBUG] Read {len(df)} rows, {len(df.columns)} columns", flush=True)
             
-            # Write to CSV
-            delimiter = normalize_delimiter(options.get('delimiter', 'comma'))
-            print(f"[DEBUG] Writing CSV with separator: {repr(delimiter)}", flush=True)
-            
-            df.to_csv(output_file, index=False, sep=delimiter, encoding="utf-8-sig")
-            print(f"[DEBUG] CSV written successfully to {output_file}", flush=True)
+                # Write the first worksheet as one CSV, preserving existing behavior.
+                print(f"[DEBUG] Writing CSV with separator: {repr(delimiter)}", flush=True)
+                df.to_csv(output_file, index=False, sep=delimiter, encoding="utf-8-sig")
+                print(f"[DEBUG] CSV written successfully to {output_file}", flush=True)
             
             # Verify output file
             if not os.path.exists(output_file):
@@ -232,71 +287,231 @@ class SpreadsheetConvertEngine:
             raise ValueError(f"XML to CSV conversion failed: {e}")
     
     def _excel_to_xml(self, input_file: str, output_file: str, options: Dict[str, Any]):
-        """Convert Excel to XML"""
+        """Convert the first Excel worksheet into XML."""
         try:
+            root_tag = options.get('rootTag', options.get('root_tag')) or 'rows'
+            item_tag = options.get('itemTag', options.get('item_tag')) or 'row'
+
+            def valid_xml_name(name):
+                return (
+                    isinstance(name, str)
+                    and re.fullmatch(r'[A-Za-z_][A-Za-z0-9._-]*', name) is not None
+                    and not name.lower().startswith('xml')
+                )
+
+            if not valid_xml_name(root_tag):
+                raise ValueError('Invalid XML root tag name')
+
+            if not valid_xml_name(item_tag):
+                raise ValueError('Invalid XML item tag name')
+
+            def normalize_column_name(name):
+                value = str(name).strip()
+                value = re.sub(r'[^A-Za-z0-9._-]', '_', value)
+
+                if not value or not re.match(r'[A-Za-z_]', value[0]):
+                    value = 'field_' + value
+
+                if value.lower().startswith('xml'):
+                    value = 'field_' + value
+
+                return value
+
             df = pd.read_excel(input_file, sheet_name=0)
-            
-            # Create root element
-            root = ET.Element('data')
-            
-            # Add rows
+
+            column_names = []
+            used_names = set()
+
+            for index, column in enumerate(df.columns, start=1):
+                base = normalize_column_name(column)
+
+                if not base:
+                    base = f'field_{index}'
+
+                name = base
+                suffix = 2
+
+                while name in used_names:
+                    name = f'{base}_{suffix}'
+                    suffix += 1
+
+                used_names.add(name)
+                column_names.append(name)
+
+            root = ET.Element(root_tag)
+
             for _, row in df.iterrows():
-                row_elem = ET.SubElement(root, 'row')
-                for col_name, value in row.items():
-                    # Handle NaN values
+                row_elem = ET.SubElement(root, item_tag)
+
+                for column_name, value in zip(column_names, row.values):
                     if pd.isna(value):
                         value = ''
-                    
-                    cell_elem = ET.SubElement(row_elem, col_name)
+
+                    cell_elem = ET.SubElement(row_elem, column_name)
                     cell_elem.text = str(value)
-            
-            # Pretty print and write
-            xml_str = minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ")
-            
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(xml_str)
-            
+
+            xml_bytes = ET.tostring(root, encoding='utf-8')
+            xml_str = minidom.parseString(xml_bytes).toprettyxml(
+                indent='  ',
+                encoding='utf-8'
+            )
+
+            with open(output_file, 'wb') as output:
+                output.write(xml_str)
+
         except Exception as e:
             raise ValueError(f"Excel to XML conversion failed: {e}")
-    
+
     # ==================== PDF Conversion ====================
     
     def _excel_to_pdf(self, input_file: str, output_file: str, options: Dict[str, Any]):
-        """Convert Excel to PDF using ReportLab"""
+        """Render Excel worksheet values as PDF tables."""
+        from xml.sax.saxutils import escape
+        from reportlab.lib.pagesizes import landscape
+        from reportlab.platypus import PageBreak, LongTable
+        from reportlab.lib.styles import ParagraphStyle
+
         try:
-            # Read Excel
-            df = pd.read_excel(input_file, sheet_name=0)
-            
-            # Prepare data for table
-            data = [list(df.columns)]  # Header row
-            for _, row in df.iterrows():
-                data.append([str(v) if not pd.isna(v) else '' for v in row.values])
-            
-            # Create PDF
-            doc = SimpleDocTemplate(output_file, pagesize=letter)
+            sheet_mode = options.get('sheet_mode', options.get('sheetMode', 'first'))
+            orientation = options.get('orientation', 'portrait')
+            fit_to_width = options.get('fitToWidth', options.get('fit_to_width', True))
+
+            if sheet_mode not in ('first', 'all'):
+                raise ValueError('Sheets to Export must be first or all')
+            if orientation not in ('portrait', 'landscape'):
+                raise ValueError('Page Orientation must be portrait or landscape')
+            if not isinstance(fit_to_width, bool):
+                raise ValueError('Fit to Width must be true or false')
+
+            page_size = landscape(letter) if orientation == 'landscape' else letter
+            doc = SimpleDocTemplate(
+                output_file,
+                pagesize=page_size,
+                leftMargin=36,
+                rightMargin=36,
+                topMargin=36,
+                bottomMargin=36,
+            )
+
+            sheets = pd.read_excel(
+                input_file,
+                sheet_name=None if sheet_mode == 'all' else 0,
+                dtype=object,
+            )
+
+            if isinstance(sheets, pd.DataFrame):
+                sheets = {'Sheet 1': sheets}
+
+            available_width = page_size[0] - doc.leftMargin - doc.rightMargin
+
+            cell_style = ParagraphStyle(
+                'ExcelPDFCell',
+                fontName='Helvetica',
+                fontSize=8,
+                leading=10,
+                wordWrap='CJK',
+            )
+
+            header_style = ParagraphStyle(
+                'ExcelPDFHeader',
+                parent=cell_style,
+                fontName='Helvetica-Bold',
+                textColor=colors.whitesmoke,
+            )
+
+            def cell_text(value):
+                if pd.isna(value):
+                    return ''
+                return escape(str(value))
+
             elements = []
-            
-            # Create table
-            table = Table(data)
-            
-            # Style table
-            style = TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 12),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('FONTSIZE', (0, 1), (-1, -1), 10),
-            ])
-            
-            table.setStyle(style)
-            elements.append(table)
-            
-            # Build PDF
+
+            for index, (sheet_name, df) in enumerate(sheets.items()):
+                if index:
+                    elements.append(PageBreak())
+
+                if sheet_mode == 'all':
+                    elements.append(Paragraph(
+                        escape(str(sheet_name)),
+                        ParagraphStyle(
+                            'ExcelPDFSheetTitle',
+                            fontName='Helvetica-Bold',
+                            fontSize=12,
+                            leading=15,
+                            spaceAfter=10,
+                        ),
+                    ))
+
+                column_count = max(len(df.columns), 1)
+
+                rows = [[
+                    Paragraph(cell_text(value), header_style)
+                    for value in df.columns
+                ]]
+
+                for record in df.itertuples(index=False, name=None):
+                    rows.append([
+                        Paragraph(cell_text(value), cell_style)
+                        for value in record
+                    ])
+
+                if fit_to_width:
+                    widths = [available_width / column_count] * column_count
+                else:
+                    widths = [max(90, available_width / min(column_count, 5))] * column_count
+
+                column_groups = []
+
+                if fit_to_width:
+                    column_groups.append(list(range(column_count)))
+                else:
+                    current_group = []
+                    current_width = 0
+
+                    for column_index, width in enumerate(widths):
+                        if current_group and current_width + width > available_width:
+                            column_groups.append(current_group)
+                            current_group = []
+                            current_width = 0
+
+                        current_group.append(column_index)
+                        current_width += width
+
+                    if current_group:
+                        column_groups.append(current_group)
+
+                for group_index, group in enumerate(column_groups):
+                    if group_index:
+                        elements.append(PageBreak())
+
+                    group_rows = [
+                        [row[column_index] for column_index in group]
+                        for row in rows
+                    ]
+
+                    group_widths = [widths[column_index] for column_index in group]
+
+                    table = LongTable(
+                        group_rows,
+                        colWidths=group_widths,
+                        repeatRows=1,
+                        hAlign='LEFT',
+                    )
+
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                        ('TOPPADDING', (0, 0), (-1, -1), 5),
+                        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+                    ]))
+
+                    elements.append(table)
+
             doc.build(elements)
-            
+
         except Exception as e:
             raise ValueError(f"Excel to PDF conversion failed: {e}")

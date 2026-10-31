@@ -1,7 +1,9 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Zap, Info, Cpu, AlertCircle } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
@@ -15,6 +17,7 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'upscale-image';
 const TOOL_NAME = 'Upscale Image';
@@ -33,6 +36,7 @@ interface UpscaleMetadata {
 }
 
 export default function UpscaleImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -41,18 +45,28 @@ export default function UpscaleImagePage() {
   const [resultDataUrl, setResultDataUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [useDataUrl, setUseDataUrl] = useState(false);
-  
+
   // Upscale options
   const [scale, setScale] = useState<2 | 3 | 4>(4);
   const [mode, setMode] = useState<'auto' | 'photo' | 'anime'>('auto');
   const [faceEnhance, setFaceEnhance] = useState(false);
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
-  
+
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const [metadata, setMetadata] = useState<UpscaleMetadata | null>(null);
   const { error, clearError, createError } = useImageToolErrors();
 
+  const clearUpscaleResult = () => {
+    setResult(null);
+    setResultBlob(null);
+    setResultDataUrl(null);
+    setMetadata(null);
+    setProcessingTime(null);
+    setImageLoading(false);
+  };
+
   const handleFileSelect = (selectedFile: File) => {
+    clearUpscaleResult();
     clearError();
 
     // Validate file
@@ -119,6 +133,7 @@ export default function UpscaleImagePage() {
   };
 
   const handleClearPreview = () => {
+    clearUpscaleResult();
     setFile(null);
     setPreview(null);
     setResult(null);
@@ -172,15 +187,15 @@ export default function UpscaleImagePage() {
       }
 
       const contentType = response.headers.get('Content-Type');
-      console.log('📥 Response received:', { 
+      console.log('📥 Response received:', {
         status: response.status,
         contentType,
         contentLength: response.headers.get('Content-Length')
       });
 
       const blob = await response.blob();
-      console.log('✓ Response blob received:', { 
-        size: blob.size, 
+      console.log('✓ Response blob received:', {
+        size: blob.size,
         type: blob.type,
         contentType
       });
@@ -229,26 +244,26 @@ export default function UpscaleImagePage() {
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
-        console.log('✓ Data URL created:', { 
+        console.log('✓ Data URL created:', {
           urlLength: dataUrl.length,
           blobSize: blob.size,
           blobType: blob.type,
           sizeMB: (blob.size / (1024*1024)).toFixed(1)
         });
-        
+
         // Store blob reference in state to prevent garbage collection
         setResultBlob(blob);
-        
+
         // Set result and start loading
         setResult(dataUrl);
         setImageLoading(true);
         console.log('🖼️ Image loading started from data URL');
       };
-      
+
       reader.onerror = () => {
         throw new Error('Failed to convert image blob to data URL');
       };
-      
+
       reader.readAsDataURL(blob);
     } catch (err) {
       createError(
@@ -262,14 +277,32 @@ export default function UpscaleImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `upscaled-${scale}x-${Date.now()}.${outputFormat}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!resultBlob || !file || processing) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const outputName = `upscaled-${scale}x-${Date.now()}.${outputFormat}`;
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: resultBlob,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch {
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -295,7 +328,7 @@ export default function UpscaleImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">AI Image Upscaler</h1>
-                <p className="text-lg text-white/90">Professional image enlargement using Real-ESRGAN. Upscale to 2×, 3×, or 4× with advanced AI enhancement.</p>
+                <p className="text-lg text-white/90">Enlarge images to 2×, 3×, or 4×. AI-based Real-ESRGAN processing is used when available, with alternative upscaling methods as fallback. Visible detail and artifacts depend on the source image and selected settings.</p>
               </div>
             </div>
           </div>
@@ -315,7 +348,7 @@ export default function UpscaleImagePage() {
                 {!preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                    <ImageUploader 
+                    <ImageUploader
                       onFileSelect={handleFileSelect}
                       preview={preview}
                       onClearPreview={handleClearPreview}
@@ -430,7 +463,7 @@ export default function UpscaleImagePage() {
                       <li>1. Upload an image (JPG, PNG, or WebP)</li>
                       <li>2. Choose upscale factor (2×, 3×, or 4×)</li>
                       <li>3. Select image type (auto-detect or specific)</li>
-                      <li>4. Optional: Enable face enhancement for portraits</li>
+                      <li>4. Optional: Enable additional sharpening</li>
                       <li>5. Pick output format (PNG for quality, JPG for size, WebP for balance)</li>
                       <li>6. Click "Upscale" and download your enhanced image</li>
                     </ol>
@@ -445,12 +478,12 @@ export default function UpscaleImagePage() {
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <h3 className="font-semibold text-blue-900 mb-3">Key Features</h3>
                       <ul className="text-sm text-blue-800 space-y-2">
-                        <li>✓ Real-ESRGAN AI upscaling</li>
+                        <li>✓ Real-ESRGAN AI upscaling when available</li>
                         <li>✓ 2×, 3×, 4× magnification</li>
                         <li>✓ Auto image type detection</li>
-                        <li>✓ Face enhancement mode</li>
+                        <li>✓ Optional additional sharpening</li>
                         <li>✓ Multiple formats (PNG/JPG/WebP)</li>
-                        <li>✓ Batch processing ready</li>
+                        <li>✓ One-image processing workflow</li>
                       </ul>
                     </div>
                   )}
@@ -467,7 +500,7 @@ export default function UpscaleImagePage() {
                           {[2, 3, 4].map((s) => (
                             <button
                               key={s}
-                              onClick={() => setScale(s as 2 | 3 | 4)}
+                              onClick={() => { clearUpscaleResult(); setScale(s as 2 | 3 | 4); }}
                               className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition ${
                                 scale === s
                                   ? 'bg-orange-500 text-white'
@@ -479,7 +512,7 @@ export default function UpscaleImagePage() {
                           ))}
                         </div>
                         <div className="text-xs text-gray-600 mt-2 space-y-1">
-                          <p>{scale === 2 ? '✓ Fastest, good for web' : scale === 3 ? '✓ Balanced quality & speed' : '✓ Maximum quality'}</p>
+                          <p>{scale === 2 ? '✓ Smaller enlargement, usually quicker' : scale === 3 ? '✓ Mid-range enlargement' : '✓ Largest available enlargement'}</p>
                         </div>
                       </div>
 
@@ -488,7 +521,7 @@ export default function UpscaleImagePage() {
                         <label className="text-sm font-medium text-gray-700 block mb-2">Image Type</label>
                         <select
                           value={mode}
-                          onChange={(e) => setMode(e.target.value as 'auto' | 'photo' | 'anime')}
+                          onChange={(e) => { clearUpscaleResult(); setMode(e.target.value as 'auto' | 'photo' | 'anime'); }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="auto">Auto Detect (Recommended)</option>
@@ -504,7 +537,7 @@ export default function UpscaleImagePage() {
                           {(['png', 'jpg', 'webp'] as const).map((fmt) => (
                             <button
                               key={fmt}
-                              onClick={() => setOutputFormat(fmt)}
+                              onClick={() => { clearUpscaleResult(); setOutputFormat(fmt); }}
                               className={`flex-1 px-2 py-2 rounded-lg font-medium text-xs transition ${
                                 outputFormat === fmt
                                   ? 'bg-orange-500 text-white'
@@ -517,18 +550,18 @@ export default function UpscaleImagePage() {
                         </div>
                       </div>
 
-                      {/* Face Enhancement */}
+                      {/* Additional Sharpening */}
                       <div className="flex items-start gap-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
                         <input
                           type="checkbox"
                           id="faceEnhance"
                           checked={faceEnhance}
-                          onChange={(e) => setFaceEnhance(e.target.checked)}
+                          onChange={(e) => { clearUpscaleResult(); setFaceEnhance(e.target.checked); }}
                           className="w-4 h-4 cursor-pointer mt-0.5"
                         />
                         <label htmlFor="faceEnhance" className="flex-1 cursor-pointer">
-                          <div className="text-sm font-medium text-gray-900">Enhance Faces</div>
-                          <div className="text-xs text-gray-600">Sharpen facial details</div>
+                          <div className="text-sm font-medium text-gray-900">Additional Sharpening</div>
+                          <div className="text-xs text-gray-600">Apply additional sharpening to the entire image</div>
                         </label>
                       </div>
                     </div>
@@ -578,7 +611,7 @@ export default function UpscaleImagePage() {
                       <ul className="text-xs text-indigo-800 space-y-1">
                         <li><span className="font-medium">2×</span> — Quick, web-friendly</li>
                         <li><span className="font-medium">3×</span> — Balanced approach</li>
-                        <li><span className="font-medium">4×</span> — Maximum detail</li>
+                        <li><span className="font-medium">4×</span> — Largest available scale</li>
                       </ul>
                     </div>
                   )}
@@ -588,7 +621,7 @@ export default function UpscaleImagePage() {
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                       <h3 className="font-semibold text-amber-900 mb-2 text-sm">Format Guide</h3>
                       <ul className="text-xs text-amber-800 space-y-1">
-                        <li><span className="font-medium">PNG:</span> Lossless, best quality</li>
+                        <li><span className="font-medium">PNG:</span> Lossless output format</li>
                         <li><span className="font-medium">WebP:</span> Optimal balance</li>
                         <li><span className="font-medium">JPG:</span> Smallest file size</li>
                       </ul>
@@ -620,7 +653,7 @@ export default function UpscaleImagePage() {
             </li>
             <li className="flex gap-4">
               <span className="text-orange-500 font-bold min-w-8">4.</span>
-              <span><strong>Optional Enhancement:</strong> Enable face enhancement for better facial detail sharpening.</span>
+              <span><strong>Optional Enhancement:</strong> Enable additional image sharpening. This option does not detect or isolate faces.</span>
             </li>
             <li className="flex gap-4">
               <span className="text-orange-500 font-bold min-w-8">5.</span>
@@ -636,28 +669,28 @@ export default function UpscaleImagePage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Benefits of Our Upscale Tool</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-ESRGAN AI Technology</h3>
-              <p className="text-gray-700">Advanced neural networks trained to enhance and enlarge images while preserving quality and detail.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Optional Real-ESRGAN AI Technology</h3>
+              <p className="text-gray-700">Real-ESRGAN increases image dimensions and generates additional pixel detail. The result can look clearer, but it cannot guarantee recovery of detail missing from the source.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Scale Options</h3>
-              <p className="text-gray-700">Choose 2×, 3×, or 4× upscaling. Higher scales provide more detail but larger file sizes.</p>
+              <p className="text-gray-700">Choose 2×, 3×, or 4× upscaling. Higher scales create larger image dimensions and usually larger output files.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Smart Image Detection</h3>
-              <p className="text-gray-700">Auto-detect mode optimizes for photos, or manually select photo or anime mode for custom enhancement.</p>
+              <p className="text-gray-700">Choose Auto, Photo, or Anime mode according to the source image and compare the processed result.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Face Enhancement</h3>
-              <p className="text-gray-700">Optional face enhancement sharpens facial details for portrait photos and improved clarity.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Additional Sharpening</h3>
+              <p className="text-gray-700">This option applies additional sharpening across the upscaled image rather than detecting individual faces. Inspect the result for oversharpening or artifacts.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Format Export</h3>
               <p className="text-gray-700">Export as PNG (lossless), WebP (balanced), or JPG (compressed) based on your needs.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
-              <p className="text-gray-700">No sign-up required. All processing happens securely. Your images are completely private.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Simple Image Upscaling</h3>
+              <p className="text-gray-700">No sign-up is required to use the available image upscaling controls.</p>
             </div>
           </div>
         </div>
@@ -665,35 +698,35 @@ export default function UpscaleImagePage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between 2×, 3×, and 4× upscaling?</summary>
-              <p className="text-gray-700 mt-2">2× doubles dimensions (fastest, web-friendly), 3× triples dimensions (balanced), and 4× quadruples dimensions (maximum detail). Higher scales take longer and create larger files.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Does upscaling reduce image quality?</summary>
-              <p className="text-gray-700 mt-2">No, Real-ESRGAN AI actually enhances quality by reconstructing detail and sharpness. Results look clearer and more detailed than simply enlarging.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-              <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), WebP (modern), or JPG (compressed).</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">When should I use photo vs. anime mode?</summary>
-              <p className="text-gray-700 mt-2">Use photo mode for real photographs and illustrations. Use anime mode for anime, manga, or cartoon artwork. Auto-detect works well for mixed content.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally in your browser or on secure servers. Your images are never stored or shared with third parties.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I use upscaled images commercially?</summary>
-              <p className="text-gray-700 mt-2">Yes, upscaled images can be used for personal or commercial purposes without any restrictions or attribution required.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What's the difference between 2×, 3×, and 4× upscaling?</FAQQuestion>
+              <FAQAnswer>2× doubles the image dimensions, 3× triples them, and 4× quadruples them. Larger scales generally require more processing and create larger output files; visible detail depends on the source image.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Does upscaling reduce image quality?</FAQQuestion>
+              <FAQAnswer>AI upscaling attempts to reconstruct additional visual detail while increasing image dimensions. Results can vary depending on the source image, scale, and content.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What image formats are supported?</FAQQuestion>
+              <FAQAnswer>We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), WebP (modern), or JPG (compressed).</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>When should I use photo vs. anime mode?</FAQQuestion>
+              <FAQAnswer>Photo mode is intended for photographic content, while Anime mode targets anime or illustration-style images. Auto mode lets the processing workflow select a mode based on the input.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is my image data safe?</FAQQuestion>
+              <FAQAnswer>Upscaling is performed through the tool's server-side processing workflow.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I use upscaled images commercially?</FAQQuestion>
+              <FAQAnswer>Upscaling does not change ownership or licensing rights. Use the processed image only when you own the source image or have the necessary permission, and follow any applicable copyright or licensing terms.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}
@@ -705,13 +738,13 @@ export default function UpscaleImagePage() {
               <h3 className="font-bold text-gray-800 mb-1">Resize Image</h3>
               <p className="text-sm text-gray-600">Scale images to specific dimensions</p>
             </Link>
-            <Link href="/all-tools/enhance-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+            <Link href="/all-tools/image-enhancer" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Enhance Image</h3>
               <p className="text-sm text-gray-600">Improve photo quality and clarity</p>
             </Link>
             <Link href="/all-tools/compress-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Compress Image</h3>
-              <p className="text-sm text-gray-600">Reduce file size without quality loss</p>
+              <p className="text-sm text-gray-600">Reduce image file size</p>
             </Link>
           </div>
         </div>
@@ -723,7 +756,7 @@ export default function UpscaleImagePage() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'AI Image Upscaler - Free Online Image Enlargement Tool',
-        description: 'Upscale images 2×, 3×, or 4× without quality loss using Real-ESRGAN AI technology.',
+        description: 'Enlarge images 2×, 3×, or 4× using Real-ESRGAN when available, with alternative upscaling methods as fallback.',
         url: 'https://simplifyconvert.com/all-tools/upscale-image',
         applicationCategory: 'Multimedia',
         offers: {
@@ -741,19 +774,17 @@ export default function UpscaleImagePage() {
         image: 'https://simplifyconvert.com/og-image.jpg',
         featureList: [
           '2×, 3×, and 4× upscaling options',
-          'Real-ESRGAN AI technology',
-          'Smart image type detection',
-          'Optional face enhancement',
+          'Real-ESRGAN AI processing when available',
+          'Auto, photo, and anime processing modes',
+          'Optional additional image sharpening',
           'Multiple output formats (PNG, WebP, JPG)',
           'No sign-up required',
-          'Privacy-focused local processing',
+          'Server-side image processing with optional Real-ESRGAN',
         ],
       })}} />
     </>
   );
 }
-
-
 
 
 

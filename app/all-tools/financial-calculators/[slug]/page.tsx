@@ -1,19 +1,28 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Copy, Download, ArrowLeft, Loader, ChevronRight, Zap, CheckCircle, TrendingUp, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { detectUserLocation, formatCurrency, getCurrencySymbol, type UserLocation } from '@/app/lib/geolocation-currency';
+import { uploadBrowserTextDownloadResult } from '@/app/lib/download-result-client';
 
 const calculatorConfig: Record<string, any> = {
   'startup-runway': {
     title: 'Startup Runway Calculator',
-    description: 'Project your startup\'s financial runway and funding needs',
+    description: 'Estimate startup runway from the funds, burn, revenue, and growth assumptions entered',
     icon: '🚀',
+    assumptions: [
+      'Monthly burn and revenue begin with the values entered and change at the monthly growth rates provided.',
+      'The projection treats the available cash balance as the starting source of runway.',
+    ],
+    limitations: [
+      'This estimate does not model fundraising timing, one-off expenses, taxes, or changes in payment collection.',
+      'Use the projection as a planning scenario rather than a guarantee of how long cash will last.',
+    ],
     currencyFields: ['currentFunds', 'monthlyBurnRate', 'projectedRevenue', 'targetFunding'],
     fields: [
       { name: 'currentFunds', label: 'Current Funds', type: 'number', placeholder: '500000', required: true, isCurrency: true },
@@ -27,8 +36,16 @@ const calculatorConfig: Record<string, any> = {
   },
   'saas-profit': {
     title: 'SaaS Profit Simulator',
-    description: 'Model revenue growth, costs, and profitability for SaaS businesses',
+    description: 'Explore SaaS revenue, costs, churn, and profitability using the assumptions entered',
     icon: '💼',
+    assumptions: [
+      'MRR and operating costs change each month using the growth rates entered for the forecast period.',
+      'The LTV-to-CAC comparison uses the customer acquisition cost and lifetime value supplied.',
+    ],
+    limitations: [
+      'The simulation does not model taxes, cash-collection timing, pricing tiers, or irregular expenses.',
+      'Actual churn, acquisition efficiency, and growth can vary from a repeated monthly scenario.',
+    ],
     currencyFields: ['initialMRR', 'customerAcquisitionCost', 'lifetimeValue', 'operatingCosts'],
     fields: [
       { name: 'initialMRR', label: 'Initial MRR', type: 'number', placeholder: '50000', required: true, isCurrency: true },
@@ -42,9 +59,17 @@ const calculatorConfig: Record<string, any> = {
     ],
   },
   'loan-optimizer': {
-    title: 'Loan Optimization Engine',
-    description: 'Analyze loan terms and create optimal payment strategies',
+    title: 'Loan Repayment Calculator',
+    description: 'Estimate EMI, interest costs, and repayment timing from the loan terms entered',
     icon: '🏦',
+    assumptions: [
+      'Payments follow a standard amortizing-loan schedule using the entered principal, annual rate, and term.',
+      'Any extra monthly payment is treated as a consistent additional principal payment.',
+    ],
+    limitations: [
+      'The estimate does not include lender fees, penalties, insurance, taxes, or future variable-rate changes.',
+      'Confirm repayment terms and payoff amounts with the lender before making a financial decision.',
+    ],
     currencyFields: ['loanAmount', 'extraMonthlyPayment'],
     fields: [
       { name: 'loanAmount', label: 'Loan Amount', type: 'number', placeholder: '300000', required: true, isCurrency: true },
@@ -57,9 +82,17 @@ const calculatorConfig: Record<string, any> = {
   },
   'india-tax': {
     title: 'India Tax Estimator',
-    description: 'Calculate taxes and find optimization opportunities (FY 2024-25)',
+    description: 'Under review — not for current tax filing calculations',
     icon: '🇮🇳',
     isCurrencyINR: true,
+    assumptions: [
+      'The current calculation model is retained only while the calculator is reviewed.',
+      'Amounts are treated as annual Indian-rupee values unless a field states otherwise.',
+    ],
+    limitations: [
+      'Do not use this calculator for a current return, filing, payment, or tax-planning decision.',
+      'Use current official Income Tax Department guidance or a qualified tax professional instead.',
+    ],
     currencyFields: ['grossIncome', 'section80CDeductions', 'section80DDeductions', 'section80EDeductions', 'section80EEADeductions', 'section80GDeductions', 'capitalGainsLongTerm', 'capitalGainsShortTerm', 'deductibleExpenses'],
     fields: [
       { name: 'grossIncome', label: 'Gross Income', type: 'number', placeholder: '1500000', required: true, isCurrency: true },
@@ -79,11 +112,20 @@ const calculatorConfig: Record<string, any> = {
 };
 
 export default function CalculatorPage() {
+  const router = useRouter();
   const params = useParams();
   const slug = (params?.slug as string | undefined) ?? '';
+  const config = calculatorConfig[slug];
+  const initialCurrency = config?.isCurrencyINR
+    ? { code: 'INR', symbol: '₹', name: 'Indian Rupee' }
+    : { code: 'USD', symbol: '$', name: 'US Dollar' };
 
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation>({
+    countryCode: config?.isCurrencyINR ? 'IN' : 'US',
+    countryName: config?.isCurrencyINR ? 'India' : 'United States',
+    currency: initialCurrency,
+  });
+  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState(initialCurrency.code);
   const [inputs, setInputs] = useState<Record<string, any>>({});
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -101,8 +143,6 @@ export default function CalculatorPage() {
     detectLocation();
   }, []);
 
-  const config = calculatorConfig[slug];
-
   if (!config) {
     return (
       <>
@@ -118,22 +158,6 @@ export default function CalculatorPage() {
     );
   }
 
-  // Show loading if still detecting location or currency not selected
-  if (!userLocation || !selectedCurrencyCode) {
-    return (
-      <>
-        <HomeHeader />
-        <main className="min-h-screen bg-gray-50">
-          <div className="max-w-4xl mx-auto px-4 py-12">
-            <div className="flex items-center justify-center">
-              <Loader className="animate-spin mr-2" />
-              <p className="text-lg text-gray-600">Loading calculator...</p>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
   const getAllCurrencies = () => {
     const currencies = new Map<string, { code: string; symbol: string; name: string }>();
     
@@ -181,6 +205,11 @@ export default function CalculatorPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (slug === 'india-tax') {
+      return;
+    }
+
     setLoading(true);
     setError('');
     setResult(null);
@@ -217,15 +246,26 @@ export default function CalculatorPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const downloadResult = () => {
+  const downloadResult = async () => {
     const textToDownload = JSON.stringify(result, null, 2);
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textToDownload));
-    element.setAttribute('download', `${slug}-result.txt`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    const outputName = `${slug}-result.txt`;
+
+    try {
+      const download = await uploadBrowserTextDownloadResult({
+        text: textToDownload,
+        toolSlug: slug,
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    }
   };
 
   return (
@@ -285,6 +325,12 @@ export default function CalculatorPage() {
 
         {/* Main Content */}
         <main className="px-4 sm:px-6 lg:px-8 py-12 flex-1">
+          {slug === 'india-tax' && (
+            <div className="max-w-6xl mx-auto mb-8 rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-950" role="status">
+              <h2 className="font-bold text-lg mb-2">Calculator under review</h2>
+              <p>This calculation is temporarily unavailable and must not be used for current tax filing, payment, or planning. Refer to current official guidance or a qualified tax professional.</p>
+            </div>
+          )}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -325,10 +371,12 @@ export default function CalculatorPage() {
 
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || slug === 'india-tax'}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2"
                   >
-                    {loading ? (
+                    {slug === 'india-tax' ? (
+                      <>Calculation Under Review</>
+                    ) : loading ? (
                       <>
                         <Loader size={18} className="animate-spin" />
                         Calculating...
@@ -410,6 +458,21 @@ export default function CalculatorPage() {
               )}
             </div>
           </motion.div>
+
+          <section className="max-w-6xl mx-auto mt-10 grid gap-6 md:grid-cols-2" aria-label="Calculator methodology">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">Assumptions used by this calculator</h2>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                {config.assumptions.map((assumption: string) => <li key={assumption}>{assumption}</li>)}
+              </ul>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">Limitations</h2>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                {config.limitations.map((limitation: string) => <li key={limitation}>{limitation}</li>)}
+              </ul>
+            </div>
+          </section>
         </main>
 
         <Footer />

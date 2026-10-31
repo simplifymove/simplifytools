@@ -1,10 +1,10 @@
 ﻿export const metadata = {
-  title: 'Sharpen Image - Enhance Photo Clarity Online',
-  description: 'Free online image sharpening tool. Enhance clarity and sharpness in photos. Improve image definition and crispness instantly with advanced filters.',
+  title: 'Sharpen Image - Adjust Image Sharpness | SimplifyConvert',
+  description: 'Adjust image sharpness in your browser and download the processed result as a JPG image.',
   keywords: 'sharpen image, image sharpness, clarity enhancement, photo enhancement, sharpening filter, image quality',
   openGraph: {
-    title: 'Sharpen Image - Enhance Photo Clarity Online',
-    description: 'Free online image sharpening tool. Enhance clarity and sharpness in your photos instantly.',
+    title: 'Sharpen Image - Adjust Image Sharpness | SimplifyConvert',
+    description: 'Adjust image sharpness and prepare the processed JPG result for download.',
     type: 'website',
     url: 'https://simplifyconvert.com/all-tools/sharpen-image',
   },

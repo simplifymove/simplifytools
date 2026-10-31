@@ -7,6 +7,8 @@ Supports: csv-to-json, json-to-xml, xml-to-json, csv-to-xml
 """
 
 import json
+import math
+import re
 import csv
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -46,10 +48,21 @@ class StructuredDataEngine:
             
             # Convert to JSON
             data = df.to_dict('records')
+            # CSV cells are scalar values. Preserve strings and inferred types;
+            # missing and non-finite numbers have no JSON numeric representation.
+            data = [
+                {
+                    key: None if pd.isna(value) or (
+                        isinstance(value, float) and not math.isfinite(value)
+                    ) else value
+                    for key, value in record.items()
+                }
+                for record in data
+            ]
             
             # Write JSON
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+                json.dump(data, f, indent=2, ensure_ascii=False, allow_nan=False)
             
         except Exception as e:
             raise ValueError(f"CSV to JSON conversion failed: {e}")
@@ -63,18 +76,23 @@ class StructuredDataEngine:
             with open(input_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            # Create root element
-            root = ET.Element('root')
+            root_tag = options.get('rootTag') or options.get('root_tag') or 'root'
+            item_tag = options.get('itemTag') or options.get('item_tag') or 'item'
+            self._validate_xml_tag_name(root_tag, 'rootTag')
+            self._validate_xml_tag_name(item_tag, 'itemTag')
+
+            # Create root element using the user-selected, validated name.
+            root = ET.Element(root_tag)
             
             # Handle different JSON structures
             if isinstance(data, list):
                 # Array of objects
                 for item in data:
                     if isinstance(item, dict):
-                        item_elem = ET.SubElement(root, 'item')
+                        item_elem = ET.SubElement(root, item_tag)
                         self._dict_to_xml_element(item, item_elem)
                     else:
-                        item_elem = ET.SubElement(root, 'item')
+                        item_elem = ET.SubElement(root, item_tag)
                         item_elem.text = str(item)
                         
             elif isinstance(data, dict):
@@ -132,12 +150,23 @@ class StructuredDataEngine:
         import re
         name = re.sub(r'[^a-zA-Z0-9_\-]', '_', name)
         
-        # Ensure doesn't start with number or hyphen
-        if name and name[0].isdigit():
+        # Ensure the first character is valid for an XML element name.
+        if name and not re.match(r'[A-Za-z_]', name[0]):
+            name = '_' + name
+
+        # Names beginning with any casing of "xml" are reserved by XML.
+        if name.lower().startswith('xml'):
             name = '_' + name
         
         # Ensure not empty
         return name or 'item'
+
+    def _validate_xml_tag_name(self, name: str, option_name: str):
+        """Validate configurable XML element names before constructing output."""
+        if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9._-]*', name):
+            raise ValueError(f'{option_name} must be a valid XML element name')
+        if name.lower().startswith('xml'):
+            raise ValueError(f'{option_name} cannot start with the reserved XML prefix')
     
     # ==================== XML to JSON ====================
     
@@ -152,15 +181,43 @@ class StructuredDataEngine:
             
             # Handle wrapped root element
             if len(data) == 1:
-                # Single key - unwrap if it's the root element name
                 key = list(data.keys())[0]
                 if key == root.tag:
                     data = data[key]
-            
-            # Write JSON
+
+            # Apply XML-to-JSON options.
+            include_attributes = options.get('attributes', True)
+            pretty = options.get('pretty', True)
+
+            if not isinstance(include_attributes, bool):
+                raise ValueError('attributes must be a boolean')
+            if not isinstance(pretty, bool):
+                raise ValueError('pretty must be a boolean')
+
+            if not include_attributes:
+                def remove_attributes(value):
+                    if isinstance(value, dict):
+                        return {
+                            key: remove_attributes(item)
+                            for key, item in value.items()
+                            if not key.startswith('@')
+                        }
+                    if isinstance(value, list):
+                        return [remove_attributes(item) for item in value]
+                    return value
+
+                data = remove_attributes(data)
+
+            # Write JSON using the requested formatting.
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-            
+                json.dump(
+                    data,
+                    f,
+                    indent=2 if pretty else None,
+                    separators=None if pretty else (',', ':'),
+                    ensure_ascii=False
+                )
+
         except Exception as e:
             raise ValueError(f"XML to JSON conversion failed: {e}")
     
@@ -220,12 +277,18 @@ class StructuredDataEngine:
             df = pd.read_csv(input_file, sep=delimiter, engine="python")
             print(f"[DEBUG] CSV loaded: {len(df)} rows, {len(df.columns)} columns")
             
-            # Create root element
-            root = ET.Element('data')
+            # Use the configured XML element names.
+            root_tag = options.get('rootTag') or options.get('root_tag') or 'rows'
+            item_tag = options.get('itemTag') or options.get('item_tag') or 'row'
+
+            self._validate_xml_tag_name(root_tag, 'rootTag')
+            self._validate_xml_tag_name(item_tag, 'itemTag')
+
+            root = ET.Element(root_tag)
             
             # Add rows
             for _, row in df.iterrows():
-                row_elem = ET.SubElement(root, 'row')
+                row_elem = ET.SubElement(root, item_tag)
                 for col_name, value in row.items():
                     # Handle NaN values
                     if pd.isna(value):

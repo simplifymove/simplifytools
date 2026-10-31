@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Image as ImageIcon } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function PsdToJpgPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -14,37 +18,99 @@ export default function PsdToJpgPage() {
   const [error, setError] = useState<string | null>(null);
   const [conversionTip, setConversionTip] = useState<string>('');
   const [quality, setQuality] = useState(85);
+  const [downloading, setDownloading] = useState(false);
+  const requestIdRef = useRef(0);
+  const controllerRef = useRef<AbortController | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
+  const invalidateConversion = () => {
+    requestIdRef.current += 1;
+    controllerRef.current?.abort();
+    controllerRef.current = null;
+
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+
+    setPreview(null);
+    setDownloadUrl(null);
+    setProcessing(false);
+    setConversionTip('');
+  };
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      requestIdRef.current += 1;
+      controllerRef.current?.abort();
+
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  const selectFile = (selectedFile: File | null) => {
+    invalidateConversion();
+    setFile(null);
+    setError(null);
+
     if (!selectedFile) return;
 
-    if (!selectedFile.type.includes('psd') && !selectedFile.name.toLowerCase().endsWith('.psd')) {
-      setError('Please select a valid PSD file');
+    if (!selectedFile.name.toLowerCase().endsWith('.psd')) {
+      setError('Please select a valid PSD file.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected PSD file is empty.');
+      return;
+    }
+
+    if (selectedFile.size > 500 * 1024 * 1024) {
+      setError('PSD files must be 500 MB or smaller.');
       return;
     }
 
     setFile(selectedFile);
-    setError(null);
-    setConversionTip('');
-    setPreview(null);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] ?? null;
+    if (selectedFile) selectFile(selectedFile);
+    e.target.value = '';
   };
 
   const handleClearPreview = () => {
+    invalidateConversion();
     setFile(null);
-    setPreview(null);
-    setDownloadUrl(null);
     setError(null);
-    setConversionTip('');
+  };
+
+  const handleQualityChange = (value: number) => {
+    if (value === quality) return;
+    invalidateConversion();
+    setQuality(value);
+    setError(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!file || processing) return;
+
+    invalidateConversion();
+    const requestId = requestIdRef.current;
+    const controller = new AbortController();
+    controllerRef.current = controller;
 
     setProcessing(true);
     setError(null);
     setConversionTip('Converting PSD to JPG... This may take a moment depending on file complexity and layers.');
-    
+
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -52,7 +118,7 @@ export default function PsdToJpgPage() {
         from_format: 'psd',
         to_format: 'jpg',
         options: {
-          quality: quality,
+          quality,
           flatten: true,
           merge_layers: true,
         },
@@ -61,34 +127,108 @@ export default function PsdToJpgPage() {
       const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Conversion failed');
+        let message = 'Conversion failed. Please try another PSD file.';
+
+        try {
+          const data: unknown = await response.json();
+          if (
+            typeof data === 'object' &&
+            data !== null &&
+            'error' in data &&
+            typeof data.error === 'string'
+          ) {
+            message = data.error;
+          }
+        } catch {
+          // Use the generic message for non-JSON errors.
+        }
+
+        throw new Error(message);
       }
 
       const blob = await response.blob();
+
+      if (controller.signal.aborted ||
+          requestId !== requestIdRef.current ||
+          !mountedRef.current) return;
+
+      if (blob.type !== 'image/jpeg') {
+        throw new Error('The server did not return a valid JPEG response.');
+      }
+
       const url = URL.createObjectURL(blob);
+      objectUrlRef.current = url;
+
       setDownloadUrl(url);
       setPreview(url);
-      setConversionTip('✓ Conversion complete! Your JPG preview is ready. Quality set to ' + quality + '%');
-    } catch (error) {
-      setError((error as Error).message || 'Error converting file');
+      setConversionTip(
+        '? Conversion complete! Your JPG preview is ready. Quality set to ' +
+        quality + '%'
+      );
+    } catch (caught: unknown) {
+      if (controller.signal.aborted ||
+          requestId !== requestIdRef.current ||
+          !mountedRef.current) return;
+
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'Error converting PSD file.'
+      );
       setConversionTip('');
     } finally {
-      setProcessing(false);
+      if (requestId === requestIdRef.current && mountedRef.current) {
+        controllerRef.current = null;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!downloadUrl) return;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'converted.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!downloadUrl || downloading) return;
+
+    const downloadRequestId = requestIdRef.current;
+    setDownloading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        throw new Error('Could not prepare the converted JPG.');
+      }
+
+      const blob = await response.blob();
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'psd-to-jpg',
+        originalName: 'converted.jpg',
+        outputName: 'converted.jpg',
+      });
+
+      if (
+        mountedRef.current &&
+        downloadRequestId === requestIdRef.current
+      ) {
+        router.push(downloadResult.downloadPageUrl);
+      }
+    } catch {
+      if (
+        mountedRef.current &&
+        downloadRequestId === requestIdRef.current
+      ) {
+        setError('Download preparation failed. Please try again.');
+      }
+    } finally {
+      if (mountedRef.current) {
+        setDownloading(false);
+      }
+    }
   };
 
   return (
@@ -114,7 +254,7 @@ export default function PsdToJpgPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to JPG Converter</h1>
-                <p className="text-lg text-white/90">Convert Photoshop PSD files to JPG format instantly. Flatten layers, merge all elements, and export in a universally compatible format.</p>
+                <p className="text-lg text-white/90">Convert Photoshop PSD files to JPG format. Flatten layers, merge all elements, and export in a universally compatible format.</p>
               </div>
             </div>
           </div>
@@ -141,7 +281,7 @@ export default function PsdToJpgPage() {
                       />
                       <div className="text-center">
                         <ImageIcon size={48} className="mx-auto mb-3 text-purple-500" />
-                        <p className="text-gray-900 font-medium mb-1">Click to upload or drag and drop</p>
+                        <p className="text-gray-900 font-medium mb-1">Click to select a PSD file</p>
                         <p className="text-gray-600 text-sm">PSD files only, up to 500MB</p>
                       </div>
                     </div>
@@ -199,7 +339,7 @@ export default function PsdToJpgPage() {
                       min="1"
                       max="100"
                       value={quality}
-                      onChange={(e) => setQuality(Number(e.target.value))}
+                      onChange={(e) => handleQualityChange(Number(e.target.value))}
                       className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
                     />
                     <p className="text-xs text-gray-500 mt-2">
@@ -246,13 +386,14 @@ export default function PsdToJpgPage() {
                   )}
 
                   {/* Download Button */}
-                  {downloadUrl && (
+                  {downloadUrl && !processing && (
                     <button
                       onClick={handleDownload}
+                      disabled={downloading}
                       className="w-full mt-3 px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
                     >
                       <Download size={18} />
-                      Download JPG
+                      {downloading ? 'Preparing download...' : 'Download JPG'}
                     </button>
                   )}
 
@@ -300,7 +441,7 @@ export default function PsdToJpgPage() {
                   <ul className="space-y-2 text-gray-600 text-sm">
                     <li>• Compact file sizes</li>
                     <li>• Universal software support</li>
-                    <li>• Perfect for web and sharing</li>
+                    <li>• Suitable for common web and sharing workflows</li>
                     <li>• Fast loading times</li>
                   </ul>
                 </div>
@@ -314,7 +455,7 @@ export default function PsdToJpgPage() {
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <h3 className="font-semibold text-green-900 mb-2">High Quality (90-100%)</h3>
                   <p className="text-sm text-green-800 mb-3">
-                    Best for artwork, photography, and professional use. Larger file size but excellent quality.
+                    Higher quality settings retain more visible detail but generally produce larger JPG files.
                   </p>
                   <p className="text-xs text-green-700">Recommended for: Print, digital art, archives</p>
                 </div>
@@ -336,39 +477,39 @@ export default function PsdToJpgPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Will my PSD layers be preserved in the JPG?</h3>
-                  <p className="text-gray-600">No. JPG format doesn't support layers, so all layers in your PSD will be automatically flattened and merged into a single image. The final result shows all visible layers combined.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What if my PSD has transparency?</h3>
-                  <p className="text-gray-600">Transparent areas in your PSD will be converted to a white background in the JPG, since JPG format doesn't support transparency. If you need transparency, consider converting to PNG instead.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">How does quality affect the file size?</h3>
-                  <p className="text-gray-600">Higher quality percentages result in larger file sizes and better visual quality, while lower percentages create smaller files with more compression artifacts. Quality 85% is usually ideal for web use.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Can I convert back from JPG to PSD?</h3>
-                  <p className="text-gray-600">Once converted to JPG, you cannot recover the original layers. JPG is a lossy format. Always keep your original PSD file if you need to edit it later.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What about fonts and effects in my PSD?</h3>
-                  <p className="text-gray-600">All text, effects, and adjustments will be rendered and flattened into the image. However, font information will be lost since JPG stores only pixels, not editable text.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What's the maximum file size?</h3>
-                  <p className="text-gray-600">You can convert PSD files up to 500MB in size. Larger files may take longer to process, but the conversion quality remains unchanged.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Is the conversion process secure?</h3>
-                  <p className="text-gray-600">Yes! Your files are processed securely and deleted after conversion. We don't store or share your files with third parties.</p>
-                </div>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>Will my PSD layers be preserved in the JPG?</FAQStaticQuestion>
+                  <FAQAnswer>No. JPG format doesn't support layers, so all layers in your PSD will be automatically flattened and merged into a single image. The final result shows all visible layers combined.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What if my PSD has transparency?</FAQStaticQuestion>
+                  <FAQAnswer>Transparent areas in your PSD will be converted to a white background in the JPG, since JPG format doesn't support transparency. If you need transparency, consider converting to PNG instead.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>How does quality affect the file size?</FAQStaticQuestion>
+                  <FAQAnswer>Higher quality percentages result in larger file sizes and better visual quality, while lower percentages create smaller files with more compression artifacts. Quality 85% is usually ideal for web use.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Can I convert back from JPG to PSD?</FAQStaticQuestion>
+                  <FAQAnswer>Once converted to JPG, you cannot recover the original layers. JPG is a lossy format. Always keep your original PSD file if you need to edit it later.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What about fonts and effects in my PSD?</FAQStaticQuestion>
+                  <FAQAnswer>All text, effects, and adjustments will be rendered and flattened into the image. However, font information will be lost since JPG stores only pixels, not editable text.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What's the maximum file size?</FAQStaticQuestion>
+                  <FAQAnswer>You can convert PSD files up to 500MB in size. Larger files may take longer to process, but the conversion quality remains unchanged.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+                  <FAQAnswer>Files are uploaded to the conversion server and processed only as needed to create the JPG output.</FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </div>
       </main>

@@ -1,13 +1,17 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { ImageUploader } from '@/app/components/ImageUploader';
 import { Download, ChevronRight, Palette } from 'lucide-react';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ColorizePhotoPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -183,17 +187,30 @@ export default function ColorizePhotoPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+    if (!result || !file) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'colorized-photo.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'colorize-photo',
+        originalName: file.name,
+        outputName: 'colorized-photo.png',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleClearPreview = () => {
@@ -229,7 +246,7 @@ export default function ColorizePhotoPage() {
             <div>
               <h1 className="text-4xl font-bold mb-2">Colorize Photo</h1>
               <p className="text-lg text-orange-50">
-                Add beautiful colors to black and white photos with multiple tone options
+                Apply sepia, warm, cool, or custom color tones to black-and-white and other photos. This tool adds tonal effects rather than restoring original colors.
               </p>
             </div>
           </div>
@@ -450,7 +467,7 @@ export default function ColorizePhotoPage() {
                 <li>• Upload black & white photo</li>
                 <li>• Select tone or custom color</li>
                 <li>• Adjust intensity slider</li>
-                <li>• Preview changes in real-time</li>
+                <li>• Review the tone preview, then apply the effect</li>
                 <li>• Download colorized version</li>
               </ul>
             </div>
@@ -495,11 +512,11 @@ export default function ColorizePhotoPage() {
             </li>
             <li className="flex gap-4">
               <span className="text-orange-500 font-bold min-w-8">4.</span>
-              <span><strong>Preview:</strong> See the colorized result in real-time before applying.</span>
+              <span><strong>Preview:</strong> Review the tone preview, then click Apply Colorize Effect to generate the full-size result. If the preview has not refreshed, apply the effect to check the selected settings.</span>
             </li>
             <li className="flex gap-4">
               <span className="text-orange-500 font-bold min-w-8">5.</span>
-              <span><strong>Download:</strong> Save your colorized photo as a PNG file.</span>
+              <span><strong>Download:</strong> Click Download Colorized Photo after applying the effect to open the download page for your PNG result.</span>
             </li>
           </ol>
         </div>
@@ -515,24 +532,24 @@ export default function ColorizePhotoPage() {
               <p className="text-gray-700">Choose from preset tones like sepia, warm, and cool, or use a custom color for unique effects.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-Time Preview</h3>
-              <p className="text-gray-700">See changes instantly as you adjust tone, color, and intensity without applying.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Tone Preview</h3>
+              <p className="text-gray-700">Use the preview canvas to inspect a reduced-size tonal effect. Apply the effect to generate the downloadable image.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Restore Vintage Photos</h3>
-              <p className="text-gray-700">Bring old black and white photographs back to life with beautiful, natural-looking colors.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Apply Tones to Vintage Photos</h3>
+              <p className="text-gray-700">Give grayscale photographs a vintage or stylized appearance. The tool does not identify objects or reconstruct their original colors.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Precise Control</h3>
-              <p className="text-gray-700">Adjust intensity from subtle to vibrant to get exactly the look you want.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Adjustable Intensity</h3>
+              <p className="text-gray-700">Adjust the intensity from subtle to stronger tonal effects and review the preview before downloading.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ High Quality Output</h3>
-              <p className="text-gray-700">Exports as PNG with full quality preservation. No compression or loss of detail.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ PNG Output</h3>
+              <p className="text-gray-700">Exports the processed result as PNG while retaining the selected output dimensions.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
-              <p className="text-gray-700">No sign-up required. All processing happens locally. Your photos stay completely private.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Browser-Based Processing</h3>
+              <p className="text-gray-700">The colorization effect is processed locally in the browser using canvas.</p>
             </div>
           </div>
         </div>
@@ -540,35 +557,35 @@ export default function ColorizePhotoPage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-              <p className="text-gray-700 mt-2">Our tool supports all common image formats including JPG, PNG, WebP, GIF, BMP, and TIFF. The output is always PNG format for maximum quality.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I colorize a color photo?</summary>
-              <p className="text-gray-700 mt-2">While designed for B&W photos, you can use this tool on color photos to apply tonal overlays. The grayscale values are calculated from existing RGB data.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between sepia, warm, and cool tones?</summary>
-              <p className="text-gray-700 mt-2">Sepia adds a classic brown tone (vintage look), Warm adds orange/gold (nostalgic feel), and Cool adds blue/cyan (modern touch). Custom lets you pick any color.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Does colorization affect photo quality?</summary>
-              <p className="text-gray-700 mt-2">No, colorization preserves all original quality. The output PNG maintains the same resolution and detail as your input image.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is my photo data secure?</summary>
-              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally in your browser. Your photos are never uploaded to any server and remain completely private.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I use colorized photos commercially?</summary>
-              <p className="text-gray-700 mt-2">Yes, colorized photos can be used for personal or commercial purposes without any restrictions.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What image formats are supported?</FAQQuestion>
+              <FAQAnswer>The tool accepts supported browser-readable image files and exports the processed result as PNG.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I colorize a color photo?</FAQQuestion>
+              <FAQAnswer>While designed for B&W photos, you can use this tool on color photos to apply tonal overlays. The grayscale values are calculated from existing RGB data.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What's the difference between sepia, warm, and cool tones?</FAQQuestion>
+              <FAQAnswer>Sepia adds a classic brown tone (vintage look), Warm adds orange/gold (nostalgic feel), and Cool adds blue/cyan (modern touch). Custom lets you pick any color.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Does colorization affect photo quality?</FAQQuestion>
+              <FAQAnswer>The tool keeps the source image dimensions for processing, but applying the effect changes pixel values and the result is exported again as PNG.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Where is my photo processed?</FAQQuestion>
+              <FAQAnswer>The tonal effect is applied in your browser using canvas. When you request a download, the generated PNG is uploaded to the download service to prepare the download page. Avoid uploading sensitive photos unless you are comfortable with this workflow.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I use colorized photos commercially?</FAQQuestion>
+              <FAQAnswer>Colorizing an image does not change its ownership or licensing rights. Use the processed image only when you own the source image or have the necessary permission.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}
@@ -576,7 +593,7 @@ export default function ColorizePhotoPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Photo Tools</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <Link href="/all-tools/enhance-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+            <Link href="/all-tools/image-enhancer" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Enhance Image</h3>
               <p className="text-sm text-gray-600">Improve photo quality and clarity</p>
             </Link>
@@ -584,7 +601,7 @@ export default function ColorizePhotoPage() {
               <h3 className="font-bold text-gray-800 mb-1">Grayscale Image</h3>
               <p className="text-sm text-gray-600">Convert to black and white</p>
             </Link>
-            <Link href="/all-tools/sepia-effect" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
+            <Link href="/all-tools/sepia-filter" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Sepia Effect</h3>
               <p className="text-sm text-gray-600">Apply classic vintage tone</p>
             </Link>
@@ -603,7 +620,7 @@ export default function ColorizePhotoPage() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'Colorize Photo - Free Online Photo Colorization Tool',
-        description: 'Add colors to black and white photos. Restore vintage photographs with sepia, warm, cool, or custom color tones.',
+        description: 'Apply sepia, warm, cool, or custom color tones to black-and-white and other supported photos.',
         url: 'https://simplifyconvert.com/all-tools/colorize-photo',
         applicationCategory: 'Multimedia',
         offers: {
@@ -617,22 +634,20 @@ export default function ColorizePhotoPage() {
           name: 'SimplifyConvert',
           url: 'https://simplifyconvert.com',
         },
-        datePublished: '2024-01-01',
         image: 'https://simplifyconvert.com/og-image.jpg',
         featureList: [
           'Multiple tone options (sepia, warm, cool)',
           'Custom color selection',
           'Intensity control slider',
-          'Real-time preview',
-          'High quality PNG export',
+          'Tone preview canvas',
+          'PNG export',
           'No sign-up required',
-          'Privacy-focused local processing',
+          'Browser-based local processing',
         ],
       })}} />
     </div>
   );
 }
-
 
 
 

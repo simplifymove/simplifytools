@@ -1,6 +1,6 @@
 ﻿export const metadata = {
-  title: 'Free Sketch Effect - Convert to Pencil Sketches',
-  description: 'Transform photos into pencil sketches and drawings. Create artistic sketch effects instantly.',
+  title: 'Sketch Effect - Create a Pencil-Style Image | SimplifyConvert',
+  description: 'Apply a pencil-sketch-style effect to JPG, PNG, or WebP images in your browser and download the processed result.',
   keywords: 'sketch effect, pencil sketch, drawing effect, sketch filter, artistic',
   openGraph: {
     title: 'Free Sketch Effect - Create Pencil Sketches',

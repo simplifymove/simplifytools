@@ -1,80 +1,206 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function PngToTiffPage() {
+  const router = useRouter();
+  const requestGeneration = useRef(0);
+  const processingRef = useRef(false);
+  const downloadRef = useRef(false);
+  const conversionAbortRef = useRef<AbortController | null>(null);
+  const previewReaderRef = useRef<FileReader | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [tiffResult, setTiffResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
-    setError(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+  const resetConversion = () => {
+    requestGeneration.current += 1;
+    conversionAbortRef.current?.abort();
+    conversionAbortRef.current = null;
+    previewReaderRef.current?.abort();
+    previewReaderRef.current = null;
+    processingRef.current = false;
+    setProcessing(false);
+    setTiffResult(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      requestGeneration.current += 1;
+      conversionAbortRef.current?.abort();
+      previewReaderRef.current?.abort();
     };
+  }, []);
+
+  const handleFileSelect = (selectedFile: File) => {
+    if (downloadRef.current) return;
+
+    resetConversion();
+    setFile(null);
+    setPreview(null);
+    setError(null);
+
+    if (
+      selectedFile.type !== 'image/png' ||
+      !selectedFile.name.toLowerCase().endsWith('.png')
+    ) {
+      setError('Please select a valid PNG (.png) image.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected PNG file is empty.');
+      return;
+    }
+
+    const generation = requestGeneration.current;
+    setFile(selectedFile);
+
+    const reader = new FileReader();
+    previewReaderRef.current = reader;
+
+    reader.onload = () => {
+      if (generation === requestGeneration.current) {
+        setPreview(
+          typeof reader.result === 'string' ? reader.result : null
+        );
+      }
+    };
+
+    reader.onerror = () => {
+      if (generation === requestGeneration.current) {
+        setError('Unable to preview the selected PNG.');
+      }
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    if (downloadRef.current) return;
+
+    resetConversion();
     setFile(null);
     setPreview(null);
-    setDownloadUrl(null);
     setError(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file || processingRef.current || downloadRef.current) return;
+
+    const generation = ++requestGeneration.current;
+    const controller = new AbortController();
+
+    conversionAbortRef.current = controller;
+    processingRef.current = true;
+
     setProcessing(true);
+    setTiffResult(null);
     setError(null);
+
     try {
       const formData = new FormData();
+
       formData.append('image', file);
       formData.append('config', JSON.stringify({
         from_format: 'png',
         to_format: 'tiff',
-        options: {
-          quality: 100,
-        },
+        options: {},
       }));
 
       const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Conversion failed');
+        const errorData = await response.json().catch(() => null);
+
+        throw new Error(
+          typeof errorData?.error === 'string'
+            ? errorData.error
+            : 'PNG to TIFF conversion failed.'
+        );
       }
 
       const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      setDownloadUrl(url);
-    } catch (error) {
-      setError((error as Error).message || 'Error converting image');
+
+      if (blob.type.split(';')[0].trim() !== 'image/tiff') {
+        throw new Error(
+          'The conversion service did not return a TIFF file.'
+        );
+      }
+
+      if (blob.size === 0) {
+        throw new Error('The generated TIFF file is empty.');
+      }
+
+      if (generation === requestGeneration.current) {
+        setTiffResult(blob);
+      }
+    } catch (caughtError) {
+      if (generation === requestGeneration.current) {
+        if (
+          caughtError instanceof Error &&
+          caughtError.name !== 'AbortError'
+        ) {
+          setError(
+            caughtError.message || 'Unable to convert PNG to TIFF.'
+          );
+        }
+      }
     } finally {
-      setProcessing(false);
+      if (generation === requestGeneration.current) {
+        conversionAbortRef.current = null;
+        processingRef.current = false;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!downloadUrl) return;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'converted.tiff';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!tiffResult || !file || processingRef.current) return;
+
+    processingRef.current = true;
+    downloadRef.current = true;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: tiffResult,
+        toolSlug: 'png-to-tiff',
+        originalName: file.name,
+        outputName: `${baseName}.tiff`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the TIFF download.'
+      );
+    } finally {
+      downloadRef.current = false;
+      processingRef.current = false;
+      setProcessing(false);
+    }
   };
 
   return (
@@ -100,7 +226,7 @@ export default function PngToTiffPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to TIFF Converter</h1>
-                <p className="text-lg text-white/90">Convert PNG images to TIFF format with lossless compression. Perfect for archival, professional printing, and quality-sensitive applications.</p>
+                <p className="text-lg text-white/90">Convert PNG images to TIFF format with lossless LZW compression for compatible image, archive, and print workflows.</p>
               </div>
             </div>
           </div>
@@ -118,6 +244,16 @@ export default function PngToTiffPage() {
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
+                    accept=".png,image/png"
+                    toolId="png-to-tiff"
+                    onValidationError={(message) => {
+                      if (message && !downloadRef.current) {
+                        resetConversion();
+                        setFile(null);
+                        setPreview(null);
+                        setError(message);
+                      }
+                    }}
                   />
                   {error && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -176,13 +312,14 @@ export default function PngToTiffPage() {
                   </button>
 
                   {/* Download Button */}
-                  {downloadUrl && (
+                  {tiffResult && (
                     <button
                       onClick={handleDownload}
+                      disabled={processing}
                       className="w-full mt-3 px-4 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-all flex items-center justify-center gap-2"
                     >
                       <Download size={18} />
-                      Download TIFF
+                      {processing ? 'Preparing download...' : 'Download TIFF'}
                     </button>
                   )}
 
@@ -193,8 +330,8 @@ export default function PngToTiffPage() {
                     </p>
                     <ul className="text-xs text-green-700 space-y-1">
                       <li>• Lossless compression for archival</li>
-                      <li>• Professional quality for printing</li>
-                      <li>• Support for multiple layers</li>
+                      <li>• TIFF output for compatible print and image workflows</li>
+                      <li>• Lossless LZW compression for TIFF output</li>
                       <li>• Wide compatibility with design tools</li>
                     </ul>
                   </div>
@@ -203,34 +340,227 @@ export default function PngToTiffPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What is TIFF format?</h3>
-                  <p className="text-gray-600">TIFF (Tagged Image File Format) is a flexible image format that supports both lossless and lossy compression. It's widely used for high-quality image storage and professional applications.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Why convert PNG to TIFF?</h3>
-                  <p className="text-gray-600">TIFF provides lossless compression and is the industry standard for archival and professional printing. If you need maximum compatibility with professional design and printing workflows, TIFF is the ideal choice.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Will my image lose quality?</h3>
-                  <p className="text-gray-600">No! Our converter maintains 100% quality during conversion. TIFF supports lossless compression, so your image will retain all original details from the PNG source, including transparency.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">What size files can I convert?</h3>
-                  <p className="text-gray-600">You can convert files up to 500MB in size. For best performance, we recommend keeping files under 100MB.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">How is PNG to TIFF different from other conversions?</h3>
-                  <p className="text-gray-600">PNG to TIFF conversion preserves the PNG's transparency information and quality. Unlike JPG to TIFF, this maintains any transparency from your original PNG, making it ideal for images with transparent backgrounds.</p>
-                </div>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>What is TIFF format?</FAQStaticQuestion>
+                  <FAQAnswer>TIFF (Tagged Image File Format) is a flexible image format that supports both lossless and lossy compression. It's widely used for high-quality image storage and professional applications.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Why convert PNG to TIFF?</FAQStaticQuestion>
+                  <FAQAnswer>TIFF supports lossless storage and is widely used in imaging, publishing, print, and archival workflows. Converting a PNG to TIFF can be useful when a workflow or application specifically requires TIFF input.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>Will my image lose quality?</FAQStaticQuestion>
+                  <FAQAnswer>The TIFF output uses lossless compression. Image data supported by both formats is preserved without introducing lossy TIFF compression, although metadata or format-specific features may differ.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>What size files can I convert?</FAQStaticQuestion>
+                  <FAQAnswer>Image uploads are limited to 500MB by the current conversion API. Processing time and memory use can increase significantly with very large or high-resolution images.</FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>How is PNG to TIFF different from other conversions?</FAQStaticQuestion>
+                  <FAQAnswer>PNG images with transparency can be represented in TIFF when supported by the source image mode and conversion pipeline. Format-specific metadata or features may not transfer identically.</FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert PNG to TIFF online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a PNG image and click Convert to TIFF. The image is sent
+                to the server and converted with the raster conversion engine.
+                TIFF output is written using lossless LZW compression. When the
+                conversion finishes, use Download TIFF to continue to the
+                download page and save the converted file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What happens during PNG to TIFF conversion?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The uploaded PNG is opened by the server-side raster
+                  conversion engine and saved as a TIFF image. This converter
+                  does not request resizing or lossy TIFF quality settings, and
+                  the TIFF file is written with LZW compression.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Does PNG transparency remain available?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  PNG images can contain an alpha channel for transparency.
+                  The current PNG to TIFF conversion does not intentionally
+                  flatten that alpha channel before saving the TIFF, allowing
+                  compatible TIFF image modes to retain transparency.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                PNG vs TIFF
+              </h2>
+
+              <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-900">
+                    <tr>
+                      <th className="p-4 font-semibold">Feature</th>
+                      <th className="p-4 font-semibold">PNG</th>
+                      <th className="p-4 font-semibold">TIFF output</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 text-gray-600">
+                    <tr>
+                      <td className="p-4 font-medium text-gray-900">Compression</td>
+                      <td className="p-4">Lossless PNG compression</td>
+                      <td className="p-4">Lossless LZW compression</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 font-medium text-gray-900">Transparency</td>
+                      <td className="p-4">Alpha transparency supported</td>
+                      <td className="p-4">Can retain compatible alpha data</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 font-medium text-gray-900">Typical use</td>
+                      <td className="p-4">Web graphics and general image use</td>
+                      <td className="p-4">Imaging, print and archival workflows</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-slate-50 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Why use LZW compression?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  LZW is a lossless TIFF compression method. It reduces stored
+                  image data without intentionally introducing the compression
+                  artifacts associated with lossy formats such as JPEG.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Will TIFF be smaller than PNG?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Not necessarily. PNG and TIFF LZW use different lossless
+                  compression approaches, so the resulting TIFF may be larger
+                  or smaller depending on the image content, dimensions and
+                  source encoding.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                When is PNG to TIFF conversion useful?
+              </h2>
+              <p className="text-gray-600 leading-7 mb-4">
+                TIFF remains common in workflows that expect TIFF files rather
+                than web-oriented image formats. Converting can be useful when
+                preparing PNG artwork, scans, diagrams or other raster images
+                for software and workflows that specifically request TIFF.
+              </p>
+
+              <ul className="grid sm:grid-cols-2 gap-3 text-sm text-gray-600">
+                {[
+                  'Preparing raster images for TIFF-based workflows',
+                  'Using PNG artwork in publishing or print software',
+                  'Creating a losslessly compressed TIFF copy',
+                  'Converting transparent PNG images for compatible TIFF workflows',
+                  'Supplying TIFF when an application requires the format',
+                  'Moving raster images between different imaging workflows',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="border border-gray-200 rounded-lg px-4 py-3"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What the conversion does not change
+              </h2>
+              <p className="text-gray-600 leading-7">
+                This tool changes the image container and compression used for
+                the output. The page does not request resizing, sharpening,
+                upscaling or other image enhancement. Converting to TIFF also
+                does not create additional visual detail beyond the pixels
+                already present in the PNG.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                PNG to TIFF FAQ
+              </FAQHeading>
+
+              <FAQList>
+                {[
+                  [
+                    'Is PNG to TIFF conversion lossless?',
+                    'The current TIFF output uses LZW, which is a lossless TIFF compression method. The converter does not intentionally apply lossy TIFF compression.',
+                  ],
+                  [
+                    'Does converting PNG to TIFF improve image quality?',
+                    'No. Conversion changes the file format but does not create new image detail or increase the source resolution.',
+                  ],
+                  [
+                    'Can a transparent PNG be converted to TIFF?',
+                    'Yes. The current raster conversion does not intentionally flatten PNG alpha data when TIFF is the target, although how transparency is displayed can depend on the software opening the TIFF.',
+                  ],
+                  [
+                    'Does the converter resize my PNG?',
+                    'No resize option is requested by this PNG to TIFF page, so the conversion is intended to retain the source image dimensions.',
+                  ],
+                  [
+                    'Why can the TIFF file be larger?',
+                    'Different lossless compression methods produce different file sizes. TIFF also has its own container structure, so a TIFF is not guaranteed to be smaller than its PNG source.',
+                  ],
+                  [
+                    'What is the current upload limit?',
+                    'The conversion API currently applies a 500MB limit to image uploads.',
+                  ],
+                ].map(([question, answer]) => (
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>
+                      {question}
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      {answer}
+                    </FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );

@@ -96,6 +96,161 @@ export function validateToolOptions(
     errors.push('Number of parts must be a number');
   }
   
+  // Validate Split CSV options before invoking Python.
+  if (toolId === 'split-csv') {
+    const mode = options.split_mode ?? 'by_rows';
+    const delimiter = options.delimiter ?? 'comma';
+
+    if (!['by_rows', 'by_parts', 'by_column_value'].includes(mode)) {
+      errors.push('Split Mode must be by rows, by parts, or by column value');
+    }
+
+    if (!['comma', 'semicolon', 'tab'].includes(delimiter)) {
+      errors.push('Delimiter must be comma, semicolon, or tab');
+    }
+
+    if (mode === 'by_rows') {
+      const rows = options.rows_per_file ?? options.rowsPerFile ?? 1000;
+
+      if (
+        (typeof rows !== 'number' && typeof rows !== 'string') ||
+        String(rows).trim() === '' ||
+        !Number.isSafeInteger(Number(rows)) ||
+        Number(rows) < 1
+      ) {
+        errors.push('Rows Per File must be a positive whole number');
+      }
+    }
+
+    if (mode === 'by_parts') {
+      const parts = options.num_parts ?? options.parts ?? options.numParts ?? 2;
+
+      if (
+        (typeof parts !== 'number' && typeof parts !== 'string') ||
+        String(parts).trim() === '' ||
+        !Number.isSafeInteger(Number(parts)) ||
+        Number(parts) < 2
+      ) {
+        errors.push('Number of Parts must be a whole number of at least 2');
+      }
+    }
+
+    if (mode === 'by_column_value') {
+      const column = options.column_name ?? options.columnName;
+
+      if (typeof column !== 'string' || !column.trim()) {
+        errors.push('Column Name is required for column-value splitting');
+      }
+    }
+  }
+
+  // Validate Split Excel settings before invoking Python.
+  if (toolId === 'split-excel') {
+    const mode = options.split_mode ?? 'by_sheet';
+
+    if (!['by_sheet', 'by_rows', 'by_parts'].includes(mode)) {
+      errors.push('Split Mode must be by sheet, by rows, or by parts');
+    }
+
+    if (mode === 'by_rows') {
+      const rows = options.rows_per_file ?? options.rowsPerFile ?? 1000;
+
+      if (
+        (typeof rows !== 'number' && typeof rows !== 'string') ||
+        String(rows).trim() === '' ||
+        !Number.isSafeInteger(Number(rows)) ||
+        Number(rows) < 1
+      ) {
+        errors.push('Rows Per File must be a positive whole number');
+      }
+    }
+
+    if (mode === 'by_parts') {
+      const parts = options.num_parts ?? options.parts ?? 2;
+
+      if (
+        (typeof parts !== 'number' && typeof parts !== 'string') ||
+        String(parts).trim() === '' ||
+        !Number.isSafeInteger(Number(parts)) ||
+        Number(parts) < 2
+      ) {
+        errors.push('Number of Parts must be a whole number of at least 2');
+      }
+    }
+  }
+
+  // Validate CSV-to-Excel settings before invoking Python.
+  if (toolId === 'csv-to-excel') {
+    const sheetName = options.sheetName ?? 'Data';
+    const encoding = options.encoding ?? 'utf-8';
+    const autoSize = options.autoSize ?? true;
+
+    if (
+      typeof sheetName !== 'string' ||
+      !sheetName.trim() ||
+      sheetName.length > 31 ||
+      Array.from(sheetName).some(char => '[]:*?/\\'.includes(char)) ||
+      sheetName.startsWith("'") ||
+      sheetName.endsWith("'")
+    ) {
+      errors.push(
+        'Worksheet name must be 1 to 31 characters and cannot contain Excel-invalid characters'
+      );
+    }
+
+    if (
+      typeof encoding !== 'string' ||
+      !['utf-8', 'latin-1', 'iso-8859-1', 'cp1252'].includes(encoding)
+    ) {
+      errors.push('Unsupported CSV encoding');
+    }
+
+    if (typeof autoSize !== 'boolean') {
+      errors.push('Auto-size Columns must be true or false');
+    }
+  }
+
+  // Validate Excel-to-PDF options before invoking Python.
+  if (toolId === 'excel-to-pdf') {
+    const sheetMode = options.sheetMode ?? options.sheet_mode ?? 'first';
+    const orientation = options.orientation ?? 'portrait';
+    const fitToWidth = options.fitToWidth ?? options.fit_to_width ?? true;
+
+    if (!['first', 'all'].includes(sheetMode)) {
+      errors.push('Sheets to Export must be first or all');
+    }
+
+    if (!['portrait', 'landscape'].includes(orientation)) {
+      errors.push('Page Orientation must be portrait or landscape');
+    }
+
+    if (typeof fitToWidth !== 'boolean') {
+      errors.push('Fit to Width must be true or false');
+    }
+  }
+
+  // Validate XML element names before invoking Python.
+  if (['csv-to-xml', 'json-to-xml', 'excel-to-xml'].includes(toolId)) {
+    for (const name of ['rootTag', 'itemTag'] as const) {
+      const value = options[name] ?? options[
+        name === 'rootTag' ? 'root_tag' : 'item_tag'
+      ];
+
+      if (value === undefined || value === null || value === '') {
+        continue;
+      }
+
+      if (
+        typeof value !== 'string' ||
+        !/^[A-Za-z_][A-Za-z0-9._-]*$/.test(value)
+      ) {
+        errors.push(name + ' must be a valid XML element name');
+      } else if (value.toLowerCase().startsWith('xml')) {
+        errors.push(name + ' cannot start with the reserved XML prefix');
+      }
+    }
+  }
+
   return { valid: errors.length === 0, errors };
 }
 
@@ -119,6 +274,33 @@ export function normalizeFileExtension(extension: string): string {
 
 export function createConvertedFilename(extension: string): string {
   return `converted${normalizeFileExtension(extension)}`;
+}
+
+export function resolveDataOutputExtension(
+  toolId: string,
+  configuredOutput: string,
+  options: Record<string, any>,
+): string {
+  if (
+    toolId === 'excel-to-csv' &&
+    (options.sheet_mode === 'zip' || options.sheetMode === 'zip')
+  ) {
+    return '.zip';
+  }
+  return normalizeFileExtension(configuredOutput);
+}
+
+export function dataMimeTypeForExtension(extension: string): string {
+  const mimeTypes: Record<string, string> = {
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.xls': 'application/vnd.ms-excel',
+    '.csv': 'text/csv',
+    '.json': 'application/json',
+    '.xml': 'application/xml',
+    '.pdf': 'application/pdf',
+    '.zip': 'application/zip',
+  };
+  return mimeTypes[normalizeFileExtension(extension)] || 'application/octet-stream';
 }
 
 /**
@@ -163,4 +345,3 @@ export async function validateExcelFile(fileBuffer: Buffer, filename: string): P
   
   return true; // Other formats are allowed
 }
-

@@ -58,16 +58,17 @@ export async function GET(req: NextRequest) {
     const ollamaConnected = health.ollama?.status === "connected";
     const razorpayConfigured = health.razorpay?.status === "configured";
 
-    health.status = dbConnected && ollamaConnected ? "healthy" : "degraded";
-    health.readyForRequests = dbConnected && ollamaConnected;
+    // The database is required for the core web application.
+    // Ollama powers the optional legacy AI generation API and should not
+    // make the entire website unavailable when that service is offline.
+    health.status = dbConnected
+      ? (ollamaConnected ? "healthy" : "degraded")
+      : "unhealthy";
+    health.readyForRequests = dbConnected;
 
-    // If anything failed but system is up, return 200 with degraded status
-    // This allows clients to see partial health even if some components fail
-    const statusCode =
-      health.status === "healthy" ||
-      (dbConnected && ollamaConnected)
-        ? 200
-        : 503;
+    // Return 200 when the core application is ready.
+    // Optional services can still be reported as degraded in the response.
+    const statusCode = dbConnected ? 200 : 503;
 
     return NextResponse.json(health, { status: statusCode });
   } catch (error) {

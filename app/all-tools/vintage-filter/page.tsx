@@ -1,27 +1,69 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function VintageFilterPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [vintageIntensity, setVintageIntensity] = useState(50);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const operationRef = useRef(0);
+  const resultUrlRef = useRef<string | null>(null);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const [toolError, setToolError] = useState<string | null>(null);
+
+  const clearResult = () => {
+    operationRef.current += 1;
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+    setResult(null);
+    setResultPreview(null);
+    setToolError(null);
+    setProcessing(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      operationRef.current += 1;
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    };
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      clearResult();
+      setFile(null);
+      setPreview(null);
+
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type)) {
+        setToolError('Please select a JPG, PNG, or WebP image.');
+        return;
+      }
+
       setFile(selectedFile);
+      const selection = operationRef.current;
       const reader = new FileReader();
       reader.onload = (event) => {
+        if (selection !== operationRef.current) return;
         setPreview(event.target?.result as string);
+      };
+      reader.onerror = () => {
+        if (selection !== operationRef.current) return;
+        setToolError('Unable to read this image.');
       };
       reader.readAsDataURL(selectedFile);
     }
@@ -29,11 +71,14 @@ export default function VintageFilterPage() {
 
   const applyVintageFilter = async () => {
     if (!file || !preview) return;
+    clearResult();
+    const operation = operationRef.current;
     setProcessing(true);
 
     try {
       const img = new Image();
       img.onload = async () => {
+        if (operation !== operationRef.current) return;
         try {
           const canvas = canvasRef.current;
           if (!canvas) {
@@ -66,39 +111,70 @@ export default function VintageFilterPage() {
           ctx.putImageData(imageData, 0, 0);
           canvas.toBlob((blob) => {
             if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
+              if (operation === operationRef.current) {
+                setToolError('Unable to create the processed image.');
+                setProcessing(false);
+              }
               return;
             }
+            if (operation !== operationRef.current) return;
+            const url = URL.createObjectURL(blob);
+            resultUrlRef.current = url;
+            setResultPreview(url);
             setResult(blob);
             setProcessing(false);
           }, 'image/jpeg', 0.95);
         } catch (error) {
           console.error('Error in image onload:', error);
-          setProcessing(false);
+          if (operation === operationRef.current) {
+            setToolError('Unable to apply the vintage filter.');
+            setProcessing(false);
+          }
         }
       };
       img.onerror = () => {
-        console.error('Error loading image');
-        setProcessing(false);
+        if (operation === operationRef.current) {
+          setToolError('Unable to load the selected image.');
+          setProcessing(false);
+        }
       };
       img.src = preview;
     } catch (error) {
       console.error('Error applying vintage filter:', error);
-      setProcessing(false);
+      if (operation === operationRef.current) {
+        setToolError('Unable to apply the vintage filter.');
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'vintage-filtered-image.jpg';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'vintage-filter',
+            originalName: 'vintage-filtered-image.jpg',
+            outputName: 'vintage-filtered-image.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -116,10 +192,10 @@ export default function VintageFilterPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎞️ Vintage Filter</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Add classic vintage and retro effects to your photos instantly. Transform modern photos into nostalgic memories with our free online vintage filter tool.
+              Apply vintage and retro-style effects to supported images using adjustable browser-based controls.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Apply authentic vintage looks with adjustable intensity. No signup required, completely free.
+              Choose a vintage-style effect and adjust its intensity before exporting the result.
             </p>
           </div>
         </div>
@@ -130,12 +206,12 @@ export default function VintageFilterPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Vintage Filter</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   onChange={handleFileSelect}
                   className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-yellow-400 transition"
                 />
@@ -152,7 +228,10 @@ export default function VintageFilterPage() {
                       min="0"
                       max="100"
                       value={vintageIntensity}
-                      onChange={(e) => setVintageIntensity(Number(e.target.value))}
+                      onChange={(e) => {
+                        clearResult();
+                        setVintageIntensity(Number(e.target.value));
+                      }}
                       className="w-full"
                     />
                   </div>
@@ -166,6 +245,25 @@ export default function VintageFilterPage() {
                     {processing ? 'Processing...' : 'Apply Vintage Effect'}
                   </button>
                 </>
+              )}
+
+              {toolError && (
+                <p role="alert" className="mb-4 text-sm text-red-700">
+                  {toolError}
+                </p>
+              )}
+
+              {resultPreview && (
+                <div className="mt-6 mb-4">
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    Processed Image Preview
+                  </h3>
+                  <img
+                    src={resultPreview}
+                    alt="Photo with vintage filter applied"
+                    className="w-full max-h-96 object-contain rounded-lg border border-gray-200"
+                  />
+                </div>
               )}
 
               {result && (
@@ -203,12 +301,12 @@ export default function VintageFilterPage() {
                   <p className="text-gray-700">Control how strong the vintage effect is to match your style preferences.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-yellow-600 mb-2">100% Free & Private</h3>
-                  <p className="text-gray-700">No registration needed, images processed locally, complete privacy guaranteed.</p>
+                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Browser-Based Processing</h3>
+                  <p className="text-gray-700">Vintage filtering is performed locally in the browser using canvas.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Professional Results</h3>
-                  <p className="text-gray-700">Achieve authentic vintage effects that rival professional editing software.</p>
+                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Customizable Vintage Effects</h3>
+                  <p className="text-gray-700">Apply adjustable vintage effects to create a retro, film-inspired appearance.</p>
                 </div>
               </div>
             </div>
@@ -242,40 +340,40 @@ export default function VintageFilterPage() {
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
                 <h3 className="font-bold text-blue-900 mb-2">Privacy Note</h3>
-                <p className="text-blue-900 text-sm">Vintage filtering runs locally in your browser using canvas, so your image does not need to be uploaded for this edit.</p>
+                <p className="text-blue-900 text-sm">Vintage filtering runs locally in your browser using canvas. When you choose Download, the generated JPEG is uploaded to our download service to prepare your download page.</p>
               </div>
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What file formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, BMP, and TIFF formats. Upload any of these and we'll process them instantly.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image data stored?</summary>
-                  <p className="text-gray-700 mt-2">No, your images are processed locally in your browser and never stored on our servers.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I adjust the vintage effect after applying it?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Adjust the intensity slider to your preference before clicking "Apply Vintage Effect" to experiment with different levels.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What does the intensity slider do?</summary>
-                  <p className="text-gray-700 mt-2">The intensity slider controls how strong the vintage effect appears. Lower values (0-30%) give subtle effects, while higher values (70-100%) create more pronounced vintage looks.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use this on mobile devices?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Our vintage filter works on all devices including smartphones, tablets, and desktops.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Do you offer batch processing?</summary>
-                  <p className="text-gray-700 mt-2">Currently, you can filter one image at a time. For multiple images, simply repeat the process for each photo.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What file formats are supported?</FAQQuestion>
+                  <FAQAnswer>The tool accepts supported browser-readable image files and processes the selected effect locally.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image data stored?</FAQQuestion>
+                  <FAQAnswer>Filtering runs locally in your browser. Selecting Download sends the generated JPEG to the download service to prepare the download page.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I adjust the vintage effect after applying it?</FAQQuestion>
+                  <FAQAnswer>Yes! Adjust the intensity slider to your preference before clicking "Apply Vintage Effect" to experiment with different levels.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What does the intensity slider do?</FAQQuestion>
+                  <FAQAnswer>The intensity slider controls how strong the vintage effect appears. Lower values (0-30%) give subtle effects, while higher values (70-100%) create more pronounced vintage looks.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use this on mobile devices?</FAQQuestion>
+                  <FAQAnswer>The filter can be used in many modern desktop and mobile browsers, but compatibility and practical image limits can vary by browser and device.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Do you offer batch processing?</FAQQuestion>
+                  <FAQAnswer>Currently, you can filter one image at a time. For multiple images, simply repeat the process for each photo.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -306,11 +404,6 @@ export default function VintageFilterPage() {
             price: '0',
             priceCurrency: 'USD',
           },
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: '4.8',
-            reviewCount: '240',
-          },
         })}
       </script>
       <script type="application/ld+json">
@@ -318,9 +411,9 @@ export default function VintageFilterPage() {
           '@context': 'https://schema.org',
           '@type': 'FAQPage',
           mainEntity: [
-            { '@type': 'Question', name: 'What file formats are supported?', acceptedAnswer: { '@type': 'Answer', text: 'The vintage filter supports common image formats including JPG, PNG, WebP, BMP, and TIFF.' } },
+            { '@type': 'Question', name: 'What file formats are supported?', acceptedAnswer: { '@type': 'Answer', text: 'The tool accepts image formats that the browser can decode. Actual decoding support can vary by browser and source format.' } },
             { '@type': 'Question', name: 'What does the intensity slider do?', acceptedAnswer: { '@type': 'Answer', text: 'The intensity slider controls how strong the vintage effect appears, from subtle warmth to a stronger retro look.' } },
-            { '@type': 'Question', name: 'Is my image data stored?', acceptedAnswer: { '@type': 'Answer', text: 'No. Your image is processed locally in your browser and is not stored on our servers for this effect.' } },
+            { '@type': 'Question', name: 'Where is the vintage effect processed?', acceptedAnswer: { '@type': 'Answer', text: 'The vintage effect is processed locally in the browser. When Download is selected, the generated result is sent through the download-result service so the download page can be prepared.' } },
           ],
         })}
       </script>

@@ -1,24 +1,53 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function JpgToWebpPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultPreviewUrl, setResultPreviewUrl] = useState<string | null>(null);
   const [quality, setQuality] = useState(90);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!result) {
+      setResultPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(result);
+    setResultPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [result]);
+
   const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
+    setResult(null);
+    setPreview(null);
+    setFile(null);
     setError(null);
+
+    const isJpeg = /\.jpe?g$/i.test(selectedFile.name) &&
+      (selectedFile.type === 'image/jpeg' || selectedFile.type === '');
+
+    if (!isJpeg) {
+      setError('Please upload a JPG or JPEG image.');
+      return;
+    }
+
+    setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -35,12 +64,18 @@ export default function JpgToWebpPage() {
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
+    setResult(null);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/webp');
-      setResult(result.blob);
+      const converted = await convertImageFormat(file, 'image/webp', {
+        quality,
+      });
+      if (!converted.blob || converted.blob.type !== 'image/webp') {
+        throw new Error('WebP encoding is not supported or returned an invalid result.');
+      }
+      setResult(converted.blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -48,16 +83,33 @@ export default function JpgToWebpPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.webp';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'jpg-to-webp',
+        originalName: file.name,
+        outputName: `${baseName}.webp`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -83,7 +135,7 @@ export default function JpgToWebpPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to WebP Converter</h1>
-              <p className="text-lg text-white/90">Convert JPG images to WebP format for smaller file sizes without losing quality. Perfect for web optimization.</p>
+              <p className="text-lg text-white/90">Convert JPG images to WebP format in your browser with adjustable quality for web optimization.</p>
             </div>
           </div>
         </div>
@@ -101,7 +153,8 @@ export default function JpgToWebpPage() {
                   onFileSelect={handleFileSelect}
                   preview={preview}
                   onClearPreview={handleClearPreview}
-                  accept="image/jpeg"
+                  accept=".jpg,.jpeg,image/jpeg"
+                  toolId="jpg-to-webp"
                 />
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -127,7 +180,10 @@ export default function JpgToWebpPage() {
                     min="10"
                     max="100"
                     value={quality}
-                    onChange={(e) => setQuality(parseInt(e.target.value))}
+                    onChange={(e) => {
+                      setQuality(parseInt(e.target.value, 10));
+                      setResult(null);
+                    }}
                     disabled={processing}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                   />
@@ -139,16 +195,17 @@ export default function JpgToWebpPage() {
                   {result ? (
                     <div className="space-y-4">
                       <img
-                        src={result as any}
+                        src={resultPreviewUrl || undefined}
                         alt="Converted"
                         className="w-full rounded-lg border border-gray-200 object-cover"
                       />
                       <button
                         onClick={handleDownload}
-                        className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
+                        disabled={processing}
+                        className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <Download size={18} />
-                        Download
+                        {processing ? 'Preparing Download...' : 'Continue to Download'}
                       </button>
                     </div>
                   ) : (
@@ -205,7 +262,7 @@ export default function JpgToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Adjust Quality Settings</h3>
-                <p className="text-gray-600 mt-2">Use the quality slider to balance between file size and image quality. 80-90% is recommended for web use.</p>
+                <p className="text-gray-600 mt-2">Use the quality slider to compare file size and visible quality. The appropriate setting depends on the source image and intended use.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -214,7 +271,7 @@ export default function JpgToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Convert to WebP</h3>
-                <p className="text-gray-600 mt-2">Click the "Convert to WebP" button to start the conversion. Processing happens in your browser instantly.</p>
+                <p className="text-gray-600 mt-2">Click the "Convert to WebP" button to start the conversion. Image encoding is performed in the browser.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -223,7 +280,7 @@ export default function JpgToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download WebP File</h3>
-                <p className="text-gray-600 mt-2">Once complete, download your optimized WebP file. No signup required - completely free and secure.</p>
+                <p className="text-gray-600 mt-2">Once conversion is complete, prepare the WebP result for download. No signup is required to use the converter.</p>
               </div>
             </div>
           </div>
@@ -239,21 +296,21 @@ export default function JpgToWebpPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Significantly Smaller File Size</h3>
-                <p className="text-gray-600 text-sm">WebP provides 25-35% better compression than JPG, reducing file sizes and improving website load times.</p>
+                <p className="text-gray-600 text-sm">WebP can produce smaller files than JPG for many images, depending on image content and the selected quality setting.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Superior Image Quality</h3>
-                <p className="text-gray-600 text-sm">WebP delivers better image quality at the same file size compared to JPG, with support for both lossless and lossy compression.</p>
+                <h3 className="text-lg font-semibold text-gray-900">Flexible WebP Encoding</h3>
+                <p className="text-gray-600 text-sm">WebP supports both lossy and lossless encoding. Relative file size and visual quality compared with JPG depend on the image content and encoding settings.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Modern Web Standard</h3>
-                <p className="text-gray-600 text-sm">WebP is supported by all modern browsers (Chrome, Firefox, Safari, Edge). Perfect for contemporary web development.</p>
+                <p className="text-gray-600 text-sm">WebP is supported by current major browsers, but compatibility requirements should still be checked for older software or specialized workflows.</p>
               </div>
             </div>
           </div>
@@ -261,36 +318,36 @@ export default function JpgToWebpPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is WebP supported by all browsers?</h3>
-              <p className="text-gray-700">WebP is supported by all modern browsers including Chrome, Firefox, Safari (iOS 14+), and Edge. For older browsers, you can serve JPG as a fallback using HTML picture tags.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is WebP compared to JPG?</h3>
-              <p className="text-gray-700">WebP files are typically 25-35% smaller than equivalent JPG files while maintaining the same visual quality. This varies depending on image content and quality settings.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will I lose quality when converting to WebP?</h3>
-              <p className="text-gray-700">No. WebP uses advanced compression algorithms that maintain excellent quality at smaller file sizes. Our converter allows you to adjust quality settings to find the perfect balance.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can WebP replace JPG on my website?</h3>
-              <p className="text-gray-700">Yes, WebP can replace JPG for modern browsers. Use HTML picture tags to serve WebP to supported browsers and JPG as a fallback for older browsers for maximum compatibility.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is conversion secure and private?</h3>
-              <p className="text-gray-700">Yes, all conversions happen entirely in your browser. Your JPG files are never uploaded to any server and remain completely private. No data is stored after conversion.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple JPG files?</h3>
-              <p className="text-gray-700">Currently our converter handles one file at a time. However, conversion is fast, so you can quickly process multiple files by uploading them sequentially.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>Is WebP supported by all browsers?</FAQStaticQuestion>
+              <FAQAnswer>Current major browsers support WebP. Check the target environment and provide an alternate format when compatibility with older browsers or software is required.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>How much smaller is WebP compared to JPG?</FAQStaticQuestion>
+              <FAQAnswer>WebP file size and visual quality depend on the source image and selected encoding settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will I lose quality when converting to WebP?</FAQStaticQuestion>
+              <FAQAnswer>WebP encoding can reduce file size while retaining good visual quality. Use the quality slider to choose the balance between compression and image fidelity.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can WebP replace JPG on my website?</FAQStaticQuestion>
+              <FAQAnswer>WebP can be used for many web images, but whether it should replace JPG depends on compatibility, image content, software, and delivery requirements.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is conversion secure and private?</FAQStaticQuestion>
+              <FAQAnswer>Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I batch convert multiple JPG files?</FAQStaticQuestion>
+              <FAQAnswer>Currently our converter handles one file at a time. However, conversion is fast, so you can quickly process multiple files by uploading them sequentially.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}
@@ -304,7 +361,7 @@ export default function JpgToWebpPage() {
               "name": "Is WebP supported by all browsers?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "WebP is supported by all modern browsers including Chrome, Firefox, Safari (iOS 14+), and Edge. For older browsers, you can serve JPG as a fallback using HTML picture tags."
+                "text": "Current major browsers support WebP. Check the target environment and provide an alternate format when compatibility with older browsers or software is required."
               }
             },
             {
@@ -312,7 +369,7 @@ export default function JpgToWebpPage() {
               "name": "How much smaller is WebP compared to JPG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "WebP files are typically 25-35% smaller than equivalent JPG files while maintaining the same visual quality. This varies depending on image content and quality settings."
+                "text": "WebP file size and visual quality depend on the source image and selected encoding settings."
               }
             },
             {
@@ -320,7 +377,7 @@ export default function JpgToWebpPage() {
               "name": "Will I lose quality when converting to WebP?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. WebP uses advanced compression algorithms that maintain excellent quality at smaller file sizes. Our converter allows you to adjust quality settings to find the perfect balance."
+                "text": "WebP encoding can reduce file size while retaining good visual quality. Use the quality slider to choose the balance between compression and image fidelity."
               }
             },
             {
@@ -328,7 +385,7 @@ export default function JpgToWebpPage() {
               "name": "Can WebP replace JPG on my website?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, WebP can replace JPG for modern browsers. Use HTML picture tags to serve WebP to supported browsers and JPG as a fallback for older browsers for maximum compatibility."
+                "text": "WebP can be used for many web images, but whether it should replace JPG depends on compatibility, image content, software, and delivery requirements."
               }
             },
             {
@@ -336,7 +393,7 @@ export default function JpgToWebpPage() {
               "name": "Is conversion secure and private?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen entirely in your browser. Your JPG files are never uploaded to any server and remain completely private. No data is stored after conversion."
+                "text": "Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow."
               }
             },
             {
@@ -362,11 +419,11 @@ export default function JpgToWebpPage() {
             </Link>
             <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
-              <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency</p>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG images to losslessly compressed PNG files</p>
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with efficient compression</p>
             </Link>
             <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>

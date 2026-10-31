@@ -1,12 +1,12 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'VHS Effect - Free Online Retro VHS Glitch Tool',
-  description: 'Create retro VHS glitch and distortion effects. Transform photos into vintage video aesthetic.',
+  title: 'VHS Effect - Retro Glitch Image Effect | SimplifyConvert',
+  description: 'Add a retro VHS-style glitch effect to JPG, PNG, or WebP images, adjust the intensity, and download the processed JPEG.',
   keywords: ['vhs effect', 'retro vhs', 'vhs glitch', 'vintage video', 'distortion effect', 'online tool'],
   openGraph: {
-    title: 'VHS Effect - Free Online Retro VHS Glitch Tool',
-    description: 'Create retro VHS glitch and distortion effects instantly.',
+    title: 'VHS Effect - Retro Glitch Image Effect',
+    description: 'Add a retro VHS-style glitch effect to JPG, PNG, or WebP images, adjust the intensity, and download the processed JPEG.',
     url: 'https://simplifyconvert.com/all-tools/vhs-effect',
     type: 'website',
   },

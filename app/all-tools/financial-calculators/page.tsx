@@ -11,7 +11,7 @@ const financialTools = [
   {
     id: 'startup-runway',
     title: '🚀 Startup Runway Calculator',
-    description: 'Calculate months of runway and project financial trajectory for startups',
+    description: 'Estimate startup runway from entered funds, burn, revenue, and growth assumptions',
     icon: '📊',
     color: 'from-purple-600 to-purple-700',
     badge: 'Advanced',
@@ -19,15 +19,15 @@ const financialTools = [
   {
     id: 'saas-profit',
     title: '💼 SaaS Profit Simulator',
-    description: 'Model MRR growth, churn, and profitability for SaaS businesses',
+    description: 'Explore SaaS revenue, churn, costs, and profitability scenarios',
     icon: '📈',
     color: 'from-blue-600 to-blue-700',
     badge: 'Advanced',
   },
   {
     id: 'loan-optimizer',
-    title: '🏦 Loan Optimization Engine',
-    description: 'Analyze loan terms, EMI, and create optimal payment strategies',
+    title: '🏦 Loan Repayment Calculator',
+    description: 'Estimate EMI, interest costs, and repayment timing from entered loan terms',
     icon: '💰',
     color: 'from-green-600 to-green-700',
     badge: 'Advanced',
@@ -35,7 +35,7 @@ const financialTools = [
   {
     id: 'india-tax',
     title: '🇮🇳 India Tax Estimator',
-    description: 'Calculate taxes, deductions, and optimization for Indian residents',
+    description: 'Under review and not for current Indian tax filing or planning',
     icon: '💵',
     color: 'from-orange-600 to-orange-700',
     badge: 'India-Specific',
@@ -85,7 +85,7 @@ export default function FinancialCalculatorsPage() {
                     <div className="p-2.5 bg-white/20 rounded-lg backdrop-blur-sm">
                       <TrendingUp className="w-6 h-6 text-white" />
                     </div>
-                    <span className="text-white/80 text-sm font-semibold">ADVANCED FINANCIAL TOOLS</span>
+                    <span className="text-white/80 text-sm font-semibold">FINANCIAL PLANNING TOOLS</span>
                   </div>
 
                   <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">
@@ -96,15 +96,15 @@ export default function FinancialCalculatorsPage() {
                   </h1>
 
                   <p className="text-lg text-white/90 mb-6 leading-relaxed">
-                    Designed for advanced financial analysis. Create financial models, projections, and data-driven planning for startups, SaaS businesses, loans, and tax planning. Free online calculator tools with no signup or credit card required.
+                    Explore startup runway, SaaS performance, and loan repayment scenarios using the values and assumptions you enter. The India Tax Estimator is currently under review and is not available for current filing or tax-planning calculations.
                   </p>
 
                   {/* Feature Pills */}
                   <div className="flex flex-wrap gap-3 mb-8">
                     {[
-                      { icon: Zap, text: 'Real-time' },
-                      { icon: Target, text: 'Accurate' },
-                      { icon: Sparkles, text: 'Professional' },
+                      { icon: Zap, text: 'Input-based estimates' },
+                      { icon: Target, text: 'Scenario Based' },
+                      { icon: Sparkles, text: 'Defined Assumptions' },
                     ].map((item, idx) => (
                       <motion.div
                         key={idx}
@@ -144,8 +144,8 @@ export default function FinancialCalculatorsPage() {
                   className="space-y-4"
                 >
                   {[
-                    { number: '4', label: 'Advanced Calculators', icon: '📊' },
-                    { number: '⚡', label: 'Instant Results', icon: '✨' },
+                    { number: '3', label: 'Active Calculators', icon: '📊' },
+                    { number: '⚡', label: 'Interactive Results', icon: '✨' },
                     { number: '📈', label: 'Scenario Planning', icon: '🎯' },
                     { number: '💰', label: 'Free to Use', icon: '✅' },
                   ].map((stat, idx) => (
@@ -186,7 +186,7 @@ export default function FinancialCalculatorsPage() {
                 Choose Your Calculator
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Select from our suite of advanced financial tools designed for different business needs
+                Select from focused financial calculators designed for different planning scenarios
               </p>
             </motion.div>
 
@@ -227,7 +227,7 @@ export default function FinancialCalculatorsPage() {
                       </p>
 
                       <div className="flex items-center text-blue-600 font-semibold group-hover:gap-3 transition-all duration-300">
-                        <span>Use Calculator</span>
+                        <span>{tool.id === 'india-tax' ? 'View Status' : 'Use Calculator'}</span>
                         <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
                       </div>
                     </div>
@@ -252,13 +252,13 @@ export default function FinancialCalculatorsPage() {
                 {[
                   {
                     icon: TrendingUp,
-                    title: 'Advanced Algorithms',
+                    title: 'Defined Calculations',
                     desc: 'Complex financial modeling, not simple math',
                   },
                   {
                     icon: ChevronRight,
                     title: 'Detailed Insights',
-                    desc: 'Month-by-month projections and recommendations',
+                    desc: 'Month-by-month projections based on entered assumptions',
                   },
                   {
                     icon: ArrowRight,
@@ -292,94 +292,94 @@ export default function FinancialCalculatorsPage() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Choose Our Financial Calculators?</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Three Active Calculators and One Under Review</h2>
               
               <p className="text-gray-700 leading-relaxed mb-6">
-                SimplifyConvert provides advanced <Link href="/all-tools" className="text-green-600 font-medium hover:underline">financial calculator tools</Link> designed for advanced financial analysis. Create models, projections, and scenario planning for startups, small businesses, loan analysis, and tax planning. Whether you need a <Link href="/all-tools/financial-calculators/startup-runway" className="text-green-600 font-medium hover:underline">startup runway calculator</Link>, <Link href="/all-tools/financial-calculators/saas-profit" className="text-green-600 font-medium hover:underline">SaaS profit simulator</Link>, <Link href="/all-tools/financial-calculators/loan-optimizer" className="text-green-600 font-medium hover:underline">loan optimization tool</Link>, or <Link href="/all-tools/financial-calculators/india-tax" className="text-green-600 font-medium hover:underline">India tax estimator</Link>, our calculators provide instant, reliable estimates without signup or fees.
+                Explore a <Link href="/all-tools/financial-calculators/startup-runway" className="text-green-600 font-medium hover:underline">startup runway estimate</Link>, <Link href="/all-tools/financial-calculators/saas-profit" className="text-green-600 font-medium hover:underline">SaaS profit scenario</Link>, <Link href="/all-tools/financial-calculators/loan-optimizer" className="text-green-600 font-medium hover:underline">loan repayment comparison</Link>, or <Link href="/all-tools/financial-calculators/india-tax" className="text-green-600 font-medium hover:underline">Indian income tax estimate</Link>. Each calculator has a narrower purpose and depends on the figures and assumptions entered.
               </p>
 
               <p className="text-gray-700 leading-relaxed mb-6">
-                Unlike basic Excel sheets or simple calculators, these tools provide deeper financial insights and projections. Automated calculations eliminate manual errors, while built-in formulas handle complex financial scenarios that would take hours in spreadsheets.
+                Each calculator applies a defined set of assumptions to the values you enter. Use the output to explore scenarios, then verify formulas, dates, tax rules, rates, and source figures before making a financial decision.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                 <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
-                  <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Advanced Algorithms</h3>
-                  <p className="text-gray-700 text-sm">Complex financial modeling beyond simple arithmetic. Get month-by-month projections, scenario planning, and detailed insights for informed planning.</p>
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Defined Calculations</h3>
+                  <p className="text-gray-700 text-sm">Each calculator applies its documented calculation method to the values you enter. Review the assumptions and limitations shown with the calculator before interpreting the result.</p>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
-                  <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Real-Time Results</h3>
-                  <p className="text-gray-700 text-sm">Instant calculations with no delays. Adjust inputs and see results immediately. Perfect for quick what-if analysis and financial planning sessions.</p>
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Interactive Scenarios</h3>
+                  <p className="text-gray-700 text-sm">Adjust the available inputs to compare different scenarios. Results depend on the figures entered and the calculation assumptions used by each tool.</p>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
-                  <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Business-Ready Insights</h3>
-                  <p className="text-gray-700 text-sm">Actionable recommendations and detailed breakdowns. Use results for pitch decks, investor presentations, business planning, and financial strategy decisions.</p>
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Informational Estimates</h3>
+                  <p className="text-gray-700 text-sm">Results are informational estimates, not accounting, tax, legal, investment, or lending advice.</p>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-lg border border-green-200">
-                  <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ 100% Free & Private</h3>
-                  <p className="text-gray-700 text-sm">No hidden fees, no premium tiers, no signup required. Your financial data stays private. Use unlimited times for business and personal planning.</p>
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Input Privacy Guidance</h3>
+                  <p className="text-gray-700 text-sm">Calculator inputs are sent to the financial-calculator service. Avoid entering account numbers, credentials, or personally identifying financial records.</p>
                 </div>
               </div>
 
               {/* Popular Use Cases */}
               <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Financial Calculator Uses</h2>
-                <p className="text-gray-700 mb-6">Our free financial calculators help with:</p>
+                <p className="text-gray-700 mb-6">These calculators can be used to explore:</p>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong>Startup Financial Planning:</strong> Calculate runway, cash burn, profitability timelines, and investor funding requirements</span>
+                    <span><strong>Startup Runway Scenarios:</strong> Explore runway, cash burn, revenue assumptions, and possible funding gaps</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong>SaaS Business Modeling:</strong> Project MRR growth, analyze churn impact, and forecast profitability with growth scenarios</span>
+                    <span><strong>SaaS Scenario Modeling:</strong> Explore MRR, churn, costs, and profitability under the assumptions entered</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong>Loan & EMI Analysis:</strong> Compare loan terms, calculate EMI, optimize payment strategies, and analyze total interest costs</span>
+                    <span><strong>Loan & EMI Estimates:</strong> Review estimated EMI, total interest, repayment timing, and the effect of additional payments</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong>Tax Planning:</strong> Estimate taxes, identify deductions, and optimize savings for Indian residents and businesses</span>
+                    <span><strong>India Tax Calculator:</strong> Currently under review and unavailable for current filing, payment, or tax-planning decisions</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong>Investment Analysis:</strong> Evaluate returns, compare investment options, and model long-term wealth growth scenarios</span>
+                    <span><strong>Scenario Review:</strong> Change assumptions to see how the displayed runway, profit, repayment, or tax estimate responds</span>
                   </li>
                 </ul>
               </div>
 
               <div className="mb-12">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Best Free Financial Calculators Online</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Financial Calculator Scenarios</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Looking for the best free financial calculators? Our collection delivers professional-grade financial analysis tools designed for everyone. Whether you're an entrepreneur calculating startup runway, a SaaS founder modeling growth, or an individual planning finances, our online financial calculators provide instant, reliable results without signup or fees.
+                  This collection covers four defined workflows: startup runway, SaaS profit, loan repayment, and Indian income tax estimates. Select the calculator that matches the question you are exploring, and treat its result as an estimate based on the inputs and assumptions shown.
                 </p>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Our best financial calculators include:
+                  The available calculator workflows include:
                 </p>
                 <ul className="space-y-2 text-gray-700 mb-6">
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong><Link href="/all-tools/financial-calculators/startup-runway" className="text-green-600 font-medium hover:underline">Startup Runway Calculator</Link>:</strong> Best for entrepreneurs planning cash burn and profitability timelines</span>
+                    <span><strong><Link href="/all-tools/financial-calculators/startup-runway" className="text-green-600 font-medium hover:underline">Startup Runway Calculator</Link>:</strong> Explore cash burn, runway, and funding scenarios from entered assumptions</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong><Link href="/all-tools/financial-calculators/saas-profit" className="text-green-600 font-medium hover:underline">SaaS Profit Simulator</Link>:</strong> Best online financial calculator for recurring revenue modeling and churn analysis</span>
+                    <span><strong><Link href="/all-tools/financial-calculators/saas-profit" className="text-green-600 font-medium hover:underline">SaaS Profit Simulator</Link>:</strong> Explore recurring revenue, churn, costs, and profitability scenarios</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong><Link href="/all-tools/financial-calculators/loan-optimizer" className="text-green-600 font-medium hover:underline">Loan Optimization Engine</Link>:</strong> Best financial tool for comparing loan terms and calculating EMI payments</span>
+                    <span><strong><Link href="/all-tools/financial-calculators/loan-optimizer" className="text-green-600 font-medium hover:underline">Loan Repayment Calculator</Link>:</strong> Estimate EMI, interest costs, and repayment timing from entered loan terms</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-600 font-bold">•</span>
-                    <span><strong><Link href="/all-tools/financial-calculators/india-tax" className="text-green-600 font-medium hover:underline">India Tax Estimator</Link>:</strong> Best tool for tax planning and deduction optimization</span>
+                    <span><strong><Link href="/all-tools/financial-calculators/india-tax" className="text-green-600 font-medium hover:underline">India Tax Estimator</Link>:</strong> Currently under review and not available for current tax planning or filing</span>
                   </li>
                 </ul>
               </div>
 
               <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Our Financial Calculators</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
-                Using our free online financial calculators is straightforward. First, select the calculator that matches your needs from our calculator suite above. Next, enter your financial data into each input field—values like revenue, expenses, loan amount, or income. Then, review the real-time results displayed instantly. Finally, adjust inputs to explore different scenarios and download or share results as needed. Each calculator includes helpful guidance and tooltips. For detailed <Link href="/all-tools/data" className="text-green-600 font-medium hover:underline">data conversion tools</Link> to format your financial data, visit our converter section.
+                Select the calculator that matches the scenario you want to explore, then enter the requested values such as revenue, expenses, loan amount, or growth assumptions. Review the result together with the assumptions and limitations shown on the calculator page, and adjust inputs to compare scenarios. Verify important figures independently before using an estimate in a financial decision. For <Link href="/all-tools/data" className="text-green-600 font-medium hover:underline">data conversion tools</Link> to format your financial data, visit our converter section.
               </p>
             </motion.div>
           </div>
@@ -392,42 +392,42 @@ export default function FinancialCalculatorsPage() {
               name: 'Are these financial calculators really free?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Yes! All our financial calculators are completely free with no hidden costs, signup requirements, or premium features. Calculate unlimited scenarios without any charges or ads. We believe everyone deserves access to professional financial planning tools.'
+                text: 'Three calculators are currently available without Premium AI Studio credits: Startup Runway, SaaS Profit, and Loan Repayment. The India Tax Estimator is under review and its calculation action is disabled. Normal service limits may apply.'
               }
             },
             {
               name: 'What can I do with the financial calculator results?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Results can be used for business planning, investor presentations, personal finance decisions, pitch decks, and financial strategy. Most calculators allow downloading or exporting results. Use them for startups, established businesses, loan comparisons, or tax planning.'
+                text: 'Use the results to explore scenarios and understand how changes to the entered assumptions affect the displayed estimate. Verify important figures independently before using them in business, borrowing, investment, tax, or other financial decisions.'
               }
             },
             {
               name: 'Are the calculations reliable?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Our financial calculators use standard algorithms and formulas for financial modeling. Results provide reliable estimates for planning and decision-making purposes. Always consult a financial advisor for critical business or investment decisions.'
+                text: 'The calculators produce estimates from the inputs and assumptions shown. They can contain errors or omit rules relevant to your situation. Verify important results and consult an appropriately qualified professional.'
               }
             },
             {
               name: 'Can I use these calculators for business decisions?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Absolutely! Our advanced calculators are designed for business use including startup planning, SaaS modeling, and loan analysis. Results can be used in presentations, business plans, and investor pitches. For critical decisions, verify with professional financial advisors.'
+                text: 'The startup, SaaS, and loan calculators can support scenario exploration, but their outputs are estimates rather than professional advice. Verify material assumptions and results before using them in business plans, presentations, borrowing decisions, or investor materials.'
               }
             },
             {
               name: 'Do I need an account to use the calculators?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'No account required! Access all financial calculators immediately. No registration, no email verification needed. Just select a calculator, enter your data, and get instant results. No signup required. Data is processed securely and not permanently stored.'
+                text: 'The calculators can currently be opened without using Premium AI Studio credits. Calculator inputs are submitted to the financial-calculator service for processing, so avoid entering account numbers, credentials, or personally identifying financial records.'
               }
             },
             {
               name: 'What financial calculators do you offer?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'We offer advanced financial calculators including Startup Runway Calculator for projecting cash burn and runway; SaaS Profit Simulator for MRR and churn analysis; Loan Optimization Engine for EMI and term comparison; and India Tax Estimator for tax planning and deductions.'
+                text: 'The collection includes a Startup Runway Calculator, SaaS Profit Simulator, and loan repayment calculator. The India Tax Estimator is currently under review and should not be used for current filing, payment, or tax-planning calculations.'
               }
             }
           ]}
@@ -440,14 +440,14 @@ export default function FinancialCalculatorsPage() {
           {JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'ItemList',
-            name: 'Free Financial Calculators',
-            description: 'Advanced financial calculators for startups, SaaS businesses, loan optimization, and tax planning',
+            name: 'Financial Calculators',
+            description: 'Scenario calculators for startup runway, SaaS performance, and loan repayment, with an India tax calculator currently under review',
             itemListElement: [
               {
                 '@type': 'SoftwareApplication',
                 position: 1,
                 name: 'Startup Runway Calculator',
-                description: 'Calculate months of runway and project financial trajectory for startups',
+                description: 'Estimate startup runway from entered funds, burn, revenue, and growth assumptions',
                 url: 'https://simplifyconvert.com/all-tools/financial-calculators/startup-runway',
                 applicationCategory: 'FinanceApplication',
                 operatingSystem: 'Web',
@@ -461,7 +461,7 @@ export default function FinancialCalculatorsPage() {
                 '@type': 'SoftwareApplication',
                 position: 2,
                 name: 'SaaS Profit Simulator',
-                description: 'Model MRR growth, churn, and profitability for SaaS businesses',
+                description: 'Explore SaaS revenue, churn, costs, and profitability scenarios',
                 url: 'https://simplifyconvert.com/all-tools/financial-calculators/saas-profit',
                 applicationCategory: 'FinanceApplication',
                 operatingSystem: 'Web',
@@ -474,8 +474,8 @@ export default function FinancialCalculatorsPage() {
               {
                 '@type': 'SoftwareApplication',
                 position: 3,
-                name: 'Loan Optimization Engine',
-                description: 'Analyze loan terms, EMI, and create optimal payment strategies',
+                name: 'Loan Repayment Calculator',
+                description: 'Estimate EMI, interest costs, and repayment timing from entered loan terms',
                 url: 'https://simplifyconvert.com/all-tools/financial-calculators/loan-optimizer',
                 applicationCategory: 'FinanceApplication',
                 operatingSystem: 'Web',
@@ -489,7 +489,7 @@ export default function FinancialCalculatorsPage() {
                 '@type': 'SoftwareApplication',
                 position: 4,
                 name: 'India Tax Estimator',
-                description: 'Calculate taxes, deductions, and optimization for Indian residents',
+                description: 'Under review and not for current Indian tax filing or planning',
                 url: 'https://simplifyconvert.com/all-tools/financial-calculators/india-tax',
                 applicationCategory: 'FinanceApplication',
                 operatingSystem: 'Web',

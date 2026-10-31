@@ -125,7 +125,10 @@ export async function rotateImage(
         canvas.width = newWidth;
         canvas.height = newHeight;
         const ctx = canvas.getContext('2d');
-        if (!ctx) reject(new Error('Could not get canvas context'));
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
 
         ctx?.translate(newWidth / 2, newHeight / 2);
         ctx?.rotate(radians);
@@ -134,15 +137,16 @@ export async function rotateImage(
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              const ext = file.name.split('.').pop() || 'jpg';
               resolve({
                 blob,
-                filename: `rotated.${ext}`,
-                mimeType: file.type,
+                filename: 'rotated.png',
+                mimeType: 'image/png',
               });
+            } else {
+              reject(new Error('Unable to export rotated image as PNG'));
             }
           },
-          file.type,
+          'image/png',
           0.9
         );
       };

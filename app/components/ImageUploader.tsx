@@ -129,6 +129,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         <input
           ref={fileInputRef}
           type="file"
+          aria-label="Upload image"
           accept={accept}
           onChange={handleFileChange}
           className="hidden"
@@ -148,6 +149,5 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     </div>
   );
 };
-
 
 

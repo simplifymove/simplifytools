@@ -1,14 +1,18 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
+
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function EpsToJpgPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -38,8 +42,37 @@ export default function EpsToJpgPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/jpeg');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'eps',
+          to_format: 'jpg',
+          options: {
+            dpi: 300,
+          },
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/jpeg') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
     } finally {
@@ -47,16 +80,33 @@ export default function EpsToJpgPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'eps-to-jpg',
+        originalName: file.name,
+        outputName: `${baseName}.jpg`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -82,7 +132,7 @@ export default function EpsToJpgPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">EPS to JPG Converter</h1>
-                <p className="text-lg text-white/90">Convert EPS vector graphics to JPG format with quality control. Reduce file size while maintaining image quality.</p>
+                <p className="text-lg text-white/90">Convert EPS vector graphics to JPG format with reliable server-assisted rendering for web and digital use.</p>
               </div>
             </div>
           </div>
@@ -133,9 +183,9 @@ export default function EpsToJpgPage() {
                       <button
                         onClick={handleDownload}
                         className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
-                      >
+                      disabled={processing}>
                         <Download size={20} />
-                        Download JPG
+                        {processing ? 'Preparing Download...' : 'Continue to Download'}
                       </button>
                     </div>
                   )}
@@ -149,19 +199,19 @@ export default function EpsToJpgPage() {
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
-                      <span className="text-gray-700">Fast and secure conversion</span>
+                      <span className="text-gray-700">Server-assisted EPS rendering</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
-                      <span className="text-gray-700">No file size limits</span>
+                      <span className="text-gray-700">High-resolution 300 DPI rendering</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
-                      <span className="text-gray-700">Preserves image quality</span>
+                      <span className="text-gray-700">Creates standard JPG output</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
-                      <span className="text-gray-700">Works on all devices</span>
+                      <span className="text-gray-700">Accessible through a compatible web browser</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-600 font-bold text-lg">✓</span>
@@ -177,44 +227,91 @@ export default function EpsToJpgPage() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">About EPS Format</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  EPS (Encapsulated PostScript) is a vector graphics format commonly used in professional design and printing. It's ideal for logos, illustrations, and designs that need to scale without losing quality.
+                  EPS (Encapsulated PostScript) is a vector graphics format commonly used in professional design and printing. It is commonly used for logos, illustrations, and artwork that may need to be scaled or prepared for print.
                 </p>
               </div>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">About JPG Format</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  JPG (JPEG) is a widely-used raster image format perfect for photographs and web use. It offers excellent compression, making files smaller while maintaining reasonable quality for digital viewing.
+                  JPG (JPEG) is a widely used raster image format commonly used for photographs and web images. It offers excellent compression, making files smaller while maintaining reasonable quality for digital viewing.
                 </p>
               </div>
             </div>
 
             {/* FAQ Section */}
-            <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h3>
-              <div className="space-y-4">
-                <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <summary className="font-semibold text-gray-900">What is an EPS file?</summary>
-                  <p className="mt-2 text-gray-700">EPS (Encapsulated PostScript) is a vector graphics format used in professional design applications. It supports scalable graphics and is commonly used for logos and print materials.</p>
-                </details>
-                <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <summary className="font-semibold text-gray-900">Why convert EPS to JPG?</summary>
-                  <p className="mt-2 text-gray-700">JPG is more widely compatible with web browsers and digital devices. Converting EPS to JPG makes your files viewable on any device without special software.</p>
-                </details>
-                <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <summary className="font-semibold text-gray-900">Does the conversion preserve quality?</summary>
-                  <p className="mt-2 text-gray-700">Our conversion tool maintains high quality during the conversion process. The resulting JPG file will be clear and suitable for web and digital use.</p>
-                </details>
-                <details className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <summary className="font-semibold text-gray-900">Is my file secure?</summary>
-                  <p className="mt-2 text-gray-700">Yes, we process conversions on secure servers. Files are not stored or shared, and your privacy is completely protected.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is an EPS file?</FAQQuestion>
+                  <FAQAnswer>EPS (Encapsulated PostScript) is a vector graphics format used in professional design applications. It supports scalable graphics and is commonly used for logos and print materials.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Why convert EPS to JPG?</FAQQuestion>
+                  <FAQAnswer>JPG is more widely compatible with web browsers and digital devices. Converting EPS to JPG can make the artwork easier to view in software and browsers that support JPEG images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does the conversion preserve quality?</FAQQuestion>
+                  <FAQAnswer>EPS vector artwork is rasterized to create the JPG output. Because JPG is a raster format, the result no longer has the unlimited scalability of the original EPS file.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my file secure?</FAQQuestion>
+                  <FAQAnswer>Your EPS file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
           </div>
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How EPS to JPG conversion works
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an EPS file and start the conversion. The EPS artwork
+                is rasterized on the server to produce a JPG image that can
+                be opened in applications that support standard raster image
+                formats.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5">
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Understanding the output
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  EPS can contain vector artwork, while JPG stores a fixed grid
+                of pixels. Converting EPS to JPG therefore rasterizes the
+                artwork at the conversion resolution. The resulting JPG no
+                longer retains editable vector paths.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Before converting
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Check the source file and choose settings appropriate for
+                  how you plan to use the converted image. Conversion changes
+                  the file format and may also change file size and image
+                  characteristics.
+                </p>
+              </div>
+            </div>
+
+
+
+          </div>
+        </section>
+
+</main>
     </>
   );
 }

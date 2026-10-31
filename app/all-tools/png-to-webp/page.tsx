@@ -1,14 +1,22 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function PngToWebpPage() {
+  const router = useRouter();
+  const generationRef = useRef(0);
+  const processingRef = useRef(false);
+  const downloadRef = useRef(false);
+  const previewReaderRef = useRef<FileReader | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -16,48 +24,173 @@ export default function PngToWebpPage() {
   const [quality, setQuality] = useState(90);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
-    setError(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+  const resetConversion = () => {
+    generationRef.current += 1;
+    previewReaderRef.current?.abort();
+    previewReaderRef.current = null;
+    setResult(null);
+    setProcessing(false);
+    processingRef.current = false;
+  };
+
+  useEffect(() => {
+    return () => {
+      generationRef.current += 1;
+      previewReaderRef.current?.abort();
     };
+  }, []);
+
+  const handleFileSelect = (selectedFile: File) => {
+    if (downloadRef.current) return;
+
+    resetConversion();
+    setFile(null);
+    setPreview(null);
+    setError(null);
+
+    if (
+      selectedFile.type !== 'image/png' ||
+      !selectedFile.name.toLowerCase().endsWith('.png')
+    ) {
+      setError('Please select a valid PNG (.png) image.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected PNG file is empty.');
+      return;
+    }
+
+    const generation = generationRef.current;
+
+    setFile(selectedFile);
+
+    const reader = new FileReader();
+    previewReaderRef.current = reader;
+
+    reader.onload = () => {
+      if (generation === generationRef.current) {
+        setPreview(
+          typeof reader.result === 'string'
+            ? reader.result
+            : null
+        );
+      }
+    };
+
+    reader.onerror = () => {
+      if (generation === generationRef.current) {
+        setError('Unable to preview the selected PNG.');
+      }
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    if (downloadRef.current) return;
+
+    resetConversion();
     setFile(null);
     setPreview(null);
+    setError(null);
+  };
+
+  const handleQualityChange = (value: number) => {
+    if (processingRef.current || downloadRef.current) return;
+
+    generationRef.current += 1;
+    setQuality(value);
     setResult(null);
     setError(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file || processingRef.current || downloadRef.current) return;
+
+    const generation = ++generationRef.current;
+    processingRef.current = true;
+
     setProcessing(true);
+    setResult(null);
     setError(null);
+
     try {
-      const result = await convertImageFormat(file, 'image/webp');
-      setResult(result.blob);
-    } catch (err) {
-      setError((err as Error).message || 'Error converting image');
+      const converted = await convertImageFormat(
+        file,
+        'image/webp',
+        { quality }
+      );
+
+      if (converted.blob.type !== 'image/webp') {
+        throw new Error(
+          'Your browser did not generate a WebP file.'
+        );
+      }
+
+      if (converted.blob.size === 0) {
+        throw new Error('The generated WebP file is empty.');
+      }
+
+      if (generation === generationRef.current) {
+        setResult(converted.blob);
+      }
+    } catch (caughtError) {
+      if (generation === generationRef.current) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to convert PNG to WebP.'
+        );
+      }
     } finally {
-      setProcessing(false);
+      if (generation === generationRef.current) {
+        processingRef.current = false;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.webp';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (
+      !result ||
+      !file ||
+      processingRef.current ||
+      downloadRef.current
+    ) {
+      return;
+    }
+
+    processingRef.current = true;
+    downloadRef.current = true;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\\.[^.]+$/, '').trim() ||
+        'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'png-to-webp',
+        originalName: file.name,
+        outputName: `${baseName}.webp`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      downloadRef.current = false;
+      processingRef.current = false;
+      setProcessing(false);
+    }
   };
 
   return (
@@ -83,7 +216,7 @@ export default function PngToWebpPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to WebP Converter</h1>
-              <p className="text-lg text-white/90">Convert PNG images to WebP format for smaller file sizes with superior compression. Perfect for web optimization.</p>
+              <p className="text-lg text-white/90">Convert PNG images to WebP format with adjustable quality settings for web and image workflows.</p>
             </div>
           </div>
         </div>
@@ -101,7 +234,16 @@ export default function PngToWebpPage() {
                   onFileSelect={handleFileSelect}
                   preview={preview}
                   onClearPreview={handleClearPreview}
-                  accept="image/png"
+                  accept=".png,image/png"
+                  toolId="png-to-webp"
+                  onValidationError={(message) => {
+                    if (message && !downloadRef.current) {
+                      resetConversion();
+                      setFile(null);
+                      setPreview(null);
+                      setError(message);
+                    }
+                  }}
                 />
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -127,7 +269,7 @@ export default function PngToWebpPage() {
                     min="10"
                     max="100"
                     value={quality}
-                    onChange={(e) => setQuality(parseInt(e.target.value))}
+                    onChange={(e) => handleQualityChange(Number(e.target.value))}
                     disabled={processing}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                   />
@@ -143,9 +285,9 @@ export default function PngToWebpPage() {
                         <button
                           onClick={handleDownload}
                           className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
-                        >
+                      disabled={processing}>
                           <Download size={18} />
-                          Download WebP
+                          {processing ? 'Preparing Download...' : 'Continue to Download'}
                         </button>
                       </div>
                     </div>
@@ -198,7 +340,7 @@ export default function PngToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Select Quality Level</h3>
-                <p className="text-gray-600 mt-2">Adjust the quality slider to find the perfect balance between file size and image clarity.</p>
+                <p className="text-gray-600 mt-2">Adjust the quality slider to choose a balance between file size and image clarity.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -207,7 +349,7 @@ export default function PngToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Convert to WebP</h3>
-                <p className="text-gray-600 mt-2">Click the "Convert to WebP" button to start the conversion process instantly.</p>
+                <p className="text-gray-600 mt-2">Click the "Convert to WebP" button to start the browser-based conversion.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -216,7 +358,7 @@ export default function PngToWebpPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download Your WebP</h3>
-                <p className="text-gray-600 mt-2">Download your optimized WebP file instantly. No signup required and completely free.</p>
+                <p className="text-gray-600 mt-2">Prepare the converted WebP file for download. No signup is required to use the converter.</p>
               </div>
             </div>
           </div>
@@ -232,21 +374,21 @@ export default function PngToWebpPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Better Compression for PNG</h3>
-                <p className="text-gray-600 text-sm">WebP provides superior compression for PNG files, reducing file sizes by up to 26% compared to PNG while maintaining transparency.</p>
+                <p className="text-gray-600 text-sm">WebP can produce smaller files than PNG for many images while supporting transparency.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Preserve Transparency</h3>
-                <p className="text-gray-600 text-sm">WebP fully supports alpha channel transparency, making it perfect for graphics, logos, and images with transparent backgrounds.</p>
+                <p className="text-gray-600 text-sm">WebP supports alpha transparency and can be useful for graphics, logos, and other images with transparent areas.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Faster Web Performance</h3>
-                <p className="text-gray-600 text-sm">Smaller file sizes mean faster page load times, improved SEO rankings, and better user experience on all devices.</p>
+                <p className="text-gray-600 text-sm">Smaller image files can help reduce transfer size and improve page-loading performance.</p>
               </div>
             </div>
           </div>
@@ -254,36 +396,36 @@ export default function PngToWebpPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Does WebP preserve PNG transparency?</h3>
-              <p className="text-gray-700">Yes, WebP fully supports alpha channel transparency. If your PNG has a transparent background, it will remain transparent in the converted WebP file, often with even better quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is WebP compared to PNG?</h3>
-              <p className="text-gray-700">WebP files are typically 20-26% smaller than equivalent PNG files. For photographs and complex images, the savings can be even more significant.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will the image quality be affected?</h3>
-              <p className="text-gray-700">No. Our converter uses high-quality WebP encoding. You can adjust the quality slider to find the perfect balance between file size and visual quality for your needs.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is WebP suitable for web graphics and logos?</h3>
-              <p className="text-gray-700">Absolutely! WebP is ideal for graphics, logos, and images with transparency. It provides better compression than PNG while maintaining superior quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my conversion data kept private?</h3>
-              <p className="text-gray-700">Yes, complete privacy is guaranteed. All conversions happen locally in your browser. Your PNG files are never uploaded to any server and no data is retained.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert multiple PNG files at once?</h3>
-              <p className="text-gray-700">Currently our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files by uploading them one after another.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>Does WebP preserve PNG transparency?</FAQStaticQuestion>
+              <FAQAnswer>Yes, WebP supports alpha channel transparency, so transparent areas can be preserved during conversion.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>How much smaller is WebP compared to PNG?</FAQStaticQuestion>
+              <FAQAnswer>File-size differences vary by image content and encoding settings. You can compare the converted WebP result with the original PNG to see the difference.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will the image quality be affected?</FAQStaticQuestion>
+              <FAQAnswer>WebP encoding can introduce compression depending on the selected quality. Use the slider to balance file size and visual quality.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is WebP suitable for web graphics and logos?</FAQStaticQuestion>
+              <FAQAnswer>WebP supports transparency and can be useful for web graphics, logos, and other images where reducing file size is helpful.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is my conversion data kept private?</FAQStaticQuestion>
+              <FAQAnswer>Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I convert multiple PNG files at once?</FAQStaticQuestion>
+              <FAQAnswer>This converter currently processes one PNG file at a time. To convert additional files, upload and process them individually.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}
@@ -297,7 +439,7 @@ export default function PngToWebpPage() {
               "name": "Does WebP preserve PNG transparency?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, WebP fully supports alpha channel transparency. If your PNG has a transparent background, it will remain transparent in the converted WebP file, often with even better quality."
+                "text": "Yes, WebP supports alpha channel transparency, so transparent areas can be preserved during conversion."
               }
             },
             {
@@ -305,7 +447,7 @@ export default function PngToWebpPage() {
               "name": "How much smaller is WebP compared to PNG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "WebP files are typically 20-26% smaller than equivalent PNG files. For photographs and complex images, the savings can be even more significant."
+                "text": "File-size differences vary by image content and encoding settings. You can compare the converted WebP result with the original PNG to see the difference."
               }
             },
             {
@@ -313,7 +455,7 @@ export default function PngToWebpPage() {
               "name": "Will the image quality be affected?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. Our converter uses high-quality WebP encoding. You can adjust the quality slider to find the perfect balance between file size and visual quality for your needs."
+                "text": "WebP encoding can introduce compression depending on the selected quality. Use the slider to balance file size and visual quality."
               }
             },
             {
@@ -321,7 +463,7 @@ export default function PngToWebpPage() {
               "name": "Is WebP suitable for web graphics and logos?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Absolutely! WebP is ideal for graphics, logos, and images with transparency. It provides better compression than PNG while maintaining superior quality."
+                "text": "WebP supports transparency and can be useful for web graphics, logos, and other images where reducing file size is helpful."
               }
             },
             {
@@ -329,7 +471,7 @@ export default function PngToWebpPage() {
               "name": "Is my conversion data kept private?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, complete privacy is guaranteed. All conversions happen locally in your browser. Your PNG files are never uploaded to any server and no data is retained."
+                "text": "Image conversion is performed in the browser. When you continue to download, the generated WebP result is passed through the site's download-result flow."
               }
             },
             {
@@ -337,7 +479,7 @@ export default function PngToWebpPage() {
               "name": "Can I convert multiple PNG files at once?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Currently our converter processes one file at a time. However, conversion is instant, so you can quickly convert multiple files by uploading them one after another."
+                "text": "This converter currently processes one PNG file at a time. To convert additional files, upload and process them individually."
               }
             }
           ]
@@ -359,7 +501,7 @@ export default function PngToWebpPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with efficient compression</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

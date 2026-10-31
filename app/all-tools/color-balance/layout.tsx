@@ -2,7 +2,7 @@
 
 export const metadata: Metadata = {
   title: 'Color Balance Tool - Free RGB Adjustment',
-  description: 'Adjust RGB color balance independently. Perfect for color correction and white balance adjustments in photos.',
+  description: 'Adjust red, green, and blue channel balance independently for color correction and creative image adjustments.',
   keywords: [
     'color balance',
     'RGB adjustment',

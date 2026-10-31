@@ -1,48 +1,78 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Download, ChevronRight, Loader, FileText } from 'lucide-react';
+import { Download, ChevronRight, Loader, FileText, X } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function VsdxToPdfPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [quality, setQuality] = useState('high');
-  const [preserveFormatting, setPreserveFormatting] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
+  const [downloading, setDownloading] = useState(false);
+  const operationRef = useRef(0);
+  const resultUrlRef = useRef<string | null>(null);
+
+  const clearResult = () => {
+    operationRef.current += 1;
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+    setResult(null);
+    setResultFileName('');
+    setError(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      operationRef.current += 1;
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    };
+  }, []);
 
   const handleFileSelect = (selectedFile: File) => {
+    clearResult();
+    setFile(null);
+
+    if (!selectedFile.name.toLowerCase().endsWith('.vsdx')) {
+      setError('Please select a .vsdx Visio diagram file.');
+      return;
+    }
+
     setFile(selectedFile);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    clearResult();
     setFile(null);
-    setPreview(null);
-    setResult(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file || processing || downloading) return;
+
+    clearResult();
+    const operation = operationRef.current;
     setProcessing(true);
     try {
       const formData = new FormData();
-      formData.append('tool', 'vsdx-to-pdf');
-      formData.append('file', file);
-      formData.append('options', JSON.stringify({ 
-        quality,
-        preserveFormatting
-      }));
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'vsdx',
+          to_format: 'pdf',
+          options: {},
+        }),
+      );
 
       const response = await fetch('/api/convert', {
         method: 'POST',
@@ -54,24 +84,66 @@ export default function VsdxToPdfPage() {
       }
 
       const blob = await response.blob();
+
+      if (operation !== operationRef.current) return;
+
+      if (blob.type !== 'application/pdf') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
       const url = URL.createObjectURL(blob);
+      resultUrlRef.current = url;
       setResult(url);
-      setResultFileName(`diagram.pdf`);
-    } catch (error) {
-      alert('Error converting file: ' + (error as Error).message);
+      setResultFileName(
+        (file.name.replace(/\.[^.]+$/, '').trim() || 'diagram') + '.pdf'
+      );
+    } catch (caughtError) {
+      if (operation === operationRef.current) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to convert this Visio file.'
+        );
+      }
     } finally {
-      setProcessing(false);
+      if (operation === operationRef.current) setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = resultFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !resultFileName || downloading || processing) return;
+
+    setDownloading(true);
+    setError(null);
+    const operation = operationRef.current;
+
+    try {
+      const blob = await fetch(result).then((response) => response.blob());
+      if (operation !== operationRef.current) return;
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'vsdx-to-pdf',
+        originalName: resultFileName,
+        outputName: resultFileName,
+      });
+
+      if (operation === operationRef.current) {
+        router.push(downloadResult.downloadPageUrl);
+      }
+    } catch (caughtError) {
+      if (operation === operationRef.current) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the PDF download.'
+        );
+      }
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -97,7 +169,7 @@ export default function VsdxToPdfPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">VSDX to PDF</h1>
-                <p className="text-lg text-white/90">Convert Visio VSDX diagrams to PDF format. Preserve shapes, text, and formatting for easy sharing and printing.</p>
+                <p className="text-lg text-white/90">Convert Visio VSDX diagrams to PDF format with server-assisted document rendering for sharing, printing, and archiving.</p>
               </div>
             </div>
           </div>
@@ -111,15 +183,34 @@ export default function VsdxToPdfPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload VSDX File</h2>
-                  <ImageUploader
-                    onFileSelect={handleFileSelect}
-                    preview={preview}
-                    onClearPreview={handleClearPreview}
-                    accept=".vsdx"
-                  />
-                  {file && (
-                    <p className="mt-4 text-sm text-gray-600">
-                      File: <span className="font-semibold text-gray-900">{file.name}</span>
+                  {!file ? (
+                    <ImageUploader
+                      onFileSelect={handleFileSelect}
+                      preview={null}
+                      onClearPreview={handleClearPreview}
+                      accept=".vsdx"
+                    />
+                  ) : (
+                    <div className="relative rounded-lg border border-orange-200 bg-orange-50 p-6">
+                      <button
+                        type="button"
+                        aria-label="Remove selected VSDX file"
+                        onClick={handleClearPreview}
+                        className="absolute right-3 top-3 rounded-full bg-white p-2 text-gray-700 hover:bg-orange-100"
+                      >
+                        <X size={18} />
+                      </button>
+                      <FileText className="mb-3 text-orange-600" size={32} />
+                      <p className="text-sm text-gray-600">Selected Visio diagram</p>
+                      <p className="font-semibold text-gray-900 break-all">{file.name}</p>
+                      <p className="mt-1 text-sm text-gray-600">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  )}
+                  {error && (
+                    <p role="alert" className="mt-4 text-sm text-red-700">
+                      {error}
                     </p>
                   )}
                 </div>
@@ -131,41 +222,16 @@ export default function VsdxToPdfPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
-                    
-                    {/* Quality */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        PDF Quality
-                      </label>
-                      <select
-                        value={quality}
-                        onChange={(e) => setQuality(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      >
-                        <option value="high">High Quality</option>
-                        <option value="medium">Medium Quality</option>
-                        <option value="low">Low Quality (Smaller File)</option>
-                      </select>
-                    </div>
 
-                    {/* Preserve Formatting */}
-                    <div className="mb-6 flex items-center">
-                      <input
-                        type="checkbox"
-                        id="preserve"
-                        checked={preserveFormatting}
-                        onChange={(e) => setPreserveFormatting(e.target.checked)}
-                        className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
-                      />
-                      <label htmlFor="preserve" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
-                        Preserve Formatting
-                      </label>
-                    </div>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Your VSDX diagram is rendered to PDF using server-assisted
+                      document conversion.
+                    </p>
 
                     {/* Convert Button */}
                     <button
                       onClick={handleConvert}
-                      disabled={!file || processing}
+                      disabled={!file || processing || downloading}
                       className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
                     >
                       {processing ? (
@@ -185,10 +251,11 @@ export default function VsdxToPdfPage() {
                       <h3 className="font-semibold text-green-900 mb-3">✓ Conversion Complete</h3>
                       <button
                         onClick={handleDownload}
-                        className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
+                        disabled={processing || downloading}
+                        className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
                       >
                         <Download size={18} />
-                        Download PDF File
+                        {downloading ? 'Preparing Download...' : 'Download PDF File'}
                       </button>
                     </div>
                   )}
@@ -197,6 +264,92 @@ export default function VsdxToPdfPage() {
             </div>
           </div>
         </div>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert VSDX to PDF online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a VSDX diagram, start the conversion, wait for the
+                server-assisted document conversion to finish, and download
+                the resulting PDF from the download page.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  VSDX vs PDF
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  VSDX is commonly used for editable Visio diagrams. PDF is
+                  designed for consistent viewing and sharing across many
+                  devices and applications. Converting is useful when the
+                  recipient needs to view a diagram rather than edit its
+                  original Visio structure.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Useful for sharing diagrams
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  PDF output can make flowcharts, process diagrams, network
+                  diagrams, and other Visio documents easier to distribute,
+                  review, print, or archive without requiring the recipient to
+                  work directly with the VSDX source.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What should you check after conversion?
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Review page size and orientation.</li>
+                <li>Check text, connectors, shapes, and diagram labels.</li>
+                <li>Inspect fonts and spacing on important pages.</li>
+                <li>Verify that large diagrams remain readable.</li>
+                <li>Keep the original VSDX when future editing may be required.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                When should you keep the VSDX file?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                PDF is useful for viewing and distribution, but it is not a
+                replacement for the editable source document. Keep the VSDX
+                file when you may need to modify shapes, connectors, text,
+                layers, or diagram structure later.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                VSDX to PDF FAQ
+              </FAQHeading>
+              <FAQList>
+                {[
+                  ['What does this tool convert?', 'It accepts a VSDX diagram and produces PDF output through server-assisted document conversion.'],
+                  ['Why convert a Visio diagram to PDF?', 'PDF is convenient for sharing, reviewing, printing, and archiving diagrams when editing the original VSDX is not required.'],
+                  ['Can the PDF replace my original VSDX?', 'Keep the VSDX if you need future diagram editing. PDF is primarily useful as a viewing and distribution format.'],
+                  ['Should I inspect the converted PDF?', 'Yes. Review text, shapes, connectors, page layout, and other important diagram details after conversion.'],
+                ].map(([q, a]) => (
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

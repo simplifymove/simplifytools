@@ -209,6 +209,8 @@ export async function POST(request: Request): Promise<Response> {
               bmp: "image/bmp",
               tiff: "image/tiff",
               avif: "image/avif",
+              svg: "image/svg+xml",
+              eps: "application/postscript",
               pdf: "application/pdf",
               pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
               mp4: "video/mp4",

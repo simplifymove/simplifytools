@@ -177,7 +177,8 @@ def extract_audio(
     input_path: str,
     output_path: str,
     audio_format: Optional[str] = None,
-    quality: Optional[str] = None
+    quality: Optional[str] = None,
+    sample_rate: Optional[str] = None
 ) -> bool:
     """
     Extract audio from video file
@@ -196,6 +197,9 @@ def extract_audio(
     if quality:
         args.extend(['-q:a', quality])
     
+    if sample_rate:
+        args.extend(['-ar', str(sample_rate)])
+
     args.append(output_path)
     
     code, stdout, stderr = run_ffmpeg(args, capture_output=True)
@@ -356,11 +360,18 @@ def resize_video(
     Returns:
         True if successful
     """
+    # H.264/yuv420p encoding requires dimensions divisible by 2.
+    # Normalize the requested bounding box first.
+    width = max(2, width if width % 2 == 0 else width - 1)
+    height = max(2, height if height % 2 == 0 else height - 1)
+
     if keep_aspect:
-        # Ensure dimensions are even (required for most codecs)
-        width = width if width % 2 == 0 else width - 1
-        height = height if height % 2 == 0 else height - 1
-        scale_filter = f'scale={width}:{height}:force_original_aspect_ratio=decrease'
+        # FFmpeg may recalculate one dimension while preserving aspect ratio,
+        # so force the resulting dimensions to remain divisible by 2 as well.
+        scale_filter = (
+            f'scale={width}:{height}:'
+            'force_original_aspect_ratio=decrease:force_divisible_by=2'
+        )
     else:
         scale_filter = f'scale={width}:{height}'
     
@@ -404,7 +415,26 @@ def mute_video(
     code, stdout, stderr = run_ffmpeg(args, capture_output=True)
     
     if code != 0:
-        raise RuntimeError(f'Failed to mute video: {stderr}')
+        # Re-encode only if the source video codec cannot be copied to MP4.
+        fallback_args = [
+            '-i', input_path,
+            '-map', '0:v:0',
+            '-c:v', 'libx264',
+            '-preset', 'medium',
+            '-crf', '23',
+            '-an',
+            output_path
+        ]
+
+        fallback_code, fallback_stdout, fallback_stderr = run_ffmpeg(
+            fallback_args, capture_output=True
+        )
+
+        if fallback_code != 0:
+            raise RuntimeError(
+                f'Failed to mute video: {stderr}; '
+                f'fallback encoding failed: {fallback_stderr}'
+            )
     
     return True
 

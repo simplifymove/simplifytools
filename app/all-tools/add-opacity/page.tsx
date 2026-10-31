@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Eye } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function AddOpacityPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [opacity, setOpacity] = useState(100);
@@ -49,7 +53,7 @@ export default function AddOpacityPage() {
 
           ctx.globalAlpha = opacity / 100;
           ctx.drawImage(img, 0, 0);
-          
+
           canvas.toBlob((blob) => {
             if (!blob) {
               console.error('Failed to create blob');
@@ -75,16 +79,33 @@ export default function AddOpacityPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `opacity-${Date.now()}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'add-opacity',
+            originalName: `opacity-${Date.now()}.png`,
+            outputName: `opacity-${Date.now()}.png`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -113,7 +134,7 @@ export default function AddOpacityPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Control Image Opacity</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -198,35 +219,35 @@ export default function AddOpacityPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What format is the output?</summary>
-                  <p className="text-gray-700 mt-2">Output is transparent PNG format for best transparency support.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use for watermarks?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Perfect for creating semi-transparent watermarks.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between 0% and 100%?</summary>
-                  <p className="text-gray-700 mt-2">0% is completely transparent, 100% is fully visible/opaque.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this support all image types?</summary>
-                  <p className="text-gray-700 mt-2">Yes, supports JPG, PNG, WebP, BMP, TIFF, and standard formats.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image stored?</summary>
-                  <p className="text-gray-700 mt-2">No, all processing happens locally in your browser.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I adjust opacity of specific areas?</summary>
-                  <p className="text-gray-700 mt-2">This tool adjusts the entire image. Use an editor for selective opacity.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What format is the output?</FAQQuestion>
+                  <FAQAnswer>Output is transparent PNG format for best transparency support.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use for watermarks?</FAQQuestion>
+                  <FAQAnswer>Yes. Adjusting opacity can be useful when preparing semi-transparent watermark graphics.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the difference between 0% and 100%?</FAQQuestion>
+                  <FAQAnswer>0% is completely transparent, 100% is fully visible/opaque.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this support all image types?</FAQQuestion>
+                  <FAQAnswer>The tool is intended for supported browser-readable image files such as JPG, PNG, and WebP. Browser decoding support can vary for other formats.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image stored?</FAQQuestion>
+                  <FAQAnswer>The opacity effect runs in your browser. When you download the result, the generated image is uploaded to our server for temporary download preparation.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I adjust opacity of specific areas?</FAQQuestion>
+                  <FAQAnswer>This tool adjusts the entire image. Use an editor for selective opacity.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -249,8 +270,84 @@ export default function AddOpacityPage() {
           </div>
         </div>
 
-        <Footer />
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to adjust image opacity
+              </h2>
+              <p className="text-gray-600 leading-7">
+Upload an image and use the opacity control to make the image
+                more or less transparent. The browser draws the source image
+                onto a canvas using the selected alpha level and prepares the
+                processed result for download.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The image effect is produced with browser image and Canvas
+                  processing. The preview lets you inspect the result before
+                  using the available download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Lower opacity makes the entire rendered image more transparent; it does not selectively remove the background.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and compare the preview with
+                the original before downloading. Stronger effect settings can
+                intentionally remove or alter visible detail, so choose the
+                setting according to the result you need.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Image Opacity FAQ
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does the effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. The tool changes the appearance of existing image
+                    pixels; it does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the result before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Use the on-page preview and available controls to
+                    inspect the processed image before downloading it.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+          </div>
+        </section>
       </main>
+
+      <Footer />
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

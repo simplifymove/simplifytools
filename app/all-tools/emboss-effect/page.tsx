@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Mountain } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function EmbossEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [strength, setStrength] = useState(50);
@@ -56,7 +60,7 @@ export default function EmbossEffectPage() {
           for (let y = 1; y < canvas.height - 1; y++) {
             for (let x = 1; x < canvas.width - 1; x++) {
               const idx = (y * canvas.width + x) * 4;
-              
+
               for (let c = 0; c < 3; c++) {
                 const topLeft = data[((y - 1) * canvas.width + (x - 1)) * 4 + c];
                 const topCenter = data[((y - 1) * canvas.width + x) * 4 + c];
@@ -68,9 +72,9 @@ export default function EmbossEffectPage() {
                 const bottomCenter = data[((y + 1) * canvas.width + x) * 4 + c];
                 const bottomRight = data[((y + 1) * canvas.width + (x + 1)) * 4 + c];
 
-                const emboss = (topLeft * -2 + topCenter * -1 + middleLeft * -1 + middle * 1 + 
+                const emboss = (topLeft * -2 + topCenter * -1 + middleLeft * -1 + middle * 1 +
                                middleRight * 1 + bottomCenter * 1 + bottomRight * 2) * factor + 128;
-                
+
                 data[idx + c] = Math.min(255, Math.max(0, emboss));
               }
             }
@@ -102,16 +106,33 @@ export default function EmbossEffectPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `emboss-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'emboss-effect',
+            originalName: `emboss-${Date.now()}.jpg`,
+            outputName: `emboss-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -129,7 +150,7 @@ export default function EmbossEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">⛰️ Emboss Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Apply 3D embossing and relief effects to images. Create stunning embossed artwork with depth.
+              Apply an emboss-style relief effect that emphasizes image edges and tonal differences.
             </p>
           </div>
         </div>
@@ -140,7 +161,7 @@ export default function EmbossEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Emboss Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -225,35 +246,35 @@ export default function EmbossEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What strength should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced effect. Lower for subtle, higher for dramatic.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this work on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works best on detailed photos. Results vary by content.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, embossed images can be used for commercial purposes.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent effect preservation.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I undo changes?</summary>
-                  <p className="text-gray-700 mt-2">Upload again to start fresh with different settings.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What strength should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for balanced effect. Lower for subtle, higher for dramatic.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this work on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works best on detailed photos. Results vary by content.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on your rights to the original image and any applicable licenses or permissions. Applying the emboss effect does not grant rights to copyrighted source material.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What output quality?</FAQQuestion>
+                  <FAQAnswer>The processed image is exported as a JPEG using a quality setting of 95%. JPEG compression is lossy, so some image detail may change.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The emboss effect runs in your browser. Downloading the result uploads the generated image to our server for temporary download preparation.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I undo changes?</FAQQuestion>
+                  <FAQAnswer>Upload again to start fresh with different settings.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -277,7 +298,88 @@ export default function EmbossEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Emboss Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tool reads neighboring pixel values and emphasizes
+                differences between them to create a raised or recessed
+                relief-style appearance. The processing runs in the browser
+                and the result can be previewed before download.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual effect is generated with browser image and
+                  Canvas processing. The source image is rendered, pixel
+                  values are adjusted, and the result is prepared for
+                  download through the existing image workflow.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Embossing emphasizes local edges and tonal differences; it does not create real three-dimensional depth.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Use a clear source image and compare the processed preview
+                with the original. Strong effect settings can intentionally
+                remove subtle detail or exaggerate edges and tonal changes.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                the Emboss Effect works FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It changes existing pixel values and does not recreate
+                    missing detail or increase the source resolution.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect first?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Review the available preview before downloading the
+                    processed result.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

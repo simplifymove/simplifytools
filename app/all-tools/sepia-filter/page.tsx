@@ -1,104 +1,194 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function SepiaFilterPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(100);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const operationId = useRef(0);
+  const downloadBusy = useRef(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    return () => {
+      operationId.current += 1;
+    };
+  }, []);
+
+  const invalidateResult = () => {
+    operationId.current += 1;
+    setResult(null);
+    setError('');
+    setProcessing(false);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
+
+    if (!selectedFile) return;
+
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please select a supported image file.');
+      return;
     }
+
+    const currentId = operationId.current;
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (currentId !== operationId.current) return;
+
+      if (typeof reader.result !== 'string') {
+        setError('Unable to read the selected image.');
+        return;
+      }
+
+      setFile(selectedFile);
+      setPreview(reader.result);
+    };
+
+    reader.onerror = () => {
+      if (currentId === operationId.current) {
+        setError('Unable to read the selected image.');
+      }
+    };
+
+    reader.readAsDataURL(selectedFile);
   };
 
   const applySepiaFilter = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processing) return;
+
+    const currentId = ++operationId.current;
     setProcessing(true);
+    setResult(null);
+    setError('');
 
     try {
       const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setProcessing(false);
-            return;
-          }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setProcessing(false);
-            return;
-          }
 
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
-          const intensityValue = intensity / 100;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Unable to load the image.'));
+        img.src = preview;
+      });
 
-          for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-            const gray = r * 0.299 + g * 0.587 + b * 0.114;
+      if (currentId !== operationId.current) return;
 
-            data[i] = Math.min(255, gray + 100 * intensityValue);
-            data[i + 1] = Math.min(255, gray + 50 * intensityValue);
-            data[i + 2] = Math.max(0, gray - 50 * intensityValue);
-          }
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('Image canvas is unavailable.');
 
-          ctx.putImageData(imageData, 0, 0);
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
-              return;
-            }
-            setResult(blob);
-            setProcessing(false);
-          }, 'image/jpeg', 0.95);
-        } catch (error) {
-          console.error('Error in image onload:', error);
-          setProcessing(false);
-        }
-      };
-      img.onerror = () => {
-        console.error('Error loading image');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Unable to initialize image processing.');
+
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(
+        0, 0, canvas.width, canvas.height
+      );
+
+      const data = imageData.data;
+      const strength = intensity / 100;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        const sepiaR = Math.min(
+          255, r * 0.393 + g * 0.769 + b * 0.189
+        );
+        const sepiaG = Math.min(
+          255, r * 0.349 + g * 0.686 + b * 0.168
+        );
+        const sepiaB = Math.min(
+          255, r * 0.272 + g * 0.534 + b * 0.131
+        );
+
+        data[i] = Math.round(r + (sepiaR - r) * strength);
+        data[i + 1] = Math.round(g + (sepiaG - g) * strength);
+        data[i + 2] = Math.round(b + (sepiaB - b) * strength);
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          result => {
+            if (result) resolve(result);
+            else reject(new Error('Unable to create the processed image.'));
+          },
+          'image/jpeg',
+          0.95
+        );
+      });
+
+      if (currentId !== operationId.current) return;
+
+      setResult(blob);
+    } catch (caughtError) {
+      if (currentId !== operationId.current) return;
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to apply the sepia filter.'
+      );
+    } finally {
+      if (currentId === operationId.current) {
         setProcessing(false);
-      };
-      img.src = preview;
-    } catch (error) {
-      console.error('Error applying sepia filter:', error);
-      setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'sepia-filtered-image.jpg';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing || downloadBusy.current) return;
+      downloadBusy.current = true;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'sepia-filter',
+            originalName: 'sepia-filtered-image.jpg',
+            outputName: 'sepia-filtered-image.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        downloadBusy.current = false;
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -116,10 +206,10 @@ export default function SepiaFilterPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎂 Sepia Filter</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Convert your photos to classic sepia tones instantly. Transform modern images into warm, vintage memories with authentic sepia color grading.
+              Convert your photos to warm sepia-style tones. Transform modern images into warm, vintage memories with authentic sepia color grading.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Perfect for creating nostalgic and classic photo effects online, completely free.
+              Create a warm, vintage-style color treatment.
             </p>
           </div>
         </div>
@@ -130,7 +220,7 @@ export default function SepiaFilterPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Sepia Filter</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -150,7 +240,10 @@ export default function SepiaFilterPage() {
                       min="0"
                       max="100"
                       value={intensity}
-                      onChange={(e) => setIntensity(Number(e.target.value))}
+                      onChange={(e) => {
+                        invalidateResult();
+                        setIntensity(Number(e.target.value));
+                      }}
                       className="w-full"
                     />
                   </div>
@@ -166,9 +259,16 @@ export default function SepiaFilterPage() {
                 </>
               )}
 
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
+                  disabled={processing}
                   className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Download size={20} />
@@ -213,35 +313,35 @@ export default function SepiaFilterPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-amber-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is sepia tone?</summary>
-                  <p className="text-gray-700 mt-2">Sepia is a warm, brownish color tone originally used in old photographs from the 19th and early 20th centuries.</p>
-                </details>
-                <details className="border-l-4 border-amber-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Why were old photos sepia-toned?</summary>
-                  <p className="text-gray-700 mt-2">Early color photography used sepia tones naturally due to the photochemical processes used. It became the iconic vintage look.</p>
-                </details>
-                <details className="border-l-4 border-amber-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start with 70-90% for a natural vintage look. Use 100% for bold sepia, or less than 50% for subtle toning.</p>
-                </details>
-                <details className="border-l-4 border-amber-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on colored and B&W photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Sepia works beautifully on both color and black & white photos.</p>
-                </details>
-                <details className="border-l-4 border-amber-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is image quality affected?</summary>
-                  <p className="text-gray-700 mt-2">No! We maintain full image quality throughout the sepia filtering process.</p>
-                </details>
-                <details className="border-l-4 border-amber-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I undo the sepia effect?</summary>
-                  <p className="text-gray-700 mt-2">The original image is never modified. Simply reload to get the original, or adjust intensity before applying.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is sepia tone?</FAQQuestion>
+                  <FAQAnswer>Sepia is a warm, brownish color tone originally used in old photographs from the 19th and early 20th centuries.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Why were old photos sepia-toned?</FAQQuestion>
+                  <FAQAnswer>Early color photography used sepia tones naturally due to the photochemical processes used. It became the iconic vintage look.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity should I use?</FAQQuestion>
+                  <FAQAnswer>Start with 70-90% for a natural vintage look. Use 100% for bold sepia, or less than 50% for subtle toning.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on colored and B&W photos?</FAQQuestion>
+                  <FAQAnswer>Yes! Sepia works beautifully on both color and black & white photos.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is image quality affected?</FAQQuestion>
+                  <FAQAnswer>Applying the filter changes the image pixels and creates a processed result. Review the output if preserving source detail is important.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I undo the sepia effect?</FAQQuestion>
+                  <FAQAnswer>The original image is never modified. Simply reload to get the original, or adjust intensity before applying.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -257,7 +357,7 @@ export default function SepiaFilterPage() {
                 </Link>
                 <Link href="/all-tools/color-grader" className="p-4 border-2 border-amber-200 rounded-lg hover:bg-amber-50 transition">
                   <h3 className="font-bold text-gray-800">Color Grader</h3>
-                  <p className="text-sm text-gray-600">Professional color control</p>
+                  <p className="text-sm text-gray-600">Color controls</p>
                 </Link>
               </div>
             </div>
@@ -265,7 +365,86 @@ export default function SepiaFilterPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Sepia Filter works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The sepia filter recalculates image color channels to produce
+                warm brown and muted tonal values associated with a sepia-style
+                photographic effect.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The preview lets you compare the result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect changes existing pixel colors; it does not recreate historical film characteristics or add missing source detail.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                                 Additional Sepia Filter Questions
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview changes before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Use the preview and available controls to review the
+                    result before downloading it.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

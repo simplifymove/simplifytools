@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Add Border - Free Image Border Editor | SimplifyConvert',
-  description: 'Add custom borders to your images. Create frames and edges with various styles.',
+  title: 'Add Border to Image - Create Custom Image Borders | SimplifyConvert',
+  description: 'Add an adjustable border around an image, choose the border appearance, preview the result, and download the processed image.',
   keywords: ['add border', 'image border', 'frame image', 'free tool'],
   openGraph: {
     type: 'website',

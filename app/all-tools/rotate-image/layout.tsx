@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Rotate Image - Free Image Rotation Tool | SimplifyConvert',
-  description: 'Rotate images to any angle. Flip and straighten your images instantly.',
+  title: 'Rotate Image - Rotate & Straighten Images | SimplifyConvert',
+  description: 'Rotate an image to the required angle, preview the orientation, and download the processed result.',
   keywords: ['rotate image', 'image rotation', 'flip image', 'free tool'],
   openGraph: {
     type: 'website',

@@ -1,14 +1,17 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function HeicToJpgPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -37,8 +40,35 @@ export default function HeicToJpgPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/jpeg');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'heic',
+          to_format: 'jpg',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/jpeg') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -46,14 +76,33 @@ export default function HeicToJpgPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `converted-image-${Date.now()}.jpg`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'heic-to-jpg',
+        originalName: file.name,
+        outputName: `${baseName}.jpg`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -74,7 +123,7 @@ export default function HeicToJpgPage() {
               🖼️ HEIC to JPG Converter
             </h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert HEIC images from your iPhone to JPG format instantly. Free, fast, and no uploads to servers.
+              Convert HEIC images from your iPhone to JPG format with reliable server-assisted processing.
             </p>
           </div>
         </div>
@@ -130,9 +179,9 @@ export default function HeicToJpgPage() {
                         <button
                           onClick={handleDownload}
                           className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition flex items-center gap-2"
-                        >
+                      disabled={processing}>
                           <Download size={20} />
-                          Download JPG
+                          {processing ? 'Preparing Download...' : 'Continue to Download'}
                         </button>
                       </div>
                     </div>
@@ -158,29 +207,29 @@ export default function HeicToJpgPage() {
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Preview Your Image</h3>
-                  <p className="text-gray-600 mt-2">Once uploaded, you'll see a preview of your image. Make sure it's the correct file before proceeding to conversion.</p>
+                  <h3 className="text-lg font-semibold text-gray-900">Check Your Selected File</h3>
+                  <p className="text-gray-600 mt-2">After selecting a HEIC file, continue to conversion. Some browsers cannot display HEIC previews, so a missing preview does not necessarily mean the file is invalid.</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Click Convert to JPG</h3>
-                  <p className="text-gray-600 mt-2">Press the "Convert to JPG" button. The conversion happens instantly in your browser with no server upload.</p>
+                  <p className="text-gray-600 mt-2">Press the "Convert to JPG" button. The file is uploaded for server-assisted conversion, and a JPG result is prepared when processing succeeds.</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Download Your JPG</h3>
-                  <p className="text-gray-600 mt-2">Once converted, click "Download JPG" to save your image. JPG format is compatible with all devices and applications.</p>
+                  <p className="text-gray-600 mt-2">When conversion finishes, click "Continue to Download" to open the download page and save your JPG. JPG is widely supported by browsers, devices, image editors, and document tools.</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">5</div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Share or Use Your JPG</h3>
-                  <p className="text-gray-600 mt-2">Your converted JPG image is ready to use. Share it anywhere, upload to websites, or edit it with any image editor.</p>
+                  <p className="text-gray-600 mt-2">After downloading, you can share or edit the JPG in compatible applications. JPG uses lossy compression and does not support transparency, so keep the original HEIC file if you may need its original image data.</p>
                 </div>
               </div>
             </div>
@@ -197,68 +246,53 @@ export default function HeicToJpgPage() {
                   <Image className="text-blue-600" size={24} />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Universal Compatibility</h3>
-                <p className="text-gray-600">JPG is supported on all devices, browsers, and applications. HEIC is relatively new and not supported everywhere.</p>
+                <p className="text-gray-600">JPG has broad support across browsers, devices, and applications, while HEIC support varies by platform and software.</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                   <CheckCircle className="text-blue-600" size={24} />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Easy Sharing</h3>
-                <p className="text-gray-600">Share your photos on social media, email, or upload to websites without compatibility issues. JPG works everywhere.</p>
+                <p className="text-gray-600">JPG is accepted by many websites, email services, and image applications. Check the requirements of the destination if a particular format or file size is required.</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* FAQ Section */}
-        <section className="py-12 px-4 bg-white">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-4">
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>What is HEIC format?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">HEIC (High Efficiency Image Container) is Apple's modern image format used by iPhones and iPads. It provides better compression than JPG while maintaining quality, but it's not universally supported like JPG.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>Why does my iPhone use HEIC?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">Apple chose HEIC for better compression and quality. It reduces file size by up to 50% compared to JPG. However, this causes compatibility issues on non-Apple devices and platforms.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>Will the image quality decrease?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">Not significantly. JPG is also a high-quality format. The conversion maintains excellent visual quality. Some minimal difference might occur due to different compression methods, but it's imperceptible to the human eye.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>Can I convert multiple HEIC files at once?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">Our converter processes one file at a time. You can quickly convert multiple files by uploading and converting them one after another. Each conversion takes just seconds.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
-                  <span>Is my image data secure?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">Yes! All conversion happens locally in your browser. Your images are never uploaded to our servers or stored anywhere. Your privacy is completely protected.</p>
-              </details>
-              <details className="bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer group">
-                <summary className="flex items-center justify-between font-semibold text-gray-900 select-none">
+        <section className="">
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQDisclosure>
+                <FAQQuestion>What is HEIC format?</FAQQuestion>
+                <FAQAnswer>HEIC (High Efficiency Image Container) is Apple's modern image format used by iPhones and iPads. It provides better compression than JPG while maintaining quality, but it's not universally supported like JPG.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Why does my iPhone use HEIC?</FAQQuestion>
+                <FAQAnswer>HEIC is designed for efficient image storage and is commonly used by Apple devices. File-size differences compared with JPG depend on the image and encoding settings, while HEIC compatibility can vary across platforms and applications.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Will the image quality decrease?</FAQQuestion>
+                <FAQAnswer>JPG uses lossy compression, so some image information can change during conversion. The visible difference depends on the source HEIC image and the JPEG encoding used for the output.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Can I convert multiple HEIC files at once?</FAQQuestion>
+                <FAQAnswer>The converter processes one file at a time. To convert multiple HEIC files, upload and process them individually.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>Is my image data secure?</FAQQuestion>
+                <FAQAnswer>Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</FAQAnswer>
+              </FAQDisclosure>
+              <FAQDisclosure>
+                <FAQQuestion>
                   <span>What's the file size limit?</span>
-                  <span className="group-open:rotate-180 transition">▼</span>
-                </summary>
-                <p className="text-gray-600 mt-4">You can convert most image files without limits. For very large files (over 50MB), we recommend compressing them first with our image compression tool, then converting to JPG.</p>
-              </details>
-            </div>
-          </div>
+
+                </FAQQuestion>
+                <FAQAnswer>Files around 50MB or larger may exceed practical upload or processing constraints. Compress or resize very large images before converting them to JPG.</FAQAnswer>
+              </FAQDisclosure>
+            </FAQList>
+          </FAQPanel>
         </section>
 
         {/* JSON-LD FAQ Schema */}
@@ -280,7 +314,7 @@ export default function HeicToJpgPage() {
                 "name": "Why does my iPhone use HEIC?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Apple chose HEIC for better compression and quality. It reduces file size by up to 50% compared to JPG. However, this causes compatibility issues on non-Apple devices and platforms."
+                  "text": "HEIC is designed for efficient image storage and is commonly used by Apple devices. File-size differences compared with JPG depend on the image and encoding settings, while HEIC compatibility can vary across platforms and applications."
                 }
               },
               {
@@ -288,7 +322,7 @@ export default function HeicToJpgPage() {
                 "name": "Will the image quality decrease?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Not significantly. JPG is also a high-quality format. The conversion maintains excellent visual quality. Some minimal difference might occur due to different compression methods, but it's imperceptible to the human eye."
+                  "text": "JPG uses lossy compression, so some image information can change during conversion. The visible difference depends on the source HEIC image and the JPEG encoding used for the output."
                 }
               }
             ]
@@ -302,7 +336,7 @@ export default function HeicToJpgPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
-                <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency</p>
+                <p className="text-gray-600 text-sm mt-2">Convert a JPG image to PNG format</p>
               </Link>
               <Link href="/all-tools/png-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">PNG to JPG Converter</h3>
@@ -314,7 +348,7 @@ export default function HeicToJpgPage() {
               </Link>
               <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-                <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+                <p className="text-gray-600 text-sm mt-2">Reduce image file size</p>
               </Link>
             </div>
           </div>

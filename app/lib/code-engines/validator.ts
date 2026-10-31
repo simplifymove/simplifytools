@@ -1,3 +1,6 @@
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import cronParser from 'cron-parser';
 // Validator Engine - handles validation operations
 
 export interface ValidationResult {
@@ -50,54 +53,75 @@ export function validateJSON(text: string): ValidationResult {
 // XML validation
 export function validateXML(text: string): ValidationResult {
   try {
-    // Check basic XML structure
-    const trimmed = text.trim();
+    const sax = require('sax') as typeof import('sax');
+    const parser = sax.parser(true, {
+      trim: false,
+      normalize: false,
+      xmlns: true,
+    });
 
-    if (!trimmed.startsWith('<')) {
-      throw new Error('XML must start with <');
-    }
+    let depth = 0;
+    let rootCount = 0;
+    let parserError: Error | null = null;
+    let attributes = new Set<string>();
 
-    if (!trimmed.endsWith('>')) {
-      throw new Error('XML must end with >');
-    }
+    parser.onopentagstart = () => {
+      attributes = new Set<string>();
+    };
 
-    // Check balanced tags
-    const tagRegex = /<\/?(\w+)[^>]*>/g;
-    const tags: string[] = [];
-    let match;
-
-    while ((match = tagRegex.exec(trimmed)) !== null) {
-      const tagName = match[1];
-      if (match[0].startsWith('</')) {
-        if (tags[tags.length - 1] === tagName) {
-          tags.pop();
-        } else {
-          throw new Error(`Mismatched closing tag: </${tagName}>`);
-        }
-      } else if (!match[0].endsWith('/>')) {
-        tags.push(tagName);
+    parser.onattribute = (attribute) => {
+      if (attributes.has(attribute.name)) {
+        throw new Error(`Duplicate XML attribute: ${attribute.name}`);
       }
+      attributes.add(attribute.name);
+    };
+
+    parser.onopentag = () => {
+      if (depth === 0) {
+        rootCount++;
+        if (rootCount > 1) {
+          throw new Error('XML must contain exactly one root element');
+        }
+      }
+      depth++;
+    };
+
+    parser.onclosetag = () => {
+      depth--;
+    };
+
+    parser.onerror = (error) => {
+      parserError = error;
+    };
+
+    parser.write(text).close();
+
+    if (parserError) {
+      throw parserError;
     }
 
-    if (tags.length > 0) {
-      throw new Error(`Unclosed tag: <${tags[0]}>`);
+    if (rootCount !== 1 || depth !== 0) {
+      throw new Error('XML must contain exactly one complete root element');
     }
 
     return {
       valid: true,
-      message: 'Valid XML',
+      message: 'Valid XML syntax',
       meta: {
         type: 'xml',
+        validation: 'well-formedness',
       },
     };
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : String(error);
+
     return {
       valid: false,
-      message: `Invalid XML: ${error instanceof Error ? error.message : String(error)}`,
+      message: `Invalid XML: ${errorMessage}`,
       errors: [
         {
-          message:
-            error instanceof Error ? error.message : String(error),
+          message: errorMessage,
         },
       ],
     };
@@ -107,127 +131,160 @@ export function validateXML(text: string): ValidationResult {
 // YAML validation
 export function validateYAML(text: string): ValidationResult {
   try {
-    if (!text.trim()) {
-      return {
-        valid: true,
-        message: 'Valid YAML (empty)',
-        meta: { type: 'yaml' },
-      };
-    }
+    const yaml = require('js-yaml') as typeof import('js-yaml');
 
-    // Basic YAML validation
-    const lines = text.split('\n');
-    const indentLevel = 0;
-    const errors: Array<{ line: number; message: string }> = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (!line.trim() || line.trim().startsWith('#')) continue;
-
-      const match = line.match(/^(\s*)/);
-      const spaces = match ? match[1].length : 0;
-
-      // Check if indentation is valid (should be multiples of 2)
-      if (spaces % 2 !== 0) {
-        errors.push({
-          line: i + 1,
-          message: 'Indentation must be a multiple of 2 spaces',
-        });
-      }
-
-      // Check for invalid YAML syntax
-      if (line.includes(':')) {
-        const parts = line.split(':');
-        if (
-          parts.length > 2 &&
-          parts[0].trim() &&
-          !parts[1]?.includes('"')
-        ) {
-          // Multiple colons might indicate a URL or time
-        }
-      }
-    }
-
-    if (errors.length > 0) {
-      return {
-        valid: false,
-        message: 'Invalid YAML',
-        errors: errors.map((e) => ({
-          line: e.line,
-          message: e.message,
-        })),
-      };
-    }
+    yaml.load(text, {
+      json: false,
+      schema: yaml.JSON_SCHEMA,
+    });
 
     return {
       valid: true,
-      message: 'Valid YAML',
+      message: 'Valid YAML syntax',
       meta: {
         type: 'yaml',
-        lines: lines.length,
+        validation: 'syntax',
+        lines: text.split('\n').length,
       },
     };
   } catch (error) {
+    const yamlError = error as Error & {
+      reason?: string;
+      mark?: {
+        line?: number;
+        column?: number;
+      };
+    };
+
+    const errorMessage =
+      yamlError.reason ||
+      (error instanceof Error ? error.message : String(error));
+
+    const line =
+      typeof yamlError.mark?.line === 'number'
+        ? yamlError.mark.line + 1
+        : undefined;
+
+    const column =
+      typeof yamlError.mark?.column === 'number'
+        ? yamlError.mark.column + 1
+        : undefined;
+
     return {
       valid: false,
-      message: `Invalid YAML: ${error instanceof Error ? error.message : String(error)}`,
+      message: `Invalid YAML: ${errorMessage}`,
       errors: [
         {
-          message:
-            error instanceof Error ? error.message : String(error),
+          message: errorMessage,
+          ...(line !== undefined ? { line } : {}),
+          ...(column !== undefined ? { column } : {}),
         },
       ],
     };
   }
 }
 
-// JWT decoding (without verification)
+// JWT decoding only. Signatures are not verified.
 export function decodeJWT(token: string): ValidationResult {
   try {
-    const parts = token.split('.');
+    const parts = token.trim().split('.');
 
     if (parts.length !== 3) {
       throw new Error('JWT must have 3 parts separated by dots');
     }
 
-    // Decode header
-    const header = JSON.parse(
-      Buffer.from(parts[0], 'base64').toString('utf-8')
-    );
+    const decodePart = (part: string, label: string): unknown => {
+      if (!part || !/^[A-Za-z0-9_-]+$/.test(part)) {
+        throw new Error(`Invalid ${label} Base64URL encoding`);
+      }
 
-    // Decode payload
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString('utf-8')
-    );
+      const normalized = part.replace(/-/g, '+').replace(/_/g, '/');
+      const decoded = Buffer.from(normalized, 'base64');
 
-    // Check expiry if present
+      if (
+        decoded.length === 0 ||
+        decoded.toString('base64url') !== part.replace(/=+$/, '')
+      ) {
+        throw new Error(`Invalid ${label} Base64URL encoding`);
+      }
+
+      return JSON.parse(decoded.toString('utf-8'));
+    };
+
+    const header = decodePart(parts[0], 'header');
+    const payload = decodePart(parts[1], 'payload');
+
+    if (
+      !header ||
+      typeof header !== 'object' ||
+      Array.isArray(header)
+    ) {
+      throw new Error('JWT header must be a JSON object');
+    }
+
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      Array.isArray(payload)
+    ) {
+      throw new Error('JWT payload must be a JSON object');
+    }
+
+    const claims = payload as Record<string, unknown>;
+    const warnings: string[] = [];
+
+    if (!parts[2]) {
+      warnings.push('Token signature segment is empty');
+    } else if (!/^[A-Za-z0-9_-]+$/.test(parts[2])) {
+      warnings.push('Token signature segment is not valid Base64URL text');
+    }
+
     let expired = false;
-    if (payload.exp) {
-      expired = payload.exp * 1000 < Date.now();
+    let expiresAt: string | undefined;
+
+    if (Object.prototype.hasOwnProperty.call(claims, 'exp')) {
+      if (
+        typeof claims.exp !== 'number' ||
+        !Number.isFinite(claims.exp)
+      ) {
+        warnings.push('Expiration claim (exp) is not a valid number');
+      } else {
+        expired = claims.exp <= Math.floor(Date.now() / 1000);
+
+        const timestamp = claims.exp * 1000;
+        const date = new Date(timestamp);
+
+        if (Number.isFinite(date.getTime())) {
+          expiresAt = date.toISOString();
+        } else {
+          warnings.push('Expiration claim (exp) is outside the supported date range');
+        }
+      }
+    } else {
+      warnings.push('Token does not contain an expiration claim (exp)');
     }
 
     return {
-      valid: !expired,
-      message: expired ? 'JWT has expired' : 'Valid JWT',
+      valid: true,
+      message: expired
+        ? 'JWT decoded; expiration time has passed. Signature not verified.'
+        : 'JWT decoded. Signature not verified.',
       meta: {
         header,
         payload,
         expired,
-        expiresAt: payload.exp
-          ? new Date(payload.exp * 1000).toISOString()
-          : undefined,
+        expiresAt,
+        signatureVerified: false,
+        warnings,
       },
     };
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
     return {
       valid: false,
-      message: `Invalid JWT: ${error instanceof Error ? error.message : String(error)}`,
-      errors: [
-        {
-          message:
-            error instanceof Error ? error.message : String(error),
-        },
-      ],
+      message: `Unable to decode JWT: ${message}`,
+      errors: [{ message }],
     };
   }
 }
@@ -252,6 +309,11 @@ export function testRegex(
         index: match.index,
         groups: match.slice(1),
       });
+
+      // Advance past zero-length matches to prevent an infinite loop.
+      if (match[0].length === 0) {
+        globalRegex.lastIndex++;
+      }
     }
 
     return {
@@ -366,75 +428,95 @@ export function validateHTML(text: string): ValidationResult {
   }
 }
 
-// Markdown validation (basic)
+// Basic Markdown diagnostics, not strict syntax validation.
 export function validateMarkdown(text: string): ValidationResult {
-  try {
-    if (!text.trim()) {
-      return {
-        valid: true,
-        message: 'Valid Markdown (empty)',
-        meta: { type: 'markdown' },
+  const warnings: string[] = [];
+  const lines = text.split(/\r?\n/);
+
+  let openFence:
+    | { character: string; length: number; line: number }
+    | null = null;
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+
+    if (openFence === null) {
+      const opening = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+
+      if (!opening) continue;
+
+      const marker = opening[1];
+      const info = opening[2];
+
+      // Backtick fences cannot contain backticks in the info string.
+      if (marker[0] === '`' && info.includes('`')) continue;
+
+      openFence = {
+        character: marker[0],
+        length: marker.length,
+        line: index + 1,
       };
-    }
+    } else {
+      const closing = line.match(/^ {0,3}(`+|~+)[ \t]*$/);
 
-    // Check for balanced backticks
-    const codeBlocks = text.match(/```/g) || [];
-    if (codeBlocks.length % 2 !== 0) {
-      return {
-        valid: false,
-        message: 'Unbalanced code blocks (```) - must come in pairs',
-        errors: [
-          {
-            message: 'Unbalanced triple backticks',
-          },
-        ],
-      };
-    }
-
-    // Check for balanced brackets
-    const linkRegex = /\[([^\]]*)\]\(([^)]*)\)/g;
-    let match;
-    const warnings: string[] = [];
-
-    while ((match = linkRegex.exec(text)) !== null) {
-      if (!match[1]) {
-        warnings.push(`Empty link text at position ${match.index}`);
-      }
-      if (!match[2]) {
-        warnings.push(`Empty link URL at position ${match.index}`);
+      if (
+        closing &&
+        closing[1][0] === openFence.character &&
+        closing[1].length >= openFence.length
+      ) {
+        openFence = null;
       }
     }
-
-    return {
-      valid: true,
-      message:
-        warnings.length > 0
-          ? `Valid Markdown with ${warnings.length} warning(s)`
-          : 'Valid Markdown',
-      meta: {
-        type: 'markdown',
-        warnings,
-      },
-    };
-  } catch (error) {
-    return {
-      valid: false,
-      message: `Markdown validation error: ${error instanceof Error ? error.message : String(error)}`,
-      errors: [
-        {
-          message:
-            error instanceof Error ? error.message : String(error),
-        },
-      ],
-    };
   }
+
+  if (openFence !== null) {
+    const fence = openFence as {
+      character: string;
+      length: number;
+      line: number;
+    };
+
+    warnings.push(
+      `Possible unclosed code fence starting at line ${fence.line}`
+    );
+  }
+
+  // These are simple link diagnostics, not full Markdown link parsing.
+  const linkRegex = /\[([^\]]*)\]\(([^)]*)\)/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (!match[1]) {
+      warnings.push(`Empty link text at position ${match.index}`);
+    }
+    if (!match[2]) {
+      warnings.push(`Empty link URL at position ${match.index}`);
+    }
+  }
+
+  return {
+    valid: true,
+    message:
+      warnings.length > 0
+        ? `Basic Markdown check completed with ${warnings.length} warning(s)`
+        : 'Basic Markdown check completed',
+    meta: {
+      type: 'markdown',
+      validation: 'basic-diagnostics',
+      warnings,
+    },
+  };
 }
 
 // Text diff comparison
+// Sequence-aware line comparison using longest common subsequence.
 export function compareText(
   text1: string,
   text2: string
 ): ValidationResult {
+  const lines1 = text1.split('\n');
+  const lines2 = text2.split('\n');
+
   if (text1 === text2) {
     return {
       valid: true,
@@ -442,177 +524,142 @@ export function compareText(
       meta: {
         identical: true,
         changes: 0,
+        lines1: lines1.length,
+        lines2: lines2.length,
+        added: 0,
+        removed: 0,
+        modified: 0,
+        diff: { added: [], removed: [], modified: [] },
       },
     };
   }
 
-  const lines1 = text1.split('\n');
-  const lines2 = text2.split('\n');
+  const n = lines1.length;
+  const m = lines2.length;
 
-  const changes = {
-    added: [] as number[],
-    removed: [] as number[],
-    modified: [] as { line1: number; line2: number }[],
-  };
+  // Bound quadratic work for unusually large documents.
+  if (n * m > 1_000_000) {
+    return {
+      valid: false,
+      message: 'Comparison exceeds the supported line complexity limit',
+      errors: [{
+        message: 'Try comparing smaller sections of the documents.',
+      }],
+    };
+  }
 
-  // Simple line-based diff
-  const maxLines = Math.max(lines1.length, lines2.length);
-  for (let i = 0; i < maxLines; i++) {
-    if (i >= lines1.length) {
-      changes.added.push(i);
-    } else if (i >= lines2.length) {
-      changes.removed.push(i);
-    } else if (lines1[i] !== lines2[i]) {
-      changes.modified.push({ line1: i, line2: i });
+  const lcs: Uint32Array[] = Array.from(
+    { length: n + 1 },
+    () => new Uint32Array(m + 1)
+  );
+
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      lcs[i][j] = lines1[i] === lines2[j]
+        ? lcs[i + 1][j + 1] + 1
+        : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
     }
   }
 
-  const totalChanges =
-    changes.added.length + changes.removed.length + changes.modified.length;
+  const added: number[] = [];
+  const removed: number[] = [];
+
+  let i = 0;
+  let j = 0;
+
+  while (i < n || j < m) {
+    if (i < n && j < m && lines1[i] === lines2[j]) {
+      i++;
+      j++;
+    } else if (j < m && (i === n || lcs[i][j + 1] >= lcs[i + 1][j])) {
+      added.push(j);
+      j++;
+    } else {
+      removed.push(i);
+      i++;
+    }
+  }
+
+  const changes = added.length + removed.length;
 
   return {
-    valid: text1 === text2,
-    message: `${totalChanges} difference(s) found`,
+    valid: false,
+    message: `${changes} difference(s) found`,
     meta: {
-      identical: text1 === text2,
-      changes: totalChanges,
-      lines1: lines1.length,
-      lines2: lines2.length,
-      added: changes.added.length,
-      removed: changes.removed.length,
-      modified: changes.modified.length,
-      diff: changes,
+      identical: false,
+      changes,
+      lines1: n,
+      lines2: m,
+      added: added.length,
+      removed: removed.length,
+      modified: 0,
+      diff: {
+        added,
+        removed,
+        modified: [],
+      },
     },
   };
 }
-
-// Cron expression validator
+// Validate standard five-field cron expressions.
+// Field order: minute hour day-of-month month day-of-week.
+// This tool does not accept seconds, year fields, or Quartz syntax.
 export function validateCronExpression(expression: string): ValidationResult {
   try {
     const trimmed = expression.trim();
-    const parts = trimmed.split(/\s+/);
+    const fields = trimmed.split(/\s+/);
 
-    // Standard cron: minute hour day month dayOfWeek [year]
-    if (parts.length < 5 || parts.length > 6) {
+    if (fields.length !== 5) {
       return {
         valid: false,
-        message: 'Invalid cron format. Should be: minute hour day month dayOfWeek [year]',
-        errors: [
-          {
-            message: `Found ${parts.length} parts, expected 5 or 6`,
-          },
-        ],
+        message: 'Invalid cron format. Expected exactly 5 fields: minute hour day-of-month month day-of-week',
+        errors: [{ message: `Found ${fields.length} fields, expected 5` }],
       };
     }
 
-    const ranges = [
-      { name: 'minute', min: 0, max: 59, index: 0 },
-      { name: 'hour', min: 0, max: 23, index: 1 },
-      { name: 'day', min: 1, max: 31, index: 2 },
-      { name: 'month', min: 1, max: 12, index: 3 },
-      { name: 'dayOfWeek', min: 0, max: 6, index: 4 },
-      { name: 'year', min: 1970, max: 2099, index: 5 },
-    ];
-
-    const errors: Array<{ message: string }> = [];
-
-    for (let i = 0; i < Math.min(parts.length, 6); i++) {
-      const part = parts[i];
-      const range = ranges[i];
-
-      if (part === '*' || part === '?' || part === '-' || part === ',') continue;
-
-      if (!isValidCronPart(part, range.min, range.max)) {
-        errors.push({
-          message: `Invalid ${range.name}: "${part}" (range: ${range.min}-${range.max})`,
-        });
-      }
-    }
-
-    if (errors.length > 0) {
-      return {
-        valid: false,
-        message: `Invalid cron expression: ${errors.map((e) => e.message).join('; ')}`,
-        errors,
-      };
-    }
+    cronParser.parseExpression(trimmed);
 
     return {
       valid: true,
-      message: 'Valid cron expression',
+      message: 'Valid five-field cron expression',
       meta: {
-        format: '(minute hour day month dayOfWeek [year])',
-        parts: parts.length,
+        format: 'minute hour day-of-month month day-of-week',
+        parts: 5,
       },
     };
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
     return {
       valid: false,
-      message: `Cron validation error: ${error instanceof Error ? error.message : String(error)}`,
-      errors: [
-        {
-          message: error instanceof Error ? error.message : String(error),
-        },
-      ],
+      message: `Invalid cron expression: ${message}`,
+      errors: [{ message }],
     };
   }
 }
 
-function isValidCronPart(part: string, min: number, max: number): boolean {
-  if (part === '*' || part === '?') return true;
-  if (part.includes(',')) {
-    return part.split(',').every((p) => isValidCronPart(p, min, max));
-  }
-  if (part.includes('-')) {
-    const [start, end] = part.split('-');
-    return !isNaN(Number(start)) && !isNaN(Number(end)) && Number(start) >= min && Number(end) <= max;
-  }
-  if (part.includes('/')) {
-    return !isNaN(Number(part.split('/')[0])) && !isNaN(Number(part.split('/')[1]));
-  }
-  const num = Number(part);
-  return !isNaN(num) && num >= min && num <= max;
-}
-
-// JSON Schema validator
+// JSON Schema Draft-07 validation using AJV.
 export function validateJSONSchema(schemaJson: string, dataJson: string): ValidationResult {
   try {
     const schema = JSON.parse(schemaJson);
     const data = JSON.parse(dataJson);
 
-    const errors: Array<{ message: string }> = [];
+    const ajv = new Ajv({
+      allErrors: true,
+      strict: false,
+      validateSchema: true,
+    });
 
-    // Basic schema validation
-    if (schema.type && !isCorrectType(data, schema.type)) {
-      errors.push({
-        message: `Type mismatch: expected ${schema.type}, got ${typeof data}`,
-      });
-    }
+    addFormats(ajv);
 
-    if (schema.required && typeof data === 'object' && !Array.isArray(data)) {
-      for (const required of schema.required) {
-        if (!(required in data)) {
-          errors.push({
-            message: `Missing required property: ${required}`,
-          });
-        }
-      }
-    }
+    const validate = ajv.compile(schema);
+    const valid = validate(data);
 
-    if (schema.properties && typeof data === 'object' && !Array.isArray(data)) {
-      for (const [key, value] of Object.entries(data)) {
-        if (key in schema.properties) {
-          const propSchema = schema.properties[key] as any;
-          if (propSchema.type && !isCorrectType(value, propSchema.type)) {
-            errors.push({
-              message: `Property "${key}": expected ${propSchema.type}, got ${typeof value}`,
-            });
-          }
-        }
-      }
-    }
+    if (!valid) {
+      const errors = (validate.errors || []).map((error) => ({
+        message: `${error.instancePath || '/'}: ${error.message || 'Validation failed'}`,
+      }));
 
-    if (errors.length > 0) {
       return {
         valid: false,
         message: `Schema validation failed: ${errors.length} error(s)`,
@@ -626,17 +673,16 @@ export function validateJSONSchema(schemaJson: string, dataJson: string): Valida
       meta: {
         dataSize: JSON.stringify(data).length,
         schemaSize: JSON.stringify(schema).length,
+        schemaDraft: 'draft-07',
       },
     };
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
     return {
       valid: false,
-      message: `JSON Schema validation error: ${error instanceof Error ? error.message : String(error)}`,
-      errors: [
-        {
-          message: error instanceof Error ? error.message : String(error),
-        },
-      ],
+      message: `JSON Schema validation error: ${message}`,
+      errors: [{ message }],
     };
   }
 }

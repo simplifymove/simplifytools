@@ -1,13 +1,17 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { ImageUploader } from '@/app/components/ImageUploader';
 import { Download, ChevronRight, Eraser } from 'lucide-react';
 import { Footer } from '@/app/components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function CleanupPicturePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -20,8 +24,32 @@ export default function CleanupPicturePage() {
   const [enhance, setEnhance] = useState(false);
   const [enhanceAmount, setEnhanceAmount] = useState(1.2);
 
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!preview) return;
+
+    const img = new Image();
+    img.onload = () => updatePreview(img);
+    img.onerror = () => setError('Failed to update image preview');
+    img.src = preview;
+  }, [preview, denoise, denoiseStrength, smoothBlur, blurRadius, enhance, enhanceAmount]);
+
+  useEffect(() => {
+    if (!result) {
+      setResultUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(result);
+    setResultUrl(url);
+
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [result]);
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
@@ -33,7 +61,6 @@ export default function CleanupPicturePage() {
       const img = new Image();
       img.onload = () => {
         setPreview(img.src);
-        updatePreview(img);
       };
       img.onerror = () => {
         setError('Failed to load image');
@@ -209,31 +236,49 @@ export default function CleanupPicturePage() {
     try {
       const img = new Image();
       img.onload = () => {
-        if (!canvasRef.current) return;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        ctx.drawImage(img, 0, 0);
-
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        applyCleanupEffects(imageData, canvas.width, canvas.height);
-        ctx.putImageData(imageData, 0, 0);
-
-        canvas.toBlob((blob) => {
-          if (blob) {
-            setResult(blob);
+        try {
+          if (!canvasRef.current) {
+            setError('Image processing canvas is unavailable');
+            setProcessing(false);
+            return;
           }
+
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext('2d');
+
+          if (!ctx) {
+            setError('Unable to initialize image processing');
+            setProcessing(false);
+            return;
+          }
+
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          applyCleanupEffects(imageData, canvas.width, canvas.height);
+          ctx.putImageData(imageData, 0, 0);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              setResult(blob);
+            } else {
+              setError('Failed to generate the cleaned PNG image');
+            }
+            setProcessing(false);
+          }, 'image/png');
+        } catch (err) {
+          setError('Error processing image');
           setProcessing(false);
-        }, 'image/png');
+        }
       };
+
       img.onerror = () => {
         setError('Failed to process image');
         setProcessing(false);
       };
+
       img.src = preview;
     } catch (err) {
       setError('Error processing image');
@@ -241,17 +286,30 @@ export default function CleanupPicturePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+    if (!result || !file) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'cleanup-picture.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'cleanup-picture',
+        originalName: file.name,
+        outputName: 'cleanup-picture.png',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleClearPreview = () => {
@@ -333,7 +391,7 @@ export default function CleanupPicturePage() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Result</h3>
                     <div className="flex justify-center mb-4">
                       <img
-                        src={URL.createObjectURL(result)}
+                        src={resultUrl || undefined}
                         alt="Result"
                         className="max-w-full h-auto rounded-lg border border-gray-300"
                         style={{ maxHeight: '300px' }}
@@ -365,17 +423,12 @@ export default function CleanupPicturePage() {
                     checked={denoise}
                     onChange={(e) => {
                       setDenoise(e.target.checked);
-                      if (preview) {
-                        const img = new Image();
-                        img.onload = () => updatePreview(img);
-                        img.src = preview;
-                      }
                     }}
                     className="w-4 h-4 accent-orange-500 cursor-pointer"
                   />
                   <span className="text-sm font-medium text-gray-700">Noise Reduction</span>
                 </label>
-                <p className="text-xs text-gray-600 mb-2">Remove graininess and speckles</p>
+                <p className="text-xs text-gray-600 mb-2">Reduce visible grain and speckles; fine details may also soften</p>
                 {denoise && (
                   <div>
                     <label className="block text-sm text-gray-600 mb-2">
@@ -388,11 +441,6 @@ export default function CleanupPicturePage() {
                       value={denoiseStrength}
                       onChange={(e) => {
                         setDenoiseStrength(Number(e.target.value));
-                        if (preview) {
-                          const img = new Image();
-                          img.onload = () => updatePreview(img);
-                          img.src = preview;
-                        }
                       }}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                     />
@@ -408,11 +456,6 @@ export default function CleanupPicturePage() {
                     checked={smoothBlur}
                     onChange={(e) => {
                       setSmoothBlur(e.target.checked);
-                      if (preview) {
-                        const img = new Image();
-                        img.onload = () => updatePreview(img);
-                        img.src = preview;
-                      }
                     }}
                     className="w-4 h-4 accent-orange-500 cursor-pointer"
                   />
@@ -431,11 +474,6 @@ export default function CleanupPicturePage() {
                       value={blurRadius}
                       onChange={(e) => {
                         setBlurRadius(Number(e.target.value));
-                        if (preview) {
-                          const img = new Image();
-                          img.onload = () => updatePreview(img);
-                          img.src = preview;
-                        }
                       }}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                     />
@@ -451,17 +489,12 @@ export default function CleanupPicturePage() {
                     checked={enhance}
                     onChange={(e) => {
                       setEnhance(e.target.checked);
-                      if (preview) {
-                        const img = new Image();
-                        img.onload = () => updatePreview(img);
-                        img.src = preview;
-                      }
                     }}
                     className="w-4 h-4 accent-orange-500 cursor-pointer"
                   />
                   <span className="text-sm font-medium text-gray-700">Enhance Clarity</span>
                 </label>
-                <p className="text-xs text-gray-600 mb-2">Boost contrast and vibrancy</p>
+                <p className="text-xs text-gray-600 mb-2">Increase RGB contrast around the midpoint; colors may appear stronger</p>
                 {enhance && (
                   <div>
                     <label className="block text-sm text-gray-600 mb-2">
@@ -475,11 +508,6 @@ export default function CleanupPicturePage() {
                       value={enhanceAmount}
                       onChange={(e) => {
                         setEnhanceAmount(Number(e.target.value));
-                        if (preview) {
-                          const img = new Image();
-                          img.onload = () => updatePreview(img);
-                          img.src = preview;
-                        }
                       }}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                     />
@@ -505,7 +533,7 @@ export default function CleanupPicturePage() {
                 <li>• Enable cleanup options</li>
                 <li>• Adjust parameters in preview</li>
                 <li>• See changes in real-time</li>
-                <li>• Download cleaned image</li>
+                <li>• Apply Cleanup, review the result, then open the download page</li>
               </ul>
             </div>
 
@@ -515,7 +543,7 @@ export default function CleanupPicturePage() {
               <ul className="text-sm text-purple-800 space-y-1">
                 <li>• Use noise reduction for grainy photos</li>
                 <li>• Smooth blur gently cleans edges</li>
-                <li>• Combine all three for best results</li>
+                <li>• Compare individual and combined settings</li>
                 <li>• Adjust strength for subtle effects</li>
               </ul>
             </div>
@@ -532,7 +560,134 @@ export default function CleanupPicturePage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How Cleanup Picture processes an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image and choose noise reduction, smooth blur,
+                clarity enhancement, or a combination of these controls.
+                Adjust the settings using the preview, which is limited to a
+                maximum width of 400 pixels. Apply Cleanup to process
+                the image at its original dimensions, review the PNG
+                result, and use Download Cleaned Image to prepare the
+                file on a separate download page.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-5">
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Noise reduction
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Denoising blends each pixel toward nearby median color
+                  values. Higher strength increases the smoothing effect and
+                  can also reduce some fine image detail.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Smooth blur
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Smooth blur uses weighted neighboring pixels to soften local
+                  detail. Increasing the radius creates stronger smoothing.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Clarity enhancement
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Enhancement increases tonal contrast around the image
+                  midtones. It changes contrast rather than recreating detail
+                  that is missing from the source image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What Cleanup Picture does not do
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Cleanup Picture performs pixel-level filtering. It does not
+                detect or remove selected objects, perform content-aware
+                filling, or reconstruct missing parts of an image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing cleanup settings
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong denoising or blur can remove useful fine
+                detail, while stronger enhancement can make highlights and
+                shadows appear more pronounced.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Browser-based image filtering
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The cleanup effects are applied with browser-side Canvas and
+                pixel processing. The processed canvas is then encoded as PNG
+                for the result.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Cleanup Picture FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does Cleanup Picture remove objects?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It provides denoise, smoothing, and contrast
+                    adjustments rather than object-removal processing.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Should every cleanup option be enabled?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. Use the controls that match the visible issue and
+                    compare the preview before processing.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    What output format is generated?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The processed result is generated as PNG.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <Footer />
     </div>

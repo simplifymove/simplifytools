@@ -1,85 +1,207 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function PngToSvgPage() {
+  const router = useRouter();
+  const requestGeneration = useRef(0);
+  const processingRef = useRef(false);
+  const downloadRef = useRef(false);
+  const conversionAbortRef = useRef<AbortController | null>(null);
+  const previewReaderRef = useRef<FileReader | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [svgResult, setSvgResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [conversionTip, setConversionTip] = useState<string>('');
 
-  const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
-    setError(null);
+  const resetConversion = () => {
+    requestGeneration.current += 1;
+    conversionAbortRef.current?.abort();
+    conversionAbortRef.current = null;
+    previewReaderRef.current?.abort();
+    previewReaderRef.current = null;
+    processingRef.current = false;
+    setProcessing(false);
+    setSvgResult(null);
     setConversionTip('');
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+  };
+
+  useEffect(() => {
+    return () => {
+      requestGeneration.current += 1;
+      conversionAbortRef.current?.abort();
+      previewReaderRef.current?.abort();
     };
+  }, []);
+
+  const handleFileSelect = (selectedFile: File) => {
+    if (downloadRef.current) return;
+
+    resetConversion();
+    setFile(null);
+    setPreview(null);
+    setError(null);
+
+    if (
+      selectedFile.type !== 'image/png' ||
+      !selectedFile.name.toLowerCase().endsWith('.png')
+    ) {
+      setError('Please select a valid PNG (.png) image.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected PNG file is empty.');
+      return;
+    }
+
+    const generation = requestGeneration.current;
+    setFile(selectedFile);
+
+    const reader = new FileReader();
+    previewReaderRef.current = reader;
+
+    reader.onload = () => {
+      if (generation === requestGeneration.current) {
+        setPreview(
+          typeof reader.result === 'string' ? reader.result : null
+        );
+      }
+    };
+
+    reader.onerror = () => {
+      if (generation === requestGeneration.current) {
+        setError('Unable to preview the selected PNG.');
+      }
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    if (downloadRef.current) return;
+
+    resetConversion();
     setFile(null);
     setPreview(null);
-    setDownloadUrl(null);
     setError(null);
-    setConversionTip('');
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file || processingRef.current || downloadRef.current) return;
+
+    const generation = ++requestGeneration.current;
+    const controller = new AbortController();
+    conversionAbortRef.current = controller;
+    processingRef.current = true;
+
     setProcessing(true);
+    setSvgResult(null);
     setError(null);
-    setConversionTip('Vectorizing your image... This may take a moment depending on image complexity.');
+    setConversionTip(
+      'Tracing visible shapes into SVG paths. Complex images may take longer.'
+    );
+
     try {
       const formData = new FormData();
       formData.append('image', file);
       formData.append('config', JSON.stringify({
         from_format: 'png',
         to_format: 'svg',
-        options: {
-          quality: 100,
-          trace_threshold: 128,
-        },
+        options: {},
       }));
 
       const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Conversion failed');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          typeof errorData?.error === 'string'
+            ? errorData.error
+            : 'PNG to SVG conversion failed.'
+        );
       }
 
       const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      setDownloadUrl(url);
-      setConversionTip('✓ Vectorization complete! Your SVG is ready to download.');
-    } catch (error) {
-      setError((error as Error).message || 'Error converting image');
-      setConversionTip('');
+
+      if (blob.type.split(';')[0].trim() !== 'image/svg+xml') {
+        throw new Error(
+          'The conversion service did not return an SVG file.'
+        );
+      }
+
+      if (blob.size === 0) {
+        throw new Error('The generated SVG file is empty.');
+      }
+
+      if (generation === requestGeneration.current) {
+        setSvgResult(blob);
+        setConversionTip(
+          '? SVG tracing completed. Review the result in an SVG editor.'
+        );
+      }
+    } catch (caughtError) {
+      if (generation === requestGeneration.current) {
+        if (
+          caughtError instanceof Error &&
+          caughtError.name !== 'AbortError'
+        ) {
+          setError(caughtError.message || 'Unable to convert PNG to SVG.');
+        }
+        setConversionTip('');
+      }
     } finally {
-      setProcessing(false);
+      if (generation === requestGeneration.current) {
+        conversionAbortRef.current = null;
+        processingRef.current = false;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!downloadUrl) return;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'converted.svg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!svgResult || !file || processingRef.current) return;
+
+    processingRef.current = true;
+    downloadRef.current = true;
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: svgResult,
+        toolSlug: 'png-to-svg',
+        originalName: file.name,
+        outputName: `${baseName}.svg`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the SVG download.'
+      );
+    } finally {
+      downloadRef.current = false;
+      processingRef.current = false;
+      setProcessing(false);
+    }
   };
 
   return (
@@ -103,7 +225,7 @@ export default function PngToSvgPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to SVG Converter</h1>
-              <p className="text-lg text-white/90">Convert PNG images to scalable SVG vector format. Perfect for logos, icons, and graphics that need infinite scalability.</p>
+              <p className="text-lg text-white/90">Convert clean PNG artwork into traced SVG vector paths. Simple icons, line drawings, and high-contrast shapes work best. Transparent areas and original colors may not be preserved.</p>
             </div>
           </div>
         </div>
@@ -117,11 +239,21 @@ export default function PngToSvgPage() {
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Step 1: Upload PNG</h2>
-                <p className="text-gray-600 mb-6 text-sm">Works best with clear, high-contrast images. Logos and icons produce excellent results.</p>
+                <p className="text-gray-600 mb-6 text-sm">Choose a PNG with crisp edges and clear shapes. Transparent backgrounds do not guarantee transparent SVG output.</p>
                 <ImageUploader
                   onFileSelect={handleFileSelect}
                   preview={preview}
                   onClearPreview={handleClearPreview}
+                  accept=".png,image/png"
+                  toolId="png-to-svg"
+                  onValidationError={(message) => {
+                    if (message && !downloadRef.current) {
+                      resetConversion();
+                      setFile(null);
+                      setPreview(null);
+                      setError(message);
+                    }
+                  }}
                 />
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -191,13 +323,14 @@ export default function PngToSvgPage() {
                 )}
 
                 {/* Download Button */}
-                {downloadUrl && (
+                {svgResult && (
                   <button
                     onClick={handleDownload}
+                    disabled={processing}
                     className="w-full mt-3 px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
                   >
                     <Download size={18} />
-                    Download SVG
+                    {processing ? 'Preparing download...' : 'Download SVG'}
                   </button>
                 )}
 
@@ -207,10 +340,10 @@ export default function PngToSvgPage() {
                     <strong>💡 SVG Benefits:</strong>
                   </p>
                   <ul className="text-xs text-blue-700 space-y-1">
-                    <li>• Infinitely scalable without quality loss</li>
-                    <li>• Smaller file sizes than raster formats</li>
-                    <li>• Perfect for logos, icons, and illustrations</li>
-                    <li>• Editable in any vector design tool</li>
+                    <li>• SVG vector-path output</li>
+                    <li>• File size depends on image complexity and traced paths</li>
+                    <li>• Best suited to high-contrast logos, icons, and illustrations</li>
+                    <li>• Vector paths can be edited in compatible SVG editors</li>
                   </ul>
                 </div>
               </div>
@@ -226,12 +359,12 @@ export default function PngToSvgPage() {
                   <span className="text-lg">✓</span> What Works Best
                 </h3>
                 <ul className="space-y-2 text-gray-600 text-sm">
-                  <li>• Simple logos with solid colors</li>
-                  <li>• Icons and symbols</li>
-                  <li>• High-contrast images</li>
-                  <li>• Geometric designs</li>
-                  <li>• Clean illustrations</li>
-                  <li>• Simple line drawings</li>
+                  <li>• Clean PNG logos with clearly defined shapes</li>
+                  <li>• High-contrast PNG icons and symbols</li>
+                  <li>• Artwork with clear separation between foreground and background</li>
+                  <li>• Geometric artwork with crisp edges</li>
+                  <li>• Simple illustrations without gradients</li>
+                  <li>• Bold line drawings with minimal texture</li>
                 </ul>
               </div>
               <div>
@@ -244,38 +377,38 @@ export default function PngToSvgPage() {
                   <li>• Low-contrast images</li>
                   <li>• Noise and texture-rich images</li>
                   <li>• Very detailed illustrations</li>
-                  <li>• Compressed JPEGs</li>
+                  <li>• PNG artwork with intricate transparency or soft shadow effects</li>
                 </ul>
               </div>
             </div>
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What is SVG format?</h3>
-                <p className="text-gray-600">SVG (Scalable Vector Graphics) is a vector image format that uses mathematical equations to define shapes and lines. This allows images to scale infinitely without pixelation.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Why convert PNG to SVG?</h3>
-                <p className="text-gray-600">SVG files are infinitely scalable, have smaller file sizes, and are perfect for logos, icons, and graphics that need to work at any size. They're also easier to edit and customize.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What's the difference between raster and vector?</h3>
-                <p className="text-gray-600">Raster images (PNG, JPG) are made of pixels and lose quality when enlarged. Vector images (SVG) are made of shapes and mathematical curves, so they scale perfectly to any size without quality loss.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Can I edit the SVG file after conversion?</h3>
-                <p className="text-gray-600">Yes! SVG files can be edited in any vector design tool like Adobe Illustrator, Inkscape, Figma, or Adobe XD. You can modify colors, shapes, and other properties.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What image types work best?</h3>
-                <p className="text-gray-600">Simple logos, icons, and illustrations with solid colors and clear shapes produce the best results. Complex photographs and gradient-heavy images may not convert as cleanly.</p>
-              </div>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQCard>
+                <FAQStaticQuestion>What is SVG format?</FAQStaticQuestion>
+                <FAQAnswer>SVG (Scalable Vector Graphics) represents graphics using vector geometry. This converter traces suitable raster artwork into SVG paths that can be scaled without raster pixelation.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Why convert PNG to SVG?</FAQStaticQuestion>
+                <FAQAnswer>Converting a clean PNG logo or icon into traced SVG paths can make its resulting shapes scalable and editable. The process traces visible shapes rather than preserving every original pixel, color, or transparency effect.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What's the difference between raster and vector?</FAQStaticQuestion>
+                <FAQAnswer>Raster images are made of pixels. This converter traces visible shapes into SVG paths, which can be scaled without the pixelation of the original raster image.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Can I edit the SVG file after conversion?</FAQStaticQuestion>
+                <FAQAnswer>The traced output contains SVG vector paths that can be edited in compatible vector software. Trace accuracy depends on the complexity and contrast of the source image.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What image types work best?</FAQStaticQuestion>
+                <FAQAnswer>Use PNG files containing clear silhouettes, bold line art, or simple icons. The tracing engine processes the image in grayscale, so original colors, gradients, and transparency effects are not reliably preserved. Inspect the SVG before using it in a design.</FAQAnswer>
+              </FAQCard>
+            </FAQList>
+          </FAQPanel>
         </div>
       </div>
     </main>

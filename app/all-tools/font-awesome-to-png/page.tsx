@@ -1,10 +1,13 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Search, Copy, Check } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 // Comprehensive Font Awesome Icon Library
 const FONT_AWESOME_ICONS = [
@@ -24,7 +27,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'minus', symbol: '−', category: 'UI', description: 'Remove, delete, subtract' },
   { name: 'times-circle', symbol: '⊗', category: 'UI', description: 'Close, error, cancel' },
   { name: 'check-circle', symbol: '✔', category: 'UI', description: 'Success, verified, done' },
-  
+
   // Arrows
   { name: 'arrow-right', symbol: '→', category: 'Arrows', description: 'Right direction' },
   { name: 'arrow-left', symbol: '←', category: 'Arrows', description: 'Left direction' },
@@ -37,7 +40,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'chevron-left', symbol: '‹', category: 'Arrows', description: 'Previous, back' },
   { name: 'chevron-up', symbol: '∧', category: 'Arrows', description: 'Collapse, up' },
   { name: 'chevron-down', symbol: '∨', category: 'Arrows', description: 'Expand, down' },
-  
+
   // Weather
   { name: 'sun', symbol: '☀', category: 'Weather', description: 'Sunny, bright' },
   { name: 'moon', symbol: '☾', category: 'Weather', description: 'Night, dark mode' },
@@ -47,7 +50,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'wind', symbol: '〰', category: 'Weather', description: 'Wind, breeze' },
   { name: 'temperature', symbol: '🌡', category: 'Weather', description: 'Temperature, heat' },
   { name: 'umbrella', symbol: '☂', category: 'Weather', description: 'Rain protection' },
-  
+
   // Objects
   { name: 'lock', symbol: '🔒', category: 'Objects', description: 'Secure, private, locked' },
   { name: 'unlock', symbol: '🔓', category: 'Objects', description: 'Unsecured, open' },
@@ -74,7 +77,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'map', symbol: '🗺', category: 'Objects', description: 'Location, navigation' },
   { name: 'bookmark', symbol: '🔖', category: 'Objects', description: 'Save, favorite, mark' },
   { name: 'printer', symbol: '🖨', category: 'Objects', description: 'Print, document' },
-  
+
   // Communication
   { name: 'comment', symbol: '💬', category: 'Communication', description: 'Chat, message, feedback' },
   { name: 'comments', symbol: '💭', category: 'Communication', description: 'Discussion, chat' },
@@ -86,7 +89,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'volume-up', symbol: '🔊', category: 'Communication', description: 'Loud, increase' },
   { name: 'volume-down', symbol: '🔉', category: 'Communication', description: 'Quiet, decrease' },
   { name: 'volume-mute', symbol: '🔇', category: 'Communication', description: 'Silent, mute' },
-  
+
   // People
   { name: 'user', symbol: '👤', category: 'People', description: 'Person, profile, account' },
   { name: 'users', symbol: '👥', category: 'People', description: 'Group, team, community' },
@@ -101,7 +104,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'girl', symbol: '👧', category: 'People', description: 'Kid, young female' },
   { name: 'man', symbol: '👨', category: 'People', description: 'Adult male' },
   { name: 'woman', symbol: '👩', category: 'People', description: 'Adult female' },
-  
+
   // Business
   { name: 'briefcase', symbol: '💼', category: 'Business', description: 'Work, business' },
   { name: 'handshake', symbol: '🤝', category: 'Business', description: 'Agreement, partnership' },
@@ -114,7 +117,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'store', symbol: '🏪', category: 'Business', description: 'Shop, retail, store' },
   { name: 'restaurant', symbol: '🍽', category: 'Business', description: 'Food, dining' },
   { name: 'hotel', symbol: '🏨', category: 'Business', description: 'Hotel, accommodation' },
-  
+
   // Social Media
   { name: 'facebook', symbol: 'f', category: 'Social', description: 'Facebook' },
   { name: 'twitter', symbol: '𝕏', category: 'Social', description: 'Twitter/X' },
@@ -129,7 +132,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'telegram', symbol: '✈', category: 'Social', description: 'Telegram' },
   { name: 'slack', symbol: '#', category: 'Social', description: 'Slack' },
   { name: 'discord', symbol: '♦', category: 'Social', description: 'Discord' },
-  
+
   // Medical
   { name: 'heartbeat', symbol: '💗', category: 'Medical', description: 'Health, heart, pulse' },
   { name: 'stethoscope', symbol: '🩺', category: 'Medical', description: 'Doctor, medical' },
@@ -138,7 +141,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'syringe', symbol: '💉', category: 'Medical', description: 'Injection, vaccine' },
   { name: 'flask', symbol: '⚗', category: 'Medical', description: 'Laboratory, science' },
   { name: 'dna', symbol: '🧬', category: 'Medical', description: 'Genetics, biology' },
-  
+
   // Status
   { name: 'thumbs-up', symbol: '👍', category: 'Status', description: 'Like, approve, good' },
   { name: 'thumbs-down', symbol: '👎', category: 'Status', description: 'Dislike, bad' },
@@ -154,7 +157,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'surprised', symbol: '😲', category: 'Status', description: 'Shock, amazed' },
   { name: 'angry', symbol: '😠', category: 'Status', description: 'Angry, upset' },
   { name: 'confused', symbol: '😕', category: 'Status', description: 'Confused, unclear' },
-  
+
   // Transport
   { name: 'car', symbol: '🚗', category: 'Transport', description: 'Vehicle, automobile' },
   { name: 'bicycle', symbol: '🚴', category: 'Transport', description: 'Bike, cycling' },
@@ -165,7 +168,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'taxi', symbol: '🚕', category: 'Transport', description: 'Cab, ride' },
   { name: 'motorcycle', symbol: '🏍', category: 'Transport', description: 'Motorbike, scooter' },
   { name: 'spacecraft', symbol: '🚀', category: 'Transport', description: 'Space, launch, spacecraft' },
-  
+
   // Sports
   { name: 'futbol', symbol: '⚽', category: 'Sports', description: 'Soccer, football' },
   { name: 'basketball', symbol: '🏀', category: 'Sports', description: 'Basketball' },
@@ -176,7 +179,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'hockey', symbol: '🏒', category: 'Sports', description: 'Ice hockey' },
   { name: 'trophy', symbol: '🏆', category: 'Sports', description: 'Award, winner, champion' },
   { name: 'medal', symbol: '🏅', category: 'Sports', description: 'Achievement, honor' },
-  
+
   // Learning
   { name: 'book', symbol: '📖', category: 'Learning', description: 'Read, education' },
   { name: 'bookmark-alt', symbol: '🔖', category: 'Learning', description: 'Save page' },
@@ -189,7 +192,7 @@ const FONT_AWESOME_ICONS = [
   { name: 'music', symbol: '🎵', category: 'Learning', description: 'Audio, song' },
   { name: 'camera', symbol: '📷', category: 'Learning', description: 'Photography, photo' },
   { name: 'video-camera', symbol: '📹', category: 'Learning', description: 'Video, recording' },
-  
+
   // Validation
   { name: 'certificate', symbol: '📜', category: 'Validation', description: 'Certificate, official' },
   { name: 'badge', symbol: '🏷', category: 'Validation', description: 'Badge, label' },
@@ -200,6 +203,7 @@ const FONT_AWESOME_ICONS = [
 ];
 
 export default function FontAwesomeToPngPage() {
+  const router = useRouter();
   const [selectedIcon, setSelectedIcon] = useState<typeof FONT_AWESOME_ICONS[0]>(FONT_AWESOME_ICONS[0]);
   const [color, setColor] = useState('#000000');
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
@@ -229,7 +233,7 @@ export default function FontAwesomeToPngPage() {
   // Filter icons based on search and category
   const filteredIcons = useMemo(() => {
     return FONT_AWESOME_ICONS.filter(icon => {
-      const matchesSearch = 
+      const matchesSearch =
         icon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         icon.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = !selectedCategory || icon.category === selectedCategory;
@@ -250,7 +254,7 @@ export default function FontAwesomeToPngPage() {
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext('2d');
-      
+
       if (!ctx) {
         throw new Error('Could not get canvas context');
       }
@@ -293,43 +297,49 @@ export default function FontAwesomeToPngPage() {
     }
   };
 
-  const downloadAsFormat = (format: 'png' | 'svg' | 'jpg' | 'webp') => {
+  const downloadAsFormat = async (format: 'png' | 'svg' | 'jpg' | 'webp') => {
     if (!result) return;
-    
-    if (format === 'svg') {
-      const svgContent = `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="${size}" height="${size}" fill="${backgroundColor}" ${roundCorners ? `rx="15"` : ''}/>
-        <text x="${size / 2}" y="${size / 2}" font-size="${size * 0.5}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${color}" font-family="Arial, sans-serif">
-          ${selectedIcon.symbol}
-        </text>
-      </svg>`;
-      
-      const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${selectedIcon.name}.svg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } else {
-      const mimeType = 
-        format === 'png' ? 'image/png' :
-        format === 'jpg' ? 'image/jpeg' :
-        'image/webp';
-      
-      result.toBlob((blob) => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${selectedIcon.name}.${format}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, mimeType, format === 'jpg' ? 0.95 : undefined);
+
+    try {
+      let blob: Blob;
+
+      if (format === 'svg') {
+        const svgContent = `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+          <rect width="${size}" height="${size}" fill="${backgroundColor}" ${roundCorners ? `rx="15"` : ''}/>
+          <text x="${size / 2}" y="${size / 2}" font-size="${size * 0.5}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${color}" font-family="Arial, sans-serif">
+            ${selectedIcon.symbol}
+          </text>
+        </svg>`;
+        blob = new Blob([svgContent], { type: 'image/svg+xml' });
+      } else {
+        const mimeType =
+          format === 'png' ? 'image/png' :
+          format === 'jpg' ? 'image/jpeg' :
+          'image/webp';
+
+        blob = await new Promise<Blob>((resolve, reject) => {
+          result.toBlob((generatedBlob) => {
+            if (generatedBlob) resolve(generatedBlob);
+            else reject(new Error('Unable to generate the icon image.'));
+          }, mimeType, format === 'jpg' ? 0.95 : undefined);
+        });
+      }
+
+      const outputName = `${selectedIcon.name}.${format}`;
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'font-awesome-to-png',
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
     }
   };
 
@@ -362,7 +372,7 @@ export default function FontAwesomeToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Font Awesome to PNG</h1>
-                <p className="text-lg text-white/90">Convert 200+ Font Awesome icons to customizable PNG images with advanced styling options.</p>
+                <p className="text-lg text-white/90">Choose from 162 built-in symbols and emojis, customize their appearance, and export images. This tool uses text symbols rather than official Font Awesome icon artwork.</p>
               </div>
             </div>
           </div>
@@ -376,7 +386,7 @@ export default function FontAwesomeToPngPage() {
               <div className="lg:col-span-1">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-4">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Icon Library</h3>
-                  
+
                   {/* Search */}
                   <div className="mb-4">
                     <div className="relative">
@@ -457,12 +467,12 @@ export default function FontAwesomeToPngPage() {
                 {/* Preview Section */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Icon Preview & Customization</h2>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Preview */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3">Preview</label>
-                      <div 
+                      <div
                         className={`flex items-center justify-center rounded-lg border-2 border-gray-200 transition-all ${roundCorners ? 'rounded-2xl' : ''}`}
                         style={{
                           width: '300px',
@@ -648,7 +658,7 @@ export default function FontAwesomeToPngPage() {
                     <div className="flex gap-3">
                       <div className="text-orange-500 text-2xl">✓</div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">200+ Icons</h4>
+                        <h4 className="font-semibold text-gray-900">162 Built-in Symbols</h4>
                         <p className="text-sm text-gray-600">Extensive collection organized by categories</p>
                       </div>
                     </div>
@@ -662,8 +672,8 @@ export default function FontAwesomeToPngPage() {
                     <div className="flex gap-3">
                       <div className="text-orange-500 text-2xl">✓</div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Any Size</h4>
-                        <p className="text-sm text-gray-600">Generate from 64px to 512px without quality loss</p>
+                        <h4 className="font-semibold text-gray-900">Adjustable Output Size</h4>
+                        <p className="text-sm text-gray-600">Generate icons from 64px to 512px</p>
                       </div>
                     </div>
                     <div className="flex gap-3">
@@ -691,51 +701,131 @@ export default function FontAwesomeToPngPage() {
                 </div>
 
                 {/* FAQ Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Can I use these icons commercially?</h4>
-                      <p className="text-sm text-gray-600">Yes! The generated PNG files are yours to use. Font Awesome icons are freely available for use in both personal and commercial projects.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">What sizes should I use?</h4>
-                      <p className="text-sm text-gray-600">For web: 16px-32px, for buttons: 24px-48px, for large graphics: 128px-512px. PNG format scales well at any size.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Can I edit the generated PNG?</h4>
-                      <p className="text-sm text-gray-600">PNG files are raster images. For scalable editing, download as SVG or regenerate with different settings and re-export.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">What if I need an icon not in the library?</h4>
-                      <p className="text-sm text-gray-600">The library includes 200+ most popular Font Awesome icons. Visit fontawesome.com for the complete collection or check back for updates.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">What formats are available for download?</h4>
-                      <p className="text-sm text-gray-600 mb-2">We offer four download formats, each with specific advantages:</p>
-                      <ul className="text-sm text-gray-600 space-y-1 ml-4">
-                        <li><strong>PNG:</strong> Universal raster format, supports transparency, best for web</li>
-                        <li><strong>SVG:</strong> Scalable vector format, infinitely scalable, smallest file size, best for web graphics</li>
-                        <li><strong>JPG:</strong> Compressed raster format, good for photos, smaller file sizes</li>
-                        <li><strong>WEBP:</strong> Modern compressed format, smallest file sizes, excellent quality, best for performance-critical sites</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Can I customize the transparency?</h4>
-                      <p className="text-sm text-gray-600">The current version generates solid colors. For transparency effects, you can edit the PNG/SVG in design tools like Photoshop, Illustrator, or use online editors.</p>
-                    </div>
-                  </div>
-                </div>
+                <FAQPanel>
+                  <FAQHeading>Frequently Asked Questions</FAQHeading>
+                  <FAQList>
+                    <FAQCard>
+                      <FAQStaticQuestion>Can I use these icons commercially?</FAQStaticQuestion>
+                      <FAQAnswer>This tool renders built-in Unicode symbols and emojis, not official Font Awesome artwork. Commercial use depends on the rights and restrictions applicable to the symbols, fonts, and any brands represented. Review those requirements before using exported images commercially.</FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>What sizes should I use?</FAQStaticQuestion>
+                      <FAQAnswer>The generator supports output dimensions from 64px to 512px. Choose the dimensions needed for your project before exporting. PNG is raster-based, so enlarging it later can reduce sharpness.</FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>Can I edit the generated PNG?</FAQStaticQuestion>
+                      <FAQAnswer>PNG files are raster images. You can regenerate an image with different colors or dimensions. SVG export creates an SVG containing a text symbol, not a traced vector outline, so its appearance can depend on font availability.</FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>What if I need an icon not in the library?</FAQStaticQuestion>
+                      <FAQAnswer>This tool includes 162 built-in Unicode symbols and emojis organized by category. It does not provide the official Font Awesome icon collection. For official Font Awesome artwork, use the Font Awesome website and review its applicable licensing terms.</FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>What formats are available for download?</FAQStaticQuestion>
+                      <FAQAnswer>
+                        <p>We offer four download formats, each with specific advantages:</p>
+                        <ul className="mt-3 space-y-1 ml-4">
+                          <li><strong>PNG:</strong> Raster image format suitable for many websites and documents; the generated image uses the selected background color.</li>
+                          <li><strong>SVG:</strong> Contains a text symbol and background shape; rendering can vary depending on available fonts.</li>
+                          <li><strong>JPG:</strong> Lossy raster format without transparency; file size depends on the image.</li>
+                          <li><strong>WEBP:</strong> Modern raster format that can offer efficient compression; actual file size and browser support vary.</li>
+                        </ul>
+                      </FAQAnswer>
+                    </FAQCard>
+                    <FAQCard>
+                      <FAQStaticQuestion>Can I customize the transparency?</FAQStaticQuestion>
+                      <FAQAnswer>The current version generates solid colors. For transparency effects, you can edit the PNG/SVG in design tools like Photoshop, Illustrator, or use online editors.</FAQAnswer>
+                    </FAQCard>
+                  </FAQList>
+                </FAQPanel>
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-9">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert a Font Awesome icon to PNG
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Choose a built-in Unicode symbol or emoji and configure its size,
+                color, and background options. The icon is rendered into an
+                image canvas and exported as a PNG file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  PNG output
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  PNG is a raster image format. Once the icon is exported,
+                  resizing the PNG beyond its generated dimensions can make
+                  edges appear softer compared with rendering the symbol again at a larger size.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Customize before exporting
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Configure the icon appearance before generating the PNG so
+                  the exported dimensions and colors match the intended use.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                When PNG icon output is useful
+              </h2>
+              <p className="text-gray-600 leading-7">
+                PNG icon files are useful in workflows that require raster
+                images instead of icon fonts or SVG. Examples include simple
+                graphics, documents, presentations, and image-based interfaces.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Font Awesome to PNG FAQ
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Is the PNG still a vector image?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. PNG is raster-based. The selected text symbol is rendered
+                    into pixels at the selected output size.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Should I choose the output size before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Selecting an appropriate output size helps avoid
+                    unnecessary enlargement of the raster PNG later.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );
 }
-
 
 
 

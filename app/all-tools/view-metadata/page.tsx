@@ -1,6 +1,7 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, FileUp, Copy, Check } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
@@ -21,8 +22,13 @@ export default function ViewMetadataPage() {
   const [metadata, setMetadata] = useState<ImageMetadata | null>(null);
   const [rawData, setRawData] = useState<{ [key: string]: string }>({});
   const [copied, setCopied] = useState(false);
+  const selectionRef = useRef(0);
+  const [toolError, setToolError] = useState<string | null>(null);
 
   const handleFileSelect = (selectedFile: File) => {
+    const selection = ++selectionRef.current;
+    setToolError(null);
+    setCopied(false);
     setFile(selectedFile);
     setPreview(null);
     setMetadata(null);
@@ -30,8 +36,10 @@ export default function ViewMetadataPage() {
 
     const reader = new FileReader();
     reader.onload = (e) => {
+      if (selection !== selectionRef.current) return;
       const img = new Image();
       img.onload = () => {
+        if (selection !== selectionRef.current) return;
         const fileSizeKB = (selectedFile.size / 1024).toFixed(2);
         const dimensions = `${img.width} × ${img.height} px`;
         const format = selectedFile.type.split('/')[1]?.toUpperCase() || 'UNKNOWN';
@@ -59,14 +67,22 @@ export default function ViewMetadataPage() {
         setPreview(e.target?.result as string);
       };
       img.onerror = () => {
-        alert('Failed to load image');
+        if (selection !== selectionRef.current) return;
+        setToolError('Unable to decode this image. Please choose another file.');
       };
       img.src = e.target?.result as string;
+    };
+    reader.onerror = () => {
+      if (selection !== selectionRef.current) return;
+      setToolError('Unable to read this file. Please try another image.');
     };
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    selectionRef.current += 1;
+    setToolError(null);
+    setCopied(false);
     setFile(null);
     setPreview(null);
     setMetadata(null);
@@ -77,7 +93,7 @@ export default function ViewMetadataPage() {
     const text = Object.entries(rawData)
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n');
-    
+
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -125,15 +141,20 @@ export default function ViewMetadataPage() {
                     onFileSelect={handleFileSelect}
                     preview={preview}
                     onClearPreview={handleClearPreview}
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/gif,image/bmp"
                   />
+                  {toolError && (
+                    <p role="alert" className="mt-4 text-sm text-red-700">
+                      {toolError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Metadata Display */}
                 {metadata && (
                   <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Image Metadata</h2>
-                    
+
                     {/* Quick Stats */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
                       <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
@@ -228,85 +249,116 @@ export default function ViewMetadataPage() {
             </div>
           </div>
         </div>
+
+        <section className="px-4 md:px-8 pb-16">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                How to view image properties online
+              </h2>
+              <p className="text-gray-600 leading-7 mb-5">
+                Select an image to inspect basic file and image properties
+                directly in your browser. The tool displays information such
+                as the file name, size, type, pixel dimensions, aspect ratio,
+                last-modified time, and the time the image was selected.
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  ['1', 'Choose an image', 'Select an image file from your device.'],
+                  ['2', 'View properties', 'The browser reads the image and displays its available basic properties.'],
+                  ['3', 'Copy the details', 'Use Copy Metadata to copy the displayed property list to your clipboard.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="bg-white border border-gray-200 rounded-xl p-5">
+                    <div className="font-bold text-orange-500 mb-2">{number}</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600">{description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  What information does this tool show?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  The viewer reports basic properties available from the
+                  selected file and decoded image: file name, file size, MIME
+                  type, width, height, aspect ratio, last-modified time, and
+                  selection time.
+                </p>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Does it read EXIF or GPS metadata?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  No. This viewer is designed for basic image and file
+                  properties. It does not currently extract embedded EXIF,
+                  camera, GPS, IPTC, or other advanced metadata fields.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Useful reasons to inspect image properties
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Check image width and height before uploading it to a website.</li>
+                <li>Confirm the file type and approximate file size.</li>
+                <li>Calculate or verify an image&apos;s aspect ratio.</li>
+                <li>Copy basic image information for documentation or troubleshooting.</li>
+              </ul>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Image Metadata Viewer FAQ
+              </FAQHeading>
+              <FAQList>
+                {[
+                  ['Is my image uploaded to a conversion server?', 'The property-reading logic on this page uses browser FileReader and Image APIs to inspect the selected image locally.'],
+                  ['Can I see image dimensions?', 'Yes. The tool displays the decoded image width and height in pixels.'],
+                  ['Can I copy the displayed properties?', 'Yes. Use the Copy Metadata button after selecting a supported image.'],
+                  ['Does the tool show camera model or GPS location?', 'No. Embedded EXIF and GPS fields are not extracted by the current viewer.'],
+                ].map(([q, a]) => (
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Related image tools
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/all-tools/image-to-text" className="text-orange-600 hover:underline">
+                  Image to Text
+                </Link>
+                <Link href="/all-tools/resize-image" className="text-orange-600 hover:underline">
+                  Resize Image
+                </Link>
+                <Link href="/all-tools/image-tools" className="text-orange-600 hover:underline">
+                  More image tools
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
 
-      {/* FOOTER */}
-      <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            {/* Brand */}
-            <div>
-              <div className="flex items-center gap-2 font-bold text-xl text-white mb-4">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/40">
-                  SC
-                </div>
-                <span>SimplifyConvert</span>
-              </div>
-              <p className="text-sm text-gray-400">
-                Free online tools for PDF, Image, Video, AI Write, Data, Code, and Text to Speech conversion.
-              </p>
-            </div>
-
-            {/* Categories */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Categories</h4>
-              <ul className="space-y-2 text-sm">
-                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Popular Tools */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Popular</h4>
-              <ul className="space-y-2 text-sm">
-                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                {[
-                  { label: 'About', href: '/about' },
-                  { label: 'Privacy Policy', href: '/privacy' },
-                  { label: 'Terms of Service', href: '/terms' },
-                  { label: 'Contact', href: '/contact' },
-                  { label: 'Blog', href: '/blog' }
-                ].map((item) => (
-                  <li key={item.label}>
-                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-8">
-            <p className="text-center text-sm text-gray-400">
-              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }
-
 
 
 

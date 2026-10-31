@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function CartoonEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(30);
@@ -54,7 +58,7 @@ export default function CartoonEffectPage() {
 
           // Apply edge detection and posterization for cartoon effect
           const edges = new Uint8ClampedArray(data.length);
-          
+
           for (let i = 0; i < data.length; i += 4) {
             // Posterize (reduce color levels)
             const levels = Math.floor(intensity / 10);
@@ -69,7 +73,7 @@ export default function CartoonEffectPage() {
             for (let x = 1; x < canvas.width - 1; x++) {
               const idx = (y * canvas.width + x) * 4;
               let edge = 0;
-              
+
               for (let dy = -1; dy <= 1; dy++) {
                 for (let dx = -1; dx <= 1; dx++) {
                   const nIdx = ((y + dy) * canvas.width + (x + dx)) * 4;
@@ -77,7 +81,7 @@ export default function CartoonEffectPage() {
                   edge += diff;
                 }
               }
-              
+
               edges[idx] = edge > intensity ? 0 : 255;
               edges[idx + 1] = edge > intensity ? 0 : 255;
               edges[idx + 2] = edge > intensity ? 0 : 255;
@@ -111,16 +115,33 @@ export default function CartoonEffectPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `cartoon-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'cartoon-effect',
+            originalName: `cartoon-${Date.now()}.jpg`,
+            outputName: `cartoon-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -138,7 +159,7 @@ export default function CartoonEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Cartoon Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Transform photos into cartoon and comic style. Create artistic cartoon effects instantly.
+              Create a posterized, cartoon-like image by reducing color levels in your browser. Download the result as a JPEG.
             </p>
           </div>
         </div>
@@ -149,7 +170,7 @@ export default function CartoonEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Cartoon Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -174,7 +195,7 @@ export default function CartoonEffectPage() {
                       onChange={(e) => setIntensity(Number(e.target.value))}
                       className="w-full"
                     />
-                    <p className="text-sm text-gray-600 mt-2">Lower = more detailed, Higher = more simplified</p>
+                    <p className="text-sm text-gray-600 mt-2">The intensity setting changes color-level reduction. Try different values to compare the posterized effect.</p>
                   </div>
 
                   <button
@@ -203,10 +224,10 @@ export default function CartoonEffectPage() {
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">How to Create Cartoon Effects</h2>
               <ol className="space-y-4 text-gray-700">
-                <li><strong>1. Upload Photo:</strong> Select a JPG, PNG, or WebP image.</li>
-                <li><strong>2. Adjust Intensity:</strong> Control how simplified or detailed the cartoon looks.</li>
+                <li><strong>1. Upload Photo:</strong> Choose an image your browser can decode, such as JPG, PNG, or WebP.</li>
+                <li><strong>2. Adjust Intensity:</strong> Choose a value from 10 to 100 to change the posterization settings.</li>
                 <li><strong>3. Apply Effect:</strong> Click "Apply Cartoon Effect" to process.</li>
-                <li><strong>4. Download:</strong> Save your cartoon image instantly.</li>
+                <li><strong>4. Download:</strong> Select Download Cartoon Image to continue to the download page and save the JPEG.</li>
               </ol>
             </div>
 
@@ -234,35 +255,35 @@ export default function CartoonEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity level should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 30-40 for balanced effects. Lower for detail, higher for simplification.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this work on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, any photo works! Results vary based on image complexity and content.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use this for commercial purposes?</summary>
-                  <p className="text-gray-700 mt-2">Yes, you can use your processed images commercially without restrictions.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What file format is the output?</summary>
-                  <p className="text-gray-700 mt-2">Images are saved as high-quality JPEG format.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image kept private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser. No uploads to servers.</p>
-                </details>
-                <details className="border-l-4 border-orange-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I edit further?</summary>
-                  <p className="text-gray-700 mt-2">Yes, download and use any image editor for additional tweaks.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity level should I use?</FAQQuestion>
+                  <FAQAnswer>Start with the default value of 30, then experiment with the 10?100 range. The control changes how image colors are grouped into fewer levels; higher values do not necessarily produce stronger outlines.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this work on all photos?</FAQQuestion>
+                  <FAQAnswer>The tool can process images your browser can decode, including common JPG, PNG, and WebP files. Results vary with image colors, lighting, and detail. Some formats may not be supported by every browser.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use this for commercial purposes?</FAQQuestion>
+                  <FAQAnswer>You can use the tool for personal or commercial projects, but you must have the necessary rights to the source image and follow any applicable licensing requirements.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What file format is the output?</FAQQuestion>
+                  <FAQAnswer>The result is exported as a JPEG using a quality setting of 0.95. JPEG is a lossy format, and transparency from the source image is not retained as transparency.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image kept private?</FAQQuestion>
+                  <FAQAnswer>The cartoon effect is applied in your browser. When you choose Download, the generated image is uploaded to our server for temporary download preparation. Avoid using sensitive images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I edit further?</FAQQuestion>
+                  <FAQAnswer>Yes, download and use any image editor for additional tweaks.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -286,7 +307,91 @@ export default function CartoonEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Cartoon Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The effect reduces the number of color levels in the source
+                image, creating flatter tonal regions and a posterized
+                appearance. Although the implementation calculates edge
+                information, it does not apply separate outlines to the
+                exported image.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual effect is generated with browser image and
+                  Canvas processing. The source image is rendered, pixel
+                  values are adjusted, and the result is prepared for
+                  download through the existing image workflow.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The result is produced through pixel-based color posterization, not a generative AI illustration model. It does not add hand-drawn outlines.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Choose a clear image with distinct colors and experiment with
+                the intensity slider. The tool previews the original
+                upload, but it does not show a separate processed-image
+                preview before download.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                the Cartoon Effect works FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It changes existing pixel values and does not recreate
+                    missing detail or increase the source resolution.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect first?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The page previews your uploaded image. After applying the
+                    effect, it prepares the JPEG for download, but it
+                    does not display a preview of the processed result.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

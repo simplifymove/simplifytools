@@ -10,7 +10,7 @@ export interface GeneratorResult {
 // UUID generation
 export function generateUUIDs(count: number = 1, uppercase: boolean = false): GeneratorResult {
   try {
-    if (count < 1 || count > 1000) {
+    if (!Number.isInteger(count) || count < 1 || count > 1000) {
       throw new Error('Count must be between 1 and 1000');
     }
 
@@ -43,6 +43,12 @@ export function generateHash(
   algorithm: string = 'sha256'
 ): GeneratorResult {
   try {
+    const allowedAlgorithms = ['md5', 'sha1', 'sha256', 'sha512'];
+
+    if (typeof algorithm !== 'string' || !allowedAlgorithms.includes(algorithm)) {
+      throw new Error('Algorithm must be one of: md5, sha1, sha256, sha512');
+    }
+
     const hash = createHash(algorithm).update(text).digest('hex');
 
     return {
@@ -182,8 +188,16 @@ export function generateLoremIpsum(options: {
     'laborum',
   ];
 
-  const type = options.type || 'paragraphs';
-  const count = Math.max(1, Math.min(options.count || 5, 100));
+  const type = options.type === undefined ? 'sentences' : options.type;
+  const count = options.count === undefined ? 5 : options.count;
+
+  if (!['words', 'sentences', 'paragraphs'].includes(type)) {
+    throw new Error('Type must be one of: words, sentences, paragraphs');
+  }
+
+  if (typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > 100) {
+    throw new Error('Quantity must be a whole number between 1 and 100');
+  }
 
   let result = '';
 
@@ -237,26 +251,43 @@ export function generateLoremIpsum(options: {
   };
 }
 
-// QR Code generation (returns SVG or data string for now)
-export function generateQRCode(text: string, size: string = '300'): GeneratorResult {
+// QR Code generation using the local qrcode package
+export async function generateQRCode(
+  text: string,
+  size: string = '200'
+): Promise<GeneratorResult> {
   try {
-    if (!text.trim()) {
+    if (typeof text !== 'string' || !text.trim()) {
       throw new Error('Text cannot be empty');
     }
 
-    // Since we're working in Node.js environment, return a placeholder
-    // In a browser environment, this would use qrcode library
-    const encoded = encodeURIComponent(text);
-    const qrSize = size || '300';
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encoded}`;
+    const allowedSizes = ['150', '200', '300', '400'];
+
+    if (typeof size !== 'string' || !allowedSizes.includes(size)) {
+      throw new Error('QR code size must be 150, 200, 300, or 400 pixels');
+    }
+
+    // Avoid generating extremely large QR payloads.
+    if (Buffer.byteLength(text, 'utf8') > 2000) {
+      throw new Error('Text is too long for this QR code generator (maximum 2000 UTF-8 bytes)');
+    }
+
+    const QRCode = await import('qrcode');
+
+    const dataUrl = await QRCode.toDataURL(text, {
+      width: Number(size),
+      margin: 2,
+      errorCorrectionLevel: 'M',
+      type: 'image/png',
+    });
 
     return {
-      result: qrCodeUrl,
+      result: dataUrl,
       meta: {
         textLength: text.length,
-        size: qrSize,
-        format: 'url',
-        htmlEmbed: `<img src="${qrCodeUrl}" alt="QR Code" />`,
+        size,
+        format: 'png',
+        mimeType: 'image/png',
       },
     };
   } catch (error) {
@@ -269,7 +300,10 @@ export function generateQRCode(text: string, size: string = '300'): GeneratorRes
 // Color conversion - Hex to RGB
 export function hexToRGB(hex: string): GeneratorResult {
   try {
-    const cleanHex = hex.replace(/[#\s]/g, '');
+    const trimmedHex = hex.trim();
+    const cleanHex = trimmedHex.startsWith('#')
+      ? trimmedHex.slice(1)
+      : trimmedHex;
 
     if (!/^[0-9a-f]{6}$/i.test(cleanHex)) {
       throw new Error('Invalid hex color format');
@@ -298,15 +332,16 @@ export function hexToRGB(hex: string): GeneratorResult {
 // Color conversion - RGB to Hex
 export function rgbToHex(rgb: string): GeneratorResult {
   try {
-    const match = rgb.match(/(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+    const match = rgb.trim().match(
+      /^(?:rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)|(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})|(\d{1,3})\s+(\d{1,3})\s+(\d{1,3}))$/i
+    );
 
     if (!match) {
       throw new Error('Invalid RGB format. Use: rgb(r, g, b) or r g b');
     }
 
-    const r = parseInt(match[1]);
-    const g = parseInt(match[2]);
-    const b = parseInt(match[3]);
+    const values = match.slice(1).filter((value) => value !== undefined);
+    const [r, g, b] = values.map((value) => Number(value));
 
     if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
       throw new Error('RGB values must be between 0 and 255');
@@ -401,41 +436,58 @@ export function generateTimestamp(format: string = 'ms'): GeneratorResult {
 // Random string generation
 export function generateRandomString(options: {
   length?: number;
+  count?: number;
   charset?: 'alphanumeric' | 'alpha' | 'numeric' | 'hex';
 }): GeneratorResult {
   try {
-    const length = Math.min(Math.max(options.length || 16, 1), 256);
-    const charset = options.charset || 'alphanumeric';
+    const length = options.length === undefined ? 10 : options.length;
+    const count = options.count === undefined ? 1 : options.count;
+    const charset = options.charset === undefined ? 'alphanumeric' : options.charset;
 
-    let chars = '';
-
-    switch (charset) {
-      case 'alpha':
-        chars =
-          'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-        break;
-      case 'numeric':
-        chars = '0123456789';
-        break;
-      case 'hex':
-        chars = '0123456789abcdef';
-        break;
-      default:
-        chars =
-          'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    if (typeof length !== 'number' || !Number.isInteger(length) || length < 1 || length > 256) {
+      throw new Error('String length must be a whole number between 1 and 256');
     }
 
-    let result = '';
-    const randomBytesArray = randomBytes(length);
+    if (typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > 100) {
+      throw new Error('String count must be a whole number between 1 and 100');
+    }
 
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(randomBytesArray[i] % chars.length);
+    const characterSets: Record<string, string> = {
+      alphanumeric: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+      alpha: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+      numeric: '0123456789',
+      hex: '0123456789abcdef',
+    };
+
+    if (typeof charset !== 'string' || !Object.prototype.hasOwnProperty.call(characterSets, charset)) {
+      throw new Error('Character set must be one of: alphanumeric, alpha, numeric, hex');
+    }
+
+    const chars = characterSets[charset];
+    const limit = 256 - (256 % chars.length);
+    const results: string[] = [];
+
+    for (let stringIndex = 0; stringIndex < count; stringIndex++) {
+      let generated = '';
+
+      while (generated.length < length) {
+        const bytes = randomBytes(length - generated.length);
+
+        for (const byte of bytes) {
+          if (byte < limit) {
+            generated += chars[byte % chars.length];
+          }
+        }
+      }
+
+      results.push(generated);
     }
 
     return {
-      result,
+      result: results.join('\n'),
       meta: {
         length,
+        count,
         charset,
       },
     };
@@ -445,4 +497,3 @@ export function generateRandomString(options: {
     );
   }
 }
-

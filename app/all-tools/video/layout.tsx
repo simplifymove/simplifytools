@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Free Video Tools Online - Convert & Compress Videos',
-  description: 'Free online video tools to convert, compress, trim, and edit videos in any format. Fast, secure, and no signup required. Works on all devices.',
+  description: 'Browse online video tools for conversion, compression, trimming, audio extraction, transcription, and other media tasks. Supported formats and processing options vary by tool.',
   keywords: ['free video tools', 'video converter online', 'compress video', 'edit video online', 'convert MP4 free', 'video compression tool'],
   openGraph: {
     type: 'website',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/video-tools',
     siteName: 'SimplifyConvert',
     title: 'Free Video Tools Online - Convert & Compress Videos',
-    description: 'Convert, compress, trim and edit videos online for free. No signup, no watermarks, completely free.',
+    description: 'Convert, compress, trim, and edit supported video formats online for free. No signup is required; output depends on the selected tool and source.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',

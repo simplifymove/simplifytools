@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function ColorGraderPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [hue, setHue] = useState(0);
@@ -51,7 +55,7 @@ export default function ColorGraderPage() {
 
           ctx.filter = `hue-rotate(${hue}deg) saturate(${saturation}%)`;
           ctx.drawImage(img, 0, 0);
-          
+
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
           const balance = colorBalance / 100;
@@ -90,14 +94,31 @@ export default function ColorGraderPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'color-graded-image.jpg';
-      a.click();
-      URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+
+    setProcessing(true);
+
+    try {
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'color-grader',
+          originalName: 'color-graded-image.jpg',
+          outputName: 'color-graded-image.jpg',
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      console.error('Download preparation failed:', caughtError);
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -117,10 +138,10 @@ export default function ColorGraderPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Color Grader</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Grade and adjust colors in your photos like a professional. Control hue, saturation, and color balance to achieve the perfect look.
+              Adjust hue, saturation, and color balance in your photos using the available controls.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Professional-grade color correction tools, completely free and easy to use.
+              Use browser-based controls for image color adjustments.
             </p>
           </div>
         </div>
@@ -131,7 +152,7 @@ export default function ColorGraderPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Color Grade Your Image</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -189,7 +210,7 @@ export default function ColorGraderPage() {
                 <li><strong>2. Adjust Hue:</strong> Rotate the color wheel from -180° to 180° to shift colors.</li>
                 <li><strong>3. Control Saturation:</strong> Increase saturation (0-200%) to make colors more vivid or decrease for muted tones.</li>
                 <li><strong>4. Set Color Balance:</strong> Shift between warm (red) and cool (blue) tones.</li>
-                <li><strong>5. Apply & Download:</strong> Click "Apply Color Grading" then download your edited image.</li>
+                <li><strong>5. Apply & Download:</strong> Click "Apply Color Grading" to generate the JPEG result, then select Download Graded Image to open the download page.</li>
               </ol>
             </div>
 
@@ -198,54 +219,54 @@ export default function ColorGraderPage() {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Why Use Color Grading</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-bold text-lg text-purple-600 mb-2">Professional Results</h3>
-                  <p className="text-gray-700">Achieve studio-quality color correction without expensive software.</p>
+                  <h3 className="font-bold text-lg text-purple-600 mb-2">Adjustable Results</h3>
+                  <p className="text-gray-700">Adjust hue, saturation, and basic red or blue color shifts using browser-based image controls.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-purple-600 mb-2">Precise Control</h3>
                   <p className="text-gray-700">Fine-tune hue, saturation, and balance for exact color preferences.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-purple-600 mb-2">Instant Adjustments</h3>
-                  <p className="text-gray-700">See changes in real-time as you adjust the sliders.</p>
+                  <h3 className="font-bold text-lg text-purple-600 mb-2">Interactive Adjustments</h3>
+                  <p className="text-gray-700">Choose your settings, then click Apply Color Grading to generate the adjusted JPEG image.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-purple-600 mb-2">100% Free Forever</h3>
+                  <h3 className="font-bold text-lg text-purple-600 mb-2">Free Color Adjustments</h3>
                   <p className="text-gray-700">No subscriptions, watermarks, or hidden costs.</p>
                 </div>
               </div>
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is color grading?</summary>
-                  <p className="text-gray-700 mt-2">Color grading is the process of adjusting and correcting colors in images to achieve a desired aesthetic, mood, or style.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What does hue adjustment do?</summary>
-                  <p className="text-gray-700 mt-2">Hue adjustment rotates all colors in your image around the color wheel, shifting blues to greens, reds to oranges, etc.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">How does saturation affect my image?</summary>
-                  <p className="text-gray-700 mt-2">Saturation controls color intensity. Higher values make colors more vivid, while lower values create a more muted, desaturated look.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is color balance?</summary>
-                  <p className="text-gray-700 mt-2">Color balance lets you shift the overall temperature of your image between warm (reddish) and cool (bluish) tones.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I reset the adjustments?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Simply refresh the page or reload your image to reset all sliders to their default values.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is color grading permanent?</summary>
-                  <p className="text-gray-700 mt-2">Only if you download the image. The original file remains unchanged until you save the graded version.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is color grading?</FAQQuestion>
+                  <FAQAnswer>Color grading is the process of adjusting and correcting colors in images to achieve a desired aesthetic, mood, or style.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What does hue adjustment do?</FAQQuestion>
+                  <FAQAnswer>Hue adjustment rotates all colors in your image around the color wheel, shifting blues to greens, reds to oranges, etc.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>How does saturation affect my image?</FAQQuestion>
+                  <FAQAnswer>Saturation controls color intensity. Higher values make colors more vivid, while lower values create a more muted, desaturated look.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What is color balance?</FAQQuestion>
+                  <FAQAnswer>The Color Balance slider applies a small channel adjustment: positive values increase red, while negative values reduce blue. It is not a full white-balance or color-temperature correction.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I reset the adjustments?</FAQQuestion>
+                  <FAQAnswer>Set Hue to 0, Saturation to 100, and Color Balance to 0, then click Apply Color Grading again. Refreshing the page also resets the controls.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is color grading permanent?</FAQQuestion>
+                  <FAQAnswer>Only if you download the image. The original file remains unchanged until you save the graded version.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -269,7 +290,86 @@ export default function ColorGraderPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Color Grader works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Use the available color controls to change hue, saturation,
+                and color balance. The browser processes the image and updates
+                the generated image when you select Apply Color Grading. The uploaded-image preview does not update as you move the sliders.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The uploaded-image preview shows the source photo before processing. Apply the adjustments to generate a JPEG result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Color grading changes the appearance of existing image colors; it does not recover clipped highlights, missing detail, or unavailable source color information.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Color Grader Processing and Output
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview changes before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The upload preview shows the original image, not a live graded result. Adjust the controls and apply them to generate the
+                    result before downloading it.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
@@ -278,7 +378,7 @@ export default function ColorGraderPage() {
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
           name: 'Color Grader',
-          description: 'Professional color grading and adjustment tool',
+          description: 'Color adjustment controls and adjustment tool',
           url: 'https://simplifyconvert.com/all-tools/color-grader',
           applicationCategory: 'MultimediaApplication',
           offers: {

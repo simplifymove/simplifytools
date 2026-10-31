@@ -1,14 +1,18 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function EditToPngPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -47,16 +51,33 @@ export default function EditToPngPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'edit-to-png',
+        originalName: file.name,
+        outputName: `${baseName}.png`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -82,7 +103,7 @@ export default function EditToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Convert to PNG</h1>
-                <p className="text-lg text-white/90">Convert various image formats to PNG with support for JPG, BMP, GIF, TIFF, WebP, and more.</p>
+                <p className="text-lg text-white/90">Convert browser-supported images, such as JPG, PNG, and WebP, to PNG format. Other formats depend on your browser's image support.</p>
               </div>
             </div>
           </div>
@@ -134,9 +155,9 @@ export default function EditToPngPage() {
                     <button
                       onClick={handleDownload}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-                    >
+                      disabled={processing}>
                       <Download size={20} />
-                      Download PNG
+                      {processing ? 'Preparing Download...' : 'Continue to Download'}
                     </button>
                   )}
 
@@ -145,10 +166,10 @@ export default function EditToPngPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">Supported Formats</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• JPG, JPEG</li>
-                      <li>• BMP, GIF</li>
-                      <li>• TIFF, WebP</li>
-                      <li>• And more...</li>
-                      <li>• Instant conversion</li>
+                      <li>• PNG, WebP</li>
+                      <li>• Other formats depend on browser support</li>
+                      <li>• Unsupported images may fail to load</li>
+                      <li>• Browser-based image conversion</li>
                     </ul>
                   </div>
 
@@ -158,8 +179,8 @@ export default function EditToPngPage() {
                     <ul className="text-sm text-amber-800 space-y-1">
                       <li>• Lossless compression</li>
                       <li>• Supports transparency</li>
-                      <li>• Best for web</li>
-                      <li>• Perfect quality</li>
+                      <li>• Useful for graphics with transparency or sharp edges</li>
+                      <li>• Lossless PNG output encoding</li>
                     </ul>
                   </div>
                 </div>
@@ -167,6 +188,109 @@ export default function EditToPngPage() {
             </div>
           </div>
         </div>
+
+        <section className="px-4 md:px-8 pb-16">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                How to convert an image to PNG
+              </h2>
+              <p className="text-gray-600 leading-7 mb-5">
+                This tool converts a supported image into PNG format. Select
+                your source image, run the conversion, preview the result, and
+                continue to the download page when the PNG is ready.
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  ['1', 'Upload image', 'Choose a supported image file from your device.'],
+                  ['2', 'Convert to PNG', 'Select Convert to PNG and wait for the browser conversion to finish.'],
+                  ['3', 'Download', 'Continue to the download page to save the resulting PNG.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="bg-white border border-gray-200 rounded-xl p-5">
+                    <div className="font-bold text-orange-500 mb-2">{number}</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600">{description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Why convert an image to PNG?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  PNG is widely supported and uses lossless image encoding.
+                  It is commonly used for graphics, screenshots, interface
+                  assets, illustrations, and images that need a broadly
+                  compatible PNG output.
+                </p>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Is this an image editor?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  No. Despite the legacy URL name, this page performs image
+                  format conversion to PNG. It does not currently provide
+                  cropping, drawing, filters, or other image-editing controls.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Before converting to PNG
+              </h2>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Start with the best-quality source image available.</li>
+                <li>Check the preview to make sure the browser can decode the selected file.</li>
+                <li>Remember that converting to PNG does not increase the original image resolution.</li>
+                <li>PNG files can be larger than equivalent lossy image formats depending on the source image.</li>
+              </ul>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Convert to PNG FAQ
+              </FAQHeading>
+              <FAQList>
+                {[
+                  ['What does this tool create?', 'It creates a PNG version of a supported source image.'],
+                  ['Does PNG use lossless encoding?', 'Yes. PNG uses lossless image compression.'],
+                  ['Will converting to PNG improve image quality?', 'No. Conversion can change the file format, but it cannot restore detail that is missing from the original image.'],
+                  ['Can this tool crop or resize my image?', 'No. This page currently performs format conversion only. Use the dedicated crop or resize tools when you need those operations.'],
+                ].map(([q, a]) => (
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Related image tools
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/all-tools/resize-image" className="text-orange-600 hover:underline">
+                  Resize Image
+                </Link>
+                <Link href="/all-tools/crop-image" className="text-orange-600 hover:underline">
+                  Crop Image
+                </Link>
+                <Link href="/all-tools/image-tools" className="text-orange-600 hover:underline">
+                  More image tools
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
       <Footer />
     </>

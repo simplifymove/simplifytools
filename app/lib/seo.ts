@@ -45,7 +45,7 @@ export function generatePageMetadata(options: {
   };
 }
 
-export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+export function generateBreadcrumbSchema(items: Array<{ name: string; url?: string }>) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -53,7 +53,7 @@ export function generateBreadcrumbSchema(items: Array<{ name: string; url: strin
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: item.url,
+      ...(item.url ? { item: item.url } : {}),
     })),
   };
 }
@@ -71,18 +71,9 @@ export function generateSoftwareApplicationSchema(options: {
     name: options.name,
     description: options.description,
     url: options.url,
-    image: options.image || 'https://simplifyconvert.com/og-image.jpg',
     applicationCategory: options.applicationCategory,
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '1000',
-    },
+    operatingSystem: 'Web',
+    ...(options.image ? { image: options.image } : {}),
   };
 }
 
@@ -135,8 +126,8 @@ export function generateOrganizationSchema() {
     '@type': 'Organization',
     name: 'SimplifyConvert',
     url: 'https://simplifyconvert.com',
-    logo: 'https://simplifyconvert.com/logo.png',
-    description: '200+ free online tools for image editing, video conversion, AI writing, PDF manipulation, and data transformation.',
+    logo: 'https://simplifyconvert.com/favicon.png',
+    description: 'Hundreds of free online tools for image editing, video conversion, AI writing, PDF manipulation, and data transformation.',
     sameAs: [
       'https://twitter.com/simplifyconvert',
       'https://facebook.com/simplifyconvert',

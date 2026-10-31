@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
           break;
 
         case 'generator':
-          result = handleGeneratorEngine(tool, input, options);
+          result = await handleGeneratorEngine(tool, input, options);
           break;
 
         default:
@@ -309,7 +309,7 @@ function handleGeneratorEngine(
   switch (toolId) {
     case 'uuid-generator':
       return GeneratorEngine.generateUUIDs(
-        options?.count || 1,
+        options?.count === undefined ? 1 : options.count,
         options?.uppercase || false
       );
 
@@ -319,7 +319,7 @@ function handleGeneratorEngine(
       }
       return GeneratorEngine.generateHash(
         input,
-        options?.algorithm || 'sha256'
+        options?.algorithm === undefined ? 'sha256' : options.algorithm
       );
 
     case 'password-generator':
@@ -332,7 +332,7 @@ function handleGeneratorEngine(
       if (!input) {
         throw new Error('Input text is required for QR code generation');
       }
-      return GeneratorEngine.generateQRCode(input, options?.size || '200');
+      return GeneratorEngine.generateQRCode(input, options?.size ?? '200');
 
     case 'hex-to-rgb':
       if (!input) {
@@ -362,7 +362,14 @@ function handleGeneratorEngine(
       if (!input) {
         throw new Error('Color value is required');
       }
-      const convertFrom = options?.convertFrom || 'hex';
+      const convertFrom = options?.convertFrom === undefined
+        ? 'hex'
+        : options.convertFrom;
+
+      if (convertFrom !== 'hex' && convertFrom !== 'rgb') {
+        throw new Error('Convert From must be hex or rgb');
+      }
+
       if (convertFrom === 'hex') {
         return GeneratorEngine.hexToRGB(input);
       } else {

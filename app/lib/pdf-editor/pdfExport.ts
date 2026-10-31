@@ -98,7 +98,7 @@ export async function exportPdfWithEdits(
               renderLinkPlaceholder(page, edit, height, rgb);
               break;
             case 'drawing':
-              renderDrawingPlaceholder(page, edit, height, rgb);
+              renderDrawingEdit(page, edit, height, rgb);
               break;
           }
         } catch (err) {
@@ -230,11 +230,22 @@ async function renderImagePlaceholder(page: any, edit: PdfEdit, pageHeight: numb
           bytes[i] = binaryString.charCodeAt(i);
         }
         
-        // Embed the PNG image
-        const pngImage = await pdfDoc.embedPng(bytes);
-        
+        // Embed supported browser image formats.
+        // PDF-lib handles PNG and JPEG separately.
+        const mimeType = base64Parts[0].toLowerCase();
+        const embeddedImage =
+          mimeType.includes('image/jpeg') || mimeType.includes('image/jpg')
+            ? await pdfDoc.embedJpg(bytes)
+            : mimeType.includes('image/png')
+              ? await pdfDoc.embedPng(bytes)
+              : null;
+
+        if (!embeddedImage) {
+          throw new Error(`Unsupported image format: ${mimeType}`);
+        }
+
         // Draw the image on the page
-        page.drawImage(pngImage, {
+        page.drawImage(embeddedImage, {
           x: Math.max(0, edit.x),
           y: Math.max(0, y),
           width: Math.max(0, edit.width),
@@ -289,21 +300,41 @@ function renderLinkPlaceholder(page: any, edit: PdfEdit, pageHeight: number, rgb
   });
 }
 
-function renderDrawingPlaceholder(page: any, edit: PdfEdit, pageHeight: number, rgb: any): void {
-  const y = pageHeight - edit.y - edit.height;
-  const color = parseHexColor(edit.strokeColor || '#000000');
+function renderDrawingEdit(page: any, edit: PdfEdit, pageHeight: number, rgb: any): void {
+  const points = edit.points;
 
-  page.drawLine({
-    start: { x: Math.max(0, edit.x), y: Math.max(0, y + edit.height) },
-    end: { x: Math.max(0, edit.x + edit.width), y: Math.max(0, y) },
-    color: rgb(
-      Math.min(1, Math.max(0, color.r / 255)),
-      Math.min(1, Math.max(0, color.g / 255)),
-      Math.min(1, Math.max(0, color.b / 255))
-    ),
-    thickness: Math.max(0.5, edit.strokeWidth || 2),
-    opacity: Math.min(1, Math.max(0, edit.opacity ?? 1)),
-  });
+  if (!points || points.length < 2) {
+    return;
+  }
+
+  const color = parseHexColor(edit.strokeColor || '#000000');
+  const lineColor = rgb(
+    Math.min(1, Math.max(0, color.r / 255)),
+    Math.min(1, Math.max(0, color.g / 255)),
+    Math.min(1, Math.max(0, color.b / 255))
+  );
+
+  const thickness = Math.max(0.5, edit.strokeWidth || 2);
+  const opacity = Math.min(1, Math.max(0, edit.opacity ?? 1));
+
+  for (let i = 1; i < points.length; i++) {
+    const previous = points[i - 1];
+    const current = points[i];
+
+    page.drawLine({
+      start: {
+        x: Math.max(0, previous.x),
+        y: Math.max(0, pageHeight - previous.y),
+      },
+      end: {
+        x: Math.max(0, current.x),
+        y: Math.max(0, pageHeight - current.y),
+      },
+      color: lineColor,
+      thickness,
+      opacity,
+    });
+  }
 }
 
 function parseHexColor(hex: string): { r: number; g: number; b: number } {

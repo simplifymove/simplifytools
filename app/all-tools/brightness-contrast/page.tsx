@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Palette } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function BrightnessContrastPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [brightness, setBrightness] = useState(0);
@@ -94,16 +98,33 @@ export default function BrightnessContrastPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `brightness-contrast-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'brightness-contrast',
+            originalName: `brightness-contrast-${Date.now()}.jpg`,
+            outputName: `brightness-contrast-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -121,7 +142,7 @@ export default function BrightnessContrastPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">☀️ Brightness Contrast Adjuster</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Adjust brightness and contrast levels precisely. Enhance image visibility and improve photo quality.
+              Adjust image brightness and contrast in your browser, then apply the settings to create a downloadable JPEG.
             </p>
           </div>
         </div>
@@ -132,7 +153,7 @@ export default function BrightnessContrastPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Adjust Brightness & Contrast</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -200,11 +221,11 @@ export default function BrightnessContrastPage() {
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">How to Adjust Brightness & Contrast</h2>
               <ol className="space-y-4 text-gray-700">
-                <li><strong>1. Upload Photo:</strong> Select a JPG, PNG, or WebP image.</li>
+                <li><strong>1. Upload Photo:</strong> Choose an image your browser can decode, such as JPG, PNG, or WebP.</li>
                 <li><strong>2. Set Brightness:</strong> Adjust brightness from -100 to +100.</li>
                 <li><strong>3. Set Contrast:</strong> Adjust contrast from -100% to +100%.</li>
-                <li><strong>4. Apply:</strong> Click "Apply Adjustment".</li>
-                <li><strong>5. Download:</strong> Save your adjusted image.</li>
+                <li><strong>4. Apply:</strong> Click "Apply Adjustment" to process the image using the selected values.</li>
+                <li><strong>5. Download:</strong> Select Download Adjusted Image to continue to the download page and save the JPEG.</li>
               </ol>
             </div>
 
@@ -217,12 +238,12 @@ export default function BrightnessContrastPage() {
                   <p className="text-gray-700">Fine-tune brightness and contrast independently.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Real-time Preview</h3>
-                  <p className="text-gray-700">See changes instantly with adjustment sliders.</p>
+                  <h3 className="font-bold text-lg text-yellow-600 mb-2">Apply Before Download</h3>
+                  <p className="text-gray-700">Set both sliders, apply the adjustment, and prepare the resulting JPEG for download.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">Photo Enhancement</h3>
-                  <p className="text-gray-700">Improve visibility and detail in any photo.</p>
+                  <p className="text-gray-700">Adjust tonal visibility in light, dark, or low-contrast images.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-600 mb-2">100% Free</h3>
@@ -232,35 +253,35 @@ export default function BrightnessContrastPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between brightness and contrast?</summary>
-                  <p className="text-gray-700 mt-2">Brightness adds or removes light overall. Contrast adjusts the difference between light and dark areas.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">When should I adjust these?</summary>
-                  <p className="text-gray-700 mt-2">Use brightness for overexposed/underexposed photos. Use contrast for flat or dull images.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo format.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, adjusted images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-yellow-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with maximum detail preservation.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the difference between brightness and contrast?</FAQQuestion>
+                  <FAQAnswer>Brightness adds or removes light overall. Contrast adjusts the difference between light and dark areas.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>When should I adjust these?</FAQQuestion>
+                  <FAQAnswer>Use brightness for overexposed/underexposed photos. Use contrast for flat or dull images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>The file picker accepts images, but successful processing depends on whether your browser can decode the selected format. Common formats include JPG, PNG, and WebP. The adjusted output is a JPEG.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, adjusted images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Brightness and contrast adjustments run locally in your browser using Canvas. When you choose to download the result, the generated JPEG is sent to the server to prepare the separate download page.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>The adjusted image is exported as a JPEG with a quality setting of 0.95. JPEG encoding is lossy, so some detail may change, and transparent areas are not preserved as transparency.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -284,7 +305,90 @@ export default function BrightnessContrastPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How brightness and contrast adjustment works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Upload an image and adjust the brightness and contrast
+                controls. The browser updates pixel values to make the image
+                lighter or darker and to increase or reduce tonal separation.
+                The adjusted JPEG is generated when you select Apply Adjustment; the sliders do not provide a live processed preview.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual effect is generated with browser image and
+                  Canvas processing. The source image is rendered, pixel
+                  values are adjusted, and the result is prepared for
+                  download through the existing image workflow.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Brightness shifts overall lightness, while contrast changes the separation between darker and lighter tones.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Use a clear source image and compare the processed preview
+                with the original. Strong effect settings can intentionally
+                remove subtle detail or exaggerate edges and tonal changes.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                brightness and contrast adjustment works FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It changes existing pixel values and does not recreate
+                    missing detail or increase the source resolution.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect first?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The uploaded image is previewed before processing. After you
+                    select Apply Adjustment, the tool prepares a JPEG
+                    for download, but it does not display a separate
+                    preview of the adjusted output.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

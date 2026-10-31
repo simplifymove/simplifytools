@@ -1,7 +1,9 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 import Link from 'next/link';
 import { getToolBySlug, CodeTool } from '@/app/lib/code-tools';
 import { Copy, Download, RotateCcw, Play, ChevronRight, Zap, Shield, CheckCircle, Loader2 } from 'lucide-react';
@@ -302,6 +304,7 @@ const getRelatedTools = (toolId: string): { id: string; title: string; descripti
 };
 
 export default function CodeToolPage() {
+  const router = useRouter();
   const params = useParams();
   const slug = (params?.slug as string | undefined) ?? '';
 
@@ -410,19 +413,28 @@ export default function CodeToolPage() {
   };
 
   // Download result
-  const handleDownload = () => {
+  const handleDownload = async () => {
     try {
-      const element = document.createElement('a');
-      const file = new Blob([output], { type: 'text/plain' });
-      element.href = URL.createObjectURL(file);
-      element.download = `${slug}-result.txt`;
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-      setSuccess('✓ Downloaded');
+      if (!slug) {
+        setError('Unable to prepare download');
+        return;
+      }
+
+      const outputName = `${slug}-result.txt`;
+      const blob = new Blob([output], { type: 'text/plain' });
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: slug,
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+      setSuccess('✓ Ready to download');
       setTimeout(() => setSuccess(''), 2000);
     } catch {
-      setError('Failed to download');
+      setError('Failed to prepare download');
     }
   };
 
@@ -659,7 +671,7 @@ export default function CodeToolPage() {
                     </div>
                     <div className="flex items-center gap-2 text-gray-700">
                       <CheckCircle size={16} className="text-indigo-600 flex-shrink-0" />
-                      <span>Real-time Processing</span>
+                      <span>Server-Side Processing</span>
                     </div>
                   </div>
                 </motion.div>
@@ -787,68 +799,68 @@ export default function CodeToolPage() {
                   <div className="p-4 border border-gray-200 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                       <CheckCircle size={18} className="text-green-600" />
-                      Free Forever
+                      Free Online Tools
                     </h3>
-                    <p className="text-gray-600 text-sm">Completely free with no hidden charges or premium plans</p>
+                    <p className="text-gray-600 text-sm">Use this code tool online without installing additional software.</p>
                   </div>
                   <div className="p-4 border border-gray-200 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                       <CheckCircle size={18} className="text-green-600" />
-                      Privacy First
+                      Server-Side Processing
                     </h3>
-                    <p className="text-gray-600 text-sm">Your data is processed locally - nothing is stored on our servers</p>
+                    <p className="text-gray-600 text-sm">Tool inputs are sent to our server for processing. Avoid submitting passwords, private keys, or sensitive information.</p>
                   </div>
                   <div className="p-4 border border-gray-200 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                       <CheckCircle size={18} className="text-green-600" />
                       Fast & Reliable
                     </h3>
-                    <p className="text-gray-600 text-sm">Instant processing with consistent, accurate results</p>
+                    <p className="text-gray-600 text-sm">Processing time and results depend on the selected operation and input.</p>
                   </div>
                 </div>
               </div>
 
               {/* FAQs Section */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-                <div className="space-y-3">
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                      Is my data secure and private?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. All processing happens in your browser using client-side JavaScript. Your data is never sent to our servers and is not stored anywhere.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+              <FAQPanel>
+                <FAQHeading>Frequently Asked Questions</FAQHeading>
+                <FAQList>
+                  <FAQDisclosure>
+                    <FAQQuestion>
+                      Is my input processed in the browser or on the server?
+
+                    </FAQQuestion>
+                    <FAQAnswer>Submitted input is sent to our server for processing. Avoid entering passwords, private keys, or confidential information.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Can I use this tool offline?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. If you've loaded the page once, you can use it offline. All computation happens in your browser without any server connection.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>No. An internet connection is required because this tool uses server-side processing.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       What browsers are supported?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge. It requires JavaScript to be enabled.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge. It requires JavaScript to be enabled.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Is there a limit on input size?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Input is limited only by your browser's available memory. Most browsers can handle files up to several MB without issues.</p>
-                  </details>
-                  <details className="p-4 border border-gray-200 rounded-lg group cursor-pointer">
-                    <summary className="font-semibold text-gray-900 flex items-center justify-between">
+
+                    </FAQQuestion>
+                    <FAQAnswer>Input limits depend on the server and the selected operation. For large inputs, try a smaller sample first.</FAQAnswer>
+                  </FAQDisclosure>
+                  <FAQDisclosure>
+                    <FAQQuestion>
                       Can I use this for commercial purposes?
-                      <span className="text-gray-500 group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p className="text-gray-600 mt-3 text-sm">Yes. Feel free to use this tool for any purpose, including commercial projects. No attribution is required.</p>
-                  </details>
-                </div>
-              </div>
+
+                    </FAQQuestion>
+                    <FAQAnswer>Yes. Feel free to use this tool for any purpose, including commercial projects. No attribution is required.</FAQAnswer>
+                  </FAQDisclosure>
+                </FAQList>
+              </FAQPanel>
 
               {/* Best Practices Section */}
               <div>
@@ -880,13 +892,13 @@ export default function CodeToolPage() {
                 {[
                   {
                     icon: Zap,
-                    title: 'Instant Execution',
-                    description: 'Execute and get results instantly with real-time processing',
+                    title: 'Online Processing',
+                    description: 'Submit input and review the result after server-side processing.',
                   },
                   {
                     icon: Shield,
-                    title: 'Secure & Safe',
-                    description: 'Code is processed securely and automatically deleted after a short period. We do not permanently store your code or data',
+                    title: 'Sensitive Data Guidance',
+                    description: 'Submitted input is processed on the server. Avoid sharing secrets or confidential information.',
                   },
                   {
                     icon: CheckCircle,
@@ -910,43 +922,6 @@ export default function CodeToolPage() {
                 ))}
               </div>
             </motion.div>
-
-        {/* Footer Feature Cards */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-6xl mx-auto mt-20">
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Zap,
-                title: 'Instant Execution',
-                description: 'Execute and get results instantly with real-time processing',
-              },
-              {
-                icon: Shield,
-                title: 'Secure & Safe',
-                description: 'Code is processed securely and automatically deleted after a short period. We do not permanently store your code or data',
-              },
-              {
-                icon: CheckCircle,
-                title: 'Many Languages',
-                description: 'Support for multiple programming languages and operations',
-              },
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ y: -4 }}
-                className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition"
-              >
-                <div className="mb-4 flex justify-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
-                    <feature.icon size={24} className="text-green-600" />
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
 
         {/* Related Tools Section */}
         {relatedTools.length > 0 && (

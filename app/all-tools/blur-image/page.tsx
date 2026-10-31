@@ -1,7 +1,9 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Droplet } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
@@ -9,11 +11,13 @@ import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'blur-image';
 const TOOL_NAME = 'Blur Image';
 
 export default function BlurImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [blurAmount, setBlurAmount] = useState(5);
@@ -81,16 +85,32 @@ export default function BlurImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'blurred.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName: 'blurred.jpg',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      createError(
+        ImageToolErrorType.NETWORK_ERROR,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        { filename: file.name, size: file.size, mimeType: file.type }
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -99,7 +119,7 @@ export default function BlurImagePage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-cyan-600 via-cyan-700 to-cyan-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -117,7 +137,7 @@ export default function BlurImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Blur Image</h1>
-                <p className="text-lg text-white/90">Add blur effects to images with adjustable intensity. Perfect for privacy, artistic effects, and background softening.</p>
+                <p className="text-lg text-white/90">Apply an adjustable blur across an entire image using your browser. Choose a blur amount from 1 to 50 pixels and export a JPEG.</p>
               </div>
             </div>
           </div>
@@ -131,7 +151,7 @@ export default function BlurImagePage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-cyan-400 transition cursor-pointer mb-6">
                     <input
                       type="file"
@@ -142,8 +162,8 @@ export default function BlurImagePage() {
                     />
                     <label htmlFor="file-input" className="cursor-pointer">
                       <Droplet size={40} className="mx-auto text-gray-400 mb-3" />
-                      <p className="text-lg font-semibold text-gray-700 mb-1">Click to upload or drag and drop</p>
-                      <p className="text-sm text-gray-500">PNG, JPG, WebP and other formats</p>
+                      <p className="text-lg font-semibold text-gray-700 mb-1">Click to choose an image</p>
+                      <p className="text-sm text-gray-500">PNG, JPG, WebP, and other browser-supported image formats</p>
                     </label>
                   </div>
 
@@ -164,7 +184,7 @@ export default function BlurImagePage() {
                   {/* Blur Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Blur Settings</h3>
-                    
+
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
                         Blur Amount: {blurAmount}px
@@ -205,10 +225,20 @@ export default function BlurImagePage() {
                   {result && (
                     <button
                       onClick={handleDownload}
-                      className="w-full py-2 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition text-sm flex items-center justify-center gap-2"
+                      disabled={processing}
+                      className="w-full py-2 px-4 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition text-sm flex items-center justify-center gap-2"
                     >
-                      <Download size={16} />
-                      Download
+                      {processing ? (
+                        <>
+                          <Loader size={16} className="animate-spin" />
+                          Preparing download...
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          Download
+                        </>
+                      )}
                     </button>
                   )}
 
@@ -217,9 +247,9 @@ export default function BlurImagePage() {
                     <h3 className="font-semibold text-blue-900 mb-2">Tips</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Higher blur = stronger effect</li>
-                      <li>• Great for privacy</li>
+                      <li>• Softens visible details; not guaranteed anonymization</li>
                       <li>• Artistic effects</li>
-                      <li>• Instant processing</li>
+                      <li>• Browser-based blur processing</li>
                     </ul>
                   </div>
                 </div>
@@ -236,7 +266,7 @@ export default function BlurImagePage() {
           <div className="space-y-4">
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm">1</div>
-              <div><p className="text-gray-700"><strong>Upload your image:</strong> Click the upload area or drag and drop an image file in any format</p></div>
+              <div><p className="text-gray-700"><strong>Upload your image:</strong> Choose an image your browser can decode, such as JPG, PNG, or WebP</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm">2</div>
@@ -244,11 +274,11 @@ export default function BlurImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Apply Blur:</strong> Processing happens instantly in your browser with no uploads</p></div>
+              <div><p className="text-gray-700"><strong>Click Apply Blur:</strong> Apply the blur effect using browser-based image processing</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download blurred image:</strong> Save your blurred image and use it wherever needed</p></div>
+              <div><p className="text-gray-700"><strong>Download blurred image:</strong> Select Download to upload the generated JPEG to the download-result service and open its download page</p></div>
             </div>
           </div>
         </div>
@@ -259,11 +289,11 @@ export default function BlurImagePage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Blurring</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Privacy protection - blur sensitive information like license plates and faces</li>
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Artistic effects - create bokeh and depth of field effects professionally</li>
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Background softening - draw focus to main subject by blurring background</li>
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Social media ready - perfect blurred images for social posts and stories</li>
-            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Document redaction - blur confidential content before sharing documents</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Visual obscuring - soften faces, plates, or other details, but do not rely on blur alone to protect sensitive information</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Artistic effects - soften image detail for creative compositions and backgrounds</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Whole-image softening - reduce detail throughout the photo, including both subject and background</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Social media preparation - create softened images for posts, stories, and graphics</li>
+            <li className="flex gap-2"><span className="text-cyan-600 font-bold">•</span> Detail obscuring - reduce the visibility of information before sharing, while reviewing the result carefully</li>
           </ul>
         </div>
       </div>
@@ -281,7 +311,7 @@ export default function BlurImagePage() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Common Use Cases</h2>
             <ul className="grid md:grid-cols-2 gap-3 text-gray-700">
-              <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Blur faces, plates, addresses, or private details before posting.</li>
+              <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Soften visible details in an image; use removal or solid redaction for information that must not be recoverable.</li>
               <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Create soft backgrounds for banners, thumbnails, and presentations.</li>
               <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Reduce visual noise behind text overlays or design elements.</li>
               <li className="p-4 bg-gray-50 border border-gray-200 rounded-lg">Add a subtle creative blur to portraits, product photos, or social images.</li>
@@ -293,11 +323,11 @@ export default function BlurImagePage() {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                 <h3 className="font-semibold text-gray-900 mb-2">Input</h3>
-                <p className="text-gray-700 text-sm">A photo with a readable license plate or a busy background behind a subject.</p>
+                <p className="text-gray-700 text-sm">A photo with detailed textures, a busy scene, and readable text.</p>
               </div>
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                 <h3 className="font-semibold text-gray-900 mb-2">Output</h3>
-                <p className="text-gray-700 text-sm">A softened image where sensitive details are harder to read and the overall scene looks smoother.</p>
+                <p className="text-gray-700 text-sm">A JPEG with reduced detail across the entire image. Some text or identifying features may remain recognizable.</p>
               </div>
             </div>
           </section>
@@ -305,7 +335,7 @@ export default function BlurImagePage() {
           <section className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-blue-900 mb-3">Privacy Note</h2>
             <p className="text-blue-900 text-sm leading-relaxed">
-              Blurring runs locally in your browser on this page. Your image is not uploaded for the blur operation, but you should still keep the original file private and review the final result before sharing.
+              The blur effect is generated locally in your browser using Canvas. The original image is not uploaded for processing. However, selecting Download uploads the generated JPEG to the site's download-result service to prepare a separate download page. Do not rely on blur alone to hide sensitive information.
             </p>
           </section>
         </div>
@@ -313,64 +343,64 @@ export default function BlurImagePage() {
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 What blur amount should I use?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">For subtle effects use 1-10px. For moderate blur use 10-25px. For heavy privacy blur use 25-50px. Experiment to find your preferred level.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Try 1-10px for gentle softening, 10-25px for a more noticeable effect, or 25-50px for strong whole-image blur. Higher values are not a guarantee that sensitive details are concealed.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I blur part of an image?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">This tool blurs the entire image. For selective blurring, crop the specific area first using our Crop Image tool, blur it, then combine it back.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>No. This tool applies blur to the whole image and does not provide a selection brush or region mask. For subject-preserving background blur, use the separate Blur Background tool.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Does blur reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Blur is applied non-destructively and maintains the original image quality. The blur effect is applied during export at 90% quality.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The blur operation intentionally changes image detail, and the generated result is encoded as JPG at 90% quality. Keep the original file if you may need the unmodified image later.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What formats does blur support?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Supports all common image formats: JPG, PNG, WebP, GIF, BMP and more. Output is always JPG at 90% quality.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Supported browser-readable images can be processed by the tool. The generated result is encoded as JPG at 90% quality.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is blur effect reversible?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, blur is permanent in the output image. Always keep your original unblurred image before applying blur effects.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>No, blur is permanent in the output image. Always keep your original unblurred image before applying blur effects.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is the blur tool really free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Blur as many images as you want, no signup required, no watermarks, no hidden costs.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>You can use the available blur controls without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}
@@ -383,7 +413,7 @@ export default function BlurImagePage() {
             "name": "What blur amount should I use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "For subtle effects use 1-10px. For moderate blur use 10-25px. For heavy privacy blur use 25-50px."
+              "text": "Try 1-10px for gentle softening, 10-25px for noticeable blur, or 25-50px for strong whole-image blur. Blurring does not guarantee sensitive details are concealed."
             }
           },
           {
@@ -391,7 +421,7 @@ export default function BlurImagePage() {
             "name": "Can I blur part of an image?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "This tool blurs the entire image. For selective blurring, crop the specific area first, blur it, then combine it back."
+              "text": "No. This tool applies blur to the entire image without a selection brush or region mask. Blur Background is a separate tool for keeping an automatically detected subject in focus."
             }
           },
           {
@@ -399,7 +429,7 @@ export default function BlurImagePage() {
             "name": "Does blur reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Blur is applied non-destructively and maintains original quality at 90% JPG compression."
+              "text": "The blur operation changes image detail, and the generated result is encoded as JPG at 90% quality."
             }
           },
           {
@@ -407,7 +437,7 @@ export default function BlurImagePage() {
             "name": "What formats does blur support?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Supports all common image formats: JPG, PNG, WebP, GIF, BMP and more. Output is always JPG at 90% quality."
+              "text": "Supported browser-readable images can be processed by the tool. The generated result is encoded as JPG at 90% quality."
             }
           },
           {
@@ -423,7 +453,7 @@ export default function BlurImagePage() {
             "name": "Is the blur tool really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can use the available blur controls without creating an account."
             }
           }
         ]
@@ -433,7 +463,7 @@ export default function BlurImagePage() {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "Blur Image",
-        "description": "Blur images online with adjustable intensity for privacy, soft backgrounds, and creative photo effects.",
+        "description": "Apply a browser-based blur across an entire image with adjustable intensity from 1 to 50 pixels and export the result as JPEG.",
         "url": "https://simplifyconvert.com/all-tools/blur-image",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "Web",

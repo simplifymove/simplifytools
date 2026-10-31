@@ -1,10 +1,13 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Image as ImageIcon, X, Plus } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 interface CanvasImage {
   id: string;
@@ -15,6 +18,7 @@ interface CanvasImage {
 }
 
 export default function AddImagesPage() {
+  const router = useRouter();
   const [images, setImages] = useState<CanvasImage[]>([]);
   const [canvasWidth, setCanvasWidth] = useState(1600);
   const [canvasHeight, setCanvasHeight] = useState(1200);
@@ -32,7 +36,7 @@ export default function AddImagesPage() {
     if (!files || files.length === 0) return;
 
     const validFiles: File[] = [];
-    
+
     // First, filter to get only image files
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -71,7 +75,7 @@ export default function AddImagesPage() {
           const totalIndex = images.length + newImages.length;
           const row = Math.floor(totalIndex / imagesPerRow);
           const col = totalIndex % imagesPerRow;
-          
+
           const newImage: CanvasImage = {
             id: String(Date.now() + index + Math.random()),
             blob: file,
@@ -83,7 +87,7 @@ export default function AddImagesPage() {
         } catch (err) {
           console.error('Error creating image object:', err);
         }
-        
+
         filesProcessed++;
 
         // Add all images once all files are processed
@@ -123,7 +127,7 @@ export default function AddImagesPage() {
     // Scale preview to fit container
     const maxWidth = 400;
     const scale = Math.min(1, maxWidth / canvasWidth);
-    
+
     canvas.width = canvasWidth * scale;
     canvas.height = canvasHeight * scale;
 
@@ -136,7 +140,7 @@ export default function AddImagesPage() {
 
     // Draw images with proper async handling
     let imagesDrawn = 0;
-    
+
     images.forEach((img, idx) => {
       const imgElement = new Image();
       imgElement.crossOrigin = 'anonymous';
@@ -148,7 +152,7 @@ export default function AddImagesPage() {
           const size = 320 * scale;
           const x = img.x * scale;
           const y = img.y * scale;
-          
+
           // Draw image
           ctx.drawImage(imgElement, x, y, size, size);
 
@@ -210,13 +214,13 @@ export default function AddImagesPage() {
       const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: false });
       if (!ctx) return;
 
-      // High DPI rendering for crisp output (4K quality)
+      // Use a larger internal canvas for final rendering
       const dpi = 300;
       const scale = dpi / 96; // Standard screen DPI is 96
-      
+
       canvas.width = canvasWidth * scale;
       canvas.height = canvasHeight * scale;
-      
+
       // Set canvas style size for proper display
       canvas.style.width = canvasWidth + 'px';
       canvas.style.height = canvasHeight + 'px';
@@ -224,7 +228,7 @@ export default function AddImagesPage() {
       // High-quality rendering settings
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
-      
+
       // Scale context without affecting text
       ctx.scale(scale, scale);
 
@@ -280,7 +284,7 @@ export default function AddImagesPage() {
       // Wait for all images to load and draw
       await Promise.all(imagePromises);
 
-      // Convert to blob with maximum quality
+      // Encode the generated canvas as PNG
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -296,16 +300,31 @@ export default function AddImagesPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'combined-images.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing) return;
+
+    setError(null);
+    setProcessing(true);
+
+    try {
+      const downloadResult =
+        await uploadBrowserDownloadResult({
+          blob: result,
+          toolSlug: 'add-images',
+          originalName: 'combined-images.png',
+          outputName: 'combined-images.png',
+        });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   // Update preview when images or settings change
@@ -384,11 +403,10 @@ export default function AddImagesPage() {
                       {images.map((img, idx) => (
                         <div
                           key={img.id}
-                          className={`flex items-center justify-between p-2 rounded border cursor-pointer ${
-                            selectedImageId === img.id
+                          className={`flex items-center justify-between p-2 rounded border cursor-pointer ${selectedImageId === img.id
                               ? 'bg-orange-100 border-orange-300'
                               : 'bg-gray-50 border-gray-200'
-                          }`}
+                            }`}
                           onClick={() => setSelectedImageId(img.id)}
                         >
                           <div className="flex items-center gap-2 flex-1">
@@ -522,13 +540,13 @@ export default function AddImagesPage() {
               </div>
 
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-                <h3 className="font-bold text-purple-900 mb-3">🎨 Industry Standards</h3>
+                <h3 className="font-bold text-purple-900 mb-3">🎨 Composition Details</h3>
                 <ul className="text-sm text-purple-800 space-y-2">
                   <li>• Each image: 320×320px (maintains aspect ratio)</li>
-                  <li>• 4K quality output (300 DPI / 3.13x scale)</li>
-                  <li>• Professional spacing: 40px gaps between images</li>
-                  <li>• Grid auto-arranges to prevent overlaps</li>
-                  <li>• Borders for clean, professional look</li>
+                  <li>• Canvas is internally scaled during final rendering</li>
+                  <li>• Initial placement uses 40px spacing</li>
+                  <li>• New images receive automatic starting positions</li>
+                  <li>• Placement areas include a visible border</li>
                   <li>• Default canvas: 1600×1200px (16:12 aspect)</li>
                   <li>• Maximum 10 images per collage</li>
                 </ul>
@@ -536,7 +554,120 @@ export default function AddImagesPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to combine multiple images
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Add up to 10 images, choose the canvas width, height, and
+                background color, and arrange the images in the preview.
+                Generate the composition when the layout is ready, then
+                download the finished result as PNG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Automatic starting positions
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  Newly added images receive initial grid-style positions
+                  based on the current canvas width. These provide a starting
+                  layout for the composition.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Canvas and background controls
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  Choose the output canvas dimensions and background color
+                  before generating the final image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Image sizing and aspect ratio
+              </h2>
+              <p className="text-gray-600 leading-7">
+                During final generation each source image is fitted inside a
+                320 × 320 pixel placement area while preserving its aspect
+                ratio and centering it within that area.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                PNG composition output
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The final composition is rendered with the browser Canvas API
+                and encoded as PNG. Internal canvas scaling affects rendering
+                dimensions but does not recreate detail missing from a
+                low-resolution source image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for arranging images
+              </h2>
+              <ul className="text-gray-600 leading-7 space-y-2">
+                <li>• Choose canvas dimensions that leave enough room for all images.</li>
+                <li>• Review automatic starting positions before generating.</li>
+                <li>• Select a background color that works with the source images.</li>
+                <li>• Check the preview before exporting the composition.</li>
+              </ul>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Add Images FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    How many images can I add?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The current interface supports up to 10 images.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Are images stretched into squares?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. Images are fitted inside their placement areas while
+                    preserving the source aspect ratio.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    What output format is generated?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The completed composition is generated as PNG.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
 
       {/* Hidden Canvas */}

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -15,11 +16,14 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 const TOOL_ID = 'image-to-text';
 const TOOL_NAME = 'Image to Text';
 
 export default function ImageToTextPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [language, setLanguage] = useState('eng');
@@ -112,7 +116,7 @@ export default function ImageToTextPage() {
       );
       return;
     }
-    
+
     setProcessing(true);
     clearError();
     try {
@@ -163,7 +167,7 @@ export default function ImageToTextPage() {
       setResultText(
         outputFormat === 'txt'
           ? (await blob.text()).trim() || 'No text was detected in this image.'
-          : 'Your searchable PDF is ready to download.',
+          : 'Your OCR PDF is ready to download.',
       );
       setResultFileName(`extracted-text.${outputFormat}`);
     } catch (error) {
@@ -182,14 +186,20 @@ export default function ImageToTextPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = resultFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+
+      if (!result || !resultFileName) return;
+
+      const blob = await fetch(result).then((response) => response.blob());
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: "image-to-text",
+        originalName: resultFileName,
+        outputName: resultFileName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
   };
 
   return (
@@ -215,7 +225,7 @@ export default function ImageToTextPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Image to Text</h1>
-                <p className="text-lg text-white/90">Extract text from images with advanced OCR technology. Supports multiple languages and image formats.</p>
+                <p className="text-lg text-white/90">Recognize text in JPG, PNG, TIFF, or WebP images using OCR. Choose a language and export the result as TXT or PDF.</p>
               </div>
             </div>
           </div>
@@ -252,7 +262,7 @@ export default function ImageToTextPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Extraction Settings</h3>
-                    
+
                     {/* Language Selection */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -346,10 +356,10 @@ export default function ImageToTextPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Supports 9+ languages</li>
-                      <li>• Advanced OCR technology</li>
-                      <li>• Multiple output formats</li>
-                      <li>• Secure & instant processing</li>
+                      <li>• Nine selectable OCR languages</li>
+                      <li>• Tesseract OCR with an EasyOCR fallback</li>
+                      <li>• TXT and PDF output options</li>
+                      <li>• Server-assisted OCR processing</li>
                     </ul>
                   </div>
                 </div>
@@ -357,6 +367,161 @@ export default function ImageToTextPage() {
             </div>
           </div>
         </div>
+
+        {/* Supporting Content */}
+        <section className="px-4 md:px-8 pb-16">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                How to extract text from an image
+              </h2>
+              <p className="text-gray-700 leading-7 mb-6">
+                Image to Text uses OCR processing to recognize text contained
+                in an uploaded image. Select your image, choose the document
+                language and output format, then run the extraction.
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  ['1', 'Upload an image', 'Choose a JPG, PNG, TIFF, or WebP image containing readable text (up to 50 MB).'],
+                  ['2', 'Select the language', 'Choose the language that best matches the text in the image.'],
+                  ['3', 'Choose TXT or PDF', 'Select Plain Text for editable text or PDF for PDF output.'],
+                  ['4', 'Extract and download', 'Run OCR, review the result when available, and download the generated file.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="border border-gray-200 rounded-lg p-4">
+                    <div className="font-semibold text-gray-900 mb-1">
+                      {number}. {title}
+                    </div>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  What is OCR?
+                </h2>
+                <p className="text-gray-700 leading-7">
+                  OCR, or optical character recognition, analyzes an image and
+                  attempts to identify readable characters and words. It can
+                  help turn text contained in scans, screenshots, photographs,
+                  and other images into text that can be copied or saved.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Why does language selection matter?
+                </h2>
+                <p className="text-gray-700 leading-7">
+                  Selecting the language gives the OCR process information
+                  about the characters and words it should expect. This tool
+                  provides English, Spanish, French, German, Simplified
+                  Chinese, Japanese, Italian, Portuguese, and Russian options.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Plain Text vs PDF output
+              </h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Plain Text (.txt)
+                  </h3>
+                  <p className="text-gray-700 leading-7">
+                    Choose TXT when you primarily need extracted text that can
+                    be opened in a text editor, copied, searched, or reused in
+                    another document.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    PDF (.pdf)
+                  </h3>
+                  <p className="text-gray-700 leading-7">
+                    Choose PDF to receive a document containing recognized
+                    text. Tesseract can produce a searchable image-based PDF;
+                    the EasyOCR fallback creates a PDF from extracted text.
+                    Layout and recognition results may differ.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Tips for better OCR results
+              </h2>
+              <ul className="space-y-3 text-gray-700">
+                <li>• Use a clear image where the text is large enough to read.</li>
+                <li>• Avoid excessive blur, glare, shadows, or strong perspective distortion.</li>
+                <li>• Select the language that matches the document whenever possible.</li>
+                <li>• Review names, numbers, punctuation, and other important details after extraction.</li>
+                <li>• OCR accuracy can vary with fonts, layout, image quality, and source material.</li>
+              </ul>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Image to Text FAQ
+              </FAQHeading>
+
+              <FAQList>
+                {[
+                  ['What does Image to Text do?', 'It uploads an image for server-side OCR, recognizes readable text, and prepares a TXT or PDF result.'],
+                  ['Which languages can I select?', 'The interface offers English, Spanish, French, German, Simplified Chinese, Japanese, Italian, Portuguese, and Russian. Successful recognition depends on the OCR language resources installed on the server.'],
+                  ['Which output formats are available?', 'You can choose editable Plain Text (.txt) or PDF (.pdf). PDF layout depends on the OCR engine used.'],
+                  ['Is OCR always perfectly accurate?', 'No. Recognition accuracy depends on factors such as image clarity, resolution, text size, fonts, layout, language, and background quality.'],
+                  ['Should I review extracted text?', 'Yes. Check important names, dates, numbers, addresses, punctuation, and other critical information before relying on or sharing OCR output.'],
+                ].map(([question, answer]) => (
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>
+                      {question}
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{answer}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+            <div className="bg-orange-50 rounded-xl border border-orange-100 p-6 md:p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Related image and document tools
+              </h2>
+              <p className="text-gray-700 leading-7">
+                Explore other SimplifyConvert utilities when you need to
+                convert images, work with PDF files, or prepare documents for
+                another workflow.
+              </p>
+
+              <div className="flex flex-wrap gap-3 mt-4">
+                <Link
+                  href="/all-tools/image-tools"
+                  className="text-orange-700 font-semibold hover:underline"
+                >
+                  Image Tools
+                </Link>
+                <Link
+                  href="/all-tools/pdf-tools"
+                  className="text-orange-700 font-semibold hover:underline"
+                >
+                  PDF Tools
+                </Link>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
       </main>
       <Footer />
     </>

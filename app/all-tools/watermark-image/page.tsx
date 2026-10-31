@@ -1,6 +1,7 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Type } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
@@ -15,19 +16,44 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'watermark-image';
 const TOOL_NAME = 'Watermark Image';
 
 export default function WatermarkImagePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [watermarkText, setWatermarkText] = useState('© 2024');
+  const [watermarkText, setWatermarkText] = useState('\u00A9 Your Name');
   const [fontSize, setFontSize] = useState(40);
   const [opacity, setOpacity] = useState(0.7);
   const [position, setPosition] = useState('bottom-right');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const operationRef = useRef(0);
+  const selectionRef = useRef(0);
+  const resultUrlRef = useRef<string | null>(null);
+
+  const invalidateResult = () => {
+    operationRef.current += 1;
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+    setResult(null);
+    setResultPreview(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      operationRef.current += 1;
+      selectionRef.current += 1;
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    };
+  }, []);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { error, clearError, createError } = useImageToolErrors();
@@ -59,6 +85,11 @@ export default function WatermarkImagePage() {
   }, [watermarkText, fontSize, opacity, position]);
 
   const handleFileSelect = useCallback((selectedFile: File) => {
+    selectionRef.current += 1;
+    const selection = selectionRef.current;
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
     clearError();
     setValidationErrors([]);
 
@@ -111,9 +142,12 @@ export default function WatermarkImagePage() {
     setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = (event) => {
-      setPreview(event.target?.result as string);
+      if (selection === selectionRef.current) {
+        setPreview(event.target?.result as string);
+      }
     };
     reader.onerror = () => {
+      if (selection !== selectionRef.current) return;
       createError(
         ImageToolErrorType.FILE_CORRUPTED,
         TOOL_ID,
@@ -122,7 +156,6 @@ export default function WatermarkImagePage() {
       );
     };
     reader.readAsDataURL(selectedFile);
-    setResult(null);
   }, [clearError, createError]);
 
   const applyWatermark = (): Promise<Blob> => {
@@ -141,7 +174,7 @@ export default function WatermarkImagePage() {
         const img = new Image();
         img.onload = () => {
           const canvas = canvasRef.current!;
-          
+
           // Validate canvas dimensions
           if (img.width > 16384 || img.height > 16384) {
             reject(new Error('Image dimensions exceed maximum allowed size (16384x16384px)'));
@@ -215,6 +248,7 @@ export default function WatermarkImagePage() {
   };
 
   const handleWatermark = async () => {
+    if (processing || !preview) return;
     if (!file) {
       createError(
         ImageToolErrorType.EMPTY_FILE,
@@ -229,15 +263,22 @@ export default function WatermarkImagePage() {
       return;
     }
 
+    invalidateResult();
+    const operation = operationRef.current;
     clearError();
     setValidationErrors([]);
     setProcessing(true);
 
     try {
       const watermarked = await applyWatermark();
+      if (operation !== operationRef.current) return;
+
+      const url = URL.createObjectURL(watermarked);
+      resultUrlRef.current = url;
+      setResultPreview(url);
       setResult(watermarked);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (operation !== operationRef.current) return;
       createError(
         ImageToolErrorType.SHARP_FAILED,
         TOOL_ID,
@@ -246,26 +287,45 @@ export default function WatermarkImagePage() {
         { filename: file.name, size: file.size, mimeType: file.type }
       );
     } finally {
-      setProcessing(false);
+      if (operation === operationRef.current) {
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'watermarked.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'watermark-image',
+            originalName: 'watermarked.jpg',
+            outputName: 'watermarked.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   const handleClearPreview = () => {
+    selectionRef.current += 1;
+    invalidateResult();
     setFile(null);
     setPreview(null);
-    setResult(null);
     setValidationErrors([]);
     clearError();
   };
@@ -291,7 +351,7 @@ export default function WatermarkImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Watermark Image</h1>
-                <p className="text-lg text-white/90">Add text watermarks to protect your images and add branding. Perfect for photos, artwork, and digital content.</p>
+                <p className="text-lg text-white/90">Add text watermarks for branding, attribution, labeling, or other supported image workflows.</p>
               </div>
             </div>
           </div>
@@ -315,7 +375,7 @@ export default function WatermarkImagePage() {
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <ImageUploader
                     onFileSelect={handleFileSelect}
                     preview={preview}
@@ -326,7 +386,7 @@ export default function WatermarkImagePage() {
 
                   {preview && (
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-4 mt-6">Preview</h3>
+                      <h3 className="font-semibold text-gray-900 mb-4 mt-6">Original Image</h3>
                       <img src={preview} alt="Preview" className="w-full rounded-lg mb-4" style={{ maxHeight: '400px' }} />
                     </div>
                   )}
@@ -341,15 +401,18 @@ export default function WatermarkImagePage() {
                   {/* Watermark Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Watermark Settings</h3>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <label className="text-sm font-medium text-gray-700 block mb-2">Text</label>
                         <input
                           type="text"
                           value={watermarkText}
-                          onChange={(e) => setWatermarkText(e.target.value)}
-                          maxLength={50}
+                          onChange={(e) => {
+      invalidateResult();
+      setWatermarkText(e.target.value);
+    }}
+                          maxLength={100}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                           placeholder="© 2024"
                         />
@@ -365,7 +428,10 @@ export default function WatermarkImagePage() {
                           max="100"
                           step="5"
                           value={fontSize}
-                          onChange={(e) => setFontSize(parseInt(e.target.value))}
+                          onChange={(e) => {
+      invalidateResult();
+      setFontSize(parseInt(e.target.value));
+    }}
                           className="w-full"
                         />
                       </div>
@@ -380,7 +446,10 @@ export default function WatermarkImagePage() {
                           max="1"
                           step="0.1"
                           value={opacity}
-                          onChange={(e) => setOpacity(parseFloat(e.target.value))}
+                          onChange={(e) => {
+      invalidateResult();
+      setOpacity(parseFloat(e.target.value));
+    }}
                           className="w-full"
                         />
                       </div>
@@ -389,7 +458,10 @@ export default function WatermarkImagePage() {
                         <label className="text-sm font-medium text-gray-700 block mb-2">Position</label>
                         <select
                           value={position}
-                          onChange={(e) => setPosition(e.target.value)}
+                          onChange={(e) => {
+      invalidateResult();
+      setPosition(e.target.value);
+    }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                         >
                           <option value="top-left">Top Left</option>
@@ -405,7 +477,7 @@ export default function WatermarkImagePage() {
                   {/* Watermark Button */}
                   <button
                     onClick={handleWatermark}
-                    disabled={!file || !watermarkText || processing}
+                    disabled={!file || !preview || !watermarkText.trim() || processing}
                     className="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                   >
                     {processing ? (
@@ -473,7 +545,7 @@ export default function WatermarkImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download watermarked image:</strong> Save your protected image instantly</p></div>
+              <div><p className="text-gray-700"><strong>Download watermarked image:</strong> Prepare the watermarked image for download</p></div>
             </div>
           </div>
         </div>
@@ -484,9 +556,9 @@ export default function WatermarkImagePage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Image Watermarking</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-indigo-600 font-bold">•</span> Copyright protection - mark images with your name or brand</li>
-            <li className="flex gap-2"><span className="text-indigo-600 font-bold">•</span> Prevent theft - discourage unauthorized use of your images</li>
-            <li className="flex gap-2"><span className="text-indigo-600 font-bold">•</span> Brand consistency - add logos or company name to all images</li>
+            <li className="flex gap-2"><span className="text-indigo-600 font-bold">•</span> Attribution - mark images with your name or brand text</li>
+            <li className="flex gap-2"><span className="text-indigo-600 font-bold">•</span> Discourage reuse - make attribution visible on shared images</li>
+            <li className="flex gap-2"><span className="text-indigo-600 font-bold">•</span> Brand consistency - add your company name as text to images</li>
             <li className="flex gap-2"><span className="text-indigo-600 font-bold">•</span> Professional appearance - mark images as official or authentic</li>
             <li className="flex gap-2"><span className="text-indigo-600 font-bold">•</span> Social media branding - add watermarks to content for recognition</li>
           </ul>
@@ -495,64 +567,64 @@ export default function WatermarkImagePage() {
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 What text can I use for a watermark?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Any text up to 50 characters. Common options: © Year Name, Your Brand, Company Name, Photo Credit, or custom messages.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Any text up to 100 characters. Common options: © Year Name, Your Brand, Company Name, Photo Credit, or custom messages.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I watermark multiple images at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Currently this tool watermarks one image at a time. For batch watermarking, repeat the process for each image or use Batch Watermark tool.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Currently this tool watermarks one image at a time. For batch watermarking, repeat the process for each image or use Batch Watermark tool.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will watermarking affect image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, the underlying image quality is preserved. Output is JPG at 90% quality with the watermark overlaid.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The watermark is applied to the image and the result is encoded as JPG at 90% quality, so some JPEG compression can occur.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I remove a watermark I added?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Once applied, watermarks are permanent in the output image. Always keep your original unwatermarked image.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Once applied, watermarks are permanent in the output image. Always keep your original unwatermarked image.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What position is best for watermarks?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Bottom-right is most common and least intrusive. Use center for full protection. Position depends on your image composition.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Bottom-right is most common and least intrusive. Use center for a more prominent watermark. Position depends on your image composition.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is the watermark tool really free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Watermark as many images as you want, no signup required, no watermarks on output, no hidden costs.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>You can add a text watermark using the available controls without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}
@@ -565,7 +637,7 @@ export default function WatermarkImagePage() {
             "name": "What text can I use for a watermark?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Any text up to 50 characters like © Year Name, Brand, Company Name, or custom messages."
+              "text": "Any text up to 100 characters like © Year Name, Brand, Company Name, or custom messages."
             }
           },
           {
@@ -581,7 +653,7 @@ export default function WatermarkImagePage() {
             "name": "Will watermarking affect image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No, the underlying image quality is preserved at 90% JPG quality."
+              "text": "The result is encoded as JPG at 90% quality, so some JPEG compression can occur."
             }
           },
           {
@@ -597,7 +669,7 @@ export default function WatermarkImagePage() {
             "name": "What position is best for watermarks?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Bottom-right is most common. Use center for full protection. Position depends on your image composition."
+              "text": "Bottom-right is most common. Use center for a more prominent watermark. Position depends on your image composition."
             }
           },
           {
@@ -605,7 +677,7 @@ export default function WatermarkImagePage() {
             "name": "Is the watermark tool really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no hidden costs."
+              "text": "You can add a text watermark using the available controls without creating an account."
             }
           }
         ]

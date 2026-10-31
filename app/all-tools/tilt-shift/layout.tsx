@@ -1,8 +1,8 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Tilt Shift Effect - Free Online Miniature Focus Tool',
-  description: 'Create tilt-shift effect with selective focus. Transform photos into miniature-like images with depth-of-field blur.',
+  title: 'Tilt-Shift Effect - Create Selective Image Blur | SimplifyConvert',
+  description: 'Apply a tilt-shift-style selective blur effect in your browser to emphasize a focused region and soften surrounding areas.',
   keywords: ['tilt shift', 'selective focus', 'miniature effect', 'depth blur', 'photo effect', 'online tool'],
   openGraph: {
     title: 'Tilt Shift Effect - Free Online Miniature Focus Tool',

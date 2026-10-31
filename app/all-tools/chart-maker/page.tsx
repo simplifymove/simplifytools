@@ -1,10 +1,13 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp, BarChart3 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 type ChartType = 'bar' | 'line' | 'pie';
 
@@ -14,6 +17,7 @@ interface DataPoint {
 }
 
 export default function ChartMakerPage() {
+  const router = useRouter();
   const [chartType, setChartType] = useState<ChartType>('bar');
   const [title, setTitle] = useState('My Chart');
   const [data, setData] = useState<DataPoint[]>([
@@ -47,16 +51,32 @@ export default function ChartMakerPage() {
     setData(newData);
   };
 
-  const downloadChart = () => {
+  const downloadChart = async () => {
     const canvas = document.getElementById('chart-canvas') as HTMLCanvasElement;
-    if (canvas) {
-      const url = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${title.replace(/\s+/g, '_')}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (!canvas) return;
+
+    try {
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((generatedBlob) => {
+          if (generatedBlob) resolve(generatedBlob);
+          else reject(new Error('Unable to generate the chart image.'));
+        }, 'image/png');
+      });
+      const outputName = `${title.replace(/\s+/g, '_')}.png`;
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'chart-maker',
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
     }
   };
 
@@ -174,7 +194,7 @@ export default function ChartMakerPage() {
     let currentAngle = 0;
     data.forEach((point, i) => {
       const sliceAngle = (point.value / total) * Math.PI * 2;
-      
+
       ctx.fillStyle = `hsl(${(i * 360) / data.length}, 70%, 60%)`;
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
@@ -218,7 +238,7 @@ export default function ChartMakerPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Chart Maker</h1>
-                <p className="text-lg text-white/90">Create beautiful data visualizations with bar, line, and pie charts instantly.</p>
+                <p className="text-lg text-white/90">Create bar, line, and pie charts by entering labels and numeric values. Preview your chart and export it as a PNG image.</p>
               </div>
             </div>
           </div>
@@ -296,10 +316,10 @@ export default function ChartMakerPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">Features</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Multiple chart types</li>
-                      <li>• Custom data input</li>
+                      <li>• Manual label and value entry</li>
                       <li>• Instant preview</li>
                       <li>• Download as PNG</li>
-                      <li>• Professional design</li>
+                      <li>• 600 x 400 pixel chart export</li>
                     </ul>
                   </div>
                 </div>
@@ -309,7 +329,7 @@ export default function ChartMakerPage() {
             {/* Data Input Section */}
             <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Data Points</h2>
-              
+
               <div className="space-y-4">
                 {data.map((point, index) => (
                   <div key={index} className="flex gap-3 items-end">
@@ -370,7 +390,203 @@ export default function ChartMakerPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                How to create a chart online
+              </h2>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  ['1', 'Enter your data', 'Edit the sample data or manually add labels and numerical values. Spreadsheet and CSV file imports are not available.'],
+                  ['2', 'Choose a chart type', 'Select a bar, line, or pie chart depending on how you want to present the data.'],
+                  ['3', 'Preview and download', 'Review the Canvas preview, then select Download Chart to prepare a 600 x 400 PNG on the separate download page.'],
+                ].map(([step, title, text]) => (
+                  <div
+                    key={step}
+                    className="border border-gray-200 rounded-xl p-5"
+                  >
+                    <div className="font-bold text-blue-700 mb-2">
+                      Step {step}
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Which chart type should you use?
+                </h2>
+
+                <p className="text-gray-600 leading-7 mb-4">
+                  Different chart types communicate different kinds of
+                  information. Choosing a suitable format makes the data
+                  easier to understand.
+                </p>
+
+                <div className="space-y-3 text-gray-600 leading-7">
+                  <p>
+                    <strong className="text-gray-900">Bar chart:</strong>{' '}
+                    Compare values across categories such as products,
+                    departments, months, or survey responses.
+                  </p>
+
+                  <p>
+                    <strong className="text-gray-900">Line chart:</strong>{' '}
+                    Show how values change across an ordered sequence or period.
+                  </p>
+
+                  <p>
+                    <strong className="text-gray-900">Pie chart:</strong>{' '}
+                    Show how individual values contribute to a whole when the
+                    number of categories is manageable.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  What can you create with Chart Maker?
+                </h2>
+
+                <p className="text-gray-600 leading-7 mb-4">
+                  Chart Maker is useful when you have a small set of labels and
+                  numerical values and want a simple chart image for
+                  presentations, reports, or documents. Data is entered
+                  manually rather than imported from a spreadsheet.
+                </p>
+
+                <ul className="space-y-2 text-gray-600">
+                  <li>• Business and project reports</li>
+                  <li>• School and college assignments</li>
+                  <li>• Presentation graphics</li>
+                  <li>• Survey result visualizations</li>
+                  <li>• Simple performance comparisons</li>
+                  <li>• Informational graphics</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Tips for creating clear charts
+              </h2>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  {
+                    title: 'Use clear labels',
+                    text: 'Keep category names short and descriptive so the chart can be understood quickly.',
+                  },
+                  {
+                    title: 'Use comparable values',
+                    text: 'Use consistent units and preferably positive values. Zero, negative, or empty datasets may not render correctly with the current chart scaling.',
+                  },
+                  {
+                    title: 'Limit categories',
+                    text: 'Keep the number of categories manageable. Long labels or too many data points can overlap in the fixed-size chart.',
+                  },
+                  {
+                    title: 'Review before download',
+                    text: 'Check the title, labels, values, and chart type in the preview. The exported PNG uses a fixed 600 x 400 pixel canvas.',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="bg-slate-50 rounded-xl border border-slate-200 p-4"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-6">
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Chart Maker FAQ
+              </FAQHeading>
+
+              <FAQList>
+                {[
+                  {
+                    q: 'Which chart types are available?',
+                    a: 'You can create bar charts, line charts, and pie charts from the labels and values entered in the tool.',
+                  },
+                  {
+                    q: 'What format is the chart downloaded in?',
+                    a: 'The chart is exported as a 600 x 400 pixel PNG image. Selecting Download Chart uploads the generated PNG to the server to prepare a separate download page.',
+                  },
+                  {
+                    q: 'Do I need spreadsheet software?',
+                    a: 'No. Enter labels and numeric values manually in your browser. Direct CSV and Excel file imports are not supported.',
+                  },
+                  {
+                    q: 'Can I change the chart before downloading it?',
+                    a: 'Yes. Update the title, data points, or chart type and review the preview before downloading the final image.',
+                  },
+                ].map((item) => (
+                  <FAQCard key={item.q}>
+                    <FAQStaticQuestion>
+                      {item.q}
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{item.a}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Related data tools
+              </h2>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Link
+                  href="/all-tools/code-tools/json-formatter"
+                  className="border border-gray-200 rounded-xl p-5 hover:border-orange-400 transition"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    JSON Formatter
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Format and review structured JSON data.
+                  </p>
+                </Link>
+
+                <Link
+                  href="/all-tools/data/csv-to-excel"
+                  className="border border-gray-200 rounded-xl p-5 hover:border-orange-400 transition"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    CSV to Excel
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Convert CSV data into an Excel spreadsheet.
+                  </p>
+                </Link>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       {/* FOOTER */}
       <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
@@ -393,11 +609,17 @@ export default function ChartMakerPage() {
             <div>
               <h4 className="font-semibold text-white mb-4">Categories</h4>
               <ul className="space-y-2 text-sm">
-                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
+                {[
+                  { label: 'PDF Tools', href: '/all-tools/pdf-tools' },
+                  { label: 'Image Tools', href: '/all-tools/image-tools' },
+                  { label: 'Video Tools', href: '/all-tools/video-tools' },
+                  { label: 'AI Write', href: '/all-tools/ai-tools' },
+                  { label: 'Code Tools', href: '/all-tools/code-tools' },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -407,11 +629,17 @@ export default function ChartMakerPage() {
             <div>
               <h4 className="font-semibold text-white mb-4">Popular</h4>
               <ul className="space-y-2 text-sm">
-                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
+                {[
+                  { label: 'PDF to JPG', href: '/all-tools/pdf/pdf-to-jpg' },
+                  { label: 'Remove BG', href: '/all-tools/remove-background' },
+                  { label: 'Compress Image', href: '/all-tools/compress-image' },
+                  { label: 'JSON Formatter', href: '/all-tools/code-tools/json-formatter' },
+                  { label: 'CSV to Excel', href: '/all-tools/data/csv-to-excel' },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -448,8 +676,6 @@ export default function ChartMakerPage() {
     </>
   );
 }
-
-
 
 
 

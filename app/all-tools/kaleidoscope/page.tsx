@@ -1,34 +1,72 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function KaleidoscopePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [segments, setSegments] = useState(6);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultPreviewUrl, setResultPreviewUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!result) {
+      setResultPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(result);
+    setResultPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [result]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+
+    if (!selectedFile) return;
+
+    const allowed = /\.(jpe?g|png|webp)$/i.test(selectedFile.name) &&
+      ['image/jpeg', 'image/png', 'image/webp', ''].includes(selectedFile.type);
+
+    if (!allowed) {
+      setError('Please select a JPG, PNG, or WebP image.');
+      return;
     }
+
+    if (selectedFile.size === 0) {
+      setError('The selected image is empty.');
+      return;
+    }
+
+    setFile(selectedFile);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setPreview(event.target?.result as string);
+    };
+    reader.onerror = () => setError('Unable to read the selected image.');
+    reader.readAsDataURL(selectedFile);
   };
 
   const applyKaleidoscope = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processing) return;
     setProcessing(true);
+    setResult(null);
+    setError(null);
 
     try {
       const img = new Image();
@@ -52,14 +90,27 @@ export default function KaleidoscopePage() {
 
           const centerX = canvas.width / 2;
           const centerY = canvas.height / 2;
-          const radius = Math.sqrt(centerX * centerX + centerY * centerY);
+          const radius = Math.hypot(canvas.width, canvas.height);
+          const wedgeAngle = Math.PI / segments;
+          const totalWedges = segments * 2;
 
           ctx.save();
           ctx.translate(centerX, centerY);
 
-          for (let i = 0; i < segments; i++) {
+          for (let i = 0; i < totalWedges; i++) {
             ctx.save();
-            ctx.rotate((i * 2 * Math.PI) / segments);
+            ctx.rotate(i * wedgeAngle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, radius, 0, wedgeAngle);
+            ctx.closePath();
+            ctx.clip();
+
+            if (i % 2 === 1) {
+              ctx.rotate(wedgeAngle);
+              ctx.scale(1, -1);
+            }
+
             ctx.drawImage(img, -centerX, -centerY);
             ctx.restore();
           }
@@ -68,7 +119,7 @@ export default function KaleidoscopePage() {
 
           canvas.toBlob((blob) => {
             if (!blob) {
-              console.error('Failed to create blob');
+              setError('Unable to export the kaleidoscope image.');
               setProcessing(false);
               return;
             }
@@ -77,30 +128,50 @@ export default function KaleidoscopePage() {
           }, 'image/jpeg', 0.95);
         } catch (error) {
           console.error('Error in image onload:', error);
+          setError('Unable to process this image.');
           setProcessing(false);
         }
       };
       img.onerror = () => {
         console.error('Error loading image');
+        setError('The selected image could not be decoded.');
         setProcessing(false);
       };
       img.src = preview;
     } catch (error) {
       console.error('Error applying kaleidoscope:', error);
+      setError('Unable to apply the kaleidoscope effect.');
       setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `kaleidoscope-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'kaleidoscope',
+            originalName: `kaleidoscope-${Date.now()}.jpg`,
+            outputName: `kaleidoscope-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -129,12 +200,12 @@ export default function KaleidoscopePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Kaleidoscope Pattern</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                   onChange={handleFileSelect}
                   className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 transition"
                 />
@@ -151,7 +222,10 @@ export default function KaleidoscopePage() {
                       min="3"
                       max="12"
                       value={segments}
-                      onChange={(e) => setSegments(Number(e.target.value))}
+                      onChange={(e) => {
+                        setSegments(Number(e.target.value));
+                        setResult(null);
+                      }}
                       className="w-full"
                     />
                     <p className="text-sm text-gray-600 mt-2">3-12 pattern segments</p>
@@ -168,9 +242,25 @@ export default function KaleidoscopePage() {
                 </>
               )}
 
+              {error && (
+                <p role="alert" className="mb-4 text-sm text-red-600">{error}</p>
+              )}
+
+              {resultPreviewUrl && (
+                <div className="mb-4">
+                  <h3 className="font-semibold text-gray-800 mb-2">Kaleidoscope Preview</h3>
+                  <img
+                    src={resultPreviewUrl}
+                    alt="Generated mirrored kaleidoscope pattern"
+                    className="w-full max-h-96 object-contain rounded-lg border border-gray-200"
+                  />
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
+                  disabled={processing}
                   className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Download size={20} />
@@ -196,7 +286,7 @@ export default function KaleidoscopePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Symmetrical Patterns</h3>
-                  <p className="text-gray-700">Create perfect symmetrical designs.</p>
+                  <p className="text-gray-700">Create repeated symmetrical-style patterns from the source image.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Customizable Segments</h3>
@@ -214,35 +304,35 @@ export default function KaleidoscopePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What segments should I use?</summary>
-                  <p className="text-gray-700 mt-2">6 segments is classic. Lower for simple, higher for complex.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Detailed images create intricate patterns.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, kaleidoscope images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent pattern detail.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Different each time?</summary>
-                  <p className="text-gray-700 mt-2">Same image always generates same pattern.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What segments should I use?</FAQQuestion>
+                  <FAQAnswer>6 segments is classic. Lower for simple, higher for complex.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>JPG, PNG, and WebP images are supported. Detailed images can create more intricate-looking patterns.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, kaleidoscope images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>The processed pattern is exported as a JPEG.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Different each time?</FAQQuestion>
+                  <FAQAnswer>Same image always generates same pattern.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -266,7 +356,85 @@ export default function KaleidoscopePage() {
         </div>
 
         <Footer />
-      </main>
+
+        {/* Batch supporting content: kaleidoscope */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How kaleidoscope patterns are created
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The Kaleidoscope tool uses repeated rotated sections of the uploaded image around its center to produce a radial pattern. Changing the segment setting changes the number of repeated sections and therefore the structure of the resulting design. The finished pattern is exported as JPEG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  The downloaded file is JPEG encoded, so its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
+                <li>Review the generated pattern preview before downloading.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

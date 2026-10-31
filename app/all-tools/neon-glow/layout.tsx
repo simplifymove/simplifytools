@@ -2,11 +2,11 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Neon Glow Effect - Free Online Neon Lighting Tool',
-  description: 'Create vibrant neon lighting effects on your photos. Transform images with glowing neon colors and effects instantly.',
+  description: 'Apply neon-style lighting, glow, and color effects to photos online.',
   keywords: ['neon effect', 'glow effect', 'neon light', 'image effect', 'photo editor', 'online tool'],
   openGraph: {
     title: 'Neon Glow Effect - Free Online Neon Lighting Tool',
-    description: 'Create vibrant neon lighting effects on your photos instantly.',
+    description: 'Apply neon-style lighting and glow effects to photos online.',
     url: 'https://simplifyconvert.com/all-tools/neon-glow',
     type: 'website',
   },

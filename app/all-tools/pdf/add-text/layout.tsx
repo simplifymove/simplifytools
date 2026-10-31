@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Add Text to PDF - Free Online PDF Editor | SimplifyConvert',
   description:
-    'Add custom text to your PDF files online. Click to place, drag to adjust position, customize fonts and colors, then export your edited PDF.',
+    'Add text to a selected PDF page with controls for page number, X/Y position, font size, and color, then download the updated PDF.',
   keywords: ['add text to PDF', 'PDF editor', 'text overlay', 'free PDF tool', 'online PDF editor'],
   openGraph: {
     type: 'website',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     siteName: 'SimplifyConvert',
     title: 'Add Text to PDF - Free Online PDF Editor',
     description:
-      'Add custom text to your PDF files online. Click to place, drag to adjust, customize fonts and colors.',
+      'Add custom text to a PDF page using position, font size, and color settings.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Add Text to PDF - Free Online PDF Editor',
     description:
-      'Add custom text to your PDF files online. Click to place, drag to adjust, customize fonts and colors.',
+      'Add custom text to a PDF page using position, font size, and color settings.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
   alternates: {

@@ -1,54 +1,99 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
-import { compressImage } from '../../lib/imageTools';
+
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'batch-compress-images';
 const TOOL_NAME = 'Batch Compress Images';
 
 export default function BatchCompressImagesPage() {
+  const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [quality, setQuality] = useState(0.75);
   const [processing, setProcessing] = useState(false);
   const [completed, setCompleted] = useState(false);
-  const [results, setResults] = useState<Array<{ name: string; original: number; compressed: number }>>([]);
+  const [results, setResults] = useState<Array<{ name: string; original: number; compressed: number; blob: Blob }>>([]);
   const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (processing) return;
     const selectedFiles = Array.from(e.target.files || []);
-    setFiles(prev => [...prev, ...selectedFiles]);
+    setFiles(prev => [...prev, ...selectedFiles].slice(0, 100));
+    setCompleted(false);
+    setResults([]);
   };
 
   const handleRemoveFile = (index: number) => {
+    if (processing) return;
     setFiles(prev => prev.filter((_, i) => i !== index));
+    setCompleted(false);
+    setResults([]);
   };
 
   const handleClearAll = () => {
+    if (processing) return;
     setFiles([]);
     setCompleted(false);
     setResults([]);
   };
 
-  const handleCompress = async () => {
-    if (files.length === 0) return;
-    
-    setProcessing(true);
+  const compressToJpeg = async (file: File): Promise<Blob> => {
+    const bitmap = await createImageBitmap(file);
     try {
-      // Simulate batch compression with mock results
-      const compressionResults = files.map(file => ({
-        name: file.name,
-        original: file.size,
-        compressed: Math.floor(file.size * (1 - quality * 0.5))
-      }));
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not create canvas context');
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(bitmap, 0, 0);
+
+      return await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          blob => blob ? resolve(blob) : reject(new Error('JPEG compression failed')),
+          'image/jpeg',
+          quality
+        );
+      });
+    } finally {
+      bitmap.close();
+    }
+  };
+
+  const handleCompress = async () => {
+    if (files.length === 0 || processing) return;
+
+    setProcessing(true);
+    setCompleted(false);
+    setResults([]);
+    clearError();
+
+    try {
+      const compressionResults = [];
+
+      for (const file of files) {
+        const blob = await compressToJpeg(file);
+        compressionResults.push({
+          name: file.name,
+          original: file.size,
+          compressed: blob.size,
+          blob,
+        });
+      }
+
       setResults(compressionResults);
       setCompleted(true);
     } catch (error) {
@@ -65,24 +110,37 @@ export default function BatchCompressImagesPage() {
   };
 
   const handleDownloadAll = async () => {
-    for (let i = 0; i < files.length; i++) {
+    if (!completed || results.length === 0 || processing) return;
+
+    setProcessing(true);
+    clearError();
+    const additionalResultWindows = results.slice(1).map(() =>
+      window.open('about:blank', '_blank'),
+    );
+    let primaryDownloadPageUrl: string | null = null;
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
       const file = files[i];
       try {
-        // Call actual compressImage function from lib/imageTools
-        const result = await compressImage(file, quality);
-        const url = URL.createObjectURL(result.blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
         const newName = file.name.replace(/\.[^/.]+$/, '') + `-compressed-${Date.now()}.jpg`;
-        link.download = newName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Revoke the object URL to free memory
-        URL.revokeObjectURL(url);
+        const downloadResult = await uploadBrowserDownloadResult({
+          blob: result.blob,
+          toolSlug: TOOL_ID,
+          originalName: file.name,
+          outputName: newName,
+        });
+
+        if (!primaryDownloadPageUrl) {
+          primaryDownloadPageUrl = downloadResult.downloadPageUrl;
+        } else {
+          const resultWindow = additionalResultWindows.shift();
+          if (resultWindow) {
+            resultWindow.location.href = downloadResult.downloadPageUrl;
+          }
+        }
       } catch (error) {
+        additionalResultWindows.shift()?.close();
         createError(
           ImageToolErrorType.COMPRESSION_FAILED,
           TOOL_ID,
@@ -91,14 +149,27 @@ export default function BatchCompressImagesPage() {
           { filename: file.name, size: file.size, mimeType: file.type }
         );
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, 150));
+    }
+
+    additionalResultWindows.forEach((resultWindow) => resultWindow?.close());
+    setProcessing(false);
+
+    if (primaryDownloadPageUrl) {
+      router.push(primaryDownloadPageUrl);
     }
   };
 
   const totalOriginal = files.reduce((sum, f) => sum + f.size, 0);
   const totalCompressed = results.reduce((sum, r) => sum + r.compressed, 0);
-  const totalReduction = totalOriginal > 0 ? (((totalOriginal - totalCompressed) / totalOriginal) * 100).toFixed(1) : 0;
+  const sizeChangePercent = totalOriginal > 0
+    ? Math.abs((totalOriginal - totalCompressed) / totalOriginal * 100).toFixed(1)
+    : '0.0';
+  const sizeReduced = totalCompressed <= totalOriginal;
+  const savingsPercent = totalOriginal > 0
+    ? Math.max(0, Math.min(100, (totalOriginal - totalCompressed) / totalOriginal * 100))
+    : 0;
 
   return (
     <>
@@ -106,7 +177,7 @@ export default function BatchCompressImagesPage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-green-600 via-green-700 to-green-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -126,7 +197,7 @@ export default function BatchCompressImagesPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Batch Compress Images</h1>
-                <p className="text-lg text-white/90">Compress multiple images at once and reduce file sizes significantly. Perfect for bulk optimization. No signup required.</p>
+                <p className="text-lg text-white/90">Compress multiple supported images in one workflow with an adjustable quality setting. No signup is required.</p>
               </div>
             </div>
           </div>
@@ -140,7 +211,7 @@ export default function BatchCompressImagesPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Images</h2>
-                  
+
                   {/* File Upload Area */}
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-400 transition cursor-pointer mb-6">
                     <input
@@ -154,7 +225,7 @@ export default function BatchCompressImagesPage() {
                     <label htmlFor="file-input" className="cursor-pointer">
                       <Upload size={40} className="mx-auto text-gray-400 mb-3" />
                       <p className="text-lg font-semibold text-gray-700 mb-1">Click to upload or drag and drop</p>
-                      <p className="text-sm text-gray-500">PNG, JPG, WebP and other formats. Maximum 100 files.</p>
+                      <p className="text-sm text-gray-500">Choose up to 100 browser-supported images. All outputs are JPEG files.</p>
                     </label>
                   </div>
 
@@ -194,7 +265,7 @@ export default function BatchCompressImagesPage() {
                   {/* Compression Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Compression Settings</h3>
-                    
+
                     {/* Quality Slider */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -206,7 +277,13 @@ export default function BatchCompressImagesPage() {
                         max="1"
                         step="0.05"
                         value={quality}
-                        onChange={(e) => setQuality(parseFloat(e.target.value))}
+                        disabled={processing}
+                        onChange={(e) => {
+                          if (processing) return;
+                          setQuality(parseFloat(e.target.value));
+                          setCompleted(false);
+                          setResults([]);
+                        }}
                         className="w-full"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-2">
@@ -249,11 +326,11 @@ export default function BatchCompressImagesPage() {
                         <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
                           <div
                             className="h-full bg-green-500"
-                            style={{ width: `${Math.max(20, ((totalOriginal - totalCompressed) / totalOriginal) * 100)}%` }}
+                            style={{ width: `${savingsPercent}%` }}
                           />
                         </div>
                         <div className="text-center font-semibold text-green-600 text-xs">
-                          Reduced by {totalReduction}%
+                          {sizeReduced ? 'Reduced by' : 'Increased by'} {sizeChangePercent}%
                         </div>
                       </div>
                       <button
@@ -271,9 +348,9 @@ export default function BatchCompressImagesPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Compress up to 100 images</li>
-                      <li>• Process in your browser</li>
+                      <li>• Compress images in your browser</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• JPEG output; download preparation uploads the results</li>
                     </ul>
                   </div>
                 </div>
@@ -294,15 +371,15 @@ export default function BatchCompressImagesPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">2</div>
-              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose compression level from 10% (smallest) to 100% (best quality)</p></div>
+              <div><p className="text-gray-700"><strong>Adjust quality slider:</strong> Choose the compression quality setting from 10% to 100%. File size and visible quality depend on the source image and selected setting.</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Compress:</strong> Processing happens instantly in your browser with all images at once</p></div>
+              <div><p className="text-gray-700"><strong>Click Compress:</strong> Compress the selected images using the chosen quality setting</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download results:</strong> Save your compressed images as a batch in one click</p></div>
+              <div><p className="text-gray-700"><strong>Download results:</strong> Prepare the compressed images for download</p></div>
             </div>
           </div>
         </div>
@@ -313,75 +390,75 @@ export default function BatchCompressImagesPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits of Batch Image Compression</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Faster website loading - reduce server bandwidth and improve page speed significantly</li>
-            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Save storage space - reduce cloud storage costs by compressing hundreds of images</li>
-            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Optimize for social media - compress entire photo batches for Instagram, Facebook, Pinterest uploads</li>
-            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Bulk email attachments - send dozens of images via email without size restrictions</li>
-            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Archive entire folders - compress photo backups to save storage and improve accessibility</li>
+            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Prepare website images - smaller JPEG files may reduce transfer sizes when suitable for the page</li>
+            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Compare file sizes - check original and processed totals before deciding which files to keep</li>
+            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Prepare social media photos - create JPEG copies while checking each platform's format and size requirements</li>
+            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Prepare email attachments - smaller files may be easier to share, but attachment limits still apply</li>
+            <li className="flex gap-2"><span className="text-green-600 font-bold">•</span> Create JPEG copies - keep originals when transparency, animation, or maximum image quality matters</li>
           </ul>
         </div>
       </div>
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 How many images can I compress at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can compress up to 100 images in a single batch operation. Processing happens instantly in your browser, so larger batches may take slightly longer depending on image sizes.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>You can compress up to 100 images in a single batch operation. Processing time depends on the number, dimensions, and sizes of the selected images.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What quality setting should I use for batch compression?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">For web/social: 70-75%. For professional use: 85-90%. For maximum compression: 60-70%. All images in a batch use the same quality setting for consistency.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>There is no single quality setting that is best for every image. Lower settings generally favor smaller files, while higher settings generally retain more visual detail. Review the output and adjust the setting for your needs.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What file formats are supported for batch compression?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more. All images are compressed to optimal formats for web use.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The tool accepts images supported by your browser's image decoder and exports JPEG files. Transparent areas become white, and animations are not preserved. JPEG output can sometimes be larger than the original.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 How much space can I save with batch compression?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Typical savings are 30-70% depending on image content and quality settings. You'll see exact before/after sizes and percentage reduction after compression completes.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>File-size reduction varies with the source image, dimensions, format, and selected quality setting. Review the displayed before-and-after sizes after processing.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I download all compressed images at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes. Click "Download All" to download all compressed images. Your browser will download them individually with sequential delays to prevent blocking.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Click "Download All" to upload generated JPEG files to the download-result service and open a result page for each image. Your browser may block additional tabs, so allow pop-ups if needed.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is batch image compression really free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Compress as many image batches as you want, no signup required, no watermarks, no hidden costs.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>You can compress multiple supported images using the available batch controls without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}
@@ -402,7 +479,7 @@ export default function BatchCompressImagesPage() {
             "name": "What quality setting should I use for batch compression?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "For web/social: 70-75%. For professional use: 85-90%. For maximum compression: 60-70%."
+              "text": "There is no single quality setting that is best for every image. Lower settings generally favor smaller files, while higher settings generally retain more visual detail."
             }
           },
           {
@@ -410,7 +487,7 @@ export default function BatchCompressImagesPage() {
             "name": "What file formats are supported for batch compression?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more."
+              "text": "The tool accepts images supported by your browser decoder and exports JPEG files. Transparency becomes white, and animation is not preserved."
             }
           },
           {
@@ -418,7 +495,7 @@ export default function BatchCompressImagesPage() {
             "name": "How much space can I save with batch compression?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Typical savings are 30-70% depending on image content and quality settings."
+              "text": "File-size reduction varies with the source image, dimensions, format, and selected quality setting."
             }
           },
           {
@@ -426,7 +503,7 @@ export default function BatchCompressImagesPage() {
             "name": "Can I download all compressed images at once?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. Click Download All to download all compressed images individually."
+              "text": "Click Download All to upload generated JPEG files to the download-result service and open a result page for each image. Additional tabs may be blocked by your browser."
             }
           },
           {
@@ -434,7 +511,7 @@ export default function BatchCompressImagesPage() {
             "name": "Is batch image compression really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can compress multiple supported images using the available batch controls without creating an account."
             }
           }
         ]

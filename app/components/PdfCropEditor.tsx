@@ -16,6 +16,31 @@ interface CropBox {
   top: number;
 }
 
+const MIN_CROP_SPAN = 10;
+
+function clampCropBoxToPage(cropBox: CropBox, pageWidth: number, pageHeight: number): CropBox {
+  const maxRight = Math.max(Number.EPSILON, Math.floor(pageWidth));
+  const maxTop = Math.max(Number.EPSILON, Math.floor(pageHeight));
+  const minWidth = Math.min(MIN_CROP_SPAN, maxRight);
+  const minHeight = Math.min(MIN_CROP_SPAN, maxTop);
+  const left = Math.min(Math.max(0, cropBox.left), maxRight - minWidth);
+  const bottom = Math.min(Math.max(0, cropBox.bottom), maxTop - minHeight);
+
+  return {
+    left,
+    bottom,
+    right: Math.min(maxRight, Math.max(left + minWidth, cropBox.right)),
+    top: Math.min(maxTop, Math.max(bottom + minHeight, cropBox.top)),
+  };
+}
+
+function cropBoxesEqual(left: CropBox, right: CropBox): boolean {
+  return left.left === right.left
+    && left.bottom === right.bottom
+    && left.right === right.right
+    && left.top === right.top;
+}
+
 // Lazy load pdfjs-dist only in browser
 let pdfjsLib: any = null;
 const initPdfJs = async () => {
@@ -43,6 +68,9 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
   const [loading, setLoading] = useState(false);
   const [pageWidth, setPageWidth] = useState(LETTER_WIDTH);
   const [pageHeight, setPageHeight] = useState(LETTER_HEIGHT);
+  const loadingTaskRef = useRef<any>(null);
+  const renderTaskRef = useRef<any>(null);
+  const renderGenerationRef = useRef(0);
 
   const width = pdfDimensions?.width || pageWidth;
   const height = pdfDimensions?.height || pageHeight;
@@ -53,6 +81,7 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
     right: width,
     top: height,
   });
+  const cropBoxRef = useRef(cropBox);
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragType, setDragType] = useState<string>('');
@@ -66,6 +95,8 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
   // Load and render PDF
   useEffect(() => {
     if (!pdfFile) return;
+    let cancelled = false;
+    setPdfImage('');
 
     const loadPdf = async () => {
       try {
@@ -75,26 +106,72 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
           throw new Error('Failed to initialize PDF.js');
         }
         const arrayBuffer = await pdfFile.arrayBuffer();
-        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-        
+        if (cancelled) return;
+        const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
+        loadingTaskRef.current = loadingTask;
+        const pdf = await loadingTask.promise;
+        if (cancelled) {
+          await loadingTask.destroy();
+          return;
+        }
+
         setPdfDocument(pdf);
         setTotalPages(pdf.numPages);
         setCurrentPage(1);
         await renderPage(pdf, 1);
       } catch (error) {
-        console.error('Error loading PDF:', error);
+        if (!cancelled) {
+          console.error('Error loading PDF:', error);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
-    loadPdf();
+    void loadPdf();
+    return () => {
+      cancelled = true;
+      renderGenerationRef.current += 1;
+      renderTaskRef.current?.cancel();
+      renderTaskRef.current = null;
+      const loadingTask = loadingTaskRef.current;
+      loadingTaskRef.current = null;
+      if (loadingTask) {
+        void loadingTask.destroy().catch(() => undefined);
+      }
+    };
   }, [pdfFile]);
 
   const renderPage = async (pdf: { getPage: (num: number) => Promise<any> }, pageNum: number) => {
+    const generation = ++renderGenerationRef.current;
+    renderTaskRef.current?.cancel();
+    renderTaskRef.current = null;
+
     try {
       const page = await pdf.getPage(pageNum);
-      const viewport = page.getViewport({ scale: PREVIEW_WIDTH / page.getViewport({ scale: 1 }).width });
+      if (generation !== renderGenerationRef.current) return;
+      const actualViewport = page.getViewport({ scale: 1 });
+      const synchronizedCropBox = clampCropBoxToPage(
+        cropBoxRef.current,
+        actualViewport.width,
+        actualViewport.height,
+      );
+      cropBoxRef.current = synchronizedCropBox;
+      if (!cropBoxesEqual(cropBox, synchronizedCropBox)) {
+        setCropBox(synchronizedCropBox);
+      }
+      onCropChange([
+        synchronizedCropBox.left,
+        synchronizedCropBox.bottom,
+        synchronizedCropBox.right,
+        synchronizedCropBox.top,
+      ]);
+      setPageWidth(actualViewport.width);
+      setPageHeight(actualViewport.height);
+
+      const viewport = page.getViewport({ scale: PREVIEW_WIDTH / actualViewport.width });
       
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
@@ -103,16 +180,21 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
       const context = canvas.getContext('2d');
       if (!context) return;
 
-      await (page.render({ canvas, viewport }) as any).promise;
+      const renderTask = page.render({ canvasContext: context, viewport });
+      renderTaskRef.current = renderTask;
+      await renderTask.promise;
+      if (generation !== renderGenerationRef.current) return;
       
-      // Update page dimensions from actual PDF
-      setPageWidth(page.getViewport({ scale: 1 }).width);
-      setPageHeight(page.getViewport({ scale: 1 }).height);
-
       // Convert to data URL for display
       setPdfImage(canvas.toDataURL('image/png'));
     } catch (error) {
-      console.error('Error rendering page:', error);
+      if (generation === renderGenerationRef.current && (error as { name?: string })?.name !== 'RenderingCancelledException') {
+        console.error('Error rendering page:', error);
+      }
+    } finally {
+      if (generation === renderGenerationRef.current) {
+        renderTaskRef.current = null;
+      }
     }
   };
 
@@ -167,6 +249,7 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
       newCropBox.bottom = Math.max(0, Math.min(newCropBox.bottom, height));
       newCropBox.top = Math.max(0, Math.min(newCropBox.top, height));
 
+      cropBoxRef.current = newCropBox;
       setCropBox(newCropBox);
       setStartPos({ x: e.clientX, y: e.clientY });
     };
@@ -197,12 +280,14 @@ export function PdfCropEditor({ onCropChange, pdfFile, pdfDimensions }: CropEdit
     if (key === 'bottom') newCropBox.bottom = Math.min(newCropBox.bottom, newCropBox.top - 10);
     if (key === 'top') newCropBox.top = Math.max(newCropBox.top, newCropBox.bottom + 10);
 
+    cropBoxRef.current = newCropBox;
     setCropBox(newCropBox);
     onCropChange([newCropBox.left, newCropBox.bottom, newCropBox.right, newCropBox.top]);
   };
 
   const resetCrop = () => {
     const reset = { left: 0, bottom: 0, right: width, top: height };
+    cropBoxRef.current = reset;
     setCropBox(reset);
     onCropChange([reset.left, reset.bottom, reset.right, reset.top]);
   };

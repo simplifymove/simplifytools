@@ -1,87 +1,181 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Zap, FileText, X } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function PsdToSvgPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [quality, setQuality] = useState(85);
-  const [colorReduce, setColorReduce] = useState(true);
-  const [cornerThreshold, setCornerThreshold] = useState(100);
-  const [curveOptimize, setCurveOptimize] = useState(2);
   const [processing, setProcessing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  const abortRef = useRef<AbortController | null>(null);
+  const resultUrlRef = useRef<string | null>(null);
+  const generationRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      generationRef.current += 1;
+      abortRef.current?.abort();
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current);
+        resultUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  const clearResult = () => {
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+    setResult(null);
+    setResultFileName('');
+  };
+
   const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
+    generationRef.current += 1;
+    abortRef.current?.abort();
+    abortRef.current = null;
+    clearResult();
+    setProcessing(false);
+    setDownloading(false);
     setError(null);
-    // PSD files can't be displayed as images, so don't set preview
-    // Just acknowledge the file is selected
-    setPreview('psd-selected');
+    setFile(null);
+
+    if (!selectedFile.name.toLowerCase().endsWith('.psd')) {
+      setError('Please select a Photoshop PSD file.');
+      return;
+    }
+    if (selectedFile.size === 0) {
+      setError('The selected PSD file is empty.');
+      return;
+    }
+    if (selectedFile.size > 200 * 1024 * 1024) {
+      setError('PSD files must be 200MB or smaller.');
+      return;
+    }
+
+    setFile(selectedFile);
   };
 
   const handleClearPreview = () => {
+    generationRef.current += 1;
+    abortRef.current?.abort();
+    abortRef.current = null;
+    clearResult();
     setFile(null);
-    setPreview(null);
-    setResult(null);
+    setProcessing(false);
+    setDownloading(false);
     setError(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file || processing) return;
+
+    const generation = ++generationRef.current;
+    abortRef.current?.abort();
+    clearResult();
+
+    const controller = new AbortController();
+    abortRef.current = controller;
     setProcessing(true);
     setError(null);
+
     try {
       const formData = new FormData();
-      formData.append('image', file);
-      formData.append('config', JSON.stringify({ 
-        from_format: 'psd',
-        to_format: 'svg',
-        options: {
-          quality,
-          color_reduce: colorReduce,
-          corner_threshold: cornerThreshold,
-          curve_optimize: curveOptimize
-        }
-      }));
+      formData.append('file', file);
 
-      const response = await fetch('/api/convert', {
+      const response = await fetch('/api/convert/psd-to-svg', {
         method: 'POST',
         body: formData,
+        signal: controller.signal
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Conversion failed');
+        throw new Error(
+          response.status === 413
+            ? 'The PSD file exceeds the server upload limit.'
+            : 'PSD to SVG conversion failed. Please check the file and try again.'
+        );
       }
 
       const blob = await response.blob();
+
+      if (!blob.type.toLowerCase().includes('image/svg+xml')) {
+        throw new Error('The server did not return an SVG file.');
+      }
+
+      if (controller.signal.aborted ||
+          !mountedRef.current ||
+          generation !== generationRef.current) return;
+
       const url = URL.createObjectURL(blob);
+      resultUrlRef.current = url;
       setResult(url);
-      setResultFileName(`design.svg`);
+      setResultFileName(
+        file.name.replace(/\\.psd$/i, '') + '.svg'
+      );
     } catch (err) {
-      setError((err as Error).message || 'Error converting file');
+      if (!controller.signal.aborted &&
+          mountedRef.current &&
+          generation === generationRef.current) {
+        setError(
+          err instanceof Error ? err.message : 'Conversion failed.'
+        );
+      }
     } finally {
-      setProcessing(false);
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+      }
+      if (mountedRef.current && generation === generationRef.current) {
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = resultFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !resultFileName || downloading) return;
+
+    setDownloading(true);
+    setError(null);
+
+    try {
+      const blob = await fetch(result).then((response) => {
+        if (!response.ok) throw new Error('Unable to read the SVG file.');
+        return response.blob();
+      });
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'psd-to-svg',
+        originalName: resultFileName,
+        outputName: resultFileName
+      });
+
+      if (mountedRef.current) {
+        router.push(downloadResult.downloadPageUrl);
+      }
+    } catch {
+      if (mountedRef.current) {
+        setError('Unable to prepare the SVG download. Please try again.');
+      }
+    } finally {
+      if (mountedRef.current) setDownloading(false);
+    }
   };
 
   return (
@@ -106,8 +200,8 @@ export default function PsdToSvgPage() {
                 <Zap size={32} className="text-white" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to SVG Vectorizer</h1>
-                <p className="text-lg text-white/90">Convert Photoshop PSD designs to scalable SVG vector format. Perfect for logos, icons, and graphics that need to scale without quality loss.</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to SVG Converter</h1>
+                <p className="text-lg text-white/90">Convert a Photoshop PSD into an SVG container with the rendered PSD image embedded inside it.</p>
               </div>
             </div>
           </div>
@@ -121,7 +215,7 @@ export default function PsdToSvgPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload PSD File</h2>
-                  
+
                   {!file ? (
                     <ImageUploader
                       onFileSelect={handleFileSelect}
@@ -151,26 +245,26 @@ export default function PsdToSvgPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {file && (
                     <p className="mt-4 text-sm text-gray-600">
                       File: <span className="font-semibold text-gray-900">{file.name}</span>
                     </p>
                   )}
-                  
-                  {/* Industry Info */}
+
+                  {/* Conversion Info */}
                   <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <h4 className="font-semibold text-blue-900 mb-2">Rasterization</h4>
-                      <p className="text-sm text-blue-800">PSD is first rendered to PNG with adjustable quality</p>
+                      <h4 className="font-semibold text-blue-900 mb-2">PSD Rendering</h4>
+                      <p className="text-sm text-blue-800">The PSD is rendered as a raster image for the SVG output.</p>
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <h4 className="font-semibold text-green-900 mb-2">Vectorization</h4>
-                      <p className="text-sm text-green-800">PNG is traced to SVG using Potrace algorithm</p>
+                      <h4 className="font-semibold text-green-900 mb-2">SVG Container</h4>
+                      <p className="text-sm text-green-800">The rendered PNG image is embedded inside a standard SVG document.</p>
                     </div>
                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                      <h4 className="font-semibold text-purple-900 mb-2">Optimization</h4>
-                      <p className="text-sm text-purple-800">SVG output is optimized for clean curves and file size</p>
+                      <h4 className="font-semibold text-purple-900 mb-2">Important</h4>
+                      <p className="text-sm text-purple-800">This does not trace PSD artwork into editable vector paths.</p>
                     </div>
                   </div>
                 </div>
@@ -179,78 +273,13 @@ export default function PsdToSvgPage() {
               {/* Controls - Right (sticky sidebar) */}
               <div className="lg:col-span-1">
                 <div className="sticky top-4 space-y-4">
-                  {/* Options */}
+                  {/* Conversion */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">Vectorization Settings</h3>
-                    
-                    {/* Rasterization Quality */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Raster Quality: {quality}%
-                      </label>
-                      <input
-                        type="range"
-                        min="60"
-                        max="100"
-                        step="5"
-                        value={quality}
-                        onChange={(e) => setQuality(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Controls detail in rasterization step</p>
-                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-3">SVG Output</h3>
+                    <p className="text-xs text-gray-600 mb-4">
+                      The output is an SVG document containing an embedded raster image. It is not editable vector-path artwork.
+                    </p>
 
-                    {/* Color Reduce */}
-                    <div className="mb-6 flex items-center">
-                      <input
-                        type="checkbox"
-                        id="colorReduce"
-                        checked={colorReduce}
-                        onChange={(e) => setColorReduce(e.target.checked)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                      />
-                      <label htmlFor="colorReduce" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
-                        Reduce Colors (Recommended)
-                      </label>
-                    </div>
-                    <p className="text-xs text-gray-500 mb-4">Reduces to 256 colors for cleaner vectorization</p>
-
-                    {/* Corner Threshold */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Corner Threshold: {cornerThreshold}
-                      </label>
-                      <input
-                        type="range"
-                        min="50"
-                        max="200"
-                        step="10"
-                        value={cornerThreshold}
-                        onChange={(e) => setCornerThreshold(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Higher = smoother curves, fewer nodes</p>
-                    </div>
-
-                    {/* Curve Optimization */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Curve Optimization: {curveOptimize}
-                      </label>
-                      <select
-                        value={curveOptimize}
-                        onChange={(e) => setCurveOptimize(parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        <option value="0">Off</option>
-                        <option value="1">Level 1 (Light)</option>
-                        <option value="2">Level 2 (Standard)</option>
-                        <option value="3">Level 3 (Aggressive)</option>
-                      </select>
-                      <p className="text-xs text-gray-500 mt-1">Simplifies curves, reduces file size</p>
-                    </div>
-
-                    {/* Convert Button */}
                     <button
                       onClick={handleConvert}
                       disabled={!file || processing}
@@ -259,7 +288,7 @@ export default function PsdToSvgPage() {
                       {processing ? (
                         <>
                           <Loader size={18} className="animate-spin" />
-                          Vectorizing...
+                          Converting...
                         </>
                       ) : (
                         'Convert to SVG'
@@ -273,10 +302,15 @@ export default function PsdToSvgPage() {
                       <h3 className="font-semibold text-green-900 mb-3">✓ Conversion Complete</h3>
                       <button
                         onClick={handleDownload}
+                        disabled={downloading}
                         className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
                       >
-                        <Download size={18} />
-                        Download SVG File
+                        {downloading ? (
+                          <Loader size={18} className="animate-spin" />
+                        ) : (
+                          <Download size={18} />
+                        )}
+                        {downloading ? 'Preparing download...' : 'Download SVG File'}
                       </button>
                     </div>
                   )}
@@ -293,7 +327,167 @@ export default function PsdToSvgPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert PSD to SVG online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a Photoshop PSD file and click Convert to SVG. The PSD is
+                rendered as an image on the server and placed inside a standard
+                SVG document. When processing is complete, use the download
+                button to save the resulting SVG file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What happens during PSD to SVG conversion?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The converter renders the visible PSD design into a raster
+                  image and embeds that rendered image inside an SVG document.
+                  This provides an SVG-format container for the rendered design
+                  without tracing the artwork into vector paths.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Does PSD to SVG create editable vector paths?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  No. The resulting SVG contains an embedded raster rendering
+                  of the PSD. Shapes, text, and other artwork are not converted
+                  into individually editable SVG paths by this tool.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                PSD and SVG are different types of graphics
+              </h2>
+              <p className="text-gray-600 leading-7">
+                PSD is a Photoshop document format that can contain layers,
+                effects, text, masks, and other editing information. SVG is an
+                XML-based graphics format commonly used for web graphics. In
+                this conversion, the rendered appearance of the PSD is placed
+                inside the SVG rather than translating Photoshop editing data
+                into native SVG elements.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What happens to PSD layers?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The SVG output does not preserve Photoshop layers as separate
+                  editable SVG objects. The PSD is rendered for the conversion,
+                  so the output represents the visible design rather than the
+                  original layered editing structure.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  When is this conversion useful?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  It can be useful when you specifically need an SVG document
+                  containing the rendered appearance of a PSD. If you need true
+                  vector artwork with editable paths, use the original vector
+                  source when available or a dedicated tracing workflow.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Embedded raster SVG vs true vector SVG
+              </h2>
+              <p className="text-gray-600 leading-7">
+                An SVG file can contain vector shapes, but it can also contain
+                embedded raster images. This converter uses the second approach.
+                The file has the SVG format and structure, while the PSD artwork
+                inside it remains raster-based. Enlarging the embedded image
+                therefore does not provide the same resolution-independent
+                behavior as artwork made from native vector paths.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Check the SVG after conversion
+              </h2>
+              <p className="text-gray-600 leading-7">
+                After downloading the file, open it in a browser or compatible
+                graphics application and check the rendered appearance,
+                dimensions, transparency, text, effects, and other important
+                visual details. Complex Photoshop features may render
+                differently outside the original PSD editing environment.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                PSD to SVG FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Is the output a valid SVG file?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The converter returns an SVG document containing the
+                    rendered PSD image.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Will my Photoshop layers remain editable?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. Photoshop layers are not recreated as separate SVG
+                    objects in the downloaded file.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this tool vectorize logos or illustrations?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It does not trace the PSD artwork into editable vector
+                    paths. The rendered PSD image is embedded in the SVG.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Why might the converted file look different from Photoshop?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    PSD files can contain Photoshop-specific effects, fonts,
+                    blending behavior, and other features. Review the converted
+                    result when visual fidelity is important.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );

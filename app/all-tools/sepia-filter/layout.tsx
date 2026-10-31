@@ -1,6 +1,6 @@
 ﻿export const metadata = {
-  title: 'Free Sepia Filter - Classic Sepia Tone Photo Effects',
-  description: 'Add classic sepia tones to your photos. Create vintage-looking images with warm brown tones perfect for nostalgic effects.',
+  title: 'Sepia Filter - Create Warm Brown Image Tones | SimplifyConvert',
+  description: 'Apply a sepia-style warm brown tone to JPG, PNG, or WebP images directly in your browser and download the processed result.',
   keywords: 'sepia filter, sepia tone, vintage photo, brown tone, classic effect, photo editor',
   openGraph: {
     title: 'Free Sepia Filter - Classic Sepia Tone Photo Effects',

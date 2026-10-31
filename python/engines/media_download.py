@@ -81,6 +81,117 @@ class MediaDownloadEngine:
         except Exception as e:
             raise RuntimeError(f'Download failed: {str(e)}')
     
+    def download_youtube_audio_limited(self, url: str, output_dir: str) -> str:
+        """Download one short public YouTube video's audio with resource limits.
+
+        The caller must enforce request lifetime and network destination
+        protections before enabling this method for public traffic.
+        """
+        import yt_dlp
+        from yt_dlp.downloader.http import HttpFD
+        from security.url_safety import validate_youtube_video_url
+
+        canonical_url = validate_youtube_video_url(url)
+
+        destination = Path(output_dir)
+
+        if not destination.is_dir():
+            raise ValueError("Temporary output directory must already exist.")
+
+        max_duration = 15 * 60
+        max_bytes = 100 * 1024 * 1024
+
+        def reject_oversized_video(info, *, incomplete):
+            if not isinstance(info, dict):
+                return "Invalid YouTube video metadata."
+
+            if info.get("is_live") or info.get("live_status") in {
+                "is_live", "is_upcoming", "post_live"
+            }:
+                return "Live streams are not supported."
+
+            if info.get("_type") in {"playlist", "multi_video"}:
+                return "Playlists are not supported."
+
+            duration = info.get("duration")
+
+            if not isinstance(duration, (int, float)):
+                return "Video duration is unavailable."
+
+            if duration <= 0 or duration > max_duration:
+                return "Video exceeds the 15-minute duration limit."
+
+            size = info.get("filesize") or info.get("filesize_approx")
+
+            if isinstance(size, (int, float)) and size > max_bytes:
+                return "Video exceeds the 100 MB download limit."
+
+            return None
+
+        def enforce_download_size(status):
+            if status.get("status") != "downloading":
+                return
+
+            downloaded = status.get("downloaded_bytes", 0)
+
+            if downloaded > max_bytes:
+                raise RuntimeError("YouTube download exceeded 100 MB.")
+
+        ydl_opts = {
+            "format": "bestaudio[protocol=https]/bestaudio[protocol=http]",
+            "external_downloader": {"default": "native"},
+            "outtmpl": str(destination / "youtube_audio.%(ext)s"),
+            "noplaylist": True,
+            "playlistend": 1,
+            "max_filesize": max_bytes,
+            "match_filter": reject_oversized_video,
+            "progress_hooks": [enforce_download_size],
+            "socket_timeout": 15,
+            "retries": 1,
+            "fragment_retries": 1,
+            "extractor_retries": 1,
+            "quiet": True,
+            "no_warnings": True,
+            "ignoreerrors": False,
+            "skip_download": False,
+        }
+
+        class RestrictedYoutubeDL(yt_dlp.YoutubeDL):
+            def process_info(self, info_dict):
+                from yt_dlp.downloader import get_suitable_downloader
+
+                selected = get_suitable_downloader(
+                    info_dict.copy(),
+                    params=self.params,
+                )
+
+                if selected is not HttpFD:
+                    raise RuntimeError(
+                        "Unsupported YouTube download protocol."
+                    )
+
+                return super().process_info(info_dict)
+
+        with RestrictedYoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(canonical_url, download=True)
+
+            if not isinstance(info, dict):
+                raise RuntimeError("YouTube download returned no media.")
+
+            downloaded = Path(ydl.prepare_filename(info)).resolve()
+            destination_resolved = destination.resolve()
+
+            if downloaded.parent != destination_resolved:
+                raise RuntimeError("Unexpected YouTube download location.")
+
+            if not downloaded.is_file():
+                raise RuntimeError("Downloaded YouTube audio was not found.")
+
+            if downloaded.stat().st_size > max_bytes:
+                raise RuntimeError("YouTube download exceeded 100 MB.")
+
+            return str(downloaded)
+
     def process(self, tool_id: str, url: str, options: Dict[str, Any]) -> Dict[str, str]:
         """
         Process media download

@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Palette } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function HueSaturationPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [hue, setHue] = useState(0);
@@ -106,7 +110,7 @@ export default function HueSaturationPage() {
             const newS = Math.max(0, Math.min(100, s + saturation));
             const newL = Math.max(0, Math.min(100, l + lightness));
             const [r, g, b] = hslToRgb(newH, newS, newL);
-            
+
             data[i] = r;
             data[i + 1] = g;
             data[i + 2] = b;
@@ -138,16 +142,33 @@ export default function HueSaturationPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `hue-saturation-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'hue-saturation',
+            originalName: `hue-saturation-${Date.now()}.jpg`,
+            outputName: `hue-saturation-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -165,7 +186,7 @@ export default function HueSaturationPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Hue Saturation</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Adjust hue, saturation, and lightness independently. Fine-tune colors with precision control.
+              Adjust hue, saturation, and HSL lightness using three independent sliders. Apply the changes in your browser and export the result as a JPG.
             </p>
           </div>
         </div>
@@ -176,7 +197,7 @@ export default function HueSaturationPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Adjust Colors</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -259,9 +280,9 @@ export default function HueSaturationPage() {
               <ol className="space-y-4 text-gray-700">
                 <li><strong>1. Upload:</strong> Select a JPG, PNG, or WebP image.</li>
                 <li><strong>2. Adjust Hue:</strong> Shift colors from -180° to +180° for different color tones.</li>
-                <li><strong>3. Adjust Saturation:</strong> Increase intensity (-100 to +100%) for vivid or muted colors.</li>
-                <li><strong>4. Adjust Lightness:</strong> Change brightness (-100 to +100%) for darker or lighter tones.</li>
-                <li><strong>5. Apply & Download:</strong> Click "Apply Adjustments" then download your result.</li>
+                <li><strong>3. Adjust Saturation:</strong> Move the slider from -100 to +100 to reduce or increase color saturation.</li>
+                <li><strong>4. Adjust Lightness:</strong> Adjust HSL lightness from -100 to +100 for darker or lighter color values.</li>
+                <li><strong>5. Apply & Download:</strong> Click "Apply Adjustments", then "Download Adjusted Image" to prepare the JPG and continue to the download page.</li>
               </ol>
             </div>
 
@@ -274,12 +295,12 @@ export default function HueSaturationPage() {
                   <p className="text-gray-700">Adjust hue, saturation, and lightness separately for precision.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-violet-600 mb-2">Professional Results</h3>
-                  <p className="text-gray-700">Achieve color grading quality without expensive software.</p>
+                  <h3 className="font-bold text-lg text-violet-600 mb-2">Adjustable Results</h3>
+                  <p className="text-gray-700">Make basic global color adjustments without installing desktop editing software.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-violet-600 mb-2">Instant Preview</h3>
-                  <p className="text-gray-700">See changes in real-time as you adjust sliders.</p>
+                  <h3 className="font-bold text-lg text-violet-600 mb-2">Browser-Based Editing</h3>
+                  <p className="text-gray-700">Apply the selected slider values to generate a processed JPG. The page does not display a separate edited-image preview.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-violet-600 mb-2">100% Free</h3>
@@ -289,35 +310,35 @@ export default function HueSaturationPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between these three adjustments?</summary>
-                  <p className="text-gray-700 mt-2">Hue shifts color tones, Saturation controls color intensity, and Lightness adjusts brightness.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I desaturate colors completely?</summary>
-                  <p className="text-gray-700 mt-2">Yes, set saturation to -100% to remove all color and create grayscale images.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What hue values produce what colors?</summary>
-                  <p className="text-gray-700 mt-2">0° is red, 120° is green, 240° is blue. Values between shift between these colors.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I undo changes?</summary>
-                  <p className="text-gray-700 mt-2">Upload again to reset. Each upload is independent with no persistent changes.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser. Images never reach our servers.</p>
-                </details>
-                <details className="border-l-4 border-violet-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What image formats work?</summary>
-                  <p className="text-gray-700 mt-2">JPG, PNG, WebP, BMP, TIFF, and most standard image formats are supported.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the difference between these three adjustments?</FAQQuestion>
+                  <FAQAnswer>Hue shifts color tones, Saturation controls color intensity, and Lightness adjusts brightness.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I desaturate colors completely?</FAQQuestion>
+                  <FAQAnswer>Yes. Setting saturation to -100 reduces each pixel's HSL saturation to zero, producing grayscale color values in the exported image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What hue values produce what colors?</FAQQuestion>
+                  <FAQAnswer>0° is red, 120° is green, 240° is blue. Values between shift between these colors.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I undo changes?</FAQQuestion>
+                  <FAQAnswer>The original uploaded file is not overwritten. You can return the sliders to zero or reload the page to start over. Selecting another file does not automatically reset the sliders or clear an earlier result.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my data private?</FAQQuestion>
+                  <FAQAnswer>Hue and saturation adjustments run in your browser. When you download the result, the generated image is uploaded to our server for temporary download preparation.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What image formats work?</FAQQuestion>
+                  <FAQAnswer>JPG, PNG, and WebP are common inputs when supported by your browser. Other formats depend on browser decoding support. The processed download is a JPG, so transparency is not retained.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -325,7 +346,7 @@ export default function HueSaturationPage() {
               <div className="grid md:grid-cols-3 gap-4">
                 <Link href="/all-tools/color-grader" className="p-4 border-2 border-violet-200 rounded-lg hover:bg-violet-50 transition">
                   <h3 className="font-bold text-gray-800">Color Grader</h3>
-                  <p className="text-sm text-gray-600">Professional color grading</p>
+                  <p className="text-sm text-gray-600">Color adjustment controls</p>
                 </Link>
                 <Link href="/all-tools/image-enhancer" className="p-4 border-2 border-violet-200 rounded-lg hover:bg-violet-50 transition">
                   <h3 className="font-bold text-gray-800">Image Enhancer</h3>
@@ -341,7 +362,82 @@ export default function HueSaturationPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How hue and saturation adjustment works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Upload an image and adjust hue, saturation, and lightness.
+                The browser recalculates image color values according to the
+                selected controls when you click Apply Adjustments. The processed JPG is not displayed in a separate preview.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The source image is loaded in the browser, but the processed result is not shown in a separate preview before download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Hue shifts colors around the color spectrum, saturation changes color intensity, and lightness adjusts overall tonal brightness.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate adjustments and inspect the downloaded JPG. Strong saturation or lightness changes may clip color values or remove subtle tonal differences. JPG export can also introduce compression artifacts.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Hue and Saturation: Additional Questions
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview changes before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No separate processed-image preview is displayed. Choose your slider settings, apply the adjustment, and download the JPG to inspect the result.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

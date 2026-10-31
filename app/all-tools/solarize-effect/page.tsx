@@ -1,108 +1,196 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function SolarizeEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(50);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const operationId = useRef(0);
+  const processingRef = useRef(false);
+  const downloadBusy = useRef(false);
+  const [error, setError] = useState('');
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      operationId.current += 1;
+    };
+  }, []);
+
+  const invalidateResult = () => {
+    operationId.current += 1;
+    setResult(null);
+    setResultPreview(null);
+    setError('');
+    setProcessing(false);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
+
+    if (!selectedFile) return;
+
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please select a supported image file.');
+      return;
     }
+
+    const currentId = operationId.current;
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (currentId !== operationId.current) return;
+
+      if (typeof reader.result !== 'string') {
+        setError('Unable to read the selected image.');
+        return;
+      }
+
+      setFile(selectedFile);
+      setPreview(reader.result);
+    };
+
+    reader.onerror = () => {
+      if (currentId === operationId.current) {
+        setError('Unable to read the selected image.');
+      }
+    };
+
+    reader.readAsDataURL(selectedFile);
   };
 
   const applySolarizeEffect = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processingRef.current || downloadBusy.current) return;
+
+    const currentId = ++operationId.current;
+    processingRef.current = true;
     setProcessing(true);
+    setResult(null);
+    setResultPreview(null);
+    setError('');
 
     try {
       const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setProcessing(false);
-            return;
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Unable to load the image.'));
+        img.src = preview;
+      });
+
+      if (currentId !== operationId.current) return;
+
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('Image canvas is unavailable.');
+
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Unable to initialize image processing.');
+
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(
+        0, 0, canvas.width, canvas.height
+      );
+      const data = imageData.data;
+
+      const factor = intensity / 100;
+      const threshold = 128;
+
+      for (let i = 0; i < data.length; i += 4) {
+        for (let channel = 0; channel < 3; channel++) {
+          const index = i + channel;
+          const original = data[index];
+
+          if (original > threshold) {
+            data[index] = Math.round(
+              (255 - original) * factor +
+              original * (1 - factor)
+            );
           }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setProcessing(false);
-            return;
-          }
-
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
-
-          const factor = intensity / 100;
-          const threshold = 128;
-
-          for (let i = 0; i < data.length; i += 4) {
-            // Solarize: invert colors above threshold
-            if (data[i] > threshold) {
-              data[i] = Math.floor((255 - data[i]) * factor + data[i] * (1 - factor));
-            }
-            if (data[i + 1] > threshold) {
-              data[i + 1] = Math.floor((255 - data[i + 1]) * factor + data[i + 1] * (1 - factor));
-            }
-            if (data[i + 2] > threshold) {
-              data[i + 2] = Math.floor((255 - data[i + 2]) * factor + data[i + 2] * (1 - factor));
-            }
-          }
-
-          ctx.putImageData(imageData, 0, 0);
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
-              return;
-            }
-            setResult(blob);
-            setProcessing(false);
-          }, 'image/jpeg', 0.95);
-        } catch (error) {
-          console.error('Error in image onload:', error);
-          setProcessing(false);
         }
-      };
-      img.onerror = () => {
-        console.error('Error loading image');
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          value => {
+            if (value) resolve(value);
+            else reject(new Error('Unable to create the solarized image.'));
+          },
+          'image/jpeg',
+          0.95
+        );
+      });
+
+      if (currentId !== operationId.current) return;
+
+      setResult(blob);
+      setResultPreview(canvas.toDataURL('image/jpeg', 0.85));
+    } catch (caughtError) {
+      if (currentId !== operationId.current) return;
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to apply the solarize effect.'
+      );
+    } finally {
+      processingRef.current = false;
+      if (currentId === operationId.current) {
         setProcessing(false);
-      };
-      img.src = preview;
-    } catch (error) {
-      console.error('Error applying solarize effect:', error);
-      setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `solarize-effect-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing || processingRef.current || downloadBusy.current) return;
+      downloadBusy.current = true;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'solarize-effect',
+            originalName: 'solarize-effect.jpg',
+            outputName: 'solarize-effect.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        downloadBusy.current = false;
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -131,7 +219,7 @@ export default function SolarizeEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Solarize Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -153,7 +241,10 @@ export default function SolarizeEffectPage() {
                       min="0"
                       max="100"
                       value={intensity}
-                      onChange={(e) => setIntensity(Number(e.target.value))}
+                      onChange={(e) => {
+                        invalidateResult();
+                        setIntensity(Number(e.target.value));
+                      }}
                       className="w-full"
                     />
                     <p className="text-sm text-gray-600 mt-2">0 = original, 100 = full solarization</p>
@@ -170,9 +261,29 @@ export default function SolarizeEffectPage() {
                 </>
               )}
 
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+
+              {resultPreview && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    Solarized Image Preview
+                  </h3>
+                  <img
+                    src={resultPreview}
+                    alt="Preview of the solarized image"
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
+                  disabled={processing}
                   className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Download size={20} />
@@ -216,35 +327,35 @@ export default function SolarizeEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-orange-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is solarization?</summary>
-                  <p className="text-gray-700 mt-2">Solarization inverts tones above threshold for artistic effect.</p>
-                </details>
-                <details className="border-l-4 border-orange-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity to use?</summary>
-                  <p className="text-gray-700 mt-2">50% for balanced. Higher for more dramatic effect.</p>
-                </details>
-                <details className="border-l-4 border-orange-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo format.</p>
-                </details>
-                <details className="border-l-4 border-orange-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, solarized images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-orange-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-orange-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Original photo look?</summary>
-                  <p className="text-gray-700 mt-2">Can adjust intensity from 0% for original.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is solarization?</FAQQuestion>
+                  <FAQAnswer>Solarization inverts tones above threshold for artistic effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity to use?</FAQQuestion>
+                  <FAQAnswer>50% for balanced. Higher for more dramatic effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>The upload control supports JPG, PNG, and WebP images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on the rights and permissions associated with your original image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Original photo look?</FAQQuestion>
+                  <FAQAnswer>Can adjust intensity from 0% for original.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -268,7 +379,85 @@ export default function SolarizeEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        {/* Batch supporting content: solarize-effect */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the solarization effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The Solarize Effect evaluates the image's color channels against a tonal threshold and modifies values above that threshold. The intensity setting controls the strength of the transformation. This produces a stylized solarized appearance rather than reproducing a physical photographic darkroom process.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  The downloaded file is JPEG encoded, so its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
+                <li>Review the processed preview before downloading and compare it with your original image.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

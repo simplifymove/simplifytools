@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function SwirlDistortionPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [angle, setAngle] = useState(45);
@@ -14,114 +18,202 @@ export default function SwirlDistortionPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const operationId = useRef(0);
+  const processingRef = useRef(false);
+  const downloadBusy = useRef(false);
+  const [error, setError] = useState('');
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      operationId.current += 1;
+    };
+  }, []);
+
+  const invalidateResult = () => {
+    operationId.current += 1;
+    setResult(null);
+    setResultPreview(null);
+    setError('');
+    setProcessing(false);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
+
+    if (!selectedFile) return;
+
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please select a supported image file.');
+      return;
     }
+
+    const currentId = operationId.current;
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (currentId !== operationId.current) return;
+
+      if (typeof reader.result !== 'string') {
+        setError('Unable to read the selected image.');
+        return;
+      }
+
+      setFile(selectedFile);
+      setPreview(reader.result);
+    };
+
+    reader.onerror = () => {
+      if (currentId === operationId.current) {
+        setError('Unable to read the selected image.');
+      }
+    };
+
+    reader.readAsDataURL(selectedFile);
   };
 
   const applySwirlDistortion = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processingRef.current || downloadBusy.current) return;
+
+    const currentId = ++operationId.current;
+    processingRef.current = true;
     setProcessing(true);
+    setResult(null);
+    setResultPreview(null);
+    setError('');
 
     try {
       const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setProcessing(false);
-            return;
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Unable to load the image.'));
+        img.src = preview;
+      });
+
+      if (currentId !== operationId.current) return;
+
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('Image canvas is unavailable.');
+
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Unable to initialize image processing.');
+
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const output = imageData.data;
+      const source = new Uint8ClampedArray(output);
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const maxRadius = (radius / 100) * Math.min(centerX, centerY);
+      const radians = (angle * Math.PI) / 180;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const dx = x - centerX;
+          const dy = y - centerY;
+          const distance = Math.hypot(dx, dy);
+
+          if (distance >= maxRadius) continue;
+
+          const strength = 1 - distance / maxRadius;
+          const swirl = strength * radians;
+          const cos = Math.cos(swirl);
+          const sin = Math.sin(swirl);
+
+          const sampleX = centerX + dx * cos - dy * sin;
+          const sampleY = centerY + dx * sin + dy * cos;
+
+          const sx = Math.round(sampleX);
+          const sy = Math.round(sampleY);
+
+          if (sx < 0 || sx >= width || sy < 0 || sy >= height) {
+            continue;
           }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setProcessing(false);
-            return;
-          }
 
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
+          const index = (y * width + x) * 4;
+          const sourceIndex = (sy * width + sx) * 4;
 
-          const centerX = canvas.width / 2;
-          const centerY = canvas.height / 2;
-          const maxRadius = (radius / 100) * Math.min(centerX, centerY);
-          const radians = (angle * Math.PI) / 180;
-
-          for (let y = 0; y < canvas.height; y++) {
-            for (let x = 0; x < canvas.width; x++) {
-              const dx = x - centerX;
-              const dy = y - centerY;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-
-              if (distance < maxRadius) {
-                const strength = 1 - distance / maxRadius;
-                const swirl = strength * radians;
-
-                const cos = Math.cos(swirl);
-                const sin = Math.sin(swirl);
-
-                const sampleX = centerX + dx * cos - dy * sin;
-                const sampleY = centerY + dx * sin + dy * cos;
-
-                if (sampleX >= 0 && sampleX < canvas.width && sampleY >= 0 && sampleY < canvas.height) {
-                  const idx = (y * canvas.width + x) * 4;
-                  const sampleIdx = (Math.floor(sampleY) * canvas.width + Math.floor(sampleX)) * 4;
-
-                  data[idx] = data[sampleIdx];
-                  data[idx + 1] = data[sampleIdx + 1];
-                  data[idx + 2] = data[sampleIdx + 2];
-                  data[idx + 3] = data[sampleIdx + 3];
-                }
-              }
-            }
-          }
-
-          ctx.putImageData(imageData, 0, 0);
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
-              return;
-            }
-            setResult(blob);
-            setProcessing(false);
-          }, 'image/jpeg', 0.95);
-        } catch (error) {
-          console.error('Error in image onload:', error);
-          setProcessing(false);
+          output[index] = source[sourceIndex];
+          output[index + 1] = source[sourceIndex + 1];
+          output[index + 2] = source[sourceIndex + 2];
+          output[index + 3] = source[sourceIndex + 3];
         }
-      };
-      img.onerror = () => {
-        console.error('Error loading image');
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          value => {
+            if (value) resolve(value);
+            else reject(new Error('Unable to create the swirled image.'));
+          },
+          'image/jpeg',
+          0.95
+        );
+      });
+
+      if (currentId !== operationId.current) return;
+
+      setResult(blob);
+      setResultPreview(canvas.toDataURL('image/jpeg', 0.85));
+    } catch (caughtError) {
+      if (currentId !== operationId.current) return;
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to apply swirl distortion.'
+      );
+    } finally {
+      processingRef.current = false;
+      if (currentId === operationId.current) {
         setProcessing(false);
-      };
-      img.src = preview;
-    } catch (error) {
-      console.error('Error applying swirl distortion:', error);
-      setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `swirl-distortion-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing || processingRef.current || downloadBusy.current) return;
+      downloadBusy.current = true;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'swirl-distortion',
+            originalName: 'swirl-distortion.jpg',
+            outputName: 'swirl-distortion.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        downloadBusy.current = false;
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -150,7 +242,7 @@ export default function SwirlDistortionPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Swirl Distortion</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -173,7 +265,10 @@ export default function SwirlDistortionPage() {
                         min="0"
                         max="360"
                         value={angle}
-                        onChange={(e) => setAngle(Number(e.target.value))}
+                        onChange={(e) => {
+                          invalidateResult();
+                          setAngle(Number(e.target.value));
+                        }}
                         className="w-full"
                       />
                     </div>
@@ -186,7 +281,10 @@ export default function SwirlDistortionPage() {
                         min="10"
                         max="100"
                         value={radius}
-                        onChange={(e) => setRadius(Number(e.target.value))}
+                        onChange={(e) => {
+                          invalidateResult();
+                          setRadius(Number(e.target.value));
+                        }}
                         className="w-full"
                       />
                     </div>
@@ -203,9 +301,29 @@ export default function SwirlDistortionPage() {
                 </>
               )}
 
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+
+              {resultPreview && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    Swirl Distortion Preview
+                  </h3>
+                  <img
+                    src={resultPreview}
+                    alt="Preview of the image with swirl distortion applied"
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
+                  disabled={processing}
                   className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Download size={20} />
@@ -221,7 +339,8 @@ export default function SwirlDistortionPage() {
                 <li><strong>1. Upload Photo:</strong> Select a JPG, PNG, or WebP image.</li>
                 <li><strong>2. Set Angle:</strong> Choose swirl rotation angle (0-360°).</li>
                 <li><strong>3. Set Radius:</strong> Control swirl area size (10-100%).</li>
-                <li><strong>4. Download:</strong> Save your swirled image.</li>
+                <li><strong>4. Apply Effect:</strong> Generate and review the swirled preview.</li>
+                <li><strong>5. Download:</strong> Save your swirled image.</li>
               </ol>
             </div>
 
@@ -249,35 +368,35 @@ export default function SwirlDistortionPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What angle should I use?</summary>
-                  <p className="text-gray-700 mt-2">45-90° for balanced swirl. Higher for more intense.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What radius works best?</summary>
-                  <p className="text-gray-700 mt-2">50% covers center. Higher includes more area.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, swirl images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-teal-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Smooth distortion?</summary>
-                  <p className="text-gray-700 mt-2">Yes, smooth vortex transformation.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What angle should I use?</FAQQuestion>
+                  <FAQAnswer>45-90° for balanced swirl. Higher for more intense.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What radius works best?</FAQQuestion>
+                  <FAQAnswer>50% covers center. Higher includes more area.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>The upload control supports JPG, PNG, and WebP images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on the rights and permissions associated with your original image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Smooth distortion?</FAQQuestion>
+                  <FAQAnswer>The swirl uses pixel sampling to create a vortex effect. Fine details may show some pixelation, especially at stronger settings.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -301,7 +420,85 @@ export default function SwirlDistortionPage() {
         </div>
 
         <Footer />
-      </main>
+
+        {/* Batch supporting content: swirl-distortion */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How swirl distortion changes an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The Swirl Distortion tool remaps pixels around the center of the image. The angle controls the amount of rotation, while the radius determines how much of the image participates in the transformation. Pixels farther from the affected center receive progressively less distortion.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  The downloaded file is JPEG encoded, so its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
+                <li>Compare the processed preview with the source before downloading.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

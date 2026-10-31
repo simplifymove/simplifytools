@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { HomeHeader } from '@/app/components/HomeHeader'
 import { Footer } from '@/app/components/Footer'
+import { getSafeInternalCallbackPath, getSignUpPath } from '@/lib/auth/redirect'
 
 function SignInContent() {
   const router = useRouter()
@@ -18,8 +19,9 @@ function SignInContent() {
   const [formError, setFormError] = useState('')
   const error = searchParams?.get('error')
   
-  // Read callbackUrl from query params, default to /account
-  const callbackUrl = searchParams?.get('callbackUrl') || '/account'
+  const callbackUrl = getSafeInternalCallbackPath(
+    searchParams?.get('callbackUrl'),
+  )
 
   const handleEmailSignIn = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -202,7 +204,10 @@ function SignInContent() {
 
           <p className="text-center text-gray-600">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link
+              href={getSignUpPath(callbackUrl)}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
               Create Account
             </Link>
           </p>

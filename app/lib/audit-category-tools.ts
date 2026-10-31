@@ -3,7 +3,7 @@ import { allTools, financialTools, resumeTools, downloaderTools } from '@/app/da
 import { getAllTools as getAllCodeTools } from '@/app/lib/code-tools';
 import { dataTools } from '@/app/lib/data-tools';
 import { getAllPdfTools } from '@/app/lib/pdf-tools';
-import { getAllTools as getAllVideoTools } from '@/app/lib/video-tools';
+import { getAllTools as getAllVideoTools, type VideoTool } from '@/app/lib/video-tools';
 
 export type AuditCategoryId =
   | 'ai-writing-tools'
@@ -71,6 +71,7 @@ export interface FunctionalAuditContract {
     selector: string;
     apiEndpoint?: string;
     noTextSuccessMessages?: string[];
+    timeoutMs?: number;
   };
   inactiveReason?: string;
   executionClass?: AuditExecutionClass;
@@ -126,7 +127,7 @@ function outputContract(extension?: string): FunctionalExpectedOutput | undefine
     extension: normalized,
     mimeType: MIME_TYPES[normalized],
     minSizeBytes: ['.txt', '.csv', '.html', '.rtf'].includes(normalized) ? 1 : 32,
-    signature: normalized === '.pdf' ? 'pdf' : normalized === '.zip' ? 'zip' : normalized.startsWith('.doc') || normalized.startsWith('.xls') || normalized.startsWith('.ppt') ? 'office' : MIME_TYPES[normalized]?.startsWith('image/') ? 'image' : MIME_TYPES[normalized]?.startsWith('audio/') || MIME_TYPES[normalized]?.startsWith('video/') ? 'media' : 'text',
+    signature: normalized === '.pdf' ? 'pdf' : ['.zip', '.epub'].includes(normalized) ? 'zip' : normalized.startsWith('.doc') || normalized.startsWith('.xls') || normalized.startsWith('.ppt') ? 'office' : MIME_TYPES[normalized]?.startsWith('image/') ? 'image' : MIME_TYPES[normalized]?.startsWith('audio/') || MIME_TYPES[normalized]?.startsWith('video/') ? 'media' : 'text',
   };
 }
 
@@ -136,6 +137,21 @@ function externalClass(requiredEnvironmentVariables: string[], paidProvider = fa
     ? 'EXTERNAL_CONFIGURED'
     : 'EXTERNAL_NOT_CONFIGURED';
 }
+
+const auditVideoTools: VideoTool[] = [
+  ...getAllVideoTools(),
+  {
+    id: 'text-to-video',
+    title: 'AI Text to Video',
+    description: 'Generate a video from a text prompt with an external AI provider',
+    engine: 'edit',
+    category: 'editing',
+    accepts: [],
+    outputType: '.mp4',
+    inputMethod: 'file',
+    options: [],
+  },
+];
 
 function codeAuditInput(toolId: string): string {
   if (toolId === 'code-minifier' || toolId === 'code-beautifier') return 'const audit = { name: "SimplifyConvert", active: true }; console.log(audit.name);';
@@ -186,7 +202,7 @@ function mapDataTools(): AuditToolTarget[] {
     strategy: 'file',
     fixtures: fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : [],
     optionValues: Object.fromEntries(tool.options.filter((option) => option.required).map((option) => [option.name, option.default ?? (option.name === 'itemTag' ? 'item' : '1')])),
-    resultFlow: 'download',
+    resultFlow: 'download-page',
     expectedOutput: outputContract(tool.output),
   }));
 }
@@ -242,19 +258,19 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
   {
     id: 'pdf-tools',
     name: 'PDF Tools',
-    tools: getAllPdfTools().map((tool) => withRoute(tool, `/all-tools/pdf/${tool.id}`, tool.id === 'add-text' ? {
-      strategy: 'inactive', resultFlow: 'none', inactiveReason: 'Canonical entry currently renders a Coming Soon page and has no executable workflow.',
-      executionClass: 'EXTERNAL_NOT_CONFIGURED',
-    } : {
+    tools: getAllPdfTools().map((tool) => withRoute(tool, `/all-tools/pdf/${tool.id}`, {
       strategy: tool.id === 'edit-pdf' ? 'pdf-editor' : tool.id === 'annotate-pdf' ? 'pdf-annotate' : tool.id === 'esign-pdf' ? 'pdf-esign' : tool.id === 'rearrange-pdf' ? 'pdf-rearrange' : tool.inputMode === 'url' ? 'url' : 'file',
       fixtures: tool.id === 'merge-pdf' ? ['tests/fixtures/pdf/simple.pdf', 'tests/fixtures/pdf/multi-page.pdf']
         : tool.id === 'rearrange-pdf' ? ['tests/fixtures/pdf/multi-page.pdf']
+        : ['extract-tables-from-pdf', 'pdf-to-csv'].includes(tool.id) ? ['tests/fixtures/pdf/table.pdf']
         : tool.id === 'create-pdf' ? ['tests/fixtures/images/sample.png']
         : tool.id === 'unlock-pdf' ? ['tests/fixtures/pdf/protected.pdf']
         : tool.id === 'extract-images-pdf' ? ['tests/fixtures/pdf/images.pdf']
         : tool.output === '.zip' && tool.accepts.includes('.pdf') ? ['tests/fixtures/pdf/multi-page.pdf']
         : fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : [],
-      optionValues: Object.fromEntries((tool.options || []).filter((option) => option.default !== undefined || ['protect-pdf', 'unlock-pdf'].includes(tool.id)).map((option) => [option.id, option.default ?? (option.id.toLowerCase().includes('password') ? 'Audit123!' : '1')])),
+      optionValues: Object.fromEntries((tool.options || [])
+        .filter((option) => option.default !== undefined || ['protect-pdf', 'unlock-pdf'].includes(tool.id) || (tool.id === 'add-text' && option.id === 'text'))
+        .map((option) => [option.id, option.default ?? (option.id.toLowerCase().includes('password') ? 'Audit123!' : tool.id === 'add-text' ? 'Audit added text' : '1')])),
       processButtonText: tool.id === 'edit-pdf' ? '^Save$' : tool.id === 'annotate-pdf' ? 'Download Annotated PDF' : ['rearrange-pdf', 'url-to-pdf'].includes(tool.id) ? '^Process PDF$' : undefined,
       urlInput: 'https://example.com/', resultFlow: 'download-page', expectedOutput: outputContract(tool.output),
       executionClass: 'LOCAL_DETERMINISTIC',
@@ -268,22 +284,35 @@ export const AUDIT_CATEGORY_DEFINITIONS: AuditCategoryDefinition[] = [
   {
     id: 'video-tools',
     name: 'Video Tools',
-    tools: getAllVideoTools().map((tool) =>
+    tools: auditVideoTools.map((tool) =>
       withRoute(tool, tool.id === 'text-to-video' ? '/all-tools/video-tools/text-to-video' : `/all-tools/video/${tool.id}`, {
         strategy: tool.inputMethod === 'url' ? 'url' : tool.id === 'text-to-video' ? 'text' : 'file',
-        fixtures: fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : undefined,
+        fixtures: tool.id === 'video-to-text'
+          ? ['tests/fixtures/video/sample-speech.mov']
+          : ['audio-to-text', 'transcribe-podcast'].includes(tool.id)
+            ? ['tests/fixtures/audio/sample-speech.mp3']
+          : fixtureFor(tool.accepts) ? [fixtureFor(tool.accepts)!] : undefined,
         textInput: 'A calm blue gradient with a centered title', urlInput: 'https://example.com/',
         optionValues: Object.fromEntries(tool.options.map((option) => [option.id, option.default
           ?? (tool.id === 'trim-video' ? (option.id === 'startTime' ? '00:00' : '00:01')
             : option.type === 'time' ? '00:01'
               : option.type === 'number' ? option.min ?? 1 : 'audit')])),
-        resultFlow: tool.outputType === 'text' ? 'rendered-output' : 'download', expectedOutput: outputContract(tool.outputType),
+        resultFlow: tool.outputType === 'text' ? 'rendered-output' : 'download-page', expectedOutput: outputContract(tool.outputType),
+        renderedResult: tool.outputType === 'text'
+          ? {
+              selector: '[data-testid="podcast-summary-output"]',
+              apiEndpoint: '/api/media',
+              timeoutMs: 180_000,
+            }
+          : undefined,
         executionClass: tool.id === 'text-to-video' ? externalClass(['PIKA_API_KEY'], true)
-          : /transcri|to-text|transcript/.test(tool.id) ? externalClass(['GROQ_API_KEY'])
+          : ['audio-to-text', 'video-to-text', 'transcribe-podcast'].includes(tool.id) ? 'LOCAL_DETERMINISTIC'
+          : /youtube.*(?:to-text|transcript)/.test(tool.id) ? externalClass(['DOWNLOADER_API_URL'])
           : /youtube|instagram|tiktok|twitter|facebook|download/.test(tool.id) ? externalClass(['DOWNLOADER_API_URL'])
           : 'LOCAL_DETERMINISTIC',
         externalProvider: tool.id === 'text-to-video' ? 'Pika'
-          : /transcri|to-text|transcript/.test(tool.id) ? 'Groq'
+          : ['audio-to-text', 'video-to-text', 'transcribe-podcast'].includes(tool.id) ? undefined
+          : /youtube.*(?:to-text|transcript)/.test(tool.id) ? 'Downloader provider + local Faster-Whisper'
           : /youtube|instagram|tiktok|twitter|facebook|download/.test(tool.id) ? 'Downloader provider'
           : undefined,
         rateSensitive: /text-to-video|transcri|to-text|transcript|youtube|instagram|tiktok|twitter|facebook|download/.test(tool.id),

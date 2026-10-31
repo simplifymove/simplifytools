@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Crop Image - Free Online Image Cropper & Resizer Tool | Precise Crop',
-  description: 'Crop and resize images with precision. Free online image cropping tool with aspect ratio control. Supports all formats. No registration needed.',
+  title: 'Crop Image with Free or Fixed Aspect-Ratio Selection',
+  description: 'Crop a rectangular image region using free selection or 1:1, 4:3, 16:9, and 3:2 presets, then export PNG, JPG, or WebP.',
   keywords: [
     'crop image',
     'image cropper',
@@ -23,14 +23,14 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://simplifyconvert.com/all-tools/crop-image',
     siteName: 'SimplifyConvert',
-    title: 'Crop Image - Free Online Image Cropper & Resizer Tool',
-    description: 'Crop and resize images precisely. Adjust aspect ratios, rotate, and download in any format.',
+    title: 'Crop Image with Aspect-Ratio Presets',
+    description: 'Select image boundaries, compare cropping with resizing, and export PNG, JPG, or WebP.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'Crop Image Tool' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Crop Image - Free Online Image Cropper & Resizer Tool',
-    description: 'Crop and resize images with precision and control.',
+    title: 'Crop Image with Aspect-Ratio Presets',
+    description: 'Crop image boundaries and export PNG, JPG, or WebP.',
     images: ['https://simplifyconvert.com/og-image.jpg']
   },
   alternates: { canonical: 'https://simplifyconvert.com/all-tools/crop-image' },

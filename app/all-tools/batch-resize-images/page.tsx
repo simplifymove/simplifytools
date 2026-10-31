@@ -1,47 +1,115 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'batch-resize-images';
 const TOOL_NAME = 'Batch Resize Images';
 
 export default function BatchResizeImagesPage() {
+  const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
-  const [width, setWidth] = useState(800);
-  const [height, setHeight] = useState(600);
+  const [width, setWidth] = useState<number | ''>(800);
+  const [height, setHeight] = useState<number | ''>(600);
   const [maintainAspect, setMaintainAspect] = useState(true);
+  const [referenceRatio, setReferenceRatio] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [results, setResults] = useState<Array<{
+    file: File;
+    blob: Blob;
+    width: number;
+    height: number;
+  }>>([]);
   const { error, clearError, createError } = useImageToolErrors();
 
+  useEffect(() => {
+    const firstFile = files[0];
+
+    if (!firstFile) {
+      setReferenceRatio(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    createImageBitmap(firstFile).then(bitmap => {
+      const ratio = bitmap.width / bitmap.height;
+      bitmap.close();
+
+      if (cancelled) return;
+
+      setReferenceRatio(ratio);
+
+      if (maintainAspect && width !== '') {
+        setHeight(Math.min(8192, Math.max(1, Math.round(width / ratio))));
+      }
+    }).catch(() => {
+      if (!cancelled) setReferenceRatio(null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files]);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (processing) return;
+
     const selectedFiles = Array.from(e.target.files || []);
-    setFiles(prev => [...prev, ...selectedFiles]);
+    setFiles(prev => [...prev, ...selectedFiles].slice(0, 100));
+    setCompleted(false);
+    setResults([]);
+    e.target.value = '';
   };
 
   const handleRemoveFile = (index: number) => {
+    if (processing) return;
+
     setFiles(prev => prev.filter((_, i) => i !== index));
+    setCompleted(false);
+    setResults([]);
   };
 
   const handleClearAll = () => {
+    if (processing) return;
+
     setFiles([]);
     setCompleted(false);
+    setResults([]);
   };
 
   const handleResize = async () => {
-    if (files.length === 0) return;
-    
+    if (files.length === 0 || processing || width === '' || height === '') return;
+
     setProcessing(true);
+    setCompleted(false);
+    setResults([]);
+    clearError();
+
     try {
-      // Simulate batch processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const processed: Array<{
+        file: File;
+        blob: Blob;
+        width: number;
+        height: number;
+      }> = [];
+
+      for (const file of files) {
+        const result = await resizeImage(file, width, height);
+        processed.push({ file, ...result });
+      }
+
+      setResults(processed);
       setCompleted(true);
     } catch (error) {
       createError(
@@ -55,69 +123,90 @@ export default function BatchResizeImagesPage() {
     }
   };
 
-  const resizeImage = (file: File, targetWidth: number, targetHeight: number): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          // Create canvas with target dimensions
-          const canvas = document.createElement('canvas');
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-          
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            reject(new Error('Could not get canvas context'));
-            return;
-          }
-          
-          // Draw resized image on canvas
-          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-          
-          // Convert canvas to blob
-          canvas.toBlob(
-            (blob) => {
-              if (blob) resolve(blob);
-              else reject(new Error('Could not convert canvas to blob'));
-            },
-            'image/jpeg',
-            0.9
-          );
-        };
-        img.onerror = () => reject(new Error('Could not load image'));
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => reject(new Error('Could not read file'));
-      reader.readAsDataURL(file);
-    });
+  const resizeImage = async (
+    file: File,
+    targetWidth: number,
+    targetHeight: number
+  ): Promise<{ blob: Blob; width: number; height: number }> => {
+    const bitmap = await createImageBitmap(file);
+
+    try {
+      const scale = Math.min(
+        targetWidth / bitmap.width,
+        targetHeight / bitmap.height
+      );
+
+      const outputWidth = maintainAspect
+        ? Math.max(1, Math.round(bitmap.width * scale))
+        : targetWidth;
+
+      const outputHeight = maintainAspect
+        ? Math.max(1, Math.round(bitmap.height * scale))
+        : targetHeight;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not create canvas context');
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, outputWidth, outputHeight);
+      ctx.drawImage(bitmap, 0, 0, outputWidth, outputHeight);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          blob => {
+            if (blob) resolve(blob);
+            else reject(new Error('Could not create JPEG'));
+          },
+          'image/jpeg',
+          0.9
+        );
+      });
+
+      return { blob, width: outputWidth, height: outputHeight };
+    } finally {
+      bitmap.close();
+    }
   };
 
   const handleDownloadAll = async () => {
+    if (!completed || results.length === 0 || processing) return;
+
     setProcessing(true);
+    clearError();
+    const additionalResultWindows = results.slice(1).map(() =>
+      window.open('about:blank', '_blank'),
+    );
+    let primaryDownloadPageUrl: string | null = null;
+
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const resizedBlob = await resizeImage(file, width, height);
-        
-        // Create object URL from blob
-        const blobUrl = URL.createObjectURL(resizedBlob);
-        
-        // Create download link
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        const newName = file.name.replace(/\.[^/.]+$/, '') + `-resized-${width}x${height}.jpg`;
-        link.download = newName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up the blob URL
-        URL.revokeObjectURL(blobUrl);
-        
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        const file = result.file;
+        const newName = file.name.replace(/\.[^/.]+$/, '') + `-resized-${result.width}x${result.height}.jpg`;
+        const downloadResult = await uploadBrowserDownloadResult({
+          blob: result.blob,
+          toolSlug: TOOL_ID,
+          originalName: file.name,
+          outputName: newName,
+        });
+
+        if (!primaryDownloadPageUrl) {
+          primaryDownloadPageUrl = downloadResult.downloadPageUrl;
+        } else {
+          const resultWindow = additionalResultWindows.shift();
+          if (resultWindow) {
+            resultWindow.location.href = downloadResult.downloadPageUrl;
+          }
+        }
+
         // Add slight delay between downloads to avoid browser blocking
         await new Promise(resolve => setTimeout(resolve, 150));
       }
+
     } catch (error) {
       createError(
         ImageToolErrorType.SHARP_FAILED,
@@ -126,7 +215,12 @@ export default function BatchResizeImagesPage() {
         { error: (error as Error).message }
       );
     } finally {
+      additionalResultWindows.forEach((resultWindow) => resultWindow?.close());
       setProcessing(false);
+    }
+
+    if (primaryDownloadPageUrl) {
+      router.push(primaryDownloadPageUrl);
     }
   };
 
@@ -136,7 +230,7 @@ export default function BatchResizeImagesPage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -156,7 +250,7 @@ export default function BatchResizeImagesPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Batch Resize Images</h1>
-                <p className="text-lg text-white/90">Resize multiple images at once to your desired dimensions. Perfect for bulk image optimization. No signup required.</p>
+                <p className="text-lg text-white/90">Resize up to 100 browser-supported images using custom dimensions and optional aspect-ratio preservation. Results are exported as JPEG files.</p>
               </div>
             </div>
           </div>
@@ -170,7 +264,7 @@ export default function BatchResizeImagesPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Images</h2>
-                  
+
                   {/* File Upload Area */}
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition cursor-pointer mb-6">
                     <input
@@ -178,13 +272,14 @@ export default function BatchResizeImagesPage() {
                       multiple
                       accept="image/*"
                       onChange={handleFileSelect}
+                      disabled={processing}
                       className="hidden"
                       id="file-input"
                     />
                     <label htmlFor="file-input" className="cursor-pointer">
                       <Upload size={40} className="mx-auto text-gray-400 mb-3" />
-                      <p className="text-lg font-semibold text-gray-700 mb-1">Click to upload or drag and drop</p>
-                      <p className="text-sm text-gray-500">PNG, JPG, WebP and other formats. Maximum 100 files.</p>
+                      <p className="text-lg font-semibold text-gray-700 mb-1">Click to upload images</p>
+                      <p className="text-sm text-gray-500">Choose up to 100 browser-supported images. All resized outputs are JPEG files.</p>
                     </label>
                   </div>
 
@@ -199,6 +294,7 @@ export default function BatchResizeImagesPage() {
                               <span className="text-sm text-gray-700 truncate">{file.name}</span>
                               <button
                                 onClick={() => handleRemoveFile(index)}
+                                disabled={processing}
                                 className="text-red-500 hover:text-red-700 text-sm font-medium"
                               >
                                 Remove
@@ -218,14 +314,26 @@ export default function BatchResizeImagesPage() {
                   {/* Resize Settings */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Resize Settings</h3>
-                    
+
                     {/* Width */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">Width (pixels)</label>
                       <input
                         type="number"
                         value={width}
-                        onChange={(e) => setWidth(parseInt(e.target.value) || 800)}
+                        disabled={processing}
+                        max={8192}
+                        onChange={(e) => {
+                          const nextWidth = e.target.value === ''
+                            ? ''
+                            : Math.min(8192, Math.max(1, Number(e.target.value)));
+                          setWidth(nextWidth);
+                          if (maintainAspect && referenceRatio && nextWidth !== '') {
+                            setHeight(Math.min(8192, Math.max(1, Math.round(nextWidth / referenceRatio))));
+                          }
+                          setCompleted(false);
+                          setResults([]);
+                        }}
                         min="1"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -237,7 +345,19 @@ export default function BatchResizeImagesPage() {
                       <input
                         type="number"
                         value={height}
-                        onChange={(e) => setHeight(parseInt(e.target.value) || 600)}
+                        disabled={processing}
+                        max={8192}
+                        onChange={(e) => {
+                          const nextHeight = e.target.value === ''
+                            ? ''
+                            : Math.min(8192, Math.max(1, Number(e.target.value)));
+                          setHeight(nextHeight);
+                          if (maintainAspect && referenceRatio && nextHeight !== '') {
+                            setWidth(Math.min(8192, Math.max(1, Math.round(nextHeight * referenceRatio))));
+                          }
+                          setCompleted(false);
+                          setResults([]);
+                        }}
                         min="1"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -249,7 +369,15 @@ export default function BatchResizeImagesPage() {
                         type="checkbox"
                         id="aspect-ratio"
                         checked={maintainAspect}
-                        onChange={(e) => setMaintainAspect(e.target.checked)}
+                        disabled={processing}
+                        onChange={(e) => {
+                          setMaintainAspect(e.target.checked);
+                          if (e.target.checked && referenceRatio && width !== '') {
+                            setHeight(Math.min(8192, Math.max(1, Math.round(width / referenceRatio))));
+                          }
+                          setCompleted(false);
+                          setResults([]);
+                        }}
                         className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                       />
                       <label htmlFor="aspect-ratio" className="text-sm text-gray-700">Maintain aspect ratio</label>
@@ -259,7 +387,7 @@ export default function BatchResizeImagesPage() {
                   {/* Resize Button */}
                   <button
                     onClick={handleResize}
-                    disabled={files.length === 0 || processing}
+                    disabled={files.length === 0 || processing || width === '' || height === ''}
                     className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                   >
                     {processing ? (
@@ -277,10 +405,11 @@ export default function BatchResizeImagesPage() {
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <h4 className="font-semibold text-green-900 mb-3">✓ Resize Complete!</h4>
                       <p className="text-sm text-green-700 mb-3">
-                        Successfully resized {files.length} image{files.length !== 1 ? 's' : ''} to {width}x{height}px
+                        Successfully resized {results.length} image{results.length !== 1 ? 's' : ''}. Output dimensions are included in the JPEG filenames.
                       </p>
                       <button
                         onClick={handleDownloadAll}
+                        disabled={processing}
                         className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition text-sm flex items-center justify-center gap-2"
                       >
                         <Download size={16} />
@@ -294,9 +423,9 @@ export default function BatchResizeImagesPage() {
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Resize up to 100 images</li>
-                      <li>• Process in your browser</li>
+                      <li>• Resize images in your browser</li>
                       <li>• Maintain aspect ratio option</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• JPEG output; downloading uploads generated files</li>
                     </ul>
                   </div>
                 </div>
@@ -313,19 +442,19 @@ export default function BatchResizeImagesPage() {
           <div className="space-y-4">
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">1</div>
-              <div><p className="text-gray-700"><strong>Select multiple images:</strong> Click the upload area or drag and drop up to 100 images at once</p></div>
+              <div><p className="text-gray-700"><strong>Select multiple images:</strong> Use the file picker to choose up to 100 browser-supported images</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">2</div>
-              <div><p className="text-gray-700"><strong>Set your dimensions:</strong> Enter desired width and height in pixels, optionally maintain aspect ratio</p></div>
+              <div><p className="text-gray-700"><strong>Set your dimensions:</strong> Enter width and height in pixels. Keep aspect ratio enabled to fit each image within those bounds without stretching it</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Resize:</strong> Processing happens instantly in your browser with all images at once</p></div>
+              <div><p className="text-gray-700"><strong>Click Resize:</strong> Resize the selected images using the chosen dimensions</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Download results:</strong> Save your resized images as a batch in one click</p></div>
+              <div><p className="text-gray-700"><strong>Download results:</strong> Select Download All to upload the generated JPEG files to the download-result service and open the result pages</p></div>
             </div>
           </div>
         </div>
@@ -336,75 +465,75 @@ export default function BatchResizeImagesPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">When to Batch Resize Images</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Preparing product photos for your e-commerce store with consistent dimensions</li>
-            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Optimizing photo galleries for website performance and fast loading</li>
-            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Creating thumbnail versions of hundreds of images for social media</li>
-            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Resizing bulk image uploads for portfolio or portfolio websites</li>
-            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Standardizing image dimensions across your digital asset library</li>
+            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Prepare product photo copies for a store; disable aspect-ratio preservation only if stretching to exact dimensions is acceptable</li>
+            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Prepare smaller-dimension gallery images; actual file size and page-loading effects depend on the source and website</li>
+            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Create JPEG thumbnail copies from batches of up to 100 images</li>
+            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Prepare image dimensions for portfolio pages and project galleries</li>
+            <li className="flex gap-2"><span className="text-blue-600 font-bold">•</span> Fit images within common width and height limits while retaining individual proportions when enabled</li>
           </ul>
         </div>
       </div>
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 How many images can I resize at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">You can resize up to 100 images in a single batch operation. Processing speed depends on image size and your device performance, typically taking a few seconds to a minute.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>You can select up to 100 images in a batch operation. Processing time depends on the number of files, their dimensions and sizes, and your device performance.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What happens if I maintain aspect ratio?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">If maintaining aspect ratio is enabled, the tool will fit the image within your specified dimensions while preserving its original proportions. The final image may be slightly smaller than specified to avoid distortion.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>If maintaining aspect ratio is enabled, the tool will fit the image within your specified dimensions while preserving its original proportions. The final image may be slightly smaller than specified to avoid distortion.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What file formats are supported?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more. Resized images are saved in their original format unless you specify otherwise.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The tool accepts images your browser can decode and exports JPEG files. Transparent areas become white, and animated images are not preserved as animations.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will resizing reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Resizing to smaller dimensions may slightly affect quality, but our tool uses high-quality interpolation algorithms to minimize loss. Resizing to larger dimensions cannot improve quality.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Resizing changes the pixel dimensions and can affect visible quality. Enlarging an image does not reconstruct detail that is absent from the source.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is batch resizing really free?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Resize as many image batches as you want, no signup required, no watermarks, no hidden costs ever.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>You can resize multiple supported images using the available batch controls without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Are my images stored on your servers?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. All batch resizing happens entirely in your browser. Your images are never uploaded to or stored on our servers. Complete privacy guaranteed.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>Resizing happens in your browser. When you select Download All, the generated JPEG files are uploaded to the site's download-result service to prepare their download pages.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}
@@ -433,7 +562,7 @@ export default function BatchResizeImagesPage() {
             "name": "What file formats are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "We support all common image formats including JPG, PNG, WebP, GIF, BMP, and more."
+              "text": "The tool accepts images your browser can decode and exports JPEG files. Transparent areas become white, and animated images are not preserved as animations."
             }
           },
           {
@@ -441,7 +570,7 @@ export default function BatchResizeImagesPage() {
             "name": "Will resizing reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Resizing to smaller dimensions may affect quality slightly, but we use high-quality interpolation algorithms to minimize loss."
+              "text": "Resizing changes the pixel dimensions and can affect visible quality. Enlarging an image does not reconstruct detail that is absent from the source."
             }
           },
           {
@@ -449,7 +578,7 @@ export default function BatchResizeImagesPage() {
             "name": "Is batch resizing really free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% free with no limits, no signup required, no watermarks, no hidden costs."
+              "text": "You can resize multiple supported images using the available batch controls without creating an account."
             }
           },
           {
@@ -457,7 +586,7 @@ export default function BatchResizeImagesPage() {
             "name": "Are my images stored on your servers?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. All resizing happens in your browser. Images are never uploaded or stored on our servers."
+              "text": "Resizing happens in your browser. Selecting Download All uploads generated JPEG files to the download-result service to prepare download pages."
             }
           }
         ]

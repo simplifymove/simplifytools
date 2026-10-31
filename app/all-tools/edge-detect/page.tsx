@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function EdgeDetectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [threshold, setThreshold] = useState(50);
@@ -109,16 +113,33 @@ export default function EdgeDetectPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `edge-detect-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'edge-detect',
+            originalName: `edge-detect-${Date.now()}.jpg`,
+            outputName: `edge-detect-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -147,7 +168,7 @@ export default function EdgeDetectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Detect Image Edges</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -232,35 +253,35 @@ export default function EdgeDetectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is edge detection?</summary>
-                  <p className="text-gray-700 mt-2">Finding boundaries and transitions in images.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What threshold to use?</summary>
-                  <p className="text-gray-700 mt-2">50-100 for balanced. Higher for fewer edges.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo format.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, edge maps can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-gray-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Sobel algorithm?</summary>
-                  <p className="text-gray-700 mt-2">Professional edge detection algorithm.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is edge detection?</FAQQuestion>
+                  <FAQAnswer>Finding boundaries and transitions in images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What threshold to use?</FAQQuestion>
+                  <FAQAnswer>50-100 for balanced. Higher for fewer edges.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>You can use image formats supported by your browser, such as JPG, PNG, and WebP. Results depend on the image content and selected threshold.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on your rights to the original image and any applicable licenses or permissions. Creating an edge map does not grant rights to copyrighted source material.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Edge detection is performed in your browser. When you select Download, the generated JPEG is uploaded to our download-result service to prepare the download page.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Sobel algorithm?</FAQQuestion>
+                  <FAQAnswer>Professional edge detection algorithm.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -284,7 +305,87 @@ export default function EdgeDetectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How image edge detection works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tool compares neighboring pixel values to emphasize areas
+                where brightness or color changes sharply. These transitions
+                appear as visible edges in the processed result.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual effect is generated with browser image and
+                  Canvas processing. The source image is rendered, pixel
+                  values are adjusted, and the result is prepared for
+                  download through the existing image workflow.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Edge detection highlights strong pixel transitions; it does not identify or understand objects in the image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Use a clear source image and compare the processed preview
+                with the original. Strong effect settings can intentionally
+                remove subtle detail or exaggerate edges and tonal changes.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                image edge detection works FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It changes existing pixel values and does not recreate
+                    missing detail or increase the source resolution.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect first?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Review the available preview before downloading the
+                    processed result.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

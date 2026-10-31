@@ -1,14 +1,17 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function HeicToPngPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -37,8 +40,35 @@ export default function HeicToPngPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'heic',
+          to_format: 'png',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/png') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
+      setResult(blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting image');
     } finally {
@@ -46,16 +76,33 @@ export default function HeicToPngPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'heic-to-png',
+        originalName: file.name,
+        outputName: `${baseName}.png`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -81,7 +128,7 @@ export default function HeicToPngPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">HEIC to PNG Converter</h1>
-              <p className="text-lg text-white/90">Convert HEIC images to PNG format with transparency support and lossless quality.</p>
+              <p className="text-lg text-white/90">Convert HEIC images to PNG format with server-assisted processing.</p>
             </div>
           </div>
         </div>
@@ -123,16 +170,16 @@ export default function HeicToPngPage() {
                         <button
                           onClick={handleDownload}
                           className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
-                        >
+                      disabled={processing}>
                           <Download size={18} />
-                          Download PNG
+                          {processing ? 'Preparing Download...' : 'Continue to Download'}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
                       <Image size={32} className="mx-auto text-orange-400 mb-3" />
-                      <p className="text-sm text-orange-800">Preview will appear here</p>
+                      <p className="text-sm text-orange-800">Conversion status will appear here</p>
                     </div>
                   )}
                 </div>
@@ -178,7 +225,7 @@ export default function HeicToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Click Convert Button</h3>
-                <p className="text-gray-600 mt-2">Press "Convert to PNG" to instantly transform your HEIC image to the widely compatible PNG format.</p>
+                <p className="text-gray-600 mt-2">Press "Convert to PNG" to start the conversion to PNG format.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -187,7 +234,7 @@ export default function HeicToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download PNG File</h3>
-                <p className="text-gray-600 mt-2">Download your converted PNG instantly. No signup required and completely secure.</p>
+                <p className="text-gray-600 mt-2">When conversion finishes, click "Continue to Download" to open the download page and save your PNG file.</p>
               </div>
             </div>
           </div>
@@ -203,21 +250,21 @@ export default function HeicToPngPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Universal Compatibility</h3>
-                <p className="text-gray-600 text-sm">PNG is supported by all browsers, devices, and applications. HEIC is limited to Apple devices, making PNG the better choice for sharing.</p>
+                <p className="text-gray-600 text-sm">PNG has broad support across browsers, devices, and image applications, while HEIC support can vary by platform and software.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Lossless Quality</h3>
-                <p className="text-gray-600 text-sm">PNG uses lossless compression to preserve every detail of your image. Perfect for maintaining image quality across platforms.</p>
+                <h3 className="text-lg font-semibold text-gray-900">PNG Output</h3>
+                <p className="text-gray-600 text-sm">PNG uses lossless compression for the generated output, although converting from HEIC does not restore information already absent from the source.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Easy Sharing</h3>
-                <p className="text-gray-600 text-sm">Share PNG files effortlessly with anyone. No compatibility issues or need for special apps. Works everywhere.</p>
+                <p className="text-gray-600 text-sm">PNG is widely supported by browsers, image editors, and document applications. Check the destination's accepted formats and file-size limits before sharing.</p>
               </div>
             </div>
           </div>
@@ -225,36 +272,36 @@ export default function HeicToPngPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is HEIC format?</h3>
-              <p className="text-gray-700">HEIC (High Efficiency Image Container) is a modern image format used by Apple devices (iPhone, iPad, Mac) that provides excellent compression and quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why is PNG better than HEIC?</h3>
-              <p className="text-gray-700">PNG is universally supported across all platforms and devices, while HEIC is primarily limited to Apple ecosystem. PNG is ideal for sharing and web use.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will PNG be larger than HEIC?</h3>
-              <p className="text-gray-700">PNG files may be slightly larger than HEIC files. However, PNG's universal compatibility makes this worthwhile for sharing and cross-platform use.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple HEIC files?</h3>
-              <p className="text-gray-700">Currently our converter handles one file at a time. However, conversion is instant, so you can quickly process multiple HEIC files sequentially.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen locally in your browser. Your HEIC files are never uploaded to any server and remain completely private.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I edit the PNG after conversion?</h3>
-              <p className="text-gray-700">Yes, PNG files can be edited with any image editor. PNG's lossless format makes it perfect for both viewing and further editing.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>What is HEIC format?</FAQStaticQuestion>
+              <FAQAnswer>HEIC (High Efficiency Image Container) is a modern image format used by Apple devices (iPhone, iPad, Mac) that provides excellent compression and quality.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Why is PNG better than HEIC?</FAQStaticQuestion>
+              <FAQAnswer>PNG has broad support across browsers, platforms, and image applications, while HEIC support varies by platform and software.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will PNG be larger than HEIC?</FAQStaticQuestion>
+              <FAQAnswer>PNG and HEIC use different compression approaches, so output file size varies with the source image and encoding. PNG files can be substantially larger than HEIC files, especially for photographs.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I batch convert multiple HEIC files?</FAQStaticQuestion>
+              <FAQAnswer>The converter handles one file at a time. To process multiple HEIC files, convert them individually.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is the conversion secure?</FAQStaticQuestion>
+              <FAQAnswer>Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the PNG output.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I edit the PNG after conversion?</FAQStaticQuestion>
+              <FAQAnswer>PNG files are supported by many image editors, and PNG uses lossless compression for subsequent storage.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}
@@ -276,7 +323,7 @@ export default function HeicToPngPage() {
               "name": "Why is PNG better than HEIC?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG is universally supported across all platforms and devices, while HEIC is primarily limited to Apple ecosystem. PNG is ideal for sharing and web use."
+                "text": "PNG has broad support across browsers, platforms, and image applications, while HEIC support varies by platform and software."
               }
             },
             {
@@ -284,7 +331,7 @@ export default function HeicToPngPage() {
               "name": "Will PNG be larger than HEIC?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG files may be slightly larger than HEIC files. However, PNG's universal compatibility makes this worthwhile for sharing and cross-platform use."
+                "text": "PNG and HEIC use different compression approaches, so output file size varies with the source image and encoding. PNG files can be substantially larger than HEIC files, especially for photographs."
               }
             },
             {
@@ -292,7 +339,7 @@ export default function HeicToPngPage() {
               "name": "Can I batch convert multiple HEIC files?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Currently our converter handles one file at a time. However, conversion is instant, so you can quickly process multiple HEIC files sequentially."
+                "text": "The converter handles one file at a time. To process multiple HEIC files, convert them individually."
               }
             },
             {
@@ -300,7 +347,7 @@ export default function HeicToPngPage() {
               "name": "Is the conversion secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen locally in your browser. Your HEIC files are never uploaded to any server and remain completely private."
+                "text": "Your HEIC file is uploaded for server-assisted conversion and processed only as needed to create the PNG output."
               }
             },
             {
@@ -308,7 +355,7 @@ export default function HeicToPngPage() {
               "name": "Can I edit the PNG after conversion?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, PNG files can be edited with any image editor. PNG's lossless format makes it perfect for both viewing and further editing."
+                "text": "PNG files are supported by many image editors, and PNG uses lossless compression for subsequent storage."
               }
             }
           ]
@@ -322,15 +369,15 @@ export default function HeicToPngPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Link href="/all-tools/heic-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">HEIC to JPG Converter</h3>
-              <p className="text-gray-600 text-sm mt-2">Convert HEIC to universally compatible JPG</p>
+              <p className="text-gray-600 text-sm mt-2">Convert HEIC images to widely supported JPG format</p>
             </Link>
             <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
-              <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency</p>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG images to PNG format</p>
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with adjustable compression</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

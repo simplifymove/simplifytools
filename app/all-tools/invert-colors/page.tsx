@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function InvertColorsPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -83,16 +87,33 @@ export default function InvertColorsPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `inverted-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'invert-colors',
+            originalName: `inverted-${Date.now()}.jpg`,
+            outputName: `inverted-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -110,7 +131,7 @@ export default function InvertColorsPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎨 Invert Colors</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Create stunning negative color effects. Transform your photos with inverted RGB values.
+              Create a negative-style image by reversing the red, green, and blue pixel values. The processed result is exported as a JPG file.
             </p>
           </div>
         </div>
@@ -121,7 +142,7 @@ export default function InvertColorsPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Invert Image Colors</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -162,7 +183,7 @@ export default function InvertColorsPage() {
               <ol className="space-y-4 text-gray-700">
                 <li><strong>1. Upload Your Image:</strong> Select a JPG, PNG, or WebP image file.</li>
                 <li><strong>2. Click Invert:</strong> Press "Invert Colors" to process your image.</li>
-                <li><strong>3. Instant Effect:</strong> View the negative color transformation instantly.</li>
+                <li><strong>3. Process the Image:</strong> Wait for the tool to create the inverted JPG and enable the download button.</li>
                 <li><strong>4. Download:</strong> Save your inverted image as JPG.</li>
               </ol>
             </div>
@@ -191,41 +212,41 @@ export default function InvertColorsPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-rose-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What does inverting colors mean?</summary>
-                  <p className="text-gray-700 mt-2">It converts each RGB color value to 255 minus that value, creating a negative image effect.</p>
-                </details>
-                <details className="border-l-4 border-rose-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is this like photo negative?</summary>
-                  <p className="text-gray-700 mt-2">Yes! It simulates the classic film negative appearance you'd see on old film slides.</p>
-                </details>
-                <details className="border-l-4 border-rose-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I invert twice to restore original?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Inverting an inverted image returns it to the original colors.</p>
-                </details>
-                <details className="border-l-4 border-rose-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What formats are supported?</summary>
-                  <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, BMP, TIFF, and most standard image formats.</p>
-                </details>
-                <details className="border-l-4 border-rose-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image private?</summary>
-                  <p className="text-gray-700 mt-2">Absolutely. Processing happens in your browser, images never reach our servers.</p>
-                </details>
-                <details className="border-l-4 border-rose-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does it preserve image quality?</summary>
-                  <p className="text-gray-700 mt-2">Yes, we save at 95% JPEG quality to maintain excellent image fidelity.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What does inverting colors mean?</FAQQuestion>
+                  <FAQAnswer>It converts each RGB color value to 255 minus that value, creating a negative image effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is this like photo negative?</FAQQuestion>
+                  <FAQAnswer>Yes! It simulates the classic film negative appearance you'd see on old film slides.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I invert twice to restore original?</FAQQuestion>
+                  <FAQAnswer>Applying RGB inversion twice can approximately restore the original colors, but JPEG compression may introduce changes. Keep the original file if exact restoration matters.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What formats are supported?</FAQQuestion>
+                  <FAQAnswer>The upload accepts image files that your browser can decode. JPG, PNG, and WebP are common choices; support for formats such as TIFF varies by browser. The output is JPG.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image private?</FAQQuestion>
+                  <FAQAnswer>The color inversion is performed in your browser using Canvas. When you choose to download, the generated JPG is uploaded to prepare the download page. Review the Privacy Policy before processing sensitive images.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does it preserve image quality?</FAQQuestion>
+                  <FAQAnswer>The output is encoded as JPG at a quality setting of 95%. JPEG compression is lossy, and transparent areas are not preserved as transparency. Keep your original image.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Related Image Tools</h2>
               <div className="grid md:grid-cols-3 gap-4">
-                <Link href="/all-tools/black-white-filter" className="p-4 border-2 border-rose-200 rounded-lg hover:bg-rose-50 transition">
+                <Link href="/all-tools/black-white" className="p-4 border-2 border-rose-200 rounded-lg hover:bg-rose-50 transition">
                   <h3 className="font-bold text-gray-800">Black & White</h3>
                   <p className="text-sm text-gray-600">Convert to grayscale</p>
                 </Link>
@@ -243,7 +264,86 @@ export default function InvertColorsPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Invert Colors tool works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tool reads the image pixels in your browser and reverses
+                each red, green, and blue channel value. Dark areas become
+                light, light areas become dark, and colors shift to their
+                inverse values. The processed image can then be downloaded.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The image effect is produced with browser image and Canvas
+                  processing. The generated JPG is prepared for the download action;
+                  this page does not display a separate processed-image preview.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect changes pixel colors rather than changing the dimensions of the source image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and keep the original file.
+                The inversion changes RGB colors without offering an effect-strength
+                control. The JPG export may introduce compression artifacts or
+                remove transparency, so inspect the downloaded result before use.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                More About Inverting Image Colors
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does the effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. The tool changes the appearance of existing image
+                    pixels; it does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Why is the inverted image downloaded as JPG?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The tool exports the processed Canvas image as JPG at a
+                    quality setting of 95%. JPG is a lossy format and does
+                    not preserve transparency. The download button becomes
+                    available after processing.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+          </div>
+        </section>
+
+</main>
 
       {/* Hidden canvas for processing */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'TIFF to PNG - Free Lossless Format Converter | SimplifyConvert',
-  description: 'Convert TIFF images to PNG format with transparency support. Preserve image quality.',
+  description: 'Convert TIFF and TIF images to PNG format online using server-assisted image conversion.',
   keywords: ['tiff to png', 'convert tiff', 'image converter', 'free tool'],
   openGraph: {
     type: 'website',
@@ -10,10 +10,10 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/tiff-to-png',
     siteName: 'SimplifyConvert',
     title: 'TIFF to PNG - Free Lossless Format Converter',
-    description: 'Convert TIFF images to PNG format with transparency support.',
+    description: 'Convert TIFF and TIF images to PNG format.',
     images: [{ url: 'https://simplifyconvert.com/og-image.jpg', width: 1200, height: 630, alt: 'TIFF to PNG' }],
   },
-  twitter: { card: 'summary_large_image', title: 'TIFF to PNG - Free Lossless Format Converter', description: 'Convert TIFF images to PNG format with transparency support.', images: ['https://simplifyconvert.com/og-image.jpg'] },
+  twitter: { card: 'summary_large_image', title: 'TIFF to PNG - Free Lossless Format Converter', description: 'Convert TIFF and TIF images to PNG format.', images: ['https://simplifyconvert.com/og-image.jpg'] },
   alternates: { canonical: 'https://simplifyconvert.com/all-tools/tiff-to-png' },
 };
 

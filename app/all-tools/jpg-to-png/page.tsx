@@ -1,7 +1,9 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Image, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
@@ -16,16 +18,32 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 const TOOL_ID = 'jpg-to-png';
 const TOOL_NAME = 'JPG to PNG Converter';
 
 export default function JpgToPngPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultPreviewUrl, setResultPreviewUrl] = useState<string | null>(null);
   const { error, clearError, createError } = useImageToolErrors();
+
+  useEffect(() => {
+    if (!result) {
+      setResultPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(result);
+    setResultPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [result]);
 
   const handleFileSelect = (selectedFile: File) => {
     clearError();
@@ -77,6 +95,7 @@ export default function JpgToPngPage() {
     }
 
     setFile(selectedFile);
+    setResult(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -126,16 +145,34 @@ export default function JpgToPngPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName: `${baseName}.png`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch {
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -161,7 +198,7 @@ export default function JpgToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">JPG to PNG Converter</h1>
-                <p className="text-lg text-white/90">Convert JPG images to PNG with full transparency support. Perfect for graphics, logos, and images with transparent backgrounds. No signup required.</p>
+                <p className="text-lg text-white/90">Re-encode a JPG as PNG in your browser without changing its pixel dimensions.</p>
               </div>
             </div>
           </div>
@@ -197,16 +234,26 @@ export default function JpgToPngPage() {
                   {result ? (
                     <div className="space-y-4">
                       <img
-                        src={result as any}
+                        src={resultPreviewUrl || undefined}
                         alt="Converted PNG"
                         className="w-full rounded-lg border border-gray-200 object-cover"
                       />
                       <button
                         onClick={handleDownload}
-                        className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
+                        disabled={processing}
+                        className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                       >
-                        <Download size={18} />
-                        Download PNG
+                        {processing ? (
+                          <>
+                            <Loader size={18} className="animate-spin" />
+                            Preparing Download...
+                          </>
+                        ) : (
+                          <>
+                            <Download size={18} />
+                            Continue to Download
+                          </>
+                        )}
                       </button>
                     </div>
                   ) : (
@@ -241,7 +288,7 @@ export default function JpgToPngPage() {
                 {/* Info */}
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <p className="text-xs text-blue-700">
-                    <strong>💡 PNG Benefits:</strong> Lossless compression, transparency support, perfect for graphics.
+                    <strong>Format note:</strong> PNG supports transparency, but converting an opaque JPG does not create transparent pixels or restore lost detail.
                   </p>
                 </div>
               </div>
@@ -250,6 +297,7 @@ export default function JpgToPngPage() {
         </div>
       </div>
 
+      {false && (<>
       {/* How To Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
@@ -261,7 +309,7 @@ export default function JpgToPngPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">2</div>
-              <div><p className="text-gray-700"><strong>Click Convert to PNG:</strong> The tool will process your image instantly</p></div>
+              <div><p className="text-gray-700"><strong>Click Convert to PNG:</strong> The browser decodes the JPG and creates a PNG result at the source pixel dimensions</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
@@ -278,19 +326,19 @@ export default function JpgToPngPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
-              <div><h3 className="font-semibold text-gray-900">Transparency Support</h3><p className="text-gray-600 text-sm">PNG supports transparent backgrounds, perfect for overlays and graphics</p></div>
+              <div><h3 className="font-semibold text-gray-900">Transparency Support</h3><p className="text-gray-600 text-sm">PNG supports transparency when transparent pixels are present in the source; converting an opaque JPG does not create transparency</p></div>
             </div>
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
-              <div><h3 className="font-semibold text-gray-900">Lossless Compression</h3><p className="text-gray-600 text-sm">No quality loss when saving, ideal for archiving and editing</p></div>
+              <div><h3 className="font-semibold text-gray-900">Lossless Compression</h3><p className="text-gray-600 text-sm">PNG uses lossless compression for the newly encoded output, but it cannot restore detail already lost in the source JPG</p></div>
             </div>
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
-              <div><h3 className="font-semibold text-gray-900">Better for Graphics</h3><p className="text-gray-600 text-sm">Superior quality for logos, illustrations, and text-heavy images</p></div>
+              <div><h3 className="font-semibold text-gray-900">Better for Graphics</h3><p className="text-gray-600 text-sm">PNG is commonly used for logos, illustrations, screenshots, and text-heavy graphics</p></div>
             </div>
             <div className="flex gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0" size={24} />
-              <div><h3 className="font-semibold text-gray-900">Universal Support</h3><p className="text-gray-600 text-sm">PNG is supported by all modern browsers and applications</p></div>
+              <div><h3 className="font-semibold text-gray-900">Broad Compatibility</h3><p className="text-gray-600 text-sm">PNG is widely supported by modern browsers, image editors, document tools, and publishing workflows</p></div>
             </div>
           </div>
         </div>
@@ -301,10 +349,10 @@ export default function JpgToPngPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Common Use Cases for JPG to PNG Conversion</h2>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Converting logo files to transparent PNG for web design</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Creating stickers or graphics with transparent backgrounds</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Preparing product images for e-commerce with transparency</li>
-            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Archiving images without quality loss</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Converting JPG artwork to PNG for workflows that require PNG format</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Preparing graphics for applications that prefer PNG format</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Preparing product images for systems that require PNG files</li>
+            <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Re-encoding images as PNG without adding further lossy compression</li>
             <li className="flex gap-2"><span className="text-orange-500 font-bold">•</span> Using images as overlays in photo editing software</li>
           </ul>
         </div>
@@ -312,64 +360,64 @@ export default function JpgToPngPage() {
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will converting JPG to PNG reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, PNG uses lossless compression. Your image quality will remain the same as the original JPG. The only change is the file format and transparency support.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>PNG uses lossless compression for the converted output, so the PNG encoding does not add JPEG-style lossy compression. However, detail already lost in the original JPG cannot be restored, and an opaque JPG does not gain transparency.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What file size limits exist for conversion?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Our tool supports images up to 50MB in size. For most common use cases, your files will be well below this limit.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Our tool supports images up to 50MB in size. For most common use cases, your files will be well below this limit.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Are my files stored on your servers?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, conversion happens in your browser. Files are not uploaded to our servers and are automatically deleted after download.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Why would PNG files be larger than JPG files?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">PNG uses lossless compression while JPG uses lossy compression. This means PNG may be larger, but preserves every pixel exactly. For photos, JPG is usually smaller; for graphics, PNG is better.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>PNG uses lossless compression while JPG uses lossy compression. Re-encoding a JPG as PNG avoids additional JPEG-style compression, but it does not recover information already lost in the JPG source.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I batch convert multiple JPG files at once?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Currently, our converter processes one image at a time. For batch conversions, check out our Batch Convert Images tool which handles multiple files simultaneously.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Currently, our converter processes one image at a time. For batch conversions, check out our Batch Convert Images tool which handles multiple files simultaneously.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Do I need to sign up to use this converter?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No signup required. Our JPG to PNG converter is completely free and accessible to everyone without registration.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>No signup required. Our JPG to PNG converter is completely free and accessible to everyone without registration.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}
@@ -382,7 +430,7 @@ export default function JpgToPngPage() {
             "name": "Will converting JPG to PNG reduce image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No, PNG uses lossless compression. Your image quality will remain the same as the original JPG. The only change is the file format and transparency support."
+              "text": "PNG uses lossless compression for the converted output, so the PNG encoding does not add JPEG-style lossy compression. However, detail already lost in the original JPG cannot be restored, and an opaque JPG does not gain transparency."
             }
           },
           {
@@ -398,7 +446,7 @@ export default function JpgToPngPage() {
             "name": "Are my files stored on your servers?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No, conversion happens in your browser. Files are not uploaded to our servers and are automatically deleted after download."
+              "text": "The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared."
             }
           },
           {
@@ -406,7 +454,7 @@ export default function JpgToPngPage() {
             "name": "Why would PNG files be larger than JPG files?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "PNG uses lossless compression while JPG uses lossy compression. This means PNG may be larger, but preserves every pixel exactly. For photos, JPG is usually smaller; for graphics, PNG is better."
+              "text": "PNG uses lossless compression while JPG uses lossy compression. Re-encoding a JPG as PNG avoids additional JPEG-style compression, but it does not recover information already lost in the JPG source."
             }
           },
           {
@@ -441,7 +489,7 @@ export default function JpgToPngPage() {
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">WebP to JPG Converter</span><p className="text-xs text-gray-600">Convert modern WebP format</p></div>
             </Link>
-            <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce image file sizes</p></div>
             </Link>
@@ -452,15 +500,14 @@ export default function JpgToPngPage() {
           </div>
         </div>
       </div>
+      </>)}
+      <PriorityToolGuide toolId="jpg-to-png" />
     </main>
 
     <Footer />
   </>
 );
 }
-
-
-
 
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { getAllPdfTools } from '@/app/lib/pdf-tools';
@@ -11,29 +11,349 @@ import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
+const PDF_TOOL_PRIORITY = [
+  'edit-pdf',
+  'merge-pdf',
+  'compress-pdf',
+  'split-pdf',
+  'pdf-to-word',
+  'word-to-pdf',
+  'pdf-to-jpg',
+  'jpg-to-pdf',
+  'esign-pdf',
+  'pdf-ocr',
+  'pdf-to-excel',
+  'pdf-to-powerpoint',
+  'powerpoint-to-pdf',
+  'pdf-to-png',
+  'png-to-pdf',
+  'rotate-pdf',
+  'rearrange-pdf',
+  'pdf-page-deleter',
+  'protect-pdf',
+  'unlock-pdf',
+  'add-watermark',
+  'add-numbers-to-pdf',
+  'annotate-pdf',
+  'add-text',
+  'create-pdf',
+  'extract-text-from-pdf',
+  'extract-images-pdf',
+  'extract-tables-from-pdf',
+  'pdf-to-text',
+  'pdf-translator',
+  'crop-pdf',
+  'pdf-enhance-scan',
+  'pdf-deskew',
+  'pdf-watermark-remover',
+  'images-to-pdf',
+  'url-to-pdf',
+  'pdf-to-html',
+  'pdf-to-csv',
+  'pdf-to-tiff',
+  'tiff-to-pdf',
+  'webp-to-pdf',
+  'heic-to-pdf',
+  'gif-to-pdf',
+  'eps-to-pdf',
+  'pdf-to-epub',
+  'epub-to-pdf',
+  'pdf-to-mobi',
+  'mobi-to-pdf',
+  'pdf-to-azw3',
+  'azw3-to-pdf',
+  'ms-outlook-to-pdf',
+  'pdf-to-rtf',
+  'pdf-to-docx',
+  'pdf-to-pptx',
+  'pdf-to-xlsx',
+] as const;
+
+const PDF_TOOL_PRIORITY_INDEX = new Map<string, number>(
+  PDF_TOOL_PRIORITY.map((id, index) => [id, index]),
+);
+
+function PdfToolsGuidance() {
+  return (
+    <section
+      aria-label="Guidance for choosing and using PDF tools"
+      className="border-t border-gray-200 bg-white px-4 py-16 md:px-8 md:py-20"
+    >
+      <div className="mx-auto max-w-5xl">
+        <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
+          <section aria-labelledby="working-with-pdfs-heading">
+            <h2
+              id="working-with-pdfs-heading"
+              className="text-3xl font-bold tracking-tight text-gray-900"
+            >
+              Working With PDFs: Choose the Right Tool for the Job
+            </h2>
+            <div className="mt-5 space-y-4 text-base leading-8 text-gray-700">
+              <p>
+                PDF files are designed to keep a document looking consistent across different
+                devices and applications. That makes them convenient for sharing, but it can also
+                make editing, extracting content and converting them more complicated than working
+                with an ordinary document file.
+              </p>
+              <p>
+                SimplifyConvert&apos;s PDF tools cover different types of tasks, from combining and
+                splitting pages to compression, conversion and editing. The right tool depends on
+                what you want to change and what needs to remain intact.
+              </p>
+            </div>
+          </section>
+
+          <section aria-labelledby="converting-pdf-heading">
+            <h2 id="converting-pdf-heading" className="text-3xl font-bold tracking-tight text-gray-900">
+              Converting a PDF to Another Format
+            </h2>
+            <div className="mt-5 space-y-4 text-base leading-8 text-gray-700">
+              <p>
+                Use a conversion tool when the information inside a PDF needs to be used in another
+                application or file format.
+              </p>
+              <p>
+                For example, PDF to Word can be useful when you need an editable document, while PDF
+                to JPG is more appropriate when you need individual pages as images.
+              </p>
+              <p>
+                A PDF conversion is not simply a change to the filename. PDF pages can contain
+                positioned text, embedded fonts, images, tables, vector graphics and other elements.
+                The destination format may represent those elements differently.
+              </p>
+              <p>
+                Converting a PDF to an editable format such as DOCX requires reconstructing
+                paragraphs, columns, tables and other document elements. Simple documents often
+                convert more predictably than multi-column layouts, forms, mathematical notation,
+                unusual fonts or scanned pages. Check formatting and content before relying on
+                the result; creating an output file does not guarantee an identical layout.
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <div className="mt-14 grid gap-x-12 gap-y-10 md:grid-cols-2">
+          <section className="border-t border-gray-200 pt-6" aria-labelledby="combining-pdfs-heading">
+            <h2 id="combining-pdfs-heading" className="text-2xl font-bold text-gray-900">
+              Combining PDF Files
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>
+                Merging is useful when several PDFs belong together and need to be shared or stored
+                as one document.
+              </p>
+              <p>
+                Examples include combining separate invoices, joining chapters of a report or
+                putting several scanned documents into a single file.
+              </p>
+              <p>
+                Before merging, check the order of the source files and review the finished PDF.
+                Documents created from different sources can have different page sizes, orientations
+                or margins, and merging them does not automatically make those pages visually
+                consistent.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-gray-200 pt-6" aria-labelledby="splitting-pdfs-heading">
+            <h2 id="splitting-pdfs-heading" className="text-2xl font-bold text-gray-900">
+              Splitting or Extracting PDF Pages
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>You do not always need to convert an entire document.</p>
+              <p>
+                If only a few pages are required, splitting or extracting pages can be more
+                appropriate. This is useful when you want to separate a chapter, remove unrelated
+                pages from a working copy or create smaller documents from a larger PDF.
+              </p>
+              <p>Keep the original file if you may need the complete document again.</p>
+            </div>
+          </section>
+
+          <section className="border-t border-gray-200 pt-6" aria-labelledby="compressing-pdf-heading">
+            <h2 id="compressing-pdf-heading" className="text-2xl font-bold text-gray-900">
+              Compressing a PDF
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>
+                PDF compression is useful when a document is too large for an upload form, email
+                attachment or storage requirement.
+              </p>
+              <p>
+                The amount of reduction depends heavily on what the PDF contains. A document made
+                mostly from text may behave differently from a scanned PDF containing high-resolution
+                photographs on every page.
+              </p>
+              <p>
+                Reducing file size can involve changing how images or other resources are stored.
+                More compression can sometimes mean lower visual quality, so inspect important
+                diagrams, photographs and small text after processing.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-gray-200 pt-6" aria-labelledby="pdf-text-scans-heading">
+            <h2 id="pdf-text-scans-heading" className="text-2xl font-bold text-gray-900">
+              Text-Based PDFs and Scanned PDFs Are Different
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>Two PDFs that look similar on screen may be very different internally.</p>
+              <p>
+                A text-based PDF usually contains actual text characters that software can select or
+                extract. A scanned PDF may contain pages that are essentially photographs of paper
+                documents.
+              </p>
+              <p>
+                This distinction matters when extracting text, searching a document or converting it
+                to an editable format. A scanned page may require optical character recognition (OCR)
+                before its text can be interpreted, and OCR can make mistakes&mdash;particularly
+                with unclear scans, unusual fonts, handwriting, tables or complex layouts.
+              </p>
+              <p>If extracted text matters, compare it with the source document.</p>
+            </div>
+          </section>
+
+          <section className="border-t border-gray-200 pt-6" aria-labelledby="editing-pdf-heading">
+            <h2 id="editing-pdf-heading" className="text-2xl font-bold text-gray-900">
+              Editing a PDF
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>Small PDF changes and full document editing are different tasks.</p>
+              <p>
+                Operations such as rotating, rearranging, deleting or extracting pages generally
+                work with the existing page structure. Changing the actual text or visual elements
+                inside a PDF can be more complicated because the file may not contain editable
+                paragraphs in the way a word-processing document does.
+              </p>
+              <p>
+                For substantial rewriting, converting to an editable format may sometimes be more
+                practical. For page-level changes, a dedicated PDF page tool is usually the simpler
+                option.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-gray-200 pt-6" aria-labelledby="images-in-pdfs-heading">
+            <h2 id="images-in-pdfs-heading" className="text-2xl font-bold text-gray-900">
+              Images Inside PDFs
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>PDFs can contain photographs, screenshots, illustrations and scanned pages.</p>
+              <p>
+                Converting a PDF page to an image creates a raster representation of that page. The
+                resulting usefulness depends partly on the chosen dimensions, resolution and source
+                quality.
+              </p>
+              <p>
+                Similarly, converting images into a PDF packages those images into PDF pages; it does
+                not improve the underlying image quality.
+              </p>
+              <p>
+                If small text or detailed graphics are important, inspect the result at normal
+                viewing size before discarding the source files.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-gray-200 pt-6" aria-labelledby="protected-pdfs-heading">
+            <h2 id="protected-pdfs-heading" className="text-2xl font-bold text-gray-900">
+              Password-Protected and Restricted PDFs
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>Some PDFs are protected by passwords or document permissions.</p>
+              <p>
+                A tool cannot necessarily process a protected file unless the required access is
+                available. Restrictions may also exist for a legitimate reason, so only modify or
+                unlock documents that you own or have permission to use.
+              </p>
+              <p>
+                Removing a password from an authorized copy does not recover a password that you do
+                not know.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-gray-200 pt-6" aria-labelledby="pdf-processing-heading">
+            <h2 id="pdf-processing-heading" className="text-2xl font-bold text-gray-900">
+              PDF File Size and Processing
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>
+                PDF processing requirements vary according to both the selected tool and the
+                document itself.
+              </p>
+              <p>
+                A short text document can require far fewer resources than a large scanned report
+                containing hundreds of high-resolution images. Some operations may therefore take
+                longer or have different file-size restrictions.
+              </p>
+              <p>
+                Check the individual tool page for its supported inputs, limits and processing
+                requirements rather than assuming that every PDF tool works under the same
+                conditions.
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <div className="mt-14 space-y-10">
+          <section className="border-t border-gray-200 pt-8" aria-labelledby="important-pdf-heading">
+            <h2 id="important-pdf-heading" className="text-2xl font-bold text-gray-900">
+              Before Processing an Important PDF
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>For documents that matter, a few simple precautions can prevent problems:</p>
+              <ol className="list-decimal space-y-2 pl-5">
+                <li>Keep an untouched copy of the original.</li>
+                <li>Make sure you selected the operation you actually need.</li>
+                <li>Check page order and orientation when combining or rearranging pages.</li>
+                <li>Review fonts, tables and spacing after format conversion.</li>
+                <li>
+                  Compare extracted or OCR-generated text with the source when accuracy matters.
+                </li>
+                <li>Inspect image-heavy documents after compression.</li>
+                <li>Open the downloaded result before deleting the original.</li>
+              </ol>
+              <p>
+                These checks are particularly useful for contracts, applications, financial
+                records, reports and documents that would be difficult to recreate.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-gray-200 pt-8" aria-labelledby="smallest-change-heading">
+            <h2 id="smallest-change-heading" className="text-2xl font-bold text-gray-900">
+              Choose the Smallest Change That Solves the Problem
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-gray-700">
+              <p>
+                You do not need to convert a PDF simply because something about the file needs to
+                change.
+              </p>
+              <p>
+                If the file is too large, try compression. If only several pages are needed, extract
+                or split them. If pages are in the wrong order, reorganize them. If the content needs
+                substantial editing, consider converting it to an editable format.
+              </p>
+              <p>
+                Starting with the smallest necessary operation usually makes it easier to preserve
+                the parts of the original document that you want to keep.
+              </p>
+              <p>
+                Browse the PDF tools above to choose the operation that matches your task, then check
+                that tool&apos;s page for its supported formats, controls and limitations.
+              </p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function PdfToolsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-
-  // Remove global FAQPage schema on this page - keep only PDF-specific FAQ schema
-  useEffect(() => {
-    const scripts = document.querySelectorAll('script[type="application/ld+json"]');
-    scripts.forEach((script) => {
-      try {
-        const schema = JSON.parse(script.innerHTML);
-        // Remove the global FAQ schema (contains "200+ free online tools")
-        if (
-          schema['@type'] === 'FAQPage' &&
-          schema.mainEntity &&
-          schema.mainEntity[0]?.name?.includes('SimplifyConvert tools')
-        ) {
-          script.remove();
-        }
-      } catch (e) {
-        // Ignore parsing errors
-      }
-    });
-  }, []);
 
   const allPdfTools = getAllPdfTools();
 
@@ -58,59 +378,18 @@ export default function PdfToolsPage() {
       );
     }
 
-    return results;
-  }, [searchTerm, selectedCategory]);
+    return [...results].sort((a, b) => {
+      const aPriority =
+        PDF_TOOL_PRIORITY_INDEX.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+      const bPriority =
+        PDF_TOOL_PRIORITY_INDEX.get(b.id) ?? Number.MAX_SAFE_INTEGER;
 
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: 'Are all PDF tools really free?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Yes! All free PDF tools at SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any PDF tool unlimited times without payment.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Do I need to install software to use PDF tools?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'No. All PDF tools work directly in your browser on Windows, Mac, iOS, and Android. Just upload your PDF, click convert, and download the result. No installation required.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Is my data safe when using SimplifyConvert PDF tools?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Yes. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption for all transfers.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Which PDF tools are most popular?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Merge PDF, PDF to text extraction, split PDF, and compress PDF are among our most popular tools. All are free, fast, and work without signup or installation.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Can I use PDF tools on mobile devices?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Absolutely! Our PDF tools are fully responsive and work perfectly on smartphones and tablets. Use any tool on iPhone, Android, iPad, or tablet with the same features and speed as desktop.',
-        },
-      },
-    ],
-  };
+      return aPriority - bPriority;
+    });
+  }, [searchTerm, selectedCategory]);
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       {/* Breadcrumb Schema */}
       <script
         type="application/ld+json"
@@ -164,17 +443,13 @@ export default function PdfToolsPage() {
               </div>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Free PDF Tools Online - Merge, Split & Compress</h1>
                 <p className="text-lg text-white/90 max-w-2xl mb-4">
-                  Professional free PDF tools for merging, splitting, compressing, converting, and editing PDF files instantly. No signup or installation required.
-                </p>
-                {/* Keyword-rich intro paragraph */}
-                <p className="text-base text-white/85 max-w-3xl leading-relaxed">
-                  Use our free online PDF tools to merge, split, compress, and convert PDF files instantly. No signup required, secure processing, and fast performance across all devices.
+                  Browse PDF tools to merge documents, split pages, reduce file sizes, convert between formats, and make changes to existing PDFs. Select a tool below to see its supported formats and limits.
                 </p>
               </motion.div>
             </div>
@@ -185,7 +460,7 @@ export default function PdfToolsPage() {
             <div className="max-w-7xl mx-auto">
               <motion.div
                 className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
@@ -253,20 +528,27 @@ export default function PdfToolsPage() {
               ) : (
                 <motion.div
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={{ opacity: 1 }}
                   transition={{ staggerChildren: 0.05, delayChildren: 0.3 }}
                 >
-                  {filteredTools.map((tool) => (
+                  {filteredTools.map((tool) => {
+                    const isFeaturedEditor = tool.id === 'edit-pdf';
+
+                    return (
                     <motion.div
                       key={tool.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={false}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4 }}
                     >
                       <Link href={`/all-tools/pdf/${tool.id}`}>
                         <motion.div
-                          className="h-full rounded-2xl bg-white border-2 border-gray-200 hover:border-gray-300 p-6 hover:shadow-xl transition-all group relative overflow-hidden"
+                          className={`h-full rounded-2xl border-2 p-6 hover:shadow-xl transition-all group relative overflow-hidden ${
+                            isFeaturedEditor
+                              ? 'bg-gradient-to-br from-orange-50 via-white to-orange-50 border-orange-400 hover:border-orange-500 shadow-lg shadow-orange-100/80'
+                              : 'bg-white border-gray-200 hover:border-gray-300'
+                          }`}
                           whileHover={{ y: -8 }}
                           transition={{ duration: 0.3 }}
                         >
@@ -277,22 +559,50 @@ export default function PdfToolsPage() {
                           />
 
                           <div className="relative z-10">
+                            {isFeaturedEditor && (
+                              <div className="absolute right-0 top-0">
+                                <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-orange-700 ring-1 ring-inset ring-orange-300">
+                                  Featured
+                                </span>
+                              </div>
+                            )}
+
                             {/* Icon */}
                             <motion.div
-                              className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center group-hover:from-purple-200 group-hover:to-purple-300 transition mb-4"
+                              className={`w-12 h-12 rounded-xl flex items-center justify-center transition mb-4 ${
+                                isFeaturedEditor
+                                  ? 'bg-gradient-to-br from-orange-100 to-orange-200 group-hover:from-orange-200 group-hover:to-orange-300'
+                                  : 'bg-gradient-to-br from-purple-100 to-purple-200 group-hover:from-purple-200 group-hover:to-purple-300'
+                              }`}
                               whileHover={{ scale: 1.2, rotate: 12 }}
                               title={tool.title}
                               role="img"
                               aria-label={`${tool.title} tool icon`}
                             >
-                              {tool.icon && <tool.icon className="w-6 h-6 text-purple-600" />}
+                              {tool.icon && (
+                                <tool.icon
+                                  className={`w-6 h-6 ${
+                                    isFeaturedEditor ? 'text-orange-600' : 'text-purple-600'
+                                  }`}
+                                />
+                              )}
                             </motion.div>
 
                             {/* Content */}
-                            <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition">{tool.title}</h3>
+                            <h3
+                              className={`font-semibold mb-2 line-clamp-2 transition ${
+                                isFeaturedEditor
+                                  ? 'text-gray-950 group-hover:text-orange-600'
+                                  : 'text-gray-900 group-hover:text-purple-600'
+                              }`}
+                            >
+                              {tool.title}
+                            </h3>
                             <p className="text-sm text-gray-600 line-clamp-2 mb-4">{tool.description}</p>
                             <motion.div
-                              className="flex items-center gap-1 text-purple-600 font-medium text-sm"
+                              className={`flex items-center gap-1 font-medium text-sm ${
+                                isFeaturedEditor ? 'text-orange-600' : 'text-purple-600'
+                              }`}
                               whileHover={{ gap: 8 }}
                             >
                               Open tool
@@ -302,77 +612,39 @@ export default function PdfToolsPage() {
                         </motion.div>
                       </Link>
                     </motion.div>
-                  ))}
+                    );
+                  })}
                 </motion.div>
               )}
             </div>
           </div>
 
-          {/* SEO Content Section */}
-          <div className="py-12 px-4 md:px-8 bg-white border-b border-gray-200">
-            <div className="max-w-4xl mx-auto space-y-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free PDF Tools?</h2>
-                
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  SimplifyConvert offers a complete suite of free PDF tools to handle all your document needs. Whether you need to merge multiple PDFs into one document, split a large PDF into individual pages, compress files for email sharing, or convert PDFs to other formats, our free PDF tools deliver professional results without any cost, signup, or software installation.
-                </p>
+          <PdfToolsGuidance />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
-                    <p className="text-gray-700 text-sm">All 55+ PDF tools are permanently free. No hidden charges, premium tiers, or surprise fees. Use unlimited PDF conversions without payment or credit card.</p>
-                  </div>
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Installation</h3>
-                    <p className="text-gray-700 text-sm">Works directly in your browser. Use PDF tools on Windows, Mac, iPhone, Android, and any device with internet. No software downloads or complex setup.</p>
-                  </div>
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Fast Processing</h3>
-                    <p className="text-gray-700 text-sm">Convert, merge, split, and compress PDFs in seconds. Advanced processing algorithms deliver fast results without lag or delays.</p>
-                  </div>
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Secure & Private</h3>
-                    <p className="text-gray-700 text-sm">Files are processed securely and automatically deleted after processing. HTTPS encryption protects all transfers. We do not store your files.</p>
-                  </div>
-                </div>
-
-                {/* Popular PDF Tools - Internal Linking Section */}
-                <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular PDF Tools</h2>
-                  <p className="text-gray-700 mb-6">Quick access to our most-used PDF conversion and editing tools:</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Link href="/all-tools/pdf/merge-pdf" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition">
-                      <span className="text-purple-600 font-semibold">→</span>
-                      <span className="text-gray-900 font-medium hover:text-purple-600">Merge PDF Files</span>
-                    </Link>
-                    <Link href="/all-tools/pdf/compress-pdf" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition">
-                      <span className="text-purple-600 font-semibold">→</span>
-                      <span className="text-gray-900 font-medium hover:text-purple-600">Compress PDF</span>
-                    </Link>
-                    <Link href="/all-tools/pdf/split-pdf" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition">
-                      <span className="text-purple-600 font-semibold">→</span>
-                      <span className="text-gray-900 font-medium hover:text-purple-600">Split PDF Pages</span>
-                    </Link>
-                    <Link href="/all-tools/pdf/pdf-to-word" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition">
-                      <span className="text-purple-600 font-semibold">→</span>
-                      <span className="text-gray-900 font-medium hover:text-purple-600">PDF to Word Converter</span>
-                    </Link>
-                  </div>
-                </div>
-
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Free PDF Tools</h2>
-                <p className="text-gray-700 leading-relaxed">
-                  Using SimplifyConvert PDF tools is simple and straightforward. Select the tool you need, upload your PDF file, configure options if needed, and click process. The tool handles complex PDF operations in seconds while maintaining document quality. Download your converted or modified PDF instantly. No signup required, no registration needed, no learning curve.
-                </p>
-              </motion.div>
+          {/* Popular PDF Tools - Internal Linking Section */}
+          <section className="border-b border-gray-200 bg-slate-50 px-4 py-12 md:px-8">
+            <div className="mx-auto max-w-4xl rounded-lg border border-gray-200 bg-white p-6 sm:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular PDF Tools</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link href="/all-tools/pdf/merge-pdf" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition">
+                  <span className="text-purple-600 font-semibold">→</span>
+                  <span className="text-gray-900 font-medium hover:text-purple-600">Merge PDF Files</span>
+                </Link>
+                <Link href="/all-tools/pdf/compress-pdf" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition">
+                  <span className="text-purple-600 font-semibold">→</span>
+                  <span className="text-gray-900 font-medium hover:text-purple-600">Compress PDF</span>
+                </Link>
+                <Link href="/all-tools/pdf/split-pdf" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition">
+                  <span className="text-purple-600 font-semibold">→</span>
+                  <span className="text-gray-900 font-medium hover:text-purple-600">Split PDF Pages</span>
+                </Link>
+                <Link href="/all-tools/pdf/pdf-to-word" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition">
+                  <span className="text-purple-600 font-semibold">→</span>
+                  <span className="text-gray-900 font-medium hover:text-purple-600">PDF to Word Converter</span>
+                </Link>
+              </div>
             </div>
-          </div>
+          </section>
 
           <FAQ
             items={[
@@ -380,37 +652,23 @@ export default function PdfToolsPage() {
                 name: 'Are all PDF tools really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes! All free PDF tools at SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any PDF tool unlimited times without payment.'
+                  text: 'The PDF utilities on this category page are available without a Premium AI Studio credit purchase. Individual tools can still enforce file-size, page-count, or rate limits.'
                 }
               },
               {
                 name: 'Do I need to install software to use PDF tools?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'No. All PDF tools work directly in your browser on Windows, Mac, iOS, and Android. Just upload your PDF, click convert, and download the result. No installation required.'
+                  text: 'No installation is required to access the PDF tools. Check the individual tool page for its supported inputs and processing requirements.'
                 }
               },
               {
                 name: 'Is my data safe when using SimplifyConvert PDF tools?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption for all transfers.'
+                  text: 'PDF files are sent over HTTPS for server processing. Temporary working files are cleaned during the request, and standard generated download results normally expire after about 30 minutes.'
                 }
               },
-              {
-                name: 'Which PDF tools are most popular?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Merge PDF, PDF to text extraction, split PDF, and compress PDF are among our most popular tools. All are free, fast, and work without signup or installation.'
-                }
-              },
-              {
-                name: 'Can I use PDF tools on mobile devices?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Absolutely! Our PDF tools are fully responsive and work perfectly on smartphones and tablets. Use any tool on iPhone, Android, iPad, or tablet with the same features and speed as desktop.'
-                }
-              }
             ]}
             colorClass="purple"
             bgColor="white"
@@ -421,10 +679,3 @@ export default function PdfToolsPage() {
     </>
   );
 }
-
-
-
-
-
-
-

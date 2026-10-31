@@ -1,1042 +1,790 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
-  FileText, Image, Video, PenTool, Database, Code2, Volume2, Brackets,
-  ArrowRight, Search, Menu, X, Zap, Lock, Smartphone, Sparkles,
-  BarChart3, CheckCircle, ChevronRight, ArrowUpRight, Eraser, Combine,
-  FileImage, Mountain, Wand2, Package
+import {
+  ArrowRight,
+  Check,
+  Code2,
+  Combine,
+  Database,
+  Eraser,
+  FileImage,
+  FileSpreadsheet,
+  FileText,
+  FileCheck,
+  Download,
+  Image,
+  PenTool,
+  Presentation,
+  Sparkles,
+  TrendingUp,
+  Video,
+  Volume2,
+  Zap,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { aiEditingTools, converterTools, aiWriteTools, videoTools } from './data/tools';
+import { Footer } from './components/Footer';
 import { HomeHeader } from './components/HomeHeader';
 import { SearchBox } from './components/SearchBox';
-import { Footer } from './components/Footer';
 import { getBestSearchResult } from './lib/search-index';
+
+const categories = [
+  {
+    id: 'pdf',
+    title: 'PDF Tools',
+    description: 'Merge, split, compress and convert PDF files.',
+    icon: FileText,
+    accent: 'bg-violet-100 text-violet-700',
+    link: '/all-tools/pdf-tools',
+  },
+  {
+    id: 'image',
+    title: 'Image Tools',
+    description: 'Resize, compress, convert and edit images.',
+    icon: Image,
+    accent: 'bg-orange-100 text-orange-700',
+    link: '/all-tools/image-tools',
+  },
+  {
+    id: 'video',
+    title: 'Video Tools',
+    description: 'Convert, trim and process video files.',
+    icon: Video,
+    accent: 'bg-rose-100 text-rose-700',
+    link: '/all-tools/video-tools',
+  },
+  {
+    id: 'ai-writing',
+    title: 'AI Writing Tools',
+    description: 'Draft, rewrite and improve written content.',
+    icon: PenTool,
+    accent: 'bg-blue-100 text-blue-700',
+    link: '/all-tools/ai-tools',
+  },
+  {
+    id: 'data',
+    title: 'Data Tools',
+    description: 'Convert CSV, JSON, Excel and XML data.',
+    icon: Database,
+    accent: 'bg-teal-100 text-teal-700',
+    link: '/all-tools/data',
+  },
+  {
+    id: 'code',
+    title: 'Code Tools',
+    description: 'Format, validate and transform code.',
+    icon: Code2,
+    accent: 'bg-emerald-100 text-emerald-700',
+    link: '/all-tools/code-tools',
+  },
+  {
+    id: 'text-to-speech',
+    title: 'Text to Speech',
+    description: 'Turn written text into spoken audio.',
+    icon: Volume2,
+    accent: 'bg-indigo-100 text-indigo-700',
+    link: '/all-tools/text-to-speech',
+  },
+  {
+    id: 'financial',
+    title: 'Financial Calculators',
+    description: 'Calculate and compare financial figures.',
+    icon: TrendingUp,
+    accent: 'bg-emerald-100 text-emerald-700',
+    link: '/all-tools/financial-calculators',
+  },
+  {
+    id: 'resume-maker',
+    title: 'Resume Maker',
+    description: 'Create and customize a professional resume.',
+    icon: FileCheck,
+    accent: 'bg-sky-100 text-sky-700',
+    link: '/all-tools/resume-maker',
+  },
+  {
+    id: 'downloader',
+    title: 'Save From Online',
+    description: 'Explore supported online media-saving tools.',
+    icon: Download,
+    accent: 'bg-green-100 text-green-700',
+    link: '/all-tools/save-from-online',
+  },
+];
+const popularTasks = [
+  {
+    title: 'Remove Background',
+    description: 'Create a clean transparent background.',
+    icon: Eraser,
+    accent: 'bg-orange-100 text-orange-700',
+    link: '/all-tools/remove-background',
+  },
+  {
+    title: 'Merge PDF',
+    description: 'Combine multiple PDFs into one file.',
+    icon: Combine,
+    accent: 'bg-violet-100 text-violet-700',
+    link: '/all-tools/pdf/merge-pdf',
+  },
+  {
+    title: 'Compress Image',
+    description: 'Reduce image size for easier sharing.',
+    icon: Zap,
+    accent: 'bg-amber-100 text-amber-700',
+    link: '/all-tools/compress-image',
+  },
+  {
+    title: 'JPG to PNG',
+    description: 'Convert JPG images to PNG format.',
+    icon: FileImage,
+    accent: 'bg-sky-100 text-sky-700',
+    link: '/all-tools/jpg-to-png',
+  },
+  {
+    title: 'Compress PDF',
+    description: 'Make PDF files smaller online.',
+    icon: FileText,
+    accent: 'bg-rose-100 text-rose-700',
+    link: '/all-tools/pdf/compress-pdf',
+  },
+];
+
+const trustItems = [
+  'Free online utility tools',
+  'No installation required',
+  'Works on desktop and mobile',
+  'AI-powered productivity tools',
+];
+
+
+const studioTools = [
+  {
+    title: 'Presentation Maker',
+    description: 'Turn an idea into a structured, polished presentation.',
+    icon: Presentation,
+  },
+  {
+    title: 'Document Maker',
+    description: 'Create clear reports, proposals, and long-form documents.',
+    icon: FileText,
+  },
+  {
+    title: 'Spreadsheet Maker',
+    description: 'Build useful spreadsheets from a simple description.',
+    icon: FileSpreadsheet,
+  },
+];
+
+const homepageFaqs = [
+  {
+    question: 'Which SimplifyConvert tools are free?',
+    answer:
+      'Our utility tools are free to use. Premium AI Studio is a separate credit-based service for creating presentations, documents, and spreadsheets.',
+  },
+  {
+    question: 'Do I need to install software?',
+    answer:
+      'No. SimplifyConvert tools run through your web browser, so there is no desktop software to install.',
+  },
+  {
+    question: 'How are my files processed?',
+    answer:
+      'Connections use HTTPS. Some tools process files in your browser, while others use temporary server processing. See our Privacy Policy for more information.',
+  },
+  {
+    question: 'Do I need an account?',
+    answer:
+      'Most free utility tools can be used without an account. Premium AI Studio requires an eligible account and credits.',
+  },
+  {
+    question: 'Can I use SimplifyConvert on mobile?',
+    answer:
+      'Yes. The website and its utility tools are designed to work across modern desktop, tablet, and mobile browsers.',
+  },
+];
+
+const homepageFaqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: homepageFaqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer,
+    },
+  })),
+};
 
 export default function Home() {
   const router = useRouter();
-  const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-
-  useEffect(() => {
-    const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const categories = [
-    {
-      id: 'pdf',
-      title: 'PDF Tools',
-      description: 'Convert, merge, compress, and edit PDFs',
-      icon: FileText,
-      color: 'from-purple-500 via-purple-600 to-purple-700',
-      bgColor: 'bg-purple-50',
-      count: '54+',
-      link: '/all-tools/pdf-tools',
-      glowColor: 'group-hover:shadow-purple-500/20'
-    },
-    {
-      id: 'image',
-      title: 'Image Tools',
-      description: 'Edit, convert, enhance, and optimize images',
-      icon: Image,
-      color: 'from-orange-500 via-orange-600 to-orange-700',
-      bgColor: 'bg-orange-50',
-      count: '80+',
-      link: '/all-tools/image-tools',
-      glowColor: 'group-hover:shadow-orange-500/20'
-    },
-    {
-      id: 'video',
-      title: 'Video Tools',
-      description: 'Convert, merge, compress, and edit videos',
-      icon: Video,
-      color: 'from-pink-500 via-pink-600 to-pink-700',
-      bgColor: 'bg-pink-50',
-      count: '58+',
-      link: '/all-tools/video-tools',
-      glowColor: 'group-hover:shadow-pink-500/20'
-    },
-    {
-      id: 'ai',
-      title: 'AI Writing Tools',
-      description: 'AI-powered writing, generation, and content creation',
-      icon: PenTool,
-      color: 'from-blue-500 via-blue-600 to-blue-700',
-      bgColor: 'bg-blue-50',
-      count: '60+',
-      link: '/all-tools/ai-tools',
-      glowColor: 'group-hover:shadow-blue-500/20'
-    },
-    {
-      id: 'data',
-      title: 'Data Tools',
-      description: 'Convert and transform data formats easily',
-      icon: Database,
-      color: 'from-teal-500 via-teal-600 to-teal-700',
-      bgColor: 'bg-teal-50',
-      count: '12',
-      link: '/all-tools/data',
-      glowColor: 'group-hover:shadow-teal-500/20'
-    },
-    {
-      id: 'code',
-      title: 'Code Tools',
-      description: 'Format, minify, validate, and generate code',
-      icon: Code2,
-      color: 'from-green-500 via-green-600 to-green-700',
-      bgColor: 'bg-green-50',
-      count: '44+',
-      link: '/all-tools/code-tools',
-      glowColor: 'group-hover:shadow-green-500/20'
-    },
-    {
-      id: 'text-to-speech',
-      title: 'Text to Speech',
-      description: 'Convert text to natural-sounding audio',
-      icon: Volume2,
-      color: 'from-indigo-500 via-indigo-600 to-indigo-700',
-      bgColor: 'bg-indigo-50',
-      count: 'Voice',
-      link: '/all-tools/text-to-speech',
-      glowColor: 'group-hover:shadow-indigo-500/20'
-    }
-  ];
-
-  const features = [
-    {
-      icon: Zap,
-      title: 'Fast Processing',
-      description: 'Converts most files in seconds without software installation'
-    },
-    {
-      icon: Lock,
-      title: 'Privacy First',
-      description: 'Your files are secure. We never store or share your data'
-    },
-    {
-      icon: Smartphone,
-      title: 'Fully Responsive',
-      description: 'Works perfectly on desktop, tablet, and mobile devices'
-    },
-    {
-      icon: CheckCircle,
-      title: 'No Installation',
-      description: 'Use directly in your browser, no software required'
-    },
-    {
-      icon: BarChart3,
-      title: '200+ Tools',
-      description: 'Complete solution for all your conversion needs'
-    },
-    {
-      icon: Sparkles,
-      title: 'Always Free',
-      description: 'All tools are completely free forever'
-    }
-  ];
-
-  const popularTools = [...aiEditingTools, ...converterTools, ...aiWriteTools, ...videoTools];
-
-  const homepageFaqs = [
-    {
-      question: "Are all SimplifyConvert tools really free?",
-      answer: "Yes! All 200+ free online tools at SimplifyConvert are completely free forever. No hidden costs, premium tiers, or surprise fees. You can use any tool unlimited times without signup or payment."
-    },
-    {
-      question: "Do I need to install software to use these free online tools?",
-      answer: "No! Our free online tools work directly in your web browser. No installation, downloads, or software setup required. Works on Windows, Mac, Linux, iPhone, iPad, and Android devices."
-    },
-    {
-      question: "Is my data safe when using SimplifyConvert free online tools?",
-      answer: "Yes, your privacy is our top priority. Files are processed securely and automatically deleted after processing. We do not store your files. We use HTTPS encryption and follow strict data protection standards."
-    },
-    {
-      question: "Do I need to create an account to use the free online tools?",
-      answer: "No signup required! You can start using any of our 200+ free online tools immediately without creating an account, providing an email, or any registration."
-    },
-    {
-      question: "Which free online tools are most popular?",
-      answer: "Our most-used free online tools include: JPG to PNG converter, PDF merger, image compressor, video converter, background remover, and AI image generator. Users love these tools for their speed and simplicity."
-    },
-    {
-      question: "Can I use SimplifyConvert free online tools on mobile?",
-      answer: "Absolutely! Our free online tools are fully responsive and work perfectly on smartphones and tablets. Use any tool with the same features and speed as on desktop."
-    }
-  ];
-
-  const homepageFaqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: homepageFaqs.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer
-      }
-    }))
-  };
-
-  const getToolsByCategory = (cat: string) => {
-    const filtered = popularTools.filter(tool => {
-      if (!tool.route) return false;
-      if (cat === 'all') return true;
-      const category = tool.category?.toLowerCase() || '';
-      const title = tool.title?.toLowerCase() || '';
-      const catLower = cat.toLowerCase();
-      
-      // Check both category and title
-      return category.includes(catLower) || title.includes(catLower);
-    });
-    return filtered.slice(0, 12);
-  };
 
   const navigateSearch = (query: string) => {
     const bestMatch = getBestSearchResult(query);
     router.push(bestMatch?.route ?? `/all-tools?search=${encodeURIComponent(query)}`);
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.08, delayChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-  };
-
-  const floatVariants = {
-    animate: {
-      y: [0, -20, 0],
-      transition: { duration: 4, repeat: Infinity }
-    }
-  };
-
-  // Popular actions/tools that users commonly use
-  const popularActions = [
-    {
-      title: 'Remove Background',
-      description: 'Remove image backgrounds automatically',
-      icon: Eraser,
-      category: 'Image',
-      color: 'from-orange-500 to-orange-600',
-      link: '/all-tools/remove-background'
-    },
-    {
-      title: 'Merge PDF',
-      description: 'Combine multiple PDFs into one',
-      icon: Combine,
-      category: 'PDF',
-      color: 'from-purple-500 to-purple-600',
-      link: '/all-tools/pdf/merge-pdf'
-    },
-    {
-      title: 'Compress Image',
-      description: 'Reduce image file size without quality loss',
-      icon: Zap,
-      category: 'Image', 
-      color: 'from-orange-500 to-orange-600',
-      link: '/all-tools/compress-image'
-    },
-    {
-      title: 'JPG to PNG',
-      description: 'Convert JPG images to PNG format',
-      icon: FileImage,
-      category: 'Image',
-      color: 'from-orange-500 to-orange-600',
-      link: '/all-tools/jpg-to-png'
-    },
-    {
-      title: 'Upscale Image',
-      description: 'Enhance and enlarge images without quality loss',
-      icon: Mountain,
-      category: 'Image',
-      color: 'from-orange-500 to-orange-600',
-      link: '/all-tools/upscale-image'
-    },
-    {
-      title: 'AI Image Generator',
-      description: 'Generate images from text descriptions',
-      icon: Wand2,
-      category: 'AI',
-      color: 'from-blue-500 to-blue-600',
-      link: '/all-tools/ai-image-generator'
-    },
-    {
-      title: 'Compress PDF',
-      description: 'Reduce PDF file size easily',
-      icon: FileText,
-      category: 'PDF',
-      color: 'from-purple-500 to-purple-600',
-      link: '/all-tools/pdf/compress-pdf'
-    },
-    {
-      title: 'AI Writing Tools',
-      description: 'AI-powered writing and content creation',
-      icon: PenTool,
-      category: 'AI',
-      color: 'from-blue-500 to-blue-600',
-      link: '/all-tools/ai-tools'
-    }
-  ];
-
   return (
-    <main className="min-h-screen bg-white">
+    <main className="home-page min-h-screen overflow-x-clip bg-white text-slate-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageFaqSchema) }}
       />
       <HomeHeader />
 
-      {/* TAG LINE */}
-      <section className="bg-orange-50 border-b border-orange-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-center">
-          <motion.p
-            className="text-sm md:text-base font-semibold text-indigo-700 flex items-center justify-center gap-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
+      <section className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.10),transparent_38%),linear-gradient(to_bottom,#fffaf5,#ffffff)]">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+          <div className="mx-auto max-w-4xl text-center">
+            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+              Free online tools to{' '}
+              <span className="text-orange-600">convert, edit, and create files</span>
+            </h1>
+
+            <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+              Convert, compress, edit, and create files with easy-to-use online tools. Explore
+              free PDF, image, video, data, and code utilities, plus Premium AI Studio for
+              presentations, documents, and spreadsheets.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-9 max-w-3xl">
+            <SearchBox
+              placeholder="Search for a tool or task"
+              onSearch={(query) =>
+                router.push(`/all-tools?search=${encodeURIComponent(query)}`)
+              }
+              variant="hero"
+              showSuggestions
+            />
+          </div>
+
+          <div
+            className="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+            aria-label="Tool categories"
           >
-            <Sparkles size={16} />
-            Convert Files • Edit Images • Process Videos • AI Tools
-            <Sparkles size={16} />
-          </motion.p>
+            {categories.map((category) => {
+              const Icon = category.icon;
+
+              return (
+                <Link
+                  key={category.id}
+                  href={category.link}
+                  className="group rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${category.accent}`}
+                    >
+                      <Icon aria-hidden="true" size={17} />
+                    </span>
+
+                    <p className="text-sm font-bold leading-5 text-slate-800 transition group-hover:text-orange-700">
+                      {category.title}
+                    </p>
+                  </div>
+
+                  <p className="mt-3 text-xs font-medium text-slate-500">
+                    {category.description}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mx-auto mt-5 max-w-5xl">
+            <Link
+              href="/ai-studio"
+              className="group block overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 via-blue-950 to-cyan-900 p-5 text-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.65)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_55px_-25px_rgba(15,23,42,0.8)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 sm:p-6"
+            >
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-cyan-200">
+                    <Sparkles aria-hidden="true" size={21} />
+                  </span>
+
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-base font-bold sm:text-lg">
+                        Premium AI Studio
+                      </p>
+                      <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-100">
+                        Premium
+                      </span>
+                    </div>
+
+                    <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-300">
+                      Create presentations, documents, and spreadsheets from a simple idea with
+                      our guided AI workspace.
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {['Presentation', 'Document', 'Spreadsheet'].map((format) => (
+                        <span
+                          key={format}
+                          className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1 text-xs font-medium text-cyan-50"
+                        >
+                          {format}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <span className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-white">
+                  Explore AI Studio
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="transition group-hover:translate-x-1"
+                    size={17}
+                  />
+                </span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+      <section aria-label="Product benefits" className="border-b border-slate-200 bg-white">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-px bg-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+          {trustItems.map((item) => (
+            <div
+              key={item}
+              className="flex items-center gap-3 bg-white px-5 py-4 text-sm font-medium text-slate-700"
+            >
+              <Check aria-hidden="true" className="shrink-0 text-orange-600" size={18} />
+              {item}
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* HERO SECTION */}
-      <section className="relative py-16 md:py-24 overflow-hidden bg-gradient-to-b from-orange-50/60 via-white to-white">
-        {/* Enhanced Animated Background Elements */}
-        <motion.div
-          className="absolute top-10 left-5 w-72 h-72 bg-gradient-to-br from-orange-200 to-amber-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
-          animate={{ x: [0, 60, -40, 0], y: [0, 40, -60, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-5 w-72 h-72 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
-          animate={{ x: [0, -60, 40, 0], y: [0, -40, 60, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/3 w-56 h-56 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
-          animate={{ x: [0, 30, -50, 0], y: [0, -30, 40, 0] }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-14 items-center">
-            {/* LEFT SIDE - TEXT CONTENT */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
+      <section className="bg-slate-50 py-16 md:py-20" aria-labelledby="popular-tasks-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-orange-600">
+              Popular tasks
+            </p>
+            <h2
+              id="popular-tasks-heading"
+              className="mt-3 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
             >
-              <motion.h1
-                className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight tracking-normal"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                Free Online Tools to Convert, Edit & Optimize{' '}
-                <motion.span
-                  className="relative inline-block"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
+              Get common file tasks done quickly
+            </h2>
+            <p className="mt-4 text-lg leading-8 text-slate-600">
+              Start with frequently used conversion, PDF, image, and AI tools.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {popularTasks.map((task) => {
+              const Icon = task.icon;
+              return (
+                <Link
+                  key={task.title}
+                  href={task.link}
+                  className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
                 >
-                  <span className="absolute -inset-x-2 -inset-y-1 bg-orange-500/10 rounded-xl blur-lg" />
-                  <span className="relative bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 bg-clip-text text-transparent">
-                    Your Files in Seconds
-                  </span>
-                </motion.span>
-              </motion.h1>
-
-              <motion.p
-                className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl leading-relaxed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                Free online tools for PDF, Image, Video, AI writing, and more. No signup required.
-              </motion.p>
-
-              {/* Search Bar with Suggestions */}
-              <motion.div
-                className="mb-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-              >
-                <div className="relative group mb-4 max-w-2xl">
-                  <div className="absolute inset-0 bg-orange-500/20 rounded-full blur opacity-30 group-hover:opacity-50 transition duration-300" />
-                  <div className="relative">
-                    <SearchBox
-                      placeholder="Search tools... (e.g., Remove background, Merge PDF)"
-                      onSearch={(query) => router.push(`/all-tools?search=${encodeURIComponent(query)}`)}
-                      variant="hero"
-                      showSuggestions={true}
+                  <div className="flex items-start justify-between gap-4">
+                    <span
+                      className={`flex h-11 w-11 items-center justify-center rounded-xl ${task.accent}`}
+                    >
+                      <Icon aria-hidden="true" size={21} />
+                    </span>
+                    <ArrowRight
+                      aria-hidden="true"
+                      className="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-orange-600"
+                      size={19}
                     />
                   </div>
-                </div>
-                <motion.div
-                  className="flex flex-wrap gap-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  {['Remove background', 'Merge PDF', 'Convert JPG to PNG', 'Compress video'].map((tag, i) => (
-                    <button
-                      key={i}
-                      onClick={() => navigateSearch(tag)}
-                      className="px-3 py-1.5 text-xs font-semibold bg-white border border-gray-200 text-gray-700 rounded-full shadow-sm hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700 transition"
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </motion.div>
-              </motion.div>
-
-              {/* Stats with Counter Animation */}
-              <motion.div
-                className="grid grid-cols-3 gap-3 sm:gap-4 max-w-xl"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                {[
-                  { label: '200', suffix: '+', value: 'Tools' },
-                  { label: '7', suffix: '', value: 'Categories' },
-                  { label: '100', suffix: '%', value: 'Free' }
-                ].map((stat) => (
-                  <motion.div key={stat.value} className="rounded-2xl border border-gray-200 bg-white p-4 text-center shadow-sm group" variants={itemVariants}>
-                    <div className="text-2xl md:text-3xl font-bold text-gray-900">
-                      {stat.label}
-                      <span className="text-lg md:text-xl text-orange-500">{stat.suffix}</span>
-                    </div>
-                    <div className="text-xs font-medium text-gray-600 mt-1 group-hover:text-gray-900 transition">{stat.value}</div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            {/* RIGHT SIDE - CATEGORIES */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="block"
-            >
-              <div className="mb-5 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-wide text-orange-600">Tools preview</p>
-                  <h2 className="mt-1 text-2xl font-bold text-gray-900">Start with a category</h2>
-                </div>
-                <Link href="/all-tools" className="hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-orange-600 transition">
-                  View all
-                  <ArrowRight size={16} />
+                  <h3 className="mt-5 text-lg font-bold text-slate-900">{task.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{task.description}</p>
                 </Link>
-              </div>
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                {categories.slice(0, 6).map((cat) => {
-                  const Icon = cat.icon;
-                  return (
-                    <motion.div key={cat.id} variants={itemVariants}>
-                      <Link href={cat.link}>
-                        <motion.div
-                          className="group h-full rounded-2xl border border-gray-200 bg-white shadow-sm cursor-pointer hover:shadow-md hover:border-orange-200 transition-all overflow-hidden"
-                          whileHover={{ y: -4 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <div className="p-5 h-full min-h-[132px] flex flex-col justify-between">
-                            <div>
-                              <div className={`p-3 bg-gradient-to-br ${cat.color} rounded-xl group-hover:shadow-lg transition-all w-fit mb-3`}>
-                                <Icon className="w-5 h-5 text-white" />
-                              </div>
-                              <h4 className="font-bold text-gray-900 text-base leading-tight">{cat.title}</h4>
-                              <p className="mt-1 text-xs text-gray-500 line-clamp-2">{cat.description}</p>
-                            </div>
-                            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100">
-                                <span className={`bg-gradient-to-r ${cat.color} bg-clip-text text-transparent font-bold`}>
-                                  {cat.count}
-                                </span>
-                              </span>
-                              <motion.div
-                                animate={{ x: 0 }}
-                                whileHover={{ x: 2 }}
-                              >
-                                <ArrowRight size={14} className="text-gray-400 group-hover:text-gray-600 transition" />
-                              </motion.div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-              
-              {/* View All Categories Link */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1 }}
-                className="mt-6 text-center sm:hidden"
-              >
-                <Link href="/all-tools" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/40 transition-all">
-                  View All Tools
-                  <ArrowRight size={18} />
-                </Link>
-              </motion.div>
-            </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* CATEGORY CARDS SECTION */}
-      <section id="categories" className="py-16 md:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-10 md:mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Explore Categories
-            </h2>
-            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Browse tools by category and discover everything we offer
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {categories.map((cat) => {
-              const Icon = cat.icon;
-              return (
-                <motion.div key={cat.id} variants={itemVariants}>
-                  <Link href={cat.link}>
-                    <motion.div 
-                      className="group h-full rounded-2xl border border-gray-200 bg-white shadow-sm cursor-pointer hover:shadow-md hover:border-orange-200 transition-all overflow-hidden"
-                      whileHover={{ y: -6 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="p-6 h-full min-h-[210px] flex flex-col justify-between gap-5 group-hover:bg-orange-50/30 transition">
-                        <div className="flex items-start justify-between">
-                          <div className={`p-3.5 bg-gradient-to-br ${cat.color} rounded-xl group-hover:shadow-lg transition-all`}>
-                            <Icon className="w-6 h-6 text-white" />
-                          </div>
-                          <motion.div
-                            className="text-xs font-bold px-2.5 py-1 rounded-full bg-orange-100 text-orange-700"
-                            animate={{ y: [0, -2, 0] }}
-                            transition={{ duration: 3, repeat: Infinity }}
-                          >
-                            Recent
-                          </motion.div>
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-gray-900 text-lg leading-tight">{cat.title}</h4>
-                          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{cat.description}</p>
-                        </div>
-                        <motion.div
-                          className="inline-flex w-fit px-3 py-1 rounded-full text-xs font-semibold bg-gray-100"
-                          whileHover={{ scale: 1.05 }}
-                        >
-                          <span className={`bg-gradient-to-r ${cat.color} bg-clip-text text-transparent font-bold`}>
-                            {cat.count} tools
-                          </span>
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* POPULAR ACTIONS SECTION - THE MOST IMPORTANT */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-10 md:mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Popular Actions
-            </h2>
-            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              The most common tasks users perform. Start with what you need.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {popularActions.map((action, index) => {
-              const Icon = action.icon;
-              return (
-                <motion.div key={index} variants={itemVariants}>
-                  <Link href={action.link}>
-                    <motion.div
-                      className="group h-full min-h-[220px] p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-orange-200 transition-all duration-300 cursor-pointer flex flex-col"
-                      whileHover={{ y: -6 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className={`inline-flex w-fit p-3 mb-5 bg-gradient-to-br ${action.color} rounded-xl shadow-sm`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition">
-                        {action.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-5 line-clamp-2 flex-1">
-                        {action.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
-                          {action.category}
-                        </span>
-                        <motion.div
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          <ArrowRight size={16} className="text-gray-400 group-hover:text-orange-600 transition" />
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS SECTION */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-10 md:mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              How It Works
-            </h2>
-            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Simple 3-step process to convert, edit, and optimize your files
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {[
-              {
-                step: 1,
-                title: 'Choose Tool',
-                description: 'Select the tool or conversion you want to apply to your file',
-                icon: Wand2
-              },
-              {
-                step: 2,
-                title: 'Upload File',
-                description: 'Choose and upload your file from your device or drag and drop',
-                icon: Package
-              },
-              {
-                step: 3,
-                title: 'Download Result',
-                description: 'Your processed file is ready to download instantly',
-                icon: ArrowUpRight
-              }
-            ].map((item, index) => (
-              <motion.div
-                key={item.step}
-                variants={itemVariants}
-                className="relative h-full"
+      <section className="bg-white py-16 md:py-20" aria-labelledby="categories-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div className="max-w-3xl space-y-4">
+              <h2
+                id="categories-heading"
+                className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
               >
-                <div className="h-full rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm hover:shadow-md transition group flex flex-col items-center text-center">
-                  {/* Step Circle */}
-                  <motion.div
-                    className="relative mb-5 w-16 h-16 md:w-20 md:h-20 flex items-center justify-center"
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-blue-600 rounded-full opacity-0 group-hover:opacity-20 transition duration-300 blur-xl" />
-                    <div className="relative w-full h-full flex items-center justify-center bg-orange-50 rounded-full border border-orange-100 shadow-sm group-hover:shadow-md transition">
-                      <div className="text-center">
-                        <div className="text-xs font-bold text-gray-500 mb-0.5">Step</div>
-                        <div className="text-2xl font-bold text-orange-500">
-                          {item.step}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Connector Line */}
-                  {index < 2 && (
-                    <div className="hidden md:block absolute top-10 left-[calc(50%+2.5rem)] w-[calc(100%-5rem)] h-px bg-orange-200" />
-                  )}
-
-                  {/* Icon */}
-                  <motion.div
-                    className="p-3 bg-gray-50 rounded-2xl mb-5 shadow-sm group-hover:shadow-md transition inline-flex"
-                    animate={{ y: [0, -8, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, delay: index * 0.3 }}
-                  >
-                    <item.icon className="w-7 h-7 text-orange-600" />
-                  </motion.div>
-
-                  {/* Title & Description */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* POPULAR TOOLS SHOWCASE */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-8 md:mb-10"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Popular Tools
-            </h2>
-            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Get started with the most-used tools that thousands of users love
-            </p>
-          </motion.div>
-
-          {/* Enhanced Filter Tabs */}
-          <motion.div
-            className="flex flex-wrap gap-2 mb-10 justify-center"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            {['all', 'Image', 'PDF', 'Video', 'AI Write'].map((cat) => (
-              <motion.button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all relative overflow-hidden ${
-                  selectedCategory === cat
-                    ? 'bg-orange-500 text-white shadow-sm hover:bg-orange-600'
-                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="relative z-10 font-semibold">
-                  {cat === 'all' ? 'All Tools' : cat.charAt(0).toUpperCase() + cat.slice(1)}
-                </span>
-              </motion.button>
-            ))}
-          </motion.div>
-
-          {/* Tools Grid */}
-          <motion.div
-            key={selectedCategory}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {getToolsByCategory(selectedCategory).map((tool) => {
-              const Icon = tool.icon;
-              return (
-                <motion.div key={tool.id} variants={itemVariants}>
-                  <Link href={tool.route ?? '/all-tools'}>
-                    <motion.div 
-                      className="h-full min-h-[220px] rounded-2xl bg-white border border-gray-200 p-6 shadow-sm hover:shadow-md hover:border-orange-200 transition-all group relative overflow-hidden"
-                      whileHover={{ y: -6 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {/* Hover Glow Background */}
-                      <motion.div
-                        className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover:opacity-100"
-                        transition={{ duration: 0.3 }}
-                      />
-
-                      <div className="relative z-10 h-full flex flex-col">
-                        <div className="flex items-start justify-between mb-4">
-                          <motion.div 
-                            className="w-12 h-12 bg-orange-100 rounded-xl flex shrink-0 items-center justify-center group-hover:bg-orange-200 transition"
-                            whileHover={{ scale: 1.2, rotate: 12 }}
-                          >
-                            <Icon className="w-6 h-6 text-orange-600" />
-                          </motion.div>
-                          <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-full group-hover:bg-orange-100 group-hover:text-orange-700 transition">
-                            {tool.category}
-                          </span>
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition">{tool.title}</h3>
-                        <p className="text-sm text-gray-600 line-clamp-2 mb-5 flex-1">{tool.description}</p>
-                        <motion.div 
-                          className="flex items-center gap-1 text-orange-600 font-medium text-sm"
-                          whileHover={{ gap: 8 }}
-                        >
-                          Use tool <motion.div whileHover={{ x: 2 }}><ArrowRight size={16} /></motion.div>
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* WHY CHOOSE US */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-10 md:mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Why Choose SimplifyConvert?
-            </h2>
-            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Trusted by users for fast, secure file conversion and editing
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {features.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div key={feature.title} variants={itemVariants}>
-                  <motion.div 
-                    className="bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-sm hover:shadow-md hover:border-orange-200 h-full min-h-[210px] transition-all group relative overflow-hidden"
-                    whileHover={{ y: -6 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {/* Hover glow */}
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100"
-                      transition={{ duration: 0.3 }}
-                    />
-                    
-                    <div className="relative z-10">
-                      <motion.div 
-                        className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-200 transition"
-                        whileHover={{ scale: 1.15, rotate: 12 }}
-                      >
-                        <Icon className="w-7 h-7 text-orange-600" />
-                      </motion.div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition">{feature.title}</h3>
-                      <p className="text-gray-600 group-hover:text-gray-700 transition">{feature.description}</p>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* SEO CONTENT SECTION - What is SimplifyConvert */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto prose prose-lg max-w-none">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-8">
-              What are Free Online Tools?
-            </h2>
-            
-            <div className="space-y-6 text-gray-700 leading-relaxed">
-              <p>
-                <strong>SimplifyConvert</strong> is a comprehensive platform offering <strong>200+ free online tools</strong> for file conversion, image editing, video processing, PDF manipulation, and AI-powered content creation. Our free online tools eliminate the need for expensive software installations, subscriptions, or technical expertise. Whether you need to convert images, compress videos, merge PDFs, or generate AI content, SimplifyConvert provides instant solutions directly in your browser.
+                Find the Right Tool for Your Task
+              </h2>
+              <p className="text-base leading-7 text-slate-600 md:text-lg md:leading-8">
+                Not every file problem needs complicated software. Sometimes you simply need to
+                turn a PDF into another format, reduce the size of an image before uploading it,
+                extract audio from a video, or convert data into a format another application can
+                understand.
               </p>
-
-              <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-                Why Choose Our Free Online Tools?
-              </h3>
-              
-              <p>
-                Users worldwide trust SimplifyConvert because our free online conversion tools are:
-              </p>
-
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-start gap-3">
-                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
-                  <span><strong>Completely Free:</strong> All 200+ tools are permanently free with no hidden costs, premium tiers, or surprise fees</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
-                  <span><strong>No Installation Required:</strong> Works directly in your browser on Windows, Mac, iOS, and Android</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
-                  <span><strong>Fast Processing:</strong> Converts most files in seconds directly in your browser</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
-                  <span><strong>Privacy Focused:</strong> Files are processed securely and automatically deleted after processing. We do not store your files</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-orange-500 font-bold text-lg mt-1">✓</span>
-                  <span><strong>No Signup:</strong> Start using our free online tools immediately without creating an account</span>
-                </li>
-              </ul>
-
-              <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-                Popular Free Online Tool Categories
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <div className="p-4 bg-white rounded-lg border border-gray-200">
-                  <h4 className="font-bold text-lg text-gray-900 mb-2">📸 Image Tools</h4>
-                  <p className="text-sm text-gray-600">Convert JPG to PNG, compress images, remove backgrounds, upscale images, and apply filters with our free image converter tools.</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg border border-gray-200">
-                  <h4 className="font-bold text-lg text-gray-900 mb-2">📄 PDF Tools</h4>
-                  <p className="text-sm text-gray-600">Merge, compress, split, and convert PDFs with our free PDF tools. Extract text, edit content, and secure documents instantly.</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg border border-gray-200">
-                  <h4 className="font-bold text-lg text-gray-900 mb-2">🎬 Video Tools</h4>
-                  <p className="text-sm text-gray-600">Convert, compress, and edit videos in any format. Trim clips, adjust resolution, and create stunning content with our free video tools.</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg border border-gray-200">
-                  <h4 className="font-bold text-lg text-gray-900 mb-2">🤖 AI Tools</h4>
-                  <p className="text-sm text-gray-600">Generate images, write content, and create with AI. Use our free AI tools for writing, coding, and content generation.</p>
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-                How Our Free Online Tools Work
-              </h3>
-
-              <p>
-                Using SimplifyConvert's free online tools is simple and straightforward. Just select your desired tool, upload your file, and click convert. No complicated settings, no learning curve. Our platform handles complex processing in the background while you get instant results. Whether you're converting a single file or working with batch operations, our free online tools make file conversion, editing, and optimization accessible to everyone.
-              </p>
-
-              <p>
-                With 200+ free online tools covering every conversion need, SimplifyConvert is your one-stop platform for all file transformation tasks. Start using our free online conversion tools today—no signup, no credit card, completely free forever.
+              <p className="text-base leading-7 text-slate-600 md:text-lg md:leading-8">
+                SimplifyConvert organizes these tasks into focused categories so you can start
+                with what you need instead of working through a complicated editor.
               </p>
             </div>
-          </motion.div>
+            <Link
+              href="/all-tools"
+              className="inline-flex items-center gap-2 self-start rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 md:self-auto"
+            >
+              View all tools
+              <ArrowRight aria-hidden="true" size={16} />
+            </Link>
+          </div>
+
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+                  <FileText aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/pdf-tools">PDF Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>
+                  Work with common PDF tasks such as converting, merging, splitting, compressing
+                  and organizing documents.
+                </p>
+                <p>
+                  Different PDF operations affect documents in different ways. A simple page
+                  operation may preserve most of the original document, while conversions to
+                  editable formats can change fonts, spacing, tables or complex layouts. Review
+                  important documents after conversion before relying on the output.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
+                  <Image aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/image-tools">Image Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>
+                  Convert image formats, resize or crop pictures, compress file sizes, remove
+                  backgrounds and make other common image adjustments.
+                </p>
+                <p>
+                  The best output depends on what you plan to do with the image. JPG is often
+                  practical for photographs and smaller files, while PNG is useful when you need
+                  lossless image storage or transparency support. Converting an already compressed
+                  image to another format cannot restore detail that was previously lost.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+                  <Video aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/video-tools">Video &amp; Audio Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>
+                  Handle practical media tasks including format conversion, compression, trimming,
+                  audio extraction and transcription.
+                </p>
+                <p>
+                  Video processing can take longer than image or document tasks because media files
+                  are usually larger and may need to be re-encoded. Output size and quality can also
+                  change depending on the source file, selected settings and type of processing.
+                </p>
+                <p>
+                  Some URL-based media tools depend on whether the source is publicly accessible and
+                  supported by the configured provider.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700">
+                  <Database aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/data">Data Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>
+                  Convert structured information between formats such as CSV, Excel, XML and JSON,
+                  or split larger datasets into more manageable outputs.
+                </p>
+                <p>
+                  A successful format conversion does not always mean two formats represent
+                  information in exactly the same way. Spreadsheet formatting, formulas, nested XML
+                  structures, column types and special characters can affect the result, so
+                  important datasets should be checked after conversion.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                  <Code2 aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/code-tools">Code Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>Use focused utilities for common development and text-processing tasks.</p>
+                <p>
+                  These tools are intended to make small, repetitive operations easier. For code or
+                  configuration that will be used in production, review generated or transformed
+                  output before deploying it.
+                </p>
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                  <PenTool aria-hidden="true" size={21} />
+                </span>
+                <h3 className="text-xl font-bold text-slate-900">
+                  <Link className="hover:text-orange-700" href="/all-tools/ai-tools">AI Tools</Link>
+                </h3>
+              </div>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                <p>Use AI-assisted tools for writing, analysis and other supported content tasks.</p>
+                <p>
+                  AI output can be useful as a starting point, but it can also contain mistakes or
+                  unexpected results. Review generated content before publishing it or using it for
+                  decisions where accuracy matters.
+                </p>
+              </div>
+            </article>
           </div>
         </div>
       </section>
 
-      {/* FAQ SECTION */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-10 md:mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Everything you need to know about SimplifyConvert and our free online tools
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="mx-auto grid max-w-4xl grid-cols-1 gap-4"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            {homepageFaqs.map((faq, index) => (
-              <motion.div
-                key={index}
-                className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden hover:shadow-md hover:border-orange-200 transition-all"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <details className="group cursor-pointer">
-                  <summary className="flex items-center justify-between gap-4 p-5 md:p-6 bg-white group-open:bg-orange-50 transition-colors">
-                    <h3 className="text-base md:text-lg font-semibold text-gray-900">
-                      {faq.question}
-                    </h3>
-                    <ChevronRight className="w-5 h-5 text-gray-600 group-open:rotate-90 transition-transform" />
-                  </summary>
-                  <div className="p-5 md:p-6 bg-white text-gray-700 leading-relaxed border-t border-gray-200">
-                    {faq.answer}
+      <section className="bg-white px-4 py-8 sm:px-6 md:py-12 lg:px-8" aria-labelledby="studio-heading">
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-cyan-900 px-6 py-12 text-white shadow-[0_30px_80px_-40px_rgba(14,116,144,0.7)] sm:px-10 lg:px-14 lg:py-16">
+          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-cyan-100">
+                <Sparkles aria-hidden="true" size={16} />
+                Premium AI Studio
+              </div>
+              <h2 id="studio-heading" className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
+                Go from an idea to finished business content
+              </h2>
+              <p className="mt-5 text-lg leading-8 text-slate-300">
+                Create structured presentations, documents, and spreadsheets with a guided AI
+                workspace.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href="/ai-studio"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                >
+                  Explore AI Studio
+                  <ArrowRight aria-hidden="true" size={17} />
+                </Link>
+                <Link
+                  href="/ai-studio/pricing"
+                  className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:border-white/50 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                >
+                  View pricing
+                </Link>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {studioTools.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <div
+                    key={tool.title}
+                    className="rounded-2xl border border-white/15 bg-white/[0.07] p-5"
+                  >
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-200">
+                      <Icon aria-hidden="true" size={20} />
+                    </span>
+                    <h3 className="mt-5 font-bold text-white">{tool.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-300">{tool.description}</p>
                   </div>
-                </details>
-              </motion.div>
-            ))}
-          </motion.div>
-
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* FOOTER */}
+      <section className="bg-slate-50 py-16 md:py-20" aria-labelledby="how-it-works-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:p-10">
+            <div className="flex items-center justify-center">
+              <img
+                src="/images/how-simplifyconvert-works.webp"
+                alt="Illustration showing the SimplifyConvert file processing workflow"
+                width={600}
+                height={400}
+                loading="lazy"
+                className="h-auto w-full max-w-md"
+              />
+            </div>
+            <div>
+              <h2
+                id="how-it-works-heading"
+                className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+              >
+                How SimplifyConvert Works
+              </h2>
+              <div className="mt-6 space-y-4 text-base leading-8 text-slate-600">
+                <p>
+                  Start by choosing the tool that matches your task. The page will show the type of
+                  input it accepts and any options available for that particular operation.
+                </p>
+                <p>
+                  After processing, supported tools provide an output that you can review or
+                  download. Because SimplifyConvert includes different types of tools, processing is
+                  not identical across the entire website. Some operations can happen in the browser,
+                  while file conversions, media processing and certain AI features may require
+                  server-side or provider-based processing.
+                </p>
+                <p>
+                  File-size limits, supported formats and processing requirements can also vary by
+                  tool. Check the information shown on the individual tool page when working with an
+                  important or unusually large file.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16 md:py-20" aria-labelledby="why-heading">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.7fr_1.3fr] lg:px-8">
+          <div>
+            <h2
+              id="why-heading"
+              className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+            >
+              Why We Built SimplifyConvert
+            </h2>
+          </div>
+          <div className="max-w-3xl space-y-5 text-base leading-8 text-slate-600">
+            <p>Simple file tasks often become unnecessarily complicated.</p>
+            <p>
+              You may need one website to convert a document, another to resize an image and another
+              to work with a video. Some services also make users navigate through features they
+              don&apos;t need before reaching a basic conversion.
+            </p>
+            <p>
+              SimplifyConvert is built around smaller, task-focused tools. Instead of requiring you
+              to learn one large editing application, each page concentrates on a particular job and
+              provides the controls and information relevant to that task.
+            </p>
+            <p>
+              That also means we don&apos;t pretend every conversion is perfect. File formats work
+              differently, compression can affect quality, complex documents can change during
+              conversion, and AI-generated results need review. Where a tool has an important
+              limitation, we aim to explain it on the page so you can decide whether the result is
+              suitable for your use.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-16 md:py-20" aria-labelledby="important-file-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 rounded-3xl border border-orange-200 bg-orange-50/50 p-6 sm:p-8 lg:grid-cols-[0.75fr_1.25fr] lg:p-10">
+            <h2
+              id="important-file-heading"
+              className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+            >
+              Before You Process an Important File
+            </h2>
+            <div className="space-y-4 text-base leading-8 text-slate-600">
+              <p>Keep the original copy of any file that would be difficult to replace.</p>
+              <p>
+                After converting or editing a document, image, video or dataset, check the
+                downloaded result before deleting the source. Pay particular attention to complex
+                PDF layouts, spreadsheet formulas, image quality after compression, video
+                synchronization and structured-data formatting.
+              </p>
+              <p>
+                For sensitive or business-critical material, also review the processing information
+                and limitations provided for the specific tool before uploading the file.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16 md:py-20" aria-labelledby="explore-heading">
+        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+          <h2
+            id="explore-heading"
+            className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+          >
+            Explore SimplifyConvert
+          </h2>
+          <div className="mx-auto mt-5 max-w-3xl space-y-4 text-base leading-8 text-slate-600">
+            <p>
+              Browse tools by category or search for a specific task. Whether you&apos;re converting
+              a PDF, editing an image, processing video, or working with data, choose the tool
+              that fits your needs.
+            </p>
+          </div>
+          <Link
+            href="/all-tools"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-orange-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          >
+            Browse all tools
+            <ArrowRight aria-hidden="true" size={17} />
+          </Link>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-slate-50 py-16 md:py-20" aria-labelledby="faq-heading">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-orange-600">
+              Helpful answers
+            </p>
+            <h2
+              id="faq-heading"
+              className="mt-3 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl"
+            >
+              Frequently asked questions
+            </h2>
+          </div>
+          <div className="mt-10 space-y-3">
+            {homepageFaqs.map((faq) => (
+              <details
+                key={faq.question}
+                className="group rounded-2xl border border-slate-200 bg-white shadow-sm"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-5 rounded-2xl px-5 py-5 font-bold text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 md:px-6">
+                  <span>{faq.question}</span>
+                  <span
+                    aria-hidden="true"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg text-slate-600 transition group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="border-t border-slate-100 px-5 py-5 leading-7 text-slate-600 md:px-6">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </main>
   );

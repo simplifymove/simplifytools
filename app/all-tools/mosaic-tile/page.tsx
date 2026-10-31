@@ -1,124 +1,254 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Grid } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function MosaicTilePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [tileSize, setTileSize] = useState(10);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const uploadGeneration = useRef(0);
+  const processingRef = useRef(false);
+
+  useEffect(() => {
+    if (!result) {
+      setResultUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(result);
+    setResultUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [result]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (processingRef.current) return;
+
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+    const generation = ++uploadGeneration.current;
+
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+
+    if (!selectedFile) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type)) {
+      setError('Please select a JPG, PNG, or WebP image.');
+      return;
     }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (generation !== uploadGeneration.current) return;
+
+      if (typeof reader.result !== 'string') {
+        setError('Unable to read the selected image.');
+        return;
+      }
+
+      const dataUrl = reader.result;
+      const img = new Image();
+
+      img.onload = () => {
+        if (generation !== uploadGeneration.current) return;
+
+        if (!img.naturalWidth || !img.naturalHeight) {
+          setError('The image has invalid dimensions.');
+          return;
+        }
+
+        setFile(selectedFile);
+        setPreview(dataUrl);
+      };
+
+      img.onerror = () => {
+        if (generation === uploadGeneration.current) {
+          setError('Unable to decode the selected image.');
+        }
+      };
+
+      img.src = dataUrl;
+    };
+
+    reader.onerror = () => {
+      if (generation === uploadGeneration.current) {
+        setError('Unable to read the selected image.');
+      }
+    };
+
+    reader.readAsDataURL(selectedFile);
+  };
+
+  const handleTileSizeChange = (value: number) => {
+    if (processingRef.current) return;
+
+    setTileSize(Math.max(2, Math.min(50, value)));
+    setResult(null);
+    setError(null);
   };
 
   const applyMosaicTile = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processingRef.current) return;
+
+    const generation = uploadGeneration.current;
+    const selectedTileSize = tileSize;
+
+    processingRef.current = true;
     setProcessing(true);
+    setResult(null);
+    setError(null);
 
     try {
       const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setProcessing(false);
-            return;
-          }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setProcessing(false);
-            return;
-          }
 
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Unable to decode the image.'));
+        img.src = preview;
+      });
 
-          // Create mosaic effect
-          for (let y = 0; y < canvas.height; y += tileSize) {
-            for (let x = 0; x < canvas.width; x += tileSize) {
-              let r = 0, g = 0, b = 0, count = 0;
+      if (generation !== uploadGeneration.current) return;
 
-              // Calculate average color in tile
-              for (let ty = 0; ty < tileSize && y + ty < canvas.height; ty++) {
-                for (let tx = 0; tx < tileSize && x + tx < canvas.width; tx++) {
-                  const idx = ((y + ty) * canvas.width + (x + tx)) * 4;
-                  r += data[idx];
-                  g += data[idx + 1];
-                  b += data[idx + 2];
-                  count++;
-                }
-              }
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('Image canvas is unavailable.');
 
-              r = Math.floor(r / count);
-              g = Math.floor(g / count);
-              b = Math.floor(b / count);
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
 
-              // Apply average color to entire tile
-              for (let ty = 0; ty < tileSize && y + ty < canvas.height; ty++) {
-                for (let tx = 0; tx < tileSize && x + tx < canvas.width; tx++) {
-                  const idx = ((y + ty) * canvas.width + (x + tx)) * 4;
-                  data[idx] = r;
-                  data[idx + 1] = g;
-                  data[idx + 2] = b;
-                }
-              }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas processing is unavailable.');
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(
+        0, 0, canvas.width, canvas.height
+      );
+      const data = imageData.data;
+
+      for (let y = 0; y < canvas.height; y += selectedTileSize) {
+        for (let x = 0; x < canvas.width; x += selectedTileSize) {
+          let r = 0;
+          let g = 0;
+          let b = 0;
+          let count = 0;
+
+          for (
+            let ty = 0;
+            ty < selectedTileSize && y + ty < canvas.height;
+            ty++
+          ) {
+            for (
+              let tx = 0;
+              tx < selectedTileSize && x + tx < canvas.width;
+              tx++
+            ) {
+              const idx = ((y + ty) * canvas.width + x + tx) * 4;
+              r += data[idx];
+              g += data[idx + 1];
+              b += data[idx + 2];
+              count++;
             }
           }
 
-          ctx.putImageData(imageData, 0, 0);
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
-              return;
+          r = Math.floor(r / count);
+          g = Math.floor(g / count);
+          b = Math.floor(b / count);
+
+          for (
+            let ty = 0;
+            ty < selectedTileSize && y + ty < canvas.height;
+            ty++
+          ) {
+            for (
+              let tx = 0;
+              tx < selectedTileSize && x + tx < canvas.width;
+              tx++
+            ) {
+              const idx = ((y + ty) * canvas.width + x + tx) * 4;
+              data[idx] = r;
+              data[idx + 1] = g;
+              data[idx + 2] = b;
+              data[idx + 3] = 255;
             }
-            setResult(blob);
-            setProcessing(false);
-          }, 'image/jpeg', 0.95);
-        } catch (error) {
-          console.error('Error in image onload:', error);
-          setProcessing(false);
+          }
         }
-      };
-      img.onerror = () => {
-        console.error('Error loading image');
-        setProcessing(false);
-      };
-      img.src = preview;
-    } catch (error) {
-      console.error('Error applying mosaic tile:', error);
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          value => value
+            ? resolve(value)
+            : reject(new Error('Unable to create the JPEG image.')),
+          'image/jpeg',
+          0.95
+        );
+      });
+
+      if (generation === uploadGeneration.current) {
+        setResult(blob);
+      }
+    } catch (caughtError) {
+      if (generation === uploadGeneration.current) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to create the mosaic image.'
+        );
+      }
+    } finally {
+      processingRef.current = false;
       setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `mosaic-tile-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processingRef.current) return;
+
+      processingRef.current = true;
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'mosaic-tile',
+            originalName: `mosaic-tile-${Date.now()}.jpg`,
+            outputName: `mosaic-tile-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        processingRef.current = false;
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -147,12 +277,13 @@ export default function MosaicTilePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Mosaic Tile Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={processing}
                   onChange={handleFileSelect}
                   className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-400 transition"
                 />
@@ -168,8 +299,9 @@ export default function MosaicTilePage() {
                       type="range"
                       min="2"
                       max="50"
+                      disabled={processing}
                       value={tileSize}
-                      onChange={(e) => setTileSize(Number(e.target.value))}
+                      onChange={(e) => handleTileSizeChange(Number(e.target.value))}
                       className="w-full"
                     />
                     <p className="text-sm text-gray-600 mt-2">2 = fine detail, 50 = large tiles</p>
@@ -186,14 +318,31 @@ export default function MosaicTilePage() {
                 </>
               )}
 
-              {result && (
-                <button
-                  onClick={handleDownload}
-                  className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
-                >
-                  <Download size={20} />
-                  Download Mosaic Image
-                </button>
+              {result && resultUrl && (
+                <div className="mt-6 space-y-4">
+                  <h3 className="font-semibold text-gray-800">
+                    Mosaic Result Preview
+                  </h3>
+                  <img
+                    src={resultUrl}
+                    alt="Mosaic tile effect result"
+                    className="mx-auto max-w-full max-h-80 object-contain rounded-lg border border-gray-200"
+                  />
+                  <button
+                    onClick={handleDownload}
+                    disabled={processing}
+                    className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  >
+                    <Download size={20} />
+                    Download Mosaic Image
+                  </button>
+                </div>
+              )}
+
+              {error && (
+                <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  {error}
+                </p>
               )}
             </div>
 
@@ -222,7 +371,7 @@ export default function MosaicTilePage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-purple-600 mb-2">Privacy Tool</h3>
-                  <p className="text-gray-700">Blur faces and sensitive areas.</p>
+                  <p className="text-gray-700">Apply a block-color mosaic effect to the entire image. This is not a selective privacy-redaction tool.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-purple-600 mb-2">100% Free</h3>
@@ -232,35 +381,35 @@ export default function MosaicTilePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What tile size should I use?</summary>
-                  <p className="text-gray-700 mt-2">2-5px for detail. 10-20px for abstract. 30-50px for strong effect.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Colored images look better.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, mosaic images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with mosaic effect.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-purple-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Smooth blending?</summary>
-                  <p className="text-gray-700 mt-2">Smooth mosaic with color averaging per tile.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What tile size should I use?</FAQQuestion>
+                  <FAQAnswer>2-5px for detail. 10-20px for abstract. 30-50px for strong effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>JPG, PNG, and WebP images are supported. Color-rich images can produce more visible mosaic variation.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on your rights to the original image. Applying a mosaic effect does not change its copyright or license.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>The processed result is exported as a JPEG with the mosaic effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Smooth blending?</FAQQuestion>
+                  <FAQAnswer>Each tile uses the average color of its pixels, creating distinct blocks rather than a smooth blur.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -283,8 +432,85 @@ export default function MosaicTilePage() {
           </div>
         </div>
 
-        <Footer />
+        {/* Batch supporting content: mosaic-tile */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How mosaic tiles are generated
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The Mosaic Tile tool divides the image into blocks and calculates representative color values for each tile. Smaller tile sizes retain more recognizable image detail, while larger tiles create a stronger block-based mosaic appearance. The resulting image is exported as JPEG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  JPEG does not preserve transparency. Transparent areas use a white background, and its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Start with smaller tiles to retain detail, then increase tile size for a stronger block effect.</li>
+                <li>Review the processed mosaic preview before downloading.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
       </main>
+      <Footer />
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

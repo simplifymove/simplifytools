@@ -9,11 +9,6 @@ import { pdfTools } from '@/app/lib/pdf-tools';
 import { videoTools } from '@/app/lib/video-tools';
 import { imageToolsRegistry } from '@/app/lib/image-tools-registry';
 
-// CRITICAL: Force Next.js to regenerate sitemap on every request
-// This prevents caching of stale sitemap data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 const BASE_URL = 'https://simplifyconvert.com';
 const SITEMAP_DEBUG =
   process.env.NODE_ENV === 'development' || process.env.SITEMAP_DEBUG === 'true';
@@ -24,32 +19,39 @@ function sitemapDebugLog(...args: Parameters<typeof console.log>) {
   }
 }
 
-// Tool patterns to exclude: YouTube, Instagram, TikTok downloaders
-// These are either not functional or have platform restrictions
-const EXCLUDED_PATTERNS = [
-  'youtube',
-  'instagram',
-  'tiktok',
+// Exact legacy downloader identifiers that must not enter the sitemap.
+// Platform-named AI generators and provider-dependent public tools remain eligible.
+const EXCLUDED_TOOL_IDS = new Set([
   'instagram-dl',
   'tiktok-dl',
   'instagram-reels',
   'tiktok-watermark',
-];
+]);
 
-/**
- * Tools that exist in registries but don't have actual pages
- * These should be excluded from the sitemap
- */
-const TOOLS_WITHOUT_PAGES = [
-  'blur-background',
-  'compress-image',
-  'grayscale-image',
-  'profile-photo-maker',
-  'remove-object',
-  'resize-image',
-  'rotate-image',
-  'upscale-image',
-];
+const UNFINISHED_TOOL_IDS = new Set<string>([]);
+
+// Redirect-only aliases must never compete with their canonical destinations.
+const REDIRECT_ONLY_TOOL_ROUTES = new Set([
+  '/all-tools/pdf-to-jpg',
+  '/all-tools/pdf-to-text',
+  '/all-tools/image-compressor',
+  '/all-tools/mp4-to-gif',
+  '/all-tools/pdf',
+  '/all-tools/ai-write',
+]);
+
+// Temporarily excluded while its calculation model is under review.
+const NOINDEX_TOOL_ROUTES = new Set([
+  '/all-tools/financial-calculators/india-tax',
+  '/all-tools/video/youtube-to-text',
+  '/all-tools/video/youtube-transcript',
+]);
+
+function isExcludedTool(id: string, _title = ''): boolean {
+  const idLower = id.toLowerCase();
+
+  return UNFINISHED_TOOL_IDS.has(idLower) || EXCLUDED_TOOL_IDS.has(idLower);
+}
 
 /**
  * Extract tool IDs from nested tool libraries
@@ -67,16 +69,14 @@ function extractToolIds(toolsObject: any): string[] {
     const filtered = keys.filter(key => {
       // Skip non-tool properties (functions, special keys, etc.)
       const isValidTool = typeof toolsObject[key] === 'object' && 
-             toolsObject[key] !== null &&
-             (toolsObject[key].id !== undefined || true);
+             toolsObject[key] !== null;
       
-      // Also skip tools that don't have pages
-      const toolId = (toolsObject[key].id || key).toLowerCase();
-      const hasNoPage = TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolId);
-      
-      return isValidTool && !hasNoPage;
+      const toolId = toolsObject[key].id || key;
+      const toolTitle = toolsObject[key].title || '';
+
+      return isValidTool && !isExcludedTool(toolId, toolTitle);
     });
-    sitemapDebugLog(`    Object type: ${keys.length} keys → ${filtered.length} valid tools (excluded ${keys.length - filtered.length} without pages)`);
+    sitemapDebugLog(`    Object type: ${keys.length} keys → ${filtered.length} valid tools (excluded ${keys.length - filtered.length} restricted tools)`);
     return filtered;
   }
 
@@ -85,11 +85,11 @@ function extractToolIds(toolsObject: any): string[] {
     const filtered = toolsObject
       .filter(tool => {
         if (!tool || !(tool.id || tool.key)) return false;
-        const toolId = (tool.id || tool.key).toLowerCase();
-        return !TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolId);
+        const toolId = tool.id || tool.key;
+        return !isExcludedTool(toolId, tool.title || '');
       })
       .map(tool => tool.id || tool.key);
-    sitemapDebugLog(`    Array type: ${toolsObject.length} items → ${filtered.length} valid tools (excluded ${toolsObject.length - filtered.length} without pages)`);
+    sitemapDebugLog(`    Array type: ${toolsObject.length} items → ${filtered.length} valid tools (excluded ${toolsObject.length - filtered.length} restricted tools)`);
     return filtered;
   }
 
@@ -120,7 +120,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // 1. ADD HOMEPAGE - highest priority
   sitemapEntries.push({
     url: BASE_URL,
-    lastModified: new Date(),
     changeFrequency: 'daily',
     priority: 1.0,
   });
@@ -134,32 +133,49 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/all-tools', priority: 0.95, frequency: 'daily' as const, label: 'All Tools Directory' },
     { url: '/blog', priority: 0.8, frequency: 'weekly' as const, label: 'Blog' },
     { url: '/blog/jpg-to-png-conversion-guide', priority: 0.7, frequency: 'monthly' as const, label: 'JPG to PNG Blog Guide' },
+    { url: '/blog/merge-split-compress-ocr-pdf-guide', priority: 0.7, frequency: 'monthly' as const, label: 'PDF Workflow Guide' },
+    { url: '/blog/jpg-png-webp-avif-image-formats', priority: 0.7, frequency: 'monthly' as const, label: 'Image Formats Guide' },
+    { url: '/blog/image-compression-quality-file-size', priority: 0.7, frequency: 'monthly' as const, label: 'Image Compression Guide' },
+    { url: '/blog/csv-excel-json-data-formats', priority: 0.7, frequency: 'monthly' as const, label: 'Data Formats Guide' },
+    { url: '/blog/video-compression-resolution-bitrate-codec', priority: 0.7, frequency: 'monthly' as const, label: 'Video Compression Guide' },
+    { url: '/blog/how-simplifyconvert-works', priority: 0.7, frequency: 'monthly' as const, label: 'How SimplifyConvert Works Guide' },
+    { url: '/blog/all-tools-guide', priority: 0.7, frequency: 'monthly' as const, label: 'All Tools Guide' },
+    { url: '/blog/pdf-tools-guide', priority: 0.7, frequency: 'monthly' as const, label: 'PDF Tools Guide' },
+    { url: '/blog/image-tools-guide', priority: 0.7, frequency: 'monthly' as const, label: 'Image Tools Guide' },
+    { url: '/blog/video-tools-guide', priority: 0.7, frequency: 'monthly' as const, label: 'Video Tools Guide' },
+    { url: '/blog/data-tools-guide', priority: 0.7, frequency: 'monthly' as const, label: 'Data Tools Guide' },
+    { url: '/blog/ai-studio-guide', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio Guide' },
+    { url: '/blog/ai-presentation-maker-guide', priority: 0.7, frequency: 'monthly' as const, label: 'AI Presentation Maker Guide' },
+    { url: '/blog/ai-document-maker-guide', priority: 0.7, frequency: 'monthly' as const, label: 'AI Document Maker Guide' },
+    { url: '/blog/ai-spreadsheet-maker-guide', priority: 0.7, frequency: 'monthly' as const, label: 'AI Spreadsheet Maker Guide' },
+    { url: '/blog/compress-image-online-guide', priority: 0.7, frequency: 'monthly' as const, label: 'Compress Image Guide' },
+    { url: '/blog/remove-background-online-guide', priority: 0.7, frequency: 'monthly' as const, label: 'Remove Background Guide' },
+    { url: '/blog/merge-pdf-online-guide', priority: 0.7, frequency: 'monthly' as const, label: 'Merge PDF Guide' },
     { url: '/about', priority: 0.5, frequency: 'monthly' as const, label: 'About' },
     { url: '/contact', priority: 0.4, frequency: 'yearly' as const, label: 'Contact' },
     { url: '/privacy', priority: 0.3, frequency: 'yearly' as const, label: 'Privacy Policy' },
     { url: '/terms', priority: 0.3, frequency: 'yearly' as const, label: 'Terms of Service' },
-    { url: '/ai-studio', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio' },
+    { url: '/cookies', priority: 0.3, frequency: 'yearly' as const, label: 'Cookie Policy' },
+    { url: '/ai-code-assistant', priority: 0.7, frequency: 'monthly' as const, label: 'AI Code Assistant' },
+    { url: '/ai-code-assistant/docs', priority: 0.6, frequency: 'monthly' as const, label: 'AI Code Assistant Documentation' },
+    { url: '/ai-code-assistant/pricing', priority: 0.6, frequency: 'monthly' as const, label: 'AI Code Assistant Pricing' },
+    { url: '/ai-studio', priority: 0.8, frequency: 'weekly' as const, label: 'AI Studio' },
     { url: '/ai-studio/pricing', priority: 0.7, frequency: 'monthly' as const, label: 'AI Studio Pricing' },
-    { url: '/ai-studio/presentation-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Presentation Maker' },
     { url: '/all-tools/image-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Image Tools' },
     { url: '/all-tools/pdf-tools', priority: 0.8, frequency: 'weekly' as const, label: 'PDF Tools' },
     { url: '/all-tools/video-tools', priority: 0.8, frequency: 'weekly' as const, label: 'Video Tools' },
     { url: '/all-tools/financial-calculators', priority: 0.7, frequency: 'monthly' as const, label: 'Financial Calculators' },
-    { url: '/all-tools/ai-write', priority: 0.7, frequency: 'monthly' as const, label: 'AI Write Tools' },
     { url: '/all-tools/resume-maker', priority: 0.7, frequency: 'monthly' as const, label: 'Resume Maker' },
     { url: '/all-tools/text-to-speech', priority: 0.7, frequency: 'monthly' as const, label: 'Text to Speech' },
     { url: '/all-tools/pdf/add-text', priority: 0.6, frequency: 'monthly' as const, label: 'Add Text to PDF' },
-    { url: '/all-tools/pdf/ocr-to-text', priority: 0.6, frequency: 'monthly' as const, label: 'PDF OCR to Text' },
-    { url: '/all-tools/code-minifier', priority: 0.6, frequency: 'monthly' as const, label: 'Code Minifier' },
     { url: '/all-tools/eps-to-png', priority: 0.6, frequency: 'monthly' as const, label: 'EPS to PNG' },
-    { url: '/all-tools/image-compressor', priority: 0.6, frequency: 'monthly' as const, label: 'Image Compressor' },
-    { url: '/all-tools/webp-to-tiff', priority: 0.6, frequency: 'monthly' as const, label: 'WebP to TIFF' },
+    { url: '/all-tools/batch-compress-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Compress Images' },
+    { url: '/all-tools/batch-resize-images', priority: 0.6, frequency: 'monthly' as const, label: 'Batch Resize Images' },
   ];
   
   mainPages.forEach(({ url, priority, frequency, label }) => {
     sitemapEntries.push({
       url: `${BASE_URL}${url}`,
-      lastModified: new Date(),
       changeFrequency: frequency,
       priority,
     });
@@ -183,15 +199,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const toolIdLower = tool.id.toLowerCase();
     const titleLower = tool.title.toLowerCase();
 
-    const isExcluded = EXCLUDED_PATTERNS.some(
-      (pattern) =>
-        toolIdLower.includes(pattern) || titleLower.includes(pattern)
-    );
-    
-    // Also exclude tools that don't have actual pages
-    const hasNoPage = TOOLS_WITHOUT_PAGES.some(t => t.toLowerCase() === toolIdLower);
-
-    return !isExcluded && !hasNoPage;
+    return !isExcludedTool(toolIdLower, titleLower)
+      && !REDIRECT_ONLY_TOOL_ROUTES.has(tool.route)
+      && !NOINDEX_TOOL_ROUTES.has(tool.route);
   });
 
   sitemapDebugLog('✓ Valid main tools (with routes, not excluded):', validMainTools.length);
@@ -200,7 +210,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   validMainTools.forEach((tool) => {
     sitemapEntries.push({
       url: `${BASE_URL}${tool.route}`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     });
@@ -222,6 +231,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       tools: extractToolIds(pdfTools),
       route: '/all-tools/pdf',
       label: 'PDF Tools',
+      includeCategory: false,
     },
     {
       tools: extractToolIds(videoTools),
@@ -307,7 +317,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     if (includeCategory !== false && !addedCategories.has(route) && !mainToolCategorySlugs.has(categorySlugFromRoute)) {
       sitemapEntries.push({
         url: `${BASE_URL}${route}`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       });
@@ -325,7 +334,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
       sitemapEntries.push({
         url: `${BASE_URL}${route}/${slug}`,
-        lastModified: new Date(),
         changeFrequency: 'monthly',
         priority: 0.6,
       });
@@ -347,6 +355,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   
   const urlSet = new Set<string>();
   const deduplicatedSitemap = sitemapEntries.filter((entry) => {
+    const pathname = new URL(entry.url).pathname;
+    if (NOINDEX_TOOL_ROUTES.has(pathname)) {
+      return false;
+    }
     if (urlSet.has(entry.url)) {
       sitemapDebugLog(`  ⚠️  Unexpected duplicate: ${entry.url}`);
       return false; // Skip duplicate
@@ -368,7 +380,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   sitemapDebugLog('\n📊 FINAL SITEMAP BREAKDOWN');
   sitemapDebugLog('─────────────────────────────');
   sitemapDebugLog('Homepage entries: 1');
-  sitemapDebugLog('Main pages (All Tools, Blog, Terms): 3');
+  sitemapDebugLog('Main pages: ' + mainPages.length);
   sitemapDebugLog('Main tool pages: ' + validMainTools.length);
   
   // Count unique nested tools (excluding duplicates with main tools)
@@ -383,7 +395,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   sitemapDebugLog('Unique nested tool pages: ' + uniqueNestedToolsCount);
   sitemapDebugLog('Category pages: ' + addedCategories.size);
   
-  const expectedCount = 1 + 3 + validMainTools.length + uniqueNestedToolsCount + addedCategories.size;
+  const expectedCount = 1 + mainPages.length + validMainTools.length + uniqueNestedToolsCount + addedCategories.size;
   sitemapDebugLog('\n📈 EXPECTED TOTAL:', expectedCount);
   sitemapDebugLog('✅ ACTUAL FINAL TOTAL:', deduplicatedSitemap.length, 'URLs');
   

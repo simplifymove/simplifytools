@@ -1,22 +1,23 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 // Calculator metadata map
 const calculatorMetadata: Record<string, { title: string; description: string }> = {
   'startup-runway': {
-    title: 'Startup Runway Calculator - Forecast Funding Needs',
-    description: 'Calculate your startup\'s financial runway, burn rate, and funding requirements. Project cash runway and monthly burn costs.',
+    title: 'Startup Runway Calculator - Estimate Cash Runway',
+    description: 'Estimate startup runway, burn, and possible funding needs from the values and growth assumptions entered.',
   },
   'saas-profit': {
-    title: 'SaaS Profit Simulator - Revenue & Growth Modeling',
-    description: 'Model SaaS revenue growth, profitability, churn rates, and customer acquisition costs. Analyze your business profitability.',
+    title: 'SaaS Profit Simulator - Revenue and Cost Scenarios',
+    description: 'Explore SaaS revenue, costs, churn, customer acquisition, and profitability scenarios using the assumptions entered.',
   },
   'loan-optimizer': {
-    title: 'Loan Optimization Engine - Payment Strategy Analyzer',
-    description: 'Analyze loan terms, calculate monthly payments, and optimize your payment strategy to save money on interest.',
+    title: 'Loan Repayment Calculator - EMI and Interest Estimate',
+    description: 'Estimate monthly EMI, total interest, repayment timing, and the effect of additional payments from the loan terms entered.',
   },
   'india-tax': {
-    title: 'India Tax Estimator - FY 2024-25 Income Tax Calculator',
-    description: 'Calculate income tax with all deductions and exemptions for Indian taxpayers. Find tax optimization opportunities.',
+    title: 'India Tax Estimator Under Review | SimplifyConvert',
+    description: 'This India Tax Estimator is under review and should not be used for current tax filing calculations.',
   },
 };
 
@@ -27,10 +28,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   
-  const meta = calculatorMetadata[slug] || {
-    title: 'Financial Calculator',
-    description: 'Free financial planning and calculation tool',
-  };
+  const meta = calculatorMetadata[slug];
+  if (!meta) notFound();
 
   const canonicalUrl = `https://simplifyconvert.com/all-tools/financial-calculators/${slug}`;
 
@@ -63,9 +62,21 @@ export async function generateMetadata({
     alternates: {
       canonical: canonicalUrl,
     },
+    robots: slug === 'india-tax'
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
   };
 }
 
-export default function CalculatorLayout({ children }: { children: React.ReactNode }) {
+export default async function CalculatorLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  if (!calculatorMetadata[slug]) notFound();
+
   return <>{children}</>;
 }

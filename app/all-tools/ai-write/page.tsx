@@ -77,7 +77,7 @@ export default function AIWriteToolsPage() {
               ✨ AI Writing Tools
             </h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Powerful AI-powered writing assistants to generate content, rewrite text, summarize documents, and more
+              AI-assisted writing tools for generating drafts, rewriting text, summarizing content, and other writing tasks
             </p>
           </motion.div>
         </div>
@@ -180,13 +180,13 @@ export default function AIWriteToolsPage() {
       >
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">
-            🚀 Ready to Create Amazing Content?
+            Ready to Try an AI Writing Tool?
           </h2>
           <p className="text-lg text-white/90 mb-2">
-            Choose any tool above and start generating professional content in seconds.
+            Choose a tool above, provide the requested input, and review the generated draft before using it.
           </p>
           <p className="text-sm text-white/80">
-            💡 All tools use our shared AI engine for consistent, high-quality results
+            AI responses can vary by tool, input, model, and provider availability.
           </p>
         </div>
       </motion.div>

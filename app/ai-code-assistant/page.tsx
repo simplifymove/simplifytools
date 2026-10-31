@@ -2,13 +2,40 @@
  * AI Code Assistant Landing Page
  */
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Code2, Zap, Shield, Brain, ArrowRight, CheckCircle } from "lucide-react";
 
-export const metadata = {
-  title: "AI Code Assistant - Intelligent Coding Help",
+export const metadata: Metadata = {
+  title: "AI Code Assistant - Intelligent Coding Help | SimplifyConvert",
   description:
     "Get instant help with code generation, debugging, and explanation using our advanced AI. Supports React, Node.js, Python, and more.",
+  alternates: {
+    canonical: "https://simplifyconvert.com/ai-code-assistant",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://simplifyconvert.com/ai-code-assistant",
+    siteName: "SimplifyConvert",
+    title: "AI Code Assistant - Intelligent Coding Help",
+    description:
+      "Get instant help with code generation, debugging, and explanation using our advanced AI.",
+    images: [
+      {
+        url: "https://simplifyconvert.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "SimplifyConvert AI Code Assistant",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Code Assistant - Intelligent Coding Help",
+    description:
+      "Get instant help with code generation, debugging, and explanation using our advanced AI.",
+    images: ["https://simplifyconvert.com/og-image.jpg"],
+  },
 };
 
 export default function AiCodeAssistantPage() {
@@ -27,14 +54,14 @@ export default function AiCodeAssistantPage() {
     },
     {
       icon: <Zap className="w-6 h-6" />,
-      title: "Lightning Fast Responses",
-      description: "Get answers in seconds, not minutes. Powered by advanced local AI models.",
+      title: "Server-Side AI Suggestions",
+      description: "Send coding requests to SimplifyConvert's server-side AI service and receive generated suggestions.",
     },
     {
       icon: <Shield className="w-6 h-6" />,
-      title: "Privacy First",
+      title: "Responsible Code Sharing",
       description:
-        "Your code stays with you. All processing happens on secure local infrastructure.",
+        "Requests are processed by SimplifyConvert's server-side AI service. Do not submit secrets or code you are not permitted to share.",
     },
   ];
 
@@ -85,7 +112,7 @@ export default function AiCodeAssistantPage() {
               href="/ai-code-assistant/pricing"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
             >
-              Get Started
+              View Access Options
             </Link>
           </div>
         </div>
@@ -99,29 +126,29 @@ export default function AiCodeAssistantPage() {
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             Generate code, fix bugs, understand complex logic, and learn best practices with
-            instant AI assistance. Works offline, respects your privacy.
+            AI-assisted suggestions through SimplifyConvert's server-side service. An internet connection is required, and usage is credit-limited.
           </p>
           <Link
             href="/ai-code-assistant/pricing"
             className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition font-semibold text-lg"
           >
-            Start Free Trial <ArrowRight className="w-5 h-5" />
+            View Access Options <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
           <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600 mb-2">100+</div>
-            <p className="text-gray-600">Credits per month</p>
+            <div className="text-4xl font-bold text-blue-600 mb-2">100</div>
+            <p className="text-gray-600">Credits in the listed monthly plan</p>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600 mb-2">24/7</div>
-            <p className="text-gray-600">Always available</p>
+            <div className="text-4xl font-bold text-blue-600 mb-2">API</div>
+            <p className="text-gray-600">Server-side processing</p>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600 mb-2">∞</div>
-            <p className="text-gray-600">Refresh monthly</p>
+            <div className="text-4xl font-bold text-blue-600 mb-2">Key</div>
+            <p className="text-gray-600">Authentication required</p>
           </div>
         </div>
       </section>
@@ -169,7 +196,7 @@ export default function AiCodeAssistantPage() {
                 step: "1",
                 title: "Get an API Key",
                 description:
-                  "Subscribe to a plan and instantly receive your API key. Use it in your VS Code extension or terminal.",
+                  "Review current access options. API use requires an active account and API key where access is available.",
               },
               {
                 step: "2",
@@ -181,7 +208,7 @@ export default function AiCodeAssistantPage() {
                 step: "3",
                 title: "Get Instant Help",
                 description:
-                  "Receive accurate, contextual answers within seconds. No limits, your credits refresh monthly.",
+                  "Review the server-generated response before using it. Requests consume credits according to the documented usage rules.",
               },
             ].map((item, index) => (
               <div key={index} className="bg-white p-8 rounded-lg shadow-sm">
@@ -193,6 +220,63 @@ export default function AiCodeAssistantPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Practical Usage Guidance */}
+      <section className="bg-white py-16">
+        <div className="max-w-5xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            Tips for Better AI Coding Results
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8 text-gray-700">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Describe the Task Clearly
+              </h3>
+              <p>
+                Include the programming language, framework, expected behavior,
+                and relevant error messages. For debugging, provide a minimal
+                reproducible example rather than an entire private codebase.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Review and Test Generated Code
+              </h3>
+              <p>
+                AI suggestions may contain mistakes, insecure patterns, or
+                outdated APIs. Review dependencies, validate inputs, and run
+                appropriate tests before using generated code in production.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Protect Sensitive Information
+              </h3>
+              <p>
+                Remove passwords, API keys, access tokens, personal information,
+                and confidential source code before submitting a request.
+                Prompts are processed by a server-side service.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Check Access and Credit Limits
+              </h3>
+              <p>
+                An account and valid API credentials may be required.
+                Available plans, request limits, and credit usage should be
+                checked on the pricing and documentation pages before use.
+              </p>
+            </div>
+          </div>
+          <p className="mt-8 text-gray-600">
+            For integration instructions and authentication details, see the{" "}
+            <Link href="/ai-code-assistant/docs" className="text-blue-600 underline">
+              AI Code Assistant documentation
+            </Link>.
+          </p>
         </div>
       </section>
 
@@ -212,7 +296,7 @@ export default function AiCodeAssistantPage() {
             <ul className="space-y-4 mb-8">
               {[
                 "100 monthly credits",
-                "Unlimited requests within credits",
+                "Requests subject to available credits",
                 "Device authorization",
                 "Priority support",
                 "Auto-renewal monthly",
@@ -227,7 +311,7 @@ export default function AiCodeAssistantPage() {
               href="/ai-code-assistant/pricing"
               className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold text-center block"
             >
-              Get Started Now
+              Review Pricing and Availability
             </Link>
           </div>
         </div>
@@ -238,13 +322,13 @@ export default function AiCodeAssistantPage() {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Code Faster?</h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join developers who are already using SimplifyConvert AI to code smarter.
+            Review the current access requirements, credit limits, and server-side processing details before continuing.
           </p>
           <Link
             href="/ai-code-assistant/pricing"
             className="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition font-semibold"
           >
-            Start Your Free Month
+            View Access Options
           </Link>
         </div>
       </section>
@@ -277,19 +361,19 @@ export default function AiCodeAssistantPage() {
               <h4 className="font-bold text-white mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/about" className="hover:text-white">
                     About
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/blog" className="hover:text-white">
                     Blog
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/contact" className="hover:text-white">
                     Contact
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -297,34 +381,14 @@ export default function AiCodeAssistantPage() {
               <h4 className="font-bold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/privacy" className="hover:text-white">
                     Privacy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/terms" className="hover:text-white">
                     Terms
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-white mb-4">Connect</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Twitter
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Discord
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

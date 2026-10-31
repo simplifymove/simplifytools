@@ -23,10 +23,10 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'jpg',
     to: 'png',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality', 'resize'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
-    description: 'JPG to PNG with transparency support',
+    description: 'Convert JPG images to PNG format',
   },
   {
     id: 'jpg-to-webp',
@@ -35,7 +35,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     to: 'webp',
     engine: 'raster',
     defaultOptions: { quality: 85 },
-    supportedOptions: ['quality', 'resize'],
+    supportedOptions: ['quality'],
     maxFileSize: 100,
   },
   {
@@ -44,8 +44,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'png',
     to: 'jpg',
     engine: 'raster',
-    defaultOptions: { quality: 85, bg_color: '#FFFFFF' },
-    supportedOptions: ['quality', 'resize', 'bg_color'],
+    defaultOptions: { quality: 90 },
+    supportedOptions: ['quality'],
     maxFileSize: 100,
   },
   {
@@ -55,7 +55,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     to: 'webp',
     engine: 'raster',
     defaultOptions: { quality: 85 },
-    supportedOptions: ['quality', 'resize'],
+    supportedOptions: ['quality'],
     maxFileSize: 100,
   },
   {
@@ -65,7 +65,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     to: 'jpg',
     engine: 'raster',
     defaultOptions: { quality: 85 },
-    supportedOptions: ['quality', 'resize'],
+    supportedOptions: ['quality'],
     maxFileSize: 100,
   },
   {
@@ -74,8 +74,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'webp',
     to: 'png',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality', 'resize'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
   {
@@ -104,8 +104,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'bmp',
     to: 'png',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
   {
@@ -134,8 +134,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'jpg',
     to: 'tiff',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
   {
@@ -144,8 +144,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'png',
     to: 'tiff',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
   {
@@ -164,8 +164,8 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     from: 'webp',
     to: 'tiff',
     engine: 'raster',
-    defaultOptions: { quality: 90 },
-    supportedOptions: ['quality'],
+    defaultOptions: {},
+    supportedOptions: [],
     maxFileSize: 100,
   },
 
@@ -259,16 +259,7 @@ export const CONVERTER_ROUTES: ConverterConfig[] = [
     supportedOptions: [],
     maxFileSize: 100,
   },
-  {
-    id: 'vsd-to-pptx',
-    title: 'VSD to PPTX',
-    from: 'vsd',
-    to: 'pptx',
-    engine: 'document',
-    defaultOptions: {},
-    supportedOptions: [],
-    maxFileSize: 100,
-  },
+
 ];
 
 /**

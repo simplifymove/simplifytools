@@ -1,130 +1,235 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Eye } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function TiltShiftPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [focusArea, setFocusArea] = useState(50);
   const [blurAmount, setBlurAmount] = useState(10);
   const [processing, setProcessing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const generationRef = useRef(0);
+  const previewUrlRef = useRef<string | null>(null);
+  const resultUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      generationRef.current += 1;
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    };
+  }, []);
+
+  const clearResult = () => {
+    generationRef.current += 1;
+    setResult(null);
+    setResultPreview(null);
+    setProcessing(false);
+
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+    if (!selectedFile) return;
+
+    clearResult();
+    setError(null);
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type)) {
+      setFile(null);
+      setPreview(null);
+      setError('Please select a JPG, PNG, or WebP image.');
+      e.target.value = '';
+      return;
     }
+
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+
+    const url = URL.createObjectURL(selectedFile);
+    previewUrlRef.current = url;
+    setFile(selectedFile);
+    setPreview(url);
+  };
+
+  const handleFocusChange = (value: number) => {
+    clearResult();
+    setFocusArea(value);
+    setError(null);
+  };
+
+  const handleBlurChange = (value: number) => {
+    clearResult();
+    setBlurAmount(value);
+    setError(null);
   };
 
   const applyTiltShift = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processing || downloading) return;
+
+    clearResult();
+    const generation = generationRef.current;
+    const source = preview;
     setProcessing(true);
+    setError(null);
 
     try {
       const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setProcessing(false);
-            return;
-          }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setProcessing(false);
-            return;
-          }
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Unable to decode the image.'));
+        img.src = source;
+      });
 
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
+      if (generation !== generationRef.current) return;
 
-          const focusY = (focusArea / 100) * canvas.height;
-          const band = canvas.height * 0.15;
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('Image canvas is unavailable.');
 
-          for (let y = 0; y < canvas.height; y++) {
-            const distance = Math.abs(y - focusY);
-            let blurStrength = 0;
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
 
-            if (distance > band) {
-              blurStrength = Math.min(1, (distance - band) / (canvas.height * 0.2)) * (blurAmount / 10);
-            }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Unable to initialize image processing.');
 
-            if (blurStrength > 0) {
-              for (let x = 0; x < canvas.width; x++) {
-                const idx = (y * canvas.width + x) * 4;
-                
-                let r = 0, g = 0, b = 0, a = 0;
-                const samples = Math.ceil(blurStrength * 5) + 1;
+      ctx.drawImage(img, 0, 0);
 
-                for (let i = -samples; i <= samples; i++) {
-                  const sampleX = Math.min(Math.max(x + i, 0), canvas.width - 1);
-                  const sampleIdx = (y * canvas.width + sampleX) * 4;
-                  r += data[sampleIdx];
-                  g += data[sampleIdx + 1];
-                  b += data[sampleIdx + 2];
-                  a += data[sampleIdx + 3];
-                }
+      const width = canvas.width;
+      const height = canvas.height;
+      const original = ctx.getImageData(0, 0, width, height);
+      const output = ctx.createImageData(width, height);
 
-                const count = samples * 2 + 1;
-                data[idx] = Math.floor(r / count);
-                data[idx + 1] = Math.floor(g / count);
-                data[idx + 2] = Math.floor(b / count);
-                data[idx + 3] = Math.floor(a / count);
-              }
-            }
+      const radius = Math.max(1, Math.round(blurAmount));
+      const focusY = (focusArea / 100) * height;
+      const sharpBand = height * 0.15;
+      const transition = Math.max(1, height * 0.2);
+
+      // Two-pass box blur: horizontal followed by vertical.
+      const intermediate = new Uint8ClampedArray(original.data.length);
+      const src = original.data;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const sums = [0, 0, 0, 0];
+          let count = 0;
+
+          for (let dx = -radius; dx <= radius; dx++) {
+            const sx = Math.max(0, Math.min(width - 1, x + dx));
+            const index = (y * width + sx) * 4;
+            for (let c = 0; c < 4; c++) sums[c] += src[index + c];
+            count++;
           }
 
-          ctx.putImageData(imageData, 0, 0);
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
-              return;
-            }
-            setResult(blob);
-            setProcessing(false);
-          }, 'image/jpeg', 0.95);
-        } catch (error) {
-          console.error('Error in image onload:', error);
-          setProcessing(false);
+          const index = (y * width + x) * 4;
+          for (let c = 0; c < 4; c++) {
+            intermediate[index + c] = sums[c] / count;
+          }
         }
-      };
-      img.onerror = () => {
-        console.error('Error loading image');
-        setProcessing(false);
-      };
-      img.src = preview;
-    } catch (error) {
-      console.error('Error applying tilt shift:', error);
-      setProcessing(false);
+      }
+
+      for (let y = 0; y < height; y++) {
+        const distance = Math.abs(y - focusY);
+        const blend = Math.max(
+          0,
+          Math.min(1, (distance - sharpBand) / transition),
+        );
+
+        for (let x = 0; x < width; x++) {
+          const sums = [0, 0, 0, 0];
+          let count = 0;
+
+          for (let dy = -radius; dy <= radius; dy++) {
+            const sy = Math.max(0, Math.min(height - 1, y + dy));
+            const index = (sy * width + x) * 4;
+            for (let c = 0; c < 4; c++) sums[c] += intermediate[index + c];
+            count++;
+          }
+
+          const index = (y * width + x) * 4;
+          for (let c = 0; c < 4; c++) {
+            const blurred = sums[c] / count;
+            output.data[index + c] =
+              src[index + c] * (1 - blend) + blurred * blend;
+          }
+        }
+      }
+
+      if (generation !== generationRef.current) return;
+
+      ctx.putImageData(output, 0, 0);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (value) =>
+            value
+              ? resolve(value)
+              : reject(new Error('Unable to create the output image.')),
+          'image/jpeg',
+          0.95,
+        );
+      });
+
+      if (generation !== generationRef.current) return;
+
+      const url = URL.createObjectURL(blob);
+      resultUrlRef.current = url;
+      setResult(blob);
+      setResultPreview(url);
+    } catch (caughtError) {
+      if (generation !== generationRef.current) return;
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to apply the tilt-shift effect.',
+      );
+    } finally {
+      if (generation === generationRef.current) setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `tilt-shift-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processing || downloading) return;
+
+    setDownloading(true);
+    setError(null);
+
+    try {
+      const filename = `tilt-shift-${Date.now()}.jpg`;
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'tilt-shift',
+        originalName: filename,
+        outputName: filename,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setDownloading(false);
     }
   };
-
   return (
     <>
       <HomeHeader />
@@ -152,12 +257,12 @@ export default function TiltShiftPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Tilt Shift Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   onChange={handleFileSelect}
                   className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-400 transition"
                 />
@@ -175,7 +280,7 @@ export default function TiltShiftPage() {
                         min="0"
                         max="100"
                         value={focusArea}
-                        onChange={(e) => setFocusArea(Number(e.target.value))}
+                        onChange={(e) => handleFocusChange(Number(e.target.value))}
                         className="w-full"
                       />
                       <p className="text-xs text-gray-600 mt-1">Position of sharp focus band</p>
@@ -189,7 +294,7 @@ export default function TiltShiftPage() {
                         min="1"
                         max="20"
                         value={blurAmount}
-                        onChange={(e) => setBlurAmount(Number(e.target.value))}
+                        onChange={(e) => handleBlurChange(Number(e.target.value))}
                         className="w-full"
                       />
                       <p className="text-xs text-gray-600 mt-1">Blur strength (1-20)</p>
@@ -198,7 +303,7 @@ export default function TiltShiftPage() {
 
                   <button
                     onClick={applyTiltShift}
-                    disabled={processing}
+                    disabled={processing || downloading}
                     className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                   >
                     {processing ? <Loader className="animate-spin" size={20} /> : <Eye size={20} />}
@@ -207,13 +312,37 @@ export default function TiltShiftPage() {
                 </>
               )}
 
+              {result && resultPreview && (
+                <div className="mt-6 mb-4">
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    Tilt-shift result preview
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Original</p>
+                      <img src={preview || ''} alt="Original uploaded image" className="w-full rounded-lg border object-contain" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Tilt-shift effect</p>
+                      <img src={resultPreview} alt="Processed tilt-shift image" className="w-full rounded-lg border object-contain" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+
               {result && (
                 <button
-                  onClick={handleDownload}
+                  onClick={handleDownload} disabled={processing || downloading}
                   className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Download size={20} />
-                  Download Miniature Image
+                  {downloading ? "Preparing download..." : "Download Miniature Image"}
                 </button>
               )}
             </div>
@@ -253,35 +382,35 @@ export default function TiltShiftPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-green-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What focus area should I use?</summary>
-                  <p className="text-gray-700 mt-2">Place focus on main subject. 50% focuses on middle.</p>
-                </details>
-                <details className="border-l-4 border-green-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">How much blur should I apply?</summary>
-                  <p className="text-gray-700 mt-2">Start at 10 for subtle. Higher for stronger miniature effect.</p>
-                </details>
-                <details className="border-l-4 border-green-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works best on landscape/cityscape photos.</p>
-                </details>
-                <details className="border-l-4 border-green-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, tilt-shift images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-green-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in browser.</p>
-                </details>
-                <details className="border-l-4 border-green-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent effect.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What focus area should I use?</FAQQuestion>
+                  <FAQAnswer>Place focus on main subject. 50% focuses on middle.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>How much blur should I apply?</FAQQuestion>
+                  <FAQAnswer>Start at 10 for subtle. Higher for stronger miniature effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works best on landscape/cityscape photos.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, tilt-shift images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>Yes, all processing happens locally in browser.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>High-quality JPEG with excellent effect.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -304,8 +433,87 @@ export default function TiltShiftPage() {
           </div>
         </div>
 
-        <Footer />
-      </main>
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Tilt-Shift Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tilt-shift effect keeps a selected region comparatively
+                sharper while applying stronger blur to surrounding portions
+                of the image. This can create a stylized shallow-focus look.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The before-and-after preview lets you compare the result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  This is a simulated selective-blur effect; it does not recreate optical depth data or true camera tilt-shift behavior.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Tilt-Shift Processing FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview changes before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Use the preview and available controls to review the
+                    result before downloading it.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
+
+      <Footer />
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

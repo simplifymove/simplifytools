@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useRef, useState } from 'react';
 import { Upload, AlertCircle, Shield } from 'lucide-react';
@@ -24,15 +25,33 @@ export default function EditPdfPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
+  const maxPdfSize = 50 * 1024 * 1024;
+
+  const validatePdfFile = (selectedFile: File): string | null => {
+    if (
+      selectedFile.type !== 'application/pdf' &&
+      !selectedFile.name.toLowerCase().endsWith('.pdf')
+    ) {
+      return 'Please upload a valid PDF file';
+    }
+
+    if (selectedFile.size > maxPdfSize) {
+      return 'PDF file must be 50MB or smaller';
+    }
+
+    return null;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.type === 'application/pdf') {
+      const validationError = validatePdfFile(selectedFile);
+
+      if (validationError) {
+        setError(validationError);
+      } else {
         setFile(selectedFile);
         setError('');
-      } else {
-        setError('Please upload a valid PDF file');
       }
     }
   };
@@ -46,11 +65,15 @@ export default function EditPdfPage() {
     e.preventDefault();
     e.stopPropagation();
     const droppedFile = e.dataTransfer.files?.[0];
-    if (droppedFile && droppedFile.type === 'application/pdf') {
+    const validationError = droppedFile
+      ? validatePdfFile(droppedFile)
+      : 'Please upload a valid PDF file';
+
+    if (validationError) {
+      setError(validationError);
+    } else if (droppedFile) {
       setFile(droppedFile);
       setError('');
-    } else {
-      setError('Please upload a valid PDF file');
     }
   };
 
@@ -75,14 +98,14 @@ export default function EditPdfPage() {
             <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
               <Link href="/" className="hover:text-white transition">Home</Link>
               <span>/</span>
-              <Link href="/all-tools/pdf" className="hover:text-white transition">PDF Tools</Link>
+              <Link href="/all-tools/pdf-tools" className="hover:text-white transition">PDF Tools</Link>
               <span>/</span>
               <span className="text-white">Edit PDF</span>
             </div>
 
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
-                <span className="text-2xl">✏️</span>
+                <span className="text-2xl">✏</span>
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
@@ -136,7 +159,7 @@ export default function EditPdfPage() {
                       Your PDF is processed securely
                     </p>
                     <p className="text-xs text-gray-600">
-                      No account needed • Files never stored • Encrypted transmission
+                      No account needed • Encrypted transmission
                     </p>
                   </div>
                 </div>
@@ -175,13 +198,184 @@ export default function EditPdfPage() {
               </div>
 
               {/* PDF Editor */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden h-screen">
-                <PdfEditor file={file} />
+              <div className="relative left-1/2 w-screen -translate-x-1/2 px-2 md:px-4">
+                <div className="h-[calc(100vh-1rem)] min-h-[720px] overflow-hidden border-y border-gray-200 bg-white shadow-xl md:rounded-xl md:border">
+                  <PdfEditor file={file} />
+                </div>
               </div>
             </div>
           )}
         </div>
-      </main>
+
+      <section className="bg-white border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-16 space-y-12">
+
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              How to edit PDF text online
+            </h2>
+            <p className="text-gray-600 leading-7 mb-6">
+              Upload a PDF to open it in the visual editor. Review the document,
+              select editable text, make the required changes, and export the
+              updated PDF when you are finished.
+            </p>
+
+            <div className="grid md:grid-cols-4 gap-4">
+              {[
+                ['1', 'Upload PDF', 'Choose the PDF document you want to edit.'],
+                ['2', 'Review content', 'Use the preview to locate the text you need to change.'],
+                ['3', 'Edit text', 'Select supported text content and make your changes.'],
+                ['4', 'Save PDF', 'Review the edited document and download the result.'],
+              ].map(([number, title, text]) => (
+                <div key={number} className="border border-gray-200 rounded-xl p-5">
+                  <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold mb-3">
+                    {number}
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                  <p className="text-sm text-gray-600 leading-6">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                What can you edit in a PDF?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                This editor is intended for text content that can be identified
+                inside the PDF. The visual preview helps you locate editable
+                content and review changes before downloading the updated file.
+                Text changes are applied visually by covering the original text
+                and placing replacement text over it. The original text may
+                remain in the PDF and could still be extracted. Do not use this
+                editor to permanently remove confidential information.
+              </p>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                What about scanned PDFs?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                A scanned PDF may contain page images rather than selectable
+                text. If visible words cannot be selected or edited normally,
+                use PDF OCR first to recognize the text.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Edit PDF vs other PDF tools
+            </h2>
+            <p className="text-gray-600 leading-7">
+              Use Edit PDF when you need to change existing editable text.
+              Use Add Text when you want to place new text on a document,
+              Annotate PDF for markup and notes, PDF OCR for scanned pages,
+              and E-Sign PDF when you need to place an electronic signature.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Tips before editing a PDF
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                'Keep the original PDF before making important changes.',
+                'Check names, dates, amounts, and other important details after editing.',
+                'Use the visual preview to confirm that you selected the correct text.',
+                'Review every edited page before downloading the final PDF.',
+                'Use OCR when the document contains scanned page images.',
+                'Use dedicated annotation or signing tools when you do not need to edit existing text.',
+              ].map((tip) => (
+                <div key={tip} className="flex gap-3 border border-gray-200 rounded-lg p-4">
+                  <span className="text-purple-600 font-bold">✓</span>
+                  <p className="text-gray-600">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <FAQPanel>
+            <FAQHeading>
+              Edit PDF FAQ
+            </FAQHeading>
+
+            <FAQList>
+              {[
+                {
+                  q: 'Can I edit PDF text online?',
+                  a: 'Yes. Upload a supported PDF and use the visual editor to change text content that the editor can identify.',
+                },
+                {
+                  q: 'Why can I see text but cannot edit it?',
+                  a: 'The words may be part of a scanned image rather than selectable PDF text. PDF OCR is more appropriate for scanned documents.',
+                },
+                {
+                  q: 'Can I preview my changes before downloading?',
+                  a: 'Yes. The editor provides a visual document preview so you can inspect the document while making changes.',
+                },
+                {
+                  q: 'Is Edit PDF the same as Annotate PDF?',
+                  a: 'No. Edit PDF focuses on changing editable text, while Annotate PDF is intended for markup, notes, and annotations.',
+                },
+              ].map((item) => (
+                <FAQCard key={item.q}>
+                  <FAQStaticQuestion>{item.q}</FAQStaticQuestion>
+                  <FAQAnswer>{item.a}</FAQAnswer>
+                </FAQCard>
+              ))}
+            </FAQList>
+          </FAQPanel>
+
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Related PDF tools
+            </h2>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link
+                href="/all-tools/pdf/pdf-ocr"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">PDF OCR</h3>
+                <p className="text-sm text-gray-600">Recognize text in scanned PDFs.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/annotate-pdf"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">Annotate PDF</h3>
+                <p className="text-sm text-gray-600">Add markup and annotations.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/esign-pdf"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">E-Sign PDF</h3>
+                <p className="text-sm text-gray-600">Add an electronic signature.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/pdf/add-text"
+                className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">Add Text</h3>
+                <p className="text-sm text-gray-600">Place new text on PDF pages.</p>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+</main>
       <Footer />
     </>
   );

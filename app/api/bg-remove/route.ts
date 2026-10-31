@@ -1,12 +1,12 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
 import sharp from "sharp";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 function getClientIp(request: NextRequest): string {
@@ -32,7 +32,7 @@ async function removeBackgroundWithRembg(imageBuffer: Buffer, hqMode: boolean): 
 
   try {
     await fs.writeFile(inputPath, imageBuffer);
-    
+
     const model = hqMode ? "birefnet-general" : "u2net";
     // Use JSON.stringify to properly escape paths
     const pythonCode = `import sys
@@ -48,16 +48,16 @@ try:
     print(f"[DEBUG] Loading image from: {input_path}")
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input file not found: {input_path}")
-    
+
     input_img = Image.open(input_path)
     print(f"[DEBUG] Image opened: {input_img.size} {input_img.mode}")
     print(f"[DEBUG] Starting background removal with model: {model}")
-    
+
     # Create session with specific model
     session = new_session(model)
     output_img = remove(input_img, session=session)
     print(f"[DEBUG] Background removed successfully")
-    
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     output_img.save(output_path, "PNG")
     print(f"[DEBUG] Saved to: {output_path}")
@@ -71,16 +71,16 @@ except Exception as e:
 
     await fs.writeFile(pythonScript, pythonCode);
     console.log(`[bg-remove] Processing with ${model} model (HQ: ${hqMode})`);
-    
+
     const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
-    const { stdout, stderr } = await execAsync(`${pythonExe} "${pythonScript}"`, { 
-      timeout: 120000, 
+    const { stdout, stderr } = await execFileAsync(pythonExe, [pythonScript], {
+      timeout: 120000,
       maxBuffer: 50 * 1024 * 1024
     });
-    
+
     console.log(`[bg-remove] Python output:`, stdout);
     if (stderr) console.log(`[bg-remove] Python stderr:`, stderr);
-    
+
     const result = await fs.readFile(outputPath);
     console.log(`[bg-remove] Success: ${result.length} bytes output`);
     return result;
@@ -104,9 +104,9 @@ export async function POST(request: NextRequest) {
     console.log(`  Content-Type: ${request.headers.get('content-type')}`);
     console.log(`  Content-Length: ${request.headers.get('content-length')}`);
     console.log(`  URL: ${request.url}`);
-    
+
     const formData = await request.formData();
-    
+
     // Debug: Log all form fields
     console.log(`[bg-remove] FormData fields received:`);
     let fieldCount = 0;
@@ -119,16 +119,23 @@ export async function POST(request: NextRequest) {
       }
     }
     console.log(`  Total fields: ${fieldCount}`);
-    
-    const file = formData.get("file") as File;
-    const hqParam = formData.get("hq") as string;
-    const format = (formData.get("format") as string) || "png";
 
-    if (!file) {
-      const keysArray = Array.from(formData.keys());
-      console.error(`[bg-remove] ERROR: No file in formData. Keys received: ${keysArray.join(", ")} (${keysArray.length} keys)`);
-      return NextResponse.json({ error: "No file provided", debug: { keysReceived: keysArray } }, { status: 400 });
+    const file = formData.get("file");
+    const hqParam = formData.get("hq");
+    const format = formData.get("format") || "png";
+
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: "A valid image file is required" }, { status: 400 });
     }
+
+    if (typeof format !== "string" || !["png", "jpg", "jpeg", "webp"].includes(format)) {
+      return NextResponse.json({ error: "Unsupported output format" }, { status: 400 });
+    }
+
+    if (file.size === 0) {
+      return NextResponse.json({ error: "The uploaded image is empty" }, { status: 400 });
+    }
+
     console.log(`[bg-remove] File: ${file.name} (${file.size} bytes) from ${clientIp}`);
 
     if (file.size > MAX_FILE_SIZE) {
@@ -170,6 +177,9 @@ export async function POST(request: NextRequest) {
     const elapsed = Date.now() - startTime;
     const msg = error instanceof Error ? error.message : String(error);
     console.error(`[bg-remove] ERROR (${elapsed}ms) from ${clientIp}:`, msg);
-    return NextResponse.json({ error: msg || "Processing failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Background removal failed. Please try another supported image." },
+      { status: 500 }
+    );
   }
 }

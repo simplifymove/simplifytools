@@ -1,125 +1,208 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function SketchEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(50);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const operationId = useRef(0);
+  const downloadBusy = useRef(false);
+  const [error, setError] = useState('');
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      operationId.current += 1;
+    };
+  }, []);
+
+  const invalidateResult = () => {
+    operationId.current += 1;
+    setResult(null);
+    setResultPreview(null);
+    setError('');
+    setProcessing(false);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
+
+    if (!selectedFile) return;
+
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please select a supported image file.');
+      return;
     }
+
+    const currentId = operationId.current;
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (currentId !== operationId.current) return;
+
+      if (typeof reader.result !== 'string') {
+        setError('Unable to read the selected image.');
+        return;
+      }
+
+      setFile(selectedFile);
+      setPreview(reader.result);
+    };
+
+    reader.onerror = () => {
+      if (currentId === operationId.current) {
+        setError('Unable to read the selected image.');
+      }
+    };
+
+    reader.readAsDataURL(selectedFile);
   };
 
   const applySketchEffect = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processing) return;
+
+    const currentId = ++operationId.current;
     setProcessing(true);
+    setResult(null);
+    setResultPreview(null);
+    setError('');
 
     try {
       const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setProcessing(false);
-            return;
-          }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setProcessing(false);
-            return;
-          }
 
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Unable to load the image.'));
+        img.src = preview;
+      });
 
-          // Convert to grayscale
-          for (let i = 0; i < data.length; i += 4) {
-            const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-            data[i] = gray;
-            data[i + 1] = gray;
-            data[i + 2] = gray;
-          }
+      if (currentId !== operationId.current) return;
 
-          ctx.putImageData(imageData, 0, 0);
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('Image canvas is unavailable.');
 
-          // Apply edge detection for sketch outline
-          const outlineData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const outline = outlineData.data;
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
 
-          for (let y = 1; y < canvas.height - 1; y++) {
-            for (let x = 1; x < canvas.width - 1; x++) {
-              const idx = (y * canvas.width + x) * 4;
-              let edgeStrength = 0;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Unable to initialize image processing.');
 
-              for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                  const nIdx = ((y + dy) * canvas.width + (x + dx)) * 4;
-                  edgeStrength += Math.abs(data[idx] - data[nIdx]);
-                }
-              }
+      ctx.drawImage(img, 0, 0);
 
-              const inverted = 255 - Math.min(255, edgeStrength * intensity / 50);
-              outline[idx] = inverted;
-              outline[idx + 1] = inverted;
-              outline[idx + 2] = inverted;
-            }
-          }
+      const width = canvas.width;
+      const height = canvas.height;
+      const source = ctx.getImageData(0, 0, width, height);
+      const output = ctx.createImageData(width, height);
 
-          ctx.putImageData(outlineData, 0, 0);
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
-              return;
-            }
-            setResult(blob);
-            setProcessing(false);
-          }, 'image/jpeg', 0.95);
-        } catch (error) {
-          console.error('Error in image onload:', error);
-          setProcessing(false);
+      const gray = new Float32Array(width * height);
+
+      for (let i = 0; i < gray.length; i++) {
+        const index = i * 4;
+        gray[i] =
+          source.data[index] * 0.299 +
+          source.data[index + 1] * 0.587 +
+          source.data[index + 2] * 0.114;
+      }
+
+      const strength = intensity / 100;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const position = y * width + x;
+          const index = position * 4;
+
+          const left = gray[y * width + Math.max(0, x - 1)];
+          const right = gray[y * width + Math.min(width - 1, x + 1)];
+          const top = gray[Math.max(0, y - 1) * width + x];
+          const bottom = gray[Math.min(height - 1, y + 1) * width + x];
+
+          const gradient = Math.hypot(right - left, bottom - top);
+          const tone = 255 - Math.min(255, gradient * strength * 3);
+
+          output.data[index] = tone;
+          output.data[index + 1] = tone;
+          output.data[index + 2] = tone;
+          output.data[index + 3] = 255;
         }
-      };
-      img.onerror = () => {
-        console.error('Error loading image');
+      }
+
+      ctx.putImageData(output, 0, 0);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          value => {
+            if (value) resolve(value);
+            else reject(new Error('Unable to create the sketch image.'));
+          },
+          'image/jpeg',
+          0.95
+        );
+      });
+
+      if (currentId !== operationId.current) return;
+
+      setResult(blob);
+      setResultPreview(canvas.toDataURL('image/jpeg', 0.85));
+    } catch (caughtError) {
+      if (currentId !== operationId.current) return;
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to apply the sketch effect.'
+      );
+    } finally {
+      if (currentId === operationId.current) {
         setProcessing(false);
-      };
-      img.src = preview;
-    } catch (error) {
-      console.error('Error applying sketch effect:', error);
-      setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `sketch-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing || downloadBusy.current) return;
+      downloadBusy.current = true;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'sketch-effect',
+            originalName: 'sketch-effect.jpg',
+            outputName: 'sketch-effect.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        downloadBusy.current = false;
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -137,7 +220,7 @@ export default function SketchEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">✏️ Sketch Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Transform photos into beautiful pencil sketches and drawings. Create artistic sketch effects instantly.
+              Apply a pencil-sketch-style transformation to photos using the available effect controls.
             </p>
           </div>
         </div>
@@ -148,7 +231,7 @@ export default function SketchEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Sketch Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -170,7 +253,10 @@ export default function SketchEffectPage() {
                       min="10"
                       max="100"
                       value={intensity}
-                      onChange={(e) => setIntensity(Number(e.target.value))}
+                      onChange={(e) => {
+                        invalidateResult();
+                        setIntensity(Number(e.target.value));
+                      }}
                       className="w-full"
                     />
                     <p className="text-sm text-gray-600 mt-2">Adjust sketch line prominence</p>
@@ -187,9 +273,29 @@ export default function SketchEffectPage() {
                 </>
               )}
 
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+
+              {resultPreview && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    Sketch Preview
+                  </h3>
+                  <img
+                    src={resultPreview}
+                    alt="Processed pencil-style sketch preview"
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
+                  disabled={processing}
                   className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Download size={20} />
@@ -233,35 +339,35 @@ export default function SketchEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the best intensity for sketches?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50. Lower for subtle sketches, higher for bold outlines.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Does this work on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Works best on photos with clear subjects and good contrast.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use sketches commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processed images can be used commercially without restrictions.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is quality preserved?</summary>
-                  <p className="text-gray-700 mt-2">Yes, high-quality JPEG output maintains excellent detail.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, processing happens locally. No server uploads.</p>
-                </details>
-                <details className="border-l-4 border-slate-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I edit further?</summary>
-                  <p className="text-gray-700 mt-2">Yes, download and use any image editor for additional edits.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the best intensity for sketches?</FAQQuestion>
+                  <FAQAnswer>Start at 50. Lower for subtle sketches, higher for bold outlines.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Does this work on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes! Works best on photos with clear subjects and good contrast.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use sketches commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on the rights and permissions associated with your original image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is quality preserved?</FAQQuestion>
+                  <FAQAnswer>The result is exported as JPEG at 95% quality. Some detail may change during the artistic transformation and JPEG encoding.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my data private?</FAQQuestion>
+                  <FAQAnswer>The sketch effect is processed in your browser. Preparing a download uses the site's download service.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I edit further?</FAQQuestion>
+                  <FAQAnswer>Yes, download and use any image editor for additional edits.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -275,7 +381,7 @@ export default function SketchEffectPage() {
                   <h3 className="font-bold text-gray-800">Glow Effect</h3>
                   <p className="text-sm text-gray-600">Luminous glow</p>
                 </Link>
-                <Link href="/all-tools/black-white-filter" className="p-4 border-2 border-slate-200 rounded-lg hover:bg-slate-50 transition">
+                <Link href="/all-tools/black-white" className="p-4 border-2 border-slate-200 rounded-lg hover:bg-slate-50 transition">
                   <h3 className="font-bold text-gray-800">Black & White</h3>
                   <p className="text-sm text-gray-600">Grayscale conversion</p>
                 </Link>
@@ -285,7 +391,88 @@ export default function SketchEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Sketch Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The sketch effect processes image pixels to reduce normal
+                photographic color and emphasize outlines and tonal structure.
+                The resulting image is a stylized sketch-like rendering rather
+                than a hand-drawn reconstruction.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual effect is generated with browser image and
+                  Canvas processing. The source image is rendered, pixel
+                  values are adjusted, and the result is prepared for
+                  download through the existing image workflow.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect derives its lines and shading from existing image pixels, so results depend on source contrast and visible edges.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Use a clear source image and compare the processed preview
+                with the original. Strong effect settings can intentionally
+                remove subtle detail or exaggerate edges and tonal changes.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Additional Sketch Effect Questions
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It changes existing pixel values and does not recreate
+                    missing detail or increase the source resolution.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect first?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Review the available preview before downloading the
+                    processed result.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

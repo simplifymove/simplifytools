@@ -36,13 +36,21 @@ def vector_trace(input_file: str, output_file: str, from_format: str, to_format:
         corner_thresh = options.get('corner_threshold', 100)
         curve_opt = options.get('curve_optimize', 2)
         
+        target_format = to_format.lower()
+        if target_format == 'svg':
+            backend_args = ['-s']
+        elif target_format == 'eps':
+            backend_args = ['-e']
+        else:
+            raise ValueError(f"Unsupported vector trace output: {to_format}")
+
         cmd = [
             'potrace',
             temp_bmp,
-            '-s',  # SVG output
+            *backend_args,
             '-o', output_file,
-            '-t', str(corner_thresh),  # Corner threshold (higher = fewer nodes)
-            '-O', str(curve_opt),  # Curve optimization level
+            '-t', str(corner_thresh),
+            '-O', str(curve_opt),
         ]
         
         logger.info(f"[VectorTraceEngine] Executing: {' '.join(cmd)}")
@@ -55,9 +63,9 @@ def vector_trace(input_file: str, output_file: str, from_format: str, to_format:
             raise RuntimeError(f"Potrace failed: {result.stderr}")
         
         if not os.path.exists(output_file):
-            raise RuntimeError("SVG output file was not created")
+            raise RuntimeError(f"{to_format.upper()} output file was not created")
         
-        log_execution("vector_trace", input_file, output_file, options)
+        log_execution("VectorTraceEngine", from_format, to_format, input_file, output_file, True)
         return True
         
     except Exception as e:

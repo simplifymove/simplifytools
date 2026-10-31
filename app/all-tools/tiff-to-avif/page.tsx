@@ -1,77 +1,217 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function TiffToAvifPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [quality, setQuality] = useState('80');
-  const [speed, setSpeed] = useState('5');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
+  const [error, setError] = useState('');
+  const [downloading, setDownloading] = useState(false);
+  const resultUrlRef = useRef<string | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const generationRef = useRef(0);
+  const mountedRef = useRef(true);
+  const readerRef = useRef<FileReader | null>(null);
+
+  const clearResult = () => {
+    generationRef.current += 1;
+    requestRef.current?.abort();
+    requestRef.current = null;
+    setResult(null);
+    setResultFileName('');
+    setProcessing(false);
+    setError('');
+
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      generationRef.current += 1;
+      requestRef.current?.abort();
+      readerRef.current?.abort();
+
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current);
+      }
+    };
+  }, []);
 
   const handleFileSelect = (selectedFile: File) => {
+    readerRef.current?.abort();
+    clearResult();
+    setFile(null);
+    setPreview(null);
+
+    if (!/\\.(tif|tiff)$/i.test(selectedFile.name)) {
+      setError('Please select a TIFF file (.tif or .tiff).');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected TIFF file is empty.');
+      return;
+    }
+
+    if (selectedFile.size > 500 * 1024 * 1024) {
+      setError('The TIFF file must not exceed 500 MB.');
+      return;
+    }
+
     setFile(selectedFile);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(selectedFile);
+
+    // Browsers may not support TIFF previews.
+    // Conversion does not depend on preview availability.
+    if (selectedFile.size <= 20 * 1024 * 1024) {
+      const reader = new FileReader();
+      const requestId = generationRef.current;
+      readerRef.current = reader;
+
+      reader.onload = () => {
+        if (!mountedRef.current || requestId !== generationRef.current) return;
+
+        const value = reader.result;
+        if (typeof value === 'string') setPreview(value);
+      };
+
+      reader.readAsDataURL(selectedFile);
+    }
   };
 
   const handleClearPreview = () => {
+    readerRef.current?.abort();
+    clearResult();
     setFile(null);
     setPreview(null);
-    setResult(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file || processing || downloading) return;
+
+    clearResult();
+    const requestId = generationRef.current;
+    const controller = new AbortController();
+    requestRef.current = controller;
+
     setProcessing(true);
+
     try {
       const formData = new FormData();
-      formData.append('tool', 'tiff-to-avif');
-      formData.append('file', file);
-      formData.append('options', JSON.stringify({ 
-        quality: parseInt(quality),
-        speed: parseInt(speed)
-      }));
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'tiff',
+          to_format: 'avif',
+          options: {
+            quality: Number(quality),
+          },
+        })
+      );
 
       const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const data = await response.json().catch(() => null);
+        throw new Error(
+          typeof data?.error === 'string'
+            ? data.error
+            : 'TIFF to AVIF conversion failed.'
+        );
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/avif' || blob.size === 0) {
+        throw new Error('The converter did not return a valid AVIF file.');
+      }
+
+      if (!mountedRef.current || requestId !== generationRef.current) return;
+
       const url = URL.createObjectURL(blob);
+      resultUrlRef.current = url;
+
+      const baseName = file.name
+        .replace(/\\.(tif|tiff)$/i, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .slice(0, 100) || 'converted';
+
       setResult(url);
-      setResultFileName(`converted.avif`);
-    } catch (error) {
-      alert('Error converting file: ' + (error as Error).message);
+      setResultFileName(`${baseName}.avif`);
+    } catch (caughtError) {
+      if (!mountedRef.current || requestId !== generationRef.current) return;
+
+      if (!(caughtError instanceof Error && caughtError.name === 'AbortError')) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to convert the TIFF image.'
+        );
+      }
     } finally {
-      setProcessing(false);
+      if (mountedRef.current && requestId === generationRef.current) {
+        setProcessing(false);
+        requestRef.current = null;
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = resultFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !resultFileName || downloading || processing) return;
+
+    setDownloading(true);
+    setError('');
+
+    try {
+      const response = await fetch(result);
+      if (!response.ok) {
+        throw new Error('Unable to access the converted AVIF file.');
+      }
+
+      const blob = await response.blob();
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'tiff-to-avif',
+        originalName: resultFileName,
+        outputName: resultFileName,
+      });
+
+      if (mountedRef.current) {
+        router.push(downloadResult.downloadPageUrl);
+      }
+    } catch (caughtError) {
+      if (mountedRef.current) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the AVIF download.'
+        );
+      }
+    } finally {
+      if (mountedRef.current) setDownloading(false);
+    }
   };
 
   return (
@@ -131,7 +271,7 @@ export default function TiffToAvifPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
-                    
+
                     {/* Quality */}
                     <div className="mb-6">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -142,34 +282,19 @@ export default function TiffToAvifPage() {
                         min="1"
                         max="100"
                         value={quality}
-                        onChange={(e) => setQuality(e.target.value)}
+                        onChange={(e) => {
+                           clearResult();
+                           setQuality(e.target.value);
+                         }}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
                     </div>
 
-                    {/* Speed */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Compression Speed
-                      </label>
-                      <select
-                        value={speed}
-                        onChange={(e) => setSpeed(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                      >
-                        <option value="0">Slowest (Best Quality)</option>
-                        <option value="3">Slow</option>
-                        <option value="5">Normal</option>
-                        <option value="8">Fast</option>
-                        <option value="10">Fastest</option>
-                      </select>
-                    </div>
-
                     {/* Convert Button */}
                     <button
                       onClick={handleConvert}
-                      disabled={!file || processing}
+                      disabled={!file || processing || downloading}
                       className="w-full bg-sky-500 hover:bg-sky-600 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
                     >
                       {processing ? (
@@ -183,16 +308,34 @@ export default function TiffToAvifPage() {
                     </button>
                   </div>
 
+                  {file && !preview && (
+                    <p className="text-sm text-gray-600 bg-slate-50 border border-slate-200 rounded-lg p-3">
+                      TIFF preview may not be available in your browser.
+                      You can still convert the selected file.
+                    </p>
+                  )}
+
+                  {error && (
+                    <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
+                      {error}
+                    </p>
+                  )}
+
                   {/* Result */}
                   {result && (
                     <div className="bg-white rounded-lg border border-green-200 bg-green-50 p-4">
                       <h3 className="font-semibold text-green-900 mb-3">✓ Conversion Complete</h3>
                       <button
                         onClick={handleDownload}
+                        disabled={downloading || processing}
                         className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
                       >
-                        <Download size={18} />
-                        Download AVIF
+                        {downloading ? (
+                          <Loader size={18} className="animate-spin" />
+                        ) : (
+                          <Download size={18} />
+                        )}
+                        {downloading ? 'Preparing Download...' : 'Download AVIF'}
                       </button>
                     </div>
                   )}
@@ -201,7 +344,193 @@ export default function TiffToAvifPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200">
+          <div className="max-w-6xl mx-auto px-4 py-16 space-y-12">
+
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                How to convert TIFF to AVIF online
+              </h2>
+
+              <div className="grid md:grid-cols-4 gap-4">
+                {[
+                  ['1', 'Upload image', 'Choose a TIFF image from your device.'],
+                  ['2', 'Set quality', 'Use the quality slider to choose the balance you want between image quality and output size.'],
+                  ['3', 'Convert', 'Start the conversion and wait for the AVIF image to be generated.'],
+                  ['4', 'Download AVIF', 'Download the generated AVIF file and check its appearance in an AVIF-compatible viewer.'],
+                ].map(([number, title, text]) => (
+                  <div key={number} className="border border-gray-200 rounded-xl p-5">
+                    <div className="w-9 h-9 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold mb-3">
+                      {number}
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600 leading-6">{text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Why convert TIFF to AVIF?
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  TIFF is commonly used for high-quality images, scans, publishing, and archival workflows. Converting a TIFF image to AVIF can create a more compact modern image for compatible websites, applications, and digital distribution.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  TIFF vs AVIF
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  TIFF is often used when image fidelity, editing, scanning, or archival workflows are important. AVIF is designed for efficient modern image compression and web-oriented delivery. They serve different purposes, so keep the original TIFF when you still need the source or archival file.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                How does the AVIF quality setting work?
+              </h2>
+
+              <p className="text-gray-600 leading-7 mb-4">
+                This converter lets you select a quality value from 1 to 100.
+                Higher settings generally preserve more image detail but can
+                produce larger output files. Lower settings can reduce the
+                resulting file size more aggressively but may introduce more
+                visible compression.
+              </p>
+
+              <p className="text-gray-600 leading-7">
+                The best setting depends on the image itself and how you plan to
+                use it. Photographs, screenshots, graphics, and detailed scans
+                can respond differently to compression, so review the converted
+                result rather than relying only on a particular quality number.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Will AVIF always be smaller?
+              </h2>
+
+              <p className="text-gray-600 leading-7">
+                Not necessarily. AVIF is designed for efficient image
+                compression, but the final file size depends on the original
+                image, dimensions, visual complexity, source compression, and
+                the quality setting you choose. Compare the converted result
+                with the original when file size is important.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                Tips for converting TIFF images to AVIF
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  'Keep the original source image when you may need it for editing or another format later.',
+                  'Start with a higher quality setting when preserving fine detail is important.',
+                  'Try a lower quality setting when reducing output size is the main goal.',
+                  'Review detailed areas of the converted image for visible compression artifacts.',
+                  'Check whether the application, browser, or platform where you will use the image supports AVIF.',
+                  'Compare the final file size and visual quality before replacing an existing image asset.',
+                ].map((tip) => (
+                  <div key={tip} className="flex gap-3 border border-gray-200 rounded-lg p-4">
+                    <span className="text-sky-600 font-bold">✓</span>
+                    <p className="text-gray-600">{tip}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                TIFF to AVIF FAQ
+              </FAQHeading>
+
+              <FAQList>
+                {[
+                  {
+                    q: 'What output format does this converter create?',
+                    a: 'The converted image is generated and downloaded in AVIF format.',
+                  },
+                  {
+                    q: 'Can I control AVIF quality?',
+                    a: 'Yes. The quality slider lets you select a value from 1 to 100 before starting the conversion.',
+                  },
+                  {
+                    q: 'Does higher quality create a larger file?',
+                    a: 'Higher quality settings can produce larger files because more image detail is preserved, although the exact result depends on the image.',
+                  },
+                  {
+                    q: 'Is AVIF supported everywhere?',
+                    a: 'AVIF support has expanded across modern browsers and software, but compatibility can still vary. Check the requirements of the application or platform where you plan to use the file.',
+                  },
+                  {
+                    q: 'Should I delete the original TIFF file after conversion?',
+                    a: 'Keeping the original is recommended when it is your source, archival, or highest-quality copy. Conversion creates a file for a different format and use case.',
+                  },
+                ].map((item) => (
+                  <FAQCard key={item.q}>
+                    <FAQStaticQuestion>
+                      {item.q}
+                    </FAQStaticQuestion>
+                    <FAQAnswer>{item.a}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                Related image converters
+              </h2>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+              <Link
+                href="/all-tools/tiff-to-jpg"
+                className="border border-gray-200 rounded-xl p-5 hover:border-sky-400 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">TIFF to JPG</h3>
+                <p className="text-sm text-gray-600">Convert TIFF images to widely supported JPG files.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/tiff-to-png"
+                className="border border-gray-200 rounded-xl p-5 hover:border-sky-400 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">TIFF to PNG</h3>
+                <p className="text-sm text-gray-600">Convert TIFF images to PNG format.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/jpg-to-avif"
+                className="border border-gray-200 rounded-xl p-5 hover:border-sky-400 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">JPG to AVIF</h3>
+                <p className="text-sm text-gray-600">Create AVIF images from JPG files.</p>
+              </Link>
+
+              <Link
+                href="/all-tools/png-to-avif"
+                className="border border-gray-200 rounded-xl p-5 hover:border-sky-400 transition"
+              >
+                <h3 className="font-semibold text-gray-900 mb-2">PNG to AVIF</h3>
+                <p className="text-sm text-gray-600">Convert PNG images to AVIF format.</p>
+              </Link>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );

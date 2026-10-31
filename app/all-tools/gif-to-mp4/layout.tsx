@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'GIF to MP4 - Free Animation to Video Converter | SimplifyConvert',
-  description: 'Convert GIF animations to MP4 video format. Smaller files with better quality.',
+  description: 'Convert animated GIF files to MP4 video online with an adjustable output frame rate from 15 to 60 FPS.',
   keywords: ['gif to mp4', 'convert gif', 'animation to video', 'free tool'],
   openGraph: {
     type: 'website',

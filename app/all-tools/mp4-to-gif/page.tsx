@@ -1,54 +1,116 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Video } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function Mp4ToGifPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [conversionTip, setConversionTip] = useState<string>('');
+  const [conversionTip, setConversionTip] = useState('');
+  const [dragging, setDragging] = useState(false);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
+  const processingRef = useRef(false);
+  const downloadingRef = useRef(false);
+  const conversionGeneration = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      conversionGeneration.current++;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  useEffect(() => {
+    if (!downloadUrl) return;
+    return () => URL.revokeObjectURL(downloadUrl);
+  }, [downloadUrl]);
+
+  const selectFile = (selectedFile: File | null) => {
+    if (processingRef.current || downloadingRef.current) return;
+
+    conversionGeneration.current++;
+    setFile(null);
+    setDownloadUrl(null);
+    setConversionTip('');
+    setError(null);
+
     if (!selectedFile) return;
 
-    if (!selectedFile.type.startsWith('video/')) {
-      setError('Please select a valid video file');
+    const isMp4 =
+      selectedFile.type === 'video/mp4' ||
+      (selectedFile.type === '' && /\.mp4$/i.test(selectedFile.name));
+
+    if (!isMp4) {
+      setError('Please select an MP4 video file.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected MP4 file is empty.');
+      return;
+    }
+
+    if (selectedFile.size > 500 * 1024 * 1024) {
+      setError('MP4 files must be 500 MB or smaller.');
       return;
     }
 
     setFile(selectedFile);
-    setError(null);
-    setConversionTip('');
+  };
 
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      setPreview(evt.target?.result as string);
-    };
-    reader.readAsDataURL(selectedFile);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    selectFile(e.target.files?.[0] ?? null);
+    e.target.value = '';
   };
 
   const handleClearPreview = () => {
-    setFile(null);
-    setPreview(null);
-    setDownloadUrl(null);
-    setError(null);
-    setConversionTip('');
+    selectFile(null);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(false);
+
+    if (processingRef.current || downloadingRef.current) return;
+
+    selectFile(e.dataTransfer.files?.[0] ?? null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!file || processingRef.current || downloadingRef.current) return;
 
+    const generation = ++conversionGeneration.current;
+
+    processingRef.current = true;
     setProcessing(true);
+    setDownloadUrl(null);
     setError(null);
-    setConversionTip('Converting video to GIF... This may take a moment depending on video length and quality.');
-    
+    setConversionTip(
+      'Converting your MP4 to GIF. Longer videos may take more time.'
+    );
+
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -58,7 +120,6 @@ export default function Mp4ToGifPage() {
         options: {
           fps: 10,
           scale: 480,
-          quality: 85,
         },
       }));
 
@@ -68,30 +129,91 @@ export default function Mp4ToGifPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Conversion failed');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.error || 'MP4 to GIF conversion failed.'
+        );
       }
 
       const blob = await response.blob();
+
+      if (blob.type !== 'image/gif' || blob.size === 0) {
+        throw new Error('The conversion did not produce a valid GIF.');
+      }
+
+      const signature = new Uint8Array(
+        await blob.slice(0, 6).arrayBuffer()
+      );
+
+      const gif87a = [71, 73, 70, 56, 55, 97];
+      const gif89a = [71, 73, 70, 56, 57, 97];
+
+      const validSignature = [gif87a, gif89a].some(
+        expected => expected.every(
+          (byte, index) => signature[index] === byte
+        )
+      );
+
+      if (!validSignature) {
+        throw new Error('The generated file has an invalid GIF signature.');
+      }
+
+      if (generation !== conversionGeneration.current) return;
+
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setConversionTip('✓ Conversion complete! Your GIF is ready to download.');
-    } catch (error) {
-      setError((error as Error).message || 'Error converting video');
-      setConversionTip('');
+      setConversionTip('Conversion complete. Preview or download your GIF.');
+    } catch (caughtError) {
+      if (generation === conversionGeneration.current) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to convert the MP4 video.'
+        );
+        setConversionTip('');
+      }
     } finally {
+      processingRef.current = false;
       setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (!downloadUrl) return;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'converted.gif';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!downloadUrl || processingRef.current || downloadingRef.current) {
+      return;
+    }
+
+    downloadingRef.current = true;
+    setDownloading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        throw new Error('Unable to read the generated GIF.');
+      }
+
+      const blob = await response.blob();
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'mp4-to-gif',
+        originalName: file?.name || 'video.mp4',
+        outputName: 'converted.gif',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the GIF download.'
+      );
+    } finally {
+      downloadingRef.current = false;
+      setDownloading(false);
+    }
   };
 
   return (
@@ -117,7 +239,7 @@ export default function Mp4ToGifPage() {
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">MP4 to GIF Converter</h1>
-              <p className="text-lg text-white/90">Convert MP4 videos to animated GIF format. Perfect for creating shareable animations from short video clips.</p>
+              <p className="text-lg text-white/90">Convert MP4 videos to animated GIF format. Useful for creating short animated images from MP4 video clips.</p>
             </div>
           </div>
         </div>
@@ -135,10 +257,23 @@ export default function Mp4ToGifPage() {
 
                 {/* File Upload Area */}
                 <label className="block">
-                  <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 bg-purple-50 hover:bg-purple-100 transition cursor-pointer">
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); setDragging(false); }}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-lg p-8 transition ${
+                      dragging
+                        ? 'border-purple-600 bg-purple-100'
+                        : 'border-purple-300 bg-purple-50 hover:bg-purple-100'
+                    } ${processing || downloading
+                      ? 'opacity-60 cursor-not-allowed'
+                      : 'cursor-pointer'
+                    }`}
+                  >
                     <input
                       type="file"
                       accept="video/mp4,.mp4"
+                      disabled={processing || downloading}
                       onChange={handleFileSelect}
                       className="hidden"
                     />
@@ -160,7 +295,8 @@ export default function Mp4ToGifPage() {
                     />
                     <button
                       onClick={handleClearPreview}
-                      className="mt-3 text-sm text-blue-600 hover:text-blue-700"
+                      disabled={processing || downloading}
+                      className="mt-3 text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50"
                     >
                       ← Clear and upload different video
                     </button>
@@ -168,7 +304,7 @@ export default function Mp4ToGifPage() {
                 )}
 
                 {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div role="alert" className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-600">{error}</p>
                   </div>
                 )}
@@ -191,7 +327,7 @@ export default function Mp4ToGifPage() {
                 {/* Convert Button */}
                 <button
                   onClick={handleConvert}
-                  disabled={!file || processing}
+                  disabled={!file || processing || downloading}
                   className="w-full px-6 py-3 bg-purple-500 text-white rounded-lg font-medium hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   {processing ? (
@@ -220,13 +356,24 @@ export default function Mp4ToGifPage() {
 
                 {/* Download Button */}
                 {downloadUrl && (
-                  <button
-                    onClick={handleDownload}
-                    className="w-full mt-3 px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
-                  >
-                    <Download size={18} />
-                    Download GIF
-                  </button>
+                  <div className="mt-4 space-y-3">
+                    <p className="text-sm font-medium text-gray-700">
+                      Generated GIF preview
+                    </p>
+                    <img
+                      src={downloadUrl}
+                      alt="Converted animated GIF preview"
+                      className="w-full max-h-64 object-contain rounded-lg border border-gray-200"
+                    />
+                    <button
+                      onClick={handleDownload}
+                      disabled={processing || downloading}
+                      className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                    >
+                      <Download size={18} />
+                      {downloading ? 'Preparing download...' : 'Download GIF'}
+                    </button>
+                  </div>
                 )}
 
                 {/* Info */}
@@ -236,9 +383,9 @@ export default function Mp4ToGifPage() {
                   </p>
                   <ul className="text-xs text-purple-700 space-y-1">
                     <li>• No sound needed (silent animation)</li>
-                    <li>• Works on all platforms & browsers</li>
-                    <li>• Perfect for social media</li>
-                    <li>• Instant playback, no controls needed</li>
+                    <li>• Supported by major browsers and many messaging platforms</li>
+                    <li>• Useful for short web and messaging animations</li>
+                    <li>• GIF playback does not use video playback controls</li>
                   </ul>
                 </div>
               </div>
@@ -257,7 +404,7 @@ export default function Mp4ToGifPage() {
                   <li>• Keep video length between 5-30 seconds</li>
                   <li>• Higher resolution videos create larger GIFs</li>
                   <li>• Fast-paced videos work best</li>
-                  <li>• Remove audio before converting (we do it automatically)</li>
+                  <li>• GIF does not support audio; the output is always silent</li>
                   <li>• Ensure good lighting in your video</li>
                   <li>• Steady camera movement or static shots</li>
                 </ul>
@@ -279,35 +426,35 @@ export default function Mp4ToGifPage() {
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What is GIF format?</h3>
-                <p className="text-gray-600">GIF (Graphics Interchange Format) is an animated image format that displays a sequence of frames to create an animation. It's widely supported across all browsers and social media platforms without requiring plugins.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Why convert MP4 to GIF?</h3>
-                <p className="text-gray-600">GIFs are perfect for sharing short video clips on social media, messaging apps, and websites. They autoplay, don't require plugins, and work everywhere. Plus, they're silent, so they're great for meme-worthy moments.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What's the file size of the resulting GIF?</h3>
-                <p className="text-gray-600">GIF file sizes vary based on video length, resolution, and content. A 10-second HD video typically creates a 10-50MB GIF. We optimize for balance between quality and file size to keep GIFs manageable.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Can I customize the GIF quality?</h3>
-                <p className="text-gray-600">We automatically optimize GIFs with 10 frames per second and scaled dimensions for the best balance. Contact us if you need custom quality settings for specific use cases.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">What video formats are supported?</h3>
-                <p className="text-gray-600">Currently, we support MP4 files. If you have other formats like MOV, AVI, or WebM, you can use a video converter to convert them to MP4 first.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Will the GIF have audio?</h3>
-                <p className="text-gray-600">No, GIFs are silent image animations and cannot contain audio. We automatically remove all audio during conversion, so the resulting GIF will be a silent animation.</p>
-              </div>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              <FAQCard>
+                <FAQStaticQuestion>What is GIF format?</FAQStaticQuestion>
+                <FAQAnswer>GIF (Graphics Interchange Format) is an animated image format that displays a sequence of frames to create an animation. It's widely supported across all browsers and social media platforms without requiring plugins.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Why convert MP4 to GIF?</FAQStaticQuestion>
+                <FAQAnswer>GIFs can be useful for sharing short visual animations on websites, messaging apps, and other compatible platforms. They typically animate automatically on compatible platforms without video controls. Plus, they're silent, so they're great for meme-worthy moments.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What's the file size of the resulting GIF?</FAQStaticQuestion>
+                <FAQAnswer>GIF file sizes vary based on video duration, frame rate, dimensions, and visual complexity. Animated GIFs can become significantly larger than the source video.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>How is the GIF generated?</FAQStaticQuestion>
+                <FAQAnswer>The converter generates the GIF at 10 frames per second and limits the output width while preserving the source aspect ratio. FFmpeg generates and applies a color palette for the animation.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>What video formats are supported?</FAQStaticQuestion>
+                <FAQAnswer>Currently, we support MP4 files. If you have other formats like MOV, AVI, or WebM, you can use a video converter to convert them to MP4 first.</FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>Will the GIF have audio?</FAQStaticQuestion>
+                <FAQAnswer>No, GIFs are silent image animations and cannot contain audio. We automatically remove all audio during conversion, so the resulting GIF will be a silent animation.</FAQAnswer>
+              </FAQCard>
+            </FAQList>
+          </FAQPanel>
         </div>
       </div>
       </main>

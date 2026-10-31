@@ -1,7 +1,9 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, Eraser } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
@@ -15,11 +17,14 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
 const TOOL_ID = 'remove-background';
 const TOOL_NAME = 'Remove Background';
 
 export default function RemoveBackgroundPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -28,10 +33,31 @@ export default function RemoveBackgroundPage() {
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const { error, clearError, createError } = useImageToolErrors();
+  const requestRef = useRef<AbortController | null>(null);
+  const operationRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      operationRef.current++;
+      requestRef.current?.abort();
+    };
+  }, []);
+
+  const invalidateResult = () => {
+    operationRef.current++;
+    requestRef.current?.abort();
+    requestRef.current = null;
+    setResult(null);
+    setProcessingTime(null);
+    setProcessing(false);
+  };
 
   const handleFileSelect = (selectedFile: File) => {
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
     clearError();
-    
+
     // Validate file
     const emptyCheck = validateImageNotEmpty(selectedFile);
     if (!emptyCheck.valid) {
@@ -80,10 +106,15 @@ export default function RemoveBackgroundPage() {
 
     setFile(selectedFile);
     const reader = new FileReader();
+    const uploadOperation = operationRef.current;
     reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+      if (uploadOperation !== operationRef.current) return;
+      const value = e.target?.result;
+      if (typeof value === 'string') setPreview(value);
     };
     reader.onerror = () => {
+      if (uploadOperation !== operationRef.current) return;
+      setFile(null);
       createError(
         ImageToolErrorType.FILE_CORRUPTED,
         TOOL_ID,
@@ -96,6 +127,7 @@ export default function RemoveBackgroundPage() {
   };
 
   const handleClearPreview = () => {
+    invalidateResult();
     setFile(null);
     setPreview(null);
     setResult(null);
@@ -104,6 +136,7 @@ export default function RemoveBackgroundPage() {
   };
 
   const removeBackground = async () => {
+    if (processing) return;
     if (!file) {
       createError(
         ImageToolErrorType.EMPTY_FILE,
@@ -113,6 +146,10 @@ export default function RemoveBackgroundPage() {
       return;
     }
 
+    invalidateResult();
+    const operation = operationRef.current;
+    const controller = new AbortController();
+    requestRef.current = controller;
     setProcessing(true);
     clearError();
 
@@ -127,10 +164,12 @@ export default function RemoveBackgroundPage() {
       const response = await fetch('/api/bg-remove', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
+      if (operation !== operationRef.current) return;
+
       const processingTimeMs = Date.now() - startTime;
-      setProcessingTime(processingTimeMs);
 
       if (!response.ok) {
         let errorMessage = 'Failed to remove background';
@@ -148,17 +187,22 @@ export default function RemoveBackgroundPage() {
         throw new Error('Empty response from server');
       }
 
-      // Convert blob to data URL to avoid CSP issues with blob: URLs
-      const reader = new FileReader();
-      reader.onload = () => {
-        setResult(reader.result as string);
-      };
-      reader.onerror = () => {
-        throw new Error('Failed to read result image');
-      };
-      reader.readAsDataURL(blob);
+      const resultUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') resolve(reader.result);
+          else reject(new Error('Invalid result image'));
+        };
+        reader.onerror = () => reject(new Error('Failed to read result image'));
+        reader.readAsDataURL(blob);
+      });
+
+      if (operation !== operationRef.current) return;
+      setProcessingTime(processingTimeMs);
+      setResult(resultUrl);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (operation !== operationRef.current || controller.signal.aborted) return;
+      console.error('[remove-background] Processing failed:', err);
       createError(
         ImageToolErrorType.SHARP_FAILED,
         TOOL_ID,
@@ -167,18 +211,39 @@ export default function RemoveBackgroundPage() {
         { filename: file.name, size: file.size, mimeType: file.type }
       );
     } finally {
-      setProcessing(false);
+      if (operation === operationRef.current) {
+        requestRef.current = null;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `no-background-${Date.now()}.${outputFormat}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !file || processing) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const outputName = `no-background-${Date.now()}.${outputFormat}`;
+      const downloadResult = await uploadBrowserDownloadResultFromUrl({
+        url: result,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch {
+      createError(
+        ImageToolErrorType.SHARP_FAILED,
+        TOOL_ID,
+        TOOL_NAME,
+        { file },
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -222,7 +287,7 @@ export default function RemoveBackgroundPage() {
                 {!preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                    
+
                     <ImageUploader
                       onFileSelect={handleFileSelect}
                       preview={preview}
@@ -279,7 +344,7 @@ export default function RemoveBackgroundPage() {
                       <li>1. Upload an image with a background</li>
                       <li>2. Our AI automatically detects and removes it</li>
                       <li>3. Choose your processing mode and output format</li>
-                      <li>4. Download the result with transparent background</li>
+                      <li>4. Use PNG or WebP for transparency, or JPEG for white</li>
                       <li>5. Use it in designs, websites, or other projects</li>
                     </ol>
                   </div>
@@ -296,8 +361,8 @@ export default function RemoveBackgroundPage() {
                         <li>• AI-powered detection</li>
                         <li>• Automatic background removal</li>
                         <li>• Multiple output formats</li>
-                        <li>• High quality mode</li>
-                        <li>• Fast processing</li>
+                        <li>• Standard and HQ model modes</li>
+                        <li>• Edge quality varies by subject</li>
                       </ul>
                     </div>
                   )}
@@ -312,7 +377,10 @@ export default function RemoveBackgroundPage() {
                         <label className="text-sm font-medium text-gray-700 block mb-2">Output Format</label>
                         <select
                           value={outputFormat}
-                          onChange={(e) => setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp')}
+                          onChange={(e) => {
+                            invalidateResult();
+                            setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp');
+                          }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="png">PNG (transparent background)</option>
@@ -327,12 +395,15 @@ export default function RemoveBackgroundPage() {
                           type="checkbox"
                           id="hqMode"
                           checked={hqMode}
-                          onChange={(e) => setHqMode(e.target.checked)}
+                          onChange={(e) => {
+                            invalidateResult();
+                            setHqMode(e.target.checked);
+                          }}
                           className="w-4 h-4 cursor-pointer mt-0.5"
                         />
                         <label htmlFor="hqMode" className="flex-1 cursor-pointer">
                           <div className="text-sm font-medium text-gray-900">High Quality Mode</div>
-                          <div className="text-xs text-gray-600">Better results (slower)</div>
+                          <div className="text-xs text-gray-600">Uses a larger model and may take longer</div>
                         </label>
                       </div>
                     </div>
@@ -361,6 +432,7 @@ export default function RemoveBackgroundPage() {
                   {/* Download Button */}
                   {result && (
                     <button
+                      disabled={processing}
                       onClick={handleDownload}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
@@ -382,7 +454,7 @@ export default function RemoveBackgroundPage() {
                   {/* Use Cases */}
                   {preview && (
                     <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-indigo-900 mb-2">Perfect for:</h3>
+                      <h3 className="font-semibold text-indigo-900 mb-2">Useful for:</h3>
                       <ul className="text-sm text-indigo-800 space-y-1">
                         <li>• e-Commerce product photos</li>
                         <li>• Profile pictures</li>
@@ -410,6 +482,10 @@ export default function RemoveBackgroundPage() {
         </div>
       </main>
 
+      <PriorityToolGuide toolId="remove-background" />
+      <Footer />
+      {false && (<>
+
       {/* How It Works Section */}
       <section className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
@@ -429,7 +505,7 @@ export default function RemoveBackgroundPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
-              <div><p className="text-gray-700"><strong>Click Remove Background:</strong> Our AI instantly processes and removes the background</p></div>
+              <div><p className="text-gray-700"><strong>Click Remove Background:</strong> The server model processes the image and generates a foreground cutout</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">5</div>
@@ -440,65 +516,65 @@ export default function RemoveBackgroundPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 How accurate is the AI background removal?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Our AI is highly accurate for most images, especially with distinct backgrounds. For complex hair, fur, or intricate edges, enabling High Quality Mode provides better results. Some manual touch-ups may be needed for very fine details.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Background removal works best when the subject is visually distinct from the background. Hair, fur, translucent areas, motion blur, and fine edges can be difficult to segment, so review the generated cutout before downloading.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What image formats are supported?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">We support JPG, PNG, WebP, and most common image formats. Maximum file size is 50MB. For best results, use clear, well-lit images with distinct subject-background contrast.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The server accepts JPEG, PNG, and WebP images up to 20 MB. Images with clear lighting and stronger subject-background contrast usually give the segmentation model a clearer boundary.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I edit the result after download?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes! Downloaded PNG files with transparent backgrounds can be edited in any image editor like Photoshop, GIMP, or even Paint. You can add custom backgrounds or make further adjustments.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Yes! Downloaded PNG files with transparent backgrounds can be edited in any image editor like Photoshop, GIMP, or even Paint. You can add custom backgrounds or make further adjustments.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Are my images stored on your servers?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. Processing happens on our servers for AI analysis, but images are never stored or viewed by anyone. They're automatically deleted after processing completes.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Processing happens on our servers for AI analysis. Uploaded images are used to perform the requested background-removal operation.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 How long does background removal take?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Most images process in 2-10 seconds. High Quality Mode may take 15-30 seconds. Processing time depends on image size and complexity. You'll see the duration after processing completes.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Processing time varies with image dimensions, complexity, selected mode, and current server workload. High Quality Mode can take longer than Standard mode. The page displays the measured processing time after the operation completes.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Do I need to sign up or pay to use this tool?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No signup or payment required. Our background remover is completely free, with no limits on the number of images you can process.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>No signup is required to use the available background-removal controls.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* FAQ Schema */}
@@ -511,7 +587,7 @@ export default function RemoveBackgroundPage() {
             "name": "How accurate is the AI background removal?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Our AI is highly accurate for most images, especially with distinct backgrounds. For complex hair, fur, or intricate edges, enabling High Quality Mode provides better results."
+              "text": "Background removal works best when the subject is visually distinct from the background. Hair, fur, translucent areas, motion blur, and fine edges can be difficult to segment."
             }
           },
           {
@@ -519,7 +595,7 @@ export default function RemoveBackgroundPage() {
             "name": "What image formats are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "We support JPG, PNG, WebP, and most common image formats. Maximum file size is 50MB."
+              "text": "The server accepts JPEG, PNG, and WebP images up to 20 MB."
             }
           },
           {
@@ -535,7 +611,7 @@ export default function RemoveBackgroundPage() {
             "name": "Are my images stored on your servers?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Images are automatically deleted after processing completes. They're not stored or viewed by anyone."
+              "text": "The image is sent to the server for background-removal processing. Temporary model input, output, and script files are deleted in the request cleanup path."
             }
           },
           {
@@ -543,7 +619,7 @@ export default function RemoveBackgroundPage() {
             "name": "How long does background removal take?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Most images process in 2-10 seconds. High Quality Mode may take 15-30 seconds depending on image size and complexity."
+              "text": "Processing time varies with image dimensions, complexity, selected mode, and current server workload. High Quality Mode can take longer than Standard mode."
             }
           },
           {
@@ -551,7 +627,7 @@ export default function RemoveBackgroundPage() {
             "name": "Do I need to sign up or pay to use this tool?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No signup or payment required. Completely free with no limits on the number of images."
+              "text": "No signup is required to use the available background-removal controls."
             }
           }
         ]
@@ -562,7 +638,7 @@ export default function RemoveBackgroundPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Image Tools</h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size after removal</p></div>
             </Link>
@@ -649,18 +725,15 @@ export default function RemoveBackgroundPage() {
 
           <div className="border-t border-gray-800 pt-8">
             <p className="text-center text-sm text-gray-400">
-              © 2026 SimplifyConvert. All rights reserved. All tools are free and work in your browser.
+              © 2026 SimplifyConvert. All rights reserved.
             </p>
           </div>
         </div>
       </footer>
+      </>)}
     </>
   );
 }
-
-
-
-
 
 
 

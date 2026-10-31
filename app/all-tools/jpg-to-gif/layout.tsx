@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'JPG to GIF - Free Static Image Converter | SimplifyConvert',
-  description: 'Convert JPG images to GIF format. Create simple animations from sequences.',
-  keywords: ['jpg to gif', 'convert jpg', 'image animator', 'free tool'],
+  description: 'Convert JPG and JPEG images to static GIF format online. Learn about GIF color limitations and download your converted image.',
+  keywords: ['jpg to gif', 'convert jpg', 'static gif converter', 'free tool'],
   openGraph: {
     type: 'website',
     locale: 'en_US',

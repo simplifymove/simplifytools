@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Resume Maker - Free Online Resume Builder | SimplifyConvert',
-  description: 'Create professional resumes with our free online resume builder. Choose from templates, customize designs, and download in PDF or DOCX format.',
+  description: 'Create a professional resume online with job templates, editable sections, design choices, job-match guidance, preview, and DOCX download.',
   keywords: ['resume maker', 'resume builder', 'resume templates', 'job resume', 'resume generator'],
   openGraph: {
     type: 'website',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/all-tools/resume-maker',
     siteName: 'SimplifyConvert',
     title: 'Resume Maker - Free Online Resume Builder',
-    description: 'Create professional resumes with our free online resume builder.',
+    description: 'Create professional resumes with editable templates, job-match guidance, preview, and DOCX download.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Resume Maker - Free Online Resume Builder',
-    description: 'Create professional resumes online.',
+    description: 'Create professional resumes with job-match guidance and DOCX download.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
   },
   alternates: {

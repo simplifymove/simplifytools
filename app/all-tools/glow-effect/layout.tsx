@@ -1,10 +1,10 @@
 export const metadata = {
   title: 'Free Glow Effect - Add Luminous Glow to Photos',
-  description: 'Add glow, bloom, and luminous effects to images. Create stunning glowing photos.',
+  description: 'Apply configurable glow and luminous-style effects to images using browser-based processing.',
   keywords: 'glow effect, bloom, luminous, light effect, photo glow',
   openGraph: {
     title: 'Free Glow Effect - Luminous Photo Effects',
-    description: 'Add beautiful glow and bloom effects to images',
+    description: 'Apply configurable glow and bloom-style effects to images',
     type: 'website',
     url: 'https://simplifyconvert.com/all-tools/glow-effect',
   },

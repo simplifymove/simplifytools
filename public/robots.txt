@@ -1,33 +1,27 @@
 User-agent: *
 Allow: /
-Allow: /all-tools/
-Allow: /all-tools/*
-Allow: /blog
-Allow: /blog/*
-Allow: /terms
-Disallow: /api/
-Disallow: /admin/
-Disallow: /auth/
-Disallow: /dashboard/
+Disallow: /api
+Disallow: /admin
+Disallow: /auth
+Disallow: /dashboard
 Disallow: /account
-Disallow: /_next/
-Disallow: *.json$
-Disallow: /?*  # Disallow query strings on root
-Disallow: *?*=* # Disallow URLs with query parameters
 
-# Slow down aggressive crawlers
 User-agent: AhrefsBot
+Allow: /
+Disallow: /api
+Disallow: /admin
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /account
 Crawl-delay: 10
 
 User-agent: SemrushBot
+Allow: /
+Disallow: /api
+Disallow: /admin
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /account
 Crawl-delay: 10
 
-# Allow Google and Bing to crawl freely
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-# Sitemap
 Sitemap: https://simplifyconvert.com/sitemap.xml

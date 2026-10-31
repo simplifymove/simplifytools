@@ -78,14 +78,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
     output: '.pdf',
     inputMode: 'multi-file',
     multipleFiles: true,
-    options: [
-      {
-        id: 'fileOrder',
-        label: 'File Order',
-        type: 'text',
-        placeholder: 'Files will be merged in the order provided',
-      },
-    ],
+    options: [],
   },
 
   'split-pdf': {
@@ -160,7 +153,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'rearrange-pdf': {
     id: 'rearrange-pdf',
     title: 'Rearrange PDF',
-    description: 'Easily rearrange PDF pages in any order using our free online tool. Upload your PDF, set the page sequence, and download instantly — no signup required.',
+    description: 'Reorder PDF pages into the sequence you need.',
     category: 'Core',
     engine: 'core',
     icon: Shuffle,
@@ -181,7 +174,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'crop-pdf': {
     id: 'crop-pdf',
     title: 'Crop PDF',
-    description: 'Crop PDF pages to exact dimensions with visual editor. Trim margins, resize pages, and extract specific areas instantly. Free online tool - no signup required.',
+    description: 'Adjust the visible area of selected PDF pages.',
     category: 'Core',
     engine: 'core',
     icon: Scissors,
@@ -206,7 +199,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-page-deleter': {
     id: 'pdf-page-deleter',
     title: 'PDF Page Deleter',
-    description: 'Remove unwanted pages from your PDF instantly. Upload your file, enter page numbers like 1,3,5, and download a clean PDF — free, online, and no signup required.',
+    description: 'Remove selected pages from a PDF and create a new document.',
     category: 'Core',
     engine: 'core',
     icon: Trash,
@@ -227,7 +220,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'create-pdf': {
     id: 'create-pdf',
     title: 'Create PDF',
-    description: 'Convert JPG, PNG, and TIFF images into a single PDF in seconds. Upload multiple images and download a high-quality PDF instantly — all in your browser. Images combine in the order you upload them.',
+    description: 'Create a PDF from uploaded images or blank pages.',
     category: 'Core',
     engine: 'core',
     icon: Plus,
@@ -250,7 +243,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'protect-pdf': {
     id: 'protect-pdf',
     title: 'Protect PDF',
-    description: 'Add password protection to your PDF files online. Encrypt documents with user and owner passwords to prevent unauthorized access — fast, secure, and free.',
+    description: 'Add password-based encryption so a password is required to open the PDF.',
     category: 'Security',
     engine: 'security',
     icon: Lock,
@@ -271,7 +264,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
         label: 'Owner Password (for permissions)',
         type: 'password',
         placeholder: 'Optional',
-        hint: 'Controls printing, copying & editing permissions. Leave blank to skip.',
+        hint: 'Optional owner password; this tool does not restrict printing, copying, or editing.',
       },
     ],
   },
@@ -279,7 +272,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'unlock-pdf': {
     id: 'unlock-pdf',
     title: 'Unlock PDF',
-    description: 'Remove password protection from PDF files you own or have permission to access. Upload your PDF, enter the password, and download an unlocked copy online.',
+    description: 'Create an unlocked PDF copy when you provide the correct password.',
     category: 'Security',
     engine: 'security',
     icon: LockOpen,
@@ -300,7 +293,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-watermark-remover': {
     id: 'pdf-watermark-remover',
     title: 'PDF Watermark Remover',
-    description: 'Remove watermarks from PDF (text, graphics, annotations)',
+    description: 'Attempt to remove detectable watermark-like content using available removal methods.',
     category: 'Security',
     engine: 'security',
     icon: Eye,
@@ -312,23 +305,10 @@ export const pdfTools: Record<string, PdfToolConfig> = {
         id: 'method',
         label: 'Removal Method',
         type: 'select',
-        default: 'all',
+        default: 'text_rebuild',
         options: [
-          { value: 'all', label: 'All Methods (Comprehensive)' },
-          { value: 'annotations', label: 'Remove Annotations Only' },
-          { value: 'graphics', label: 'Remove Graphics & Light Objects' },
-          { value: 'text', label: 'Remove Watermark Text Only' },
-        ],
-      },
-      {
-        id: 'sensitivity',
-        label: 'Removal Sensitivity',
-        type: 'select',
-        default: 'medium',
-        options: [
-          { value: 'low', label: 'Low (Conservative)' },
-          { value: 'medium', label: 'Medium (Balanced)' },
-          { value: 'high', label: 'High (Aggressive)' },
+          { value: 'text_rebuild', label: 'Rebuild Text (Recommended)' },
+          { value: 'rectangle_overlay', label: 'Cover Detected Watermark Areas' },
         ],
       },
     ],
@@ -421,7 +401,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-tiff': {
     id: 'pdf-to-tiff',
     title: 'PDF to TIFF',
-    description: 'Convert PDF pages to high-quality TIFF images online for free. Choose DPI settings (72–600) for archival storage, printing, or professional use. Fast, secure, and no installation required.',
+    description: 'Render PDF pages as TIFF images at selectable DPI settings.',
     category: 'Convert',
     engine: 'convert',
     icon: ImageIcon,
@@ -463,7 +443,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'jpg-to-pdf': {
     id: 'jpg-to-pdf',
     title: 'JPG to PDF',
-    description: 'Convert JPG, JPEG, and PNG images to high-quality PDF documents online for free. Merge multiple images into a single PDF, adjust compression (0–9), and download instantly. No installation required.',
+    description: 'Combine JPG, JPEG, or PNG images into one PDF in upload order.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -475,7 +455,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'png-to-pdf': {
     id: 'png-to-pdf',
     title: 'PNG to PDF',
-    description: 'Convert PNG images to high-quality PDF documents online for free. Merge multiple PNGs, adjust compression (0–9), and download instantly. No installation required.',
+    description: 'Combine PNG images into one PDF with transparent areas flattened onto white.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -487,7 +467,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'tiff-to-pdf': {
     id: 'tiff-to-pdf',
     title: 'TIFF to PDF',
-    description: 'Convert TIFF images to professional PDF documents online for free. Merge multiple TIFF files, adjust compression (0–9), and download instantly. No installation required.',
+    description: 'Combine TIFF images into one PDF with one image placed on each page.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -499,7 +479,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'webp-to-pdf': {
     id: 'webp-to-pdf',
     title: 'WebP to PDF',
-    description: 'Convert WebP images to professional PDF documents online for free. Merge multiple WebP files, adjust compression (0–9), and download instantly. No installation required.',
+    description: 'Combine WebP images into one PDF with one image placed on each page.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -511,7 +491,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'gif-to-pdf': {
     id: 'gif-to-pdf',
     title: 'GIF to PDF',
-    description: 'Convert GIF to PDF online free. Merge multiple GIFs, adjust compression, and download instantly.',
+    description: 'Convert the first frame of each GIF into a static PDF page and combine multiple GIF files.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -523,7 +503,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'heic-to-pdf': {
     id: 'heic-to-pdf',
     title: 'HEIC to PDF',
-    description: 'Convert HEIC to PDF online free. Merge iPhone photos, adjust compression, and download instantly.',
+    description: 'Combine supported HEIC images into one PDF with one image placed on each page.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -537,7 +517,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'eps-to-pdf': {
     id: 'eps-to-pdf',
     title: 'EPS to PDF',
-    description: 'Convert EPS files without Adobe. EPS to PDF converter online free - works as EPS file viewer. Merge multiple EPS, adjust compression, download instantly.',
+    description: 'Render supported EPS files and combine the rendered results into a PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -549,7 +529,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'images-to-pdf': {
     id: 'images-to-pdf',
     title: 'Images to PDF',
-    description: 'Convert multiple images (JPG, PNG, GIF, WEBP, TIFF, HEIC) to PDF instantly. Merge images into a single PDF document with compression control. Free batch converter online - no signup required.',
+    description: 'Combine supported JPG, PNG, GIF, WebP, TIFF, or HEIC images into one PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -646,7 +626,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-epub': {
     id: 'pdf-to-epub',
     title: 'PDF to EPUB',
-    description: 'Convert PDF to EPUB eBook',
+    description: 'Convert fixed-page PDF content into EPUB e-book format for compatible readers.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -658,7 +638,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-mobi': {
     id: 'pdf-to-mobi',
     title: 'PDF to MOBI',
-    description: 'Convert PDF to MOBI eBook',
+    description: 'Convert PDF content into MOBI format for compatible e-book readers.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -670,7 +650,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-azw3': {
     id: 'pdf-to-azw3',
     title: 'PDF to AZW3',
-    description: 'Convert PDF to AZW3 eBook',
+    description: 'Convert PDF content into AZW3 e-book format for compatible readers.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -682,7 +662,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'epub-to-pdf': {
     id: 'epub-to-pdf',
     title: 'EPUB to PDF',
-    description: 'Convert EPUB eBook to PDF',
+    description: 'Render compatible EPUB e-book content into a fixed-page PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -694,7 +674,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'mobi-to-pdf': {
     id: 'mobi-to-pdf',
     title: 'MOBI to PDF',
-    description: 'Convert MOBI eBook to PDF',
+    description: 'Render compatible MOBI e-book content into a fixed-page PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -706,7 +686,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'azw3-to-pdf': {
     id: 'azw3-to-pdf',
     title: 'AZW3 to PDF',
-    description: 'Convert AZW3 eBook to PDF',
+    description: 'Render compatible AZW3 e-book content into a fixed-page PDF.',
     category: 'Convert',
     engine: 'convert',
     icon: FileUp,
@@ -718,7 +698,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'url-to-pdf': {
     id: 'url-to-pdf',
     title: 'URL to PDF',
-    description: 'Convert webpage to PDF',
+    description: 'Render an accessible webpage URL into a static PDF document.',
     category: 'Convert',
     engine: 'convert',
     icon: Link,
@@ -739,7 +719,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'ms-outlook-to-pdf': {
     id: 'ms-outlook-to-pdf',
     title: 'Outlook to PDF',
-    description: 'Convert Outlook MSG file to PDF',
+    description: 'Render supported Outlook MSG message content into a PDF document.',
     category: 'Convert',
     engine: 'convert',
     icon: Mail,
@@ -764,7 +744,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'add-text': {
     id: 'add-text',
     title: 'Add Text to PDF',
-    description: 'Add custom text to PDF pages',
+    description: 'Place new text on a selected PDF page with configurable position, size, and color.',
     category: 'Edit',
     engine: 'edit',
     icon: Type,
@@ -826,7 +806,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'add-watermark': {
     id: 'add-watermark',
     title: 'Add Watermark',
-    description: 'Add watermark text to PDF pages',
+    description: 'Add configurable text watermarks to all or selected PDF pages.',
     category: 'Edit',
     engine: 'edit',
     icon: Stamp,
@@ -924,7 +904,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'annotate-pdf': {
     id: 'annotate-pdf',
     title: 'Annotate PDF',
-    description: 'Add annotations to PDF',
+    description: 'Add visible annotation markup to a PDF and save the annotated result.',
     category: 'Edit',
     engine: 'edit',
     icon: MessageSquare,
@@ -961,7 +941,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'esign-pdf': {
     id: 'esign-pdf',
     title: 'eSign PDF',
-    description: 'Add electronic signature to PDF',
+    description: 'Place a visible signature image onto selected PDF pages.',
     category: 'Edit',
     engine: 'edit',
     icon: PenTool,
@@ -1000,7 +980,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'extract-text-from-pdf': {
     id: 'extract-text-from-pdf',
     title: 'Extract Text from PDF',
-    description: 'Extract all text from PDF',
+    description: 'Extract available text from selected PDF pages with optional OCR fallback.',
     category: 'Extract',
     engine: 'extract',
     icon: FileText,
@@ -1026,7 +1006,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'extract-images-pdf': {
     id: 'extract-images-pdf',
     title: 'Extract Images from PDF',
-    description: 'Extract all images from PDF',
+    description: 'Extract embedded image objects from all or selected PDF pages.',
     category: 'Extract',
     engine: 'extract',
     icon: ImageIcon,
@@ -1087,7 +1067,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-docx': {
     id: 'pdf-to-docx',
     title: 'PDF to Word',
-    description: 'Convert PDF to Microsoft Word DOCX format',
+    description: 'Extract PDF text into DOCX with OCR fallback for scanned pages.',
     category: 'Convert',
     engine: 'convert',
     icon: File,
@@ -1122,7 +1102,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-pptx': {
     id: 'pdf-to-pptx',
     title: 'PDF to PowerPoint',
-    description: 'Convert PDF to PowerPoint PPTX presentation',
+    description: 'Convert PDF pages into a PPTX with one image-based slide per selected page.',
     category: 'Convert',
     engine: 'convert',
     icon: File,
@@ -1142,7 +1122,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-xlsx': {
     id: 'pdf-to-xlsx',
     title: 'PDF to Excel',
-    description: 'Convert PDF tables and content to Excel XLSX',
+    description: 'Extract detected PDF tables into XLSX with page-text fallback when needed.',
     category: 'Convert',
     engine: 'convert',
     icon: File,
@@ -1162,7 +1142,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-html': {
     id: 'pdf-to-html',
     title: 'PDF to HTML',
-    description: 'Convert PDF to HTML web format',
+    description: 'Extract PDF text into HTML with OCR fallback for scanned pages.',
     category: 'Convert',
     engine: 'convert',
     icon: Globe,
@@ -1197,7 +1177,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-to-rtf': {
     id: 'pdf-to-rtf',
     title: 'PDF to RTF',
-    description: 'Convert PDF to Rich Text Format',
+    description: 'Extract PDF text into RTF with OCR fallback for scanned pages.',
     category: 'Convert',
     engine: 'convert',
     icon: FileCode,
@@ -1233,7 +1213,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'compress-pdf': {
     id: 'compress-pdf',
     title: 'Compress PDF',
-    description: 'Reduce PDF file size',
+    description: 'Reduce PDF file size where additional PDF compression is possible.',
     category: 'Advanced',
     engine: 'core',
     icon: Archive,
@@ -1258,7 +1238,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-translator': {
     id: 'pdf-translator',
     title: 'PDF Translator',
-    description: 'Translate PDF content',
+    description: 'Translate extracted PDF text into a selected target language.',
     category: 'Advanced',
     engine: 'ocr_translate',
     icon: Languages,
@@ -1329,7 +1309,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-ocr': {
     id: 'pdf-ocr',
     title: 'PDF OCR',
-    description: 'Extract text from scanned PDFs using OCR',
+    description: 'Recognize text in scanned PDF pages using OCR and export supported output formats.',
     category: 'Advanced',
     engine: 'ocr_translate',
     icon: Wand2,
@@ -1376,7 +1356,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-deskew': {
     id: 'pdf-deskew',
     title: 'PDF Deskew',
-    description: 'Straighten tilted or skewed scanned pages',
+    description: 'Correct small amounts of tilt in selected scanned PDF pages.',
     category: 'Advanced',
     engine: 'ocr_translate',
     icon: RotateCw,
@@ -1396,7 +1376,7 @@ export const pdfTools: Record<string, PdfToolConfig> = {
   'pdf-enhance-scan': {
     id: 'pdf-enhance-scan',
     title: 'Enhance Scanned PDF',
-    description: 'Improve quality of scanned documents (contrast, sharpness, denoise)',
+    description: 'Apply image-processing adjustments to improve the readability of scanned PDF pages.',
     category: 'Advanced',
     engine: 'ocr_translate',
     icon: Sparkles,
@@ -1448,4 +1428,3 @@ export function getPdfToolsByEngine(
 ): PdfToolConfig[] {
   return Object.values(pdfTools).filter((tool) => tool.engine === engine);
 }
-

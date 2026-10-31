@@ -1,16 +1,20 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Download, ChevronRight, Globe, Plus, X, Loader } from 'lucide-react';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 interface DetectedText {
   id: string;
   original: string;
   translated: string;
+  translationSuccess: boolean;
   x: number;
   y: number;
   confidence: number;
@@ -41,8 +45,9 @@ const languages = [
 ];
 
 export default function TranslateImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>('');
+  const [preview, setPreview] = useState('');
   const [sourceLanguage, setSourceLanguage] = useState('en');
   const [targetLanguage, setTargetLanguage] = useState('es');
   const [detectedTexts, setDetectedTexts] = useState<DetectedText[]>([]);
@@ -51,44 +56,109 @@ export default function TranslateImagePage() {
   const [fontSize, setFontSize] = useState(20);
   const [textColor, setTextColor] = useState('#FFFFFF');
   const [processing, setProcessing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
-  const [error, setError] = useState<string>('');
+  const [resultPreview, setResultPreview] = useState('');
+  const [error, setError] = useState('');
+  const [translationWarning, setTranslationWarning] = useState('');
   const [ocrProcessing, setOcrProcessing] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const generationRef = useRef(0);
+  const fileReadRef = useRef(0);
+  const resultUrlRef = useRef<string | null>(null);
 
-  const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
-    setError('');
+  useEffect(() => {
+    return () => {
+      requestRef.current?.abort();
+      generationRef.current++;
+      fileReadRef.current++;
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    };
+  }, []);
+
+  const clearResult = () => {
+    generationRef.current++;
     setResult(null);
+    setResultPreview('');
+    setProcessing(false);
+
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+  };
+
+  const clearTranslation = () => {
+    requestRef.current?.abort();
+    requestRef.current = null;
+    setOcrProcessing(false);
     setDetectedTexts([]);
     setOverlays([]);
+    setSelectedOverlayId(null);
+    setTranslationWarning('');
+    clearResult();
+  };
 
+  const handleFileSelect = (selectedFile: File) => {
+    clearTranslation();
+    setError('');
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type)) {
+      setFile(null);
+      setPreview('');
+      setError('Please upload a JPG, PNG, or WebP image.');
+      return;
+    }
+
+    setFile(selectedFile);
+    const readId = ++fileReadRef.current;
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
+
+    reader.onload = () => {
+      if (readId === fileReadRef.current) {
+        setPreview(String(reader.result || ''));
+      }
     };
+
+    reader.onerror = () => {
+      if (readId === fileReadRef.current) {
+        setError('Unable to read the selected image.');
+      }
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    fileReadRef.current++;
+    clearTranslation();
     setFile(null);
     setPreview('');
-    setResult(null);
-    setDetectedTexts([]);
-    setOverlays([]);
+    setError('');
+  };
+
+  const handleSourceLanguageChange = (value: string) => {
+    clearTranslation();
+    setSourceLanguage(value);
+    setError('');
+  };
+
+  const handleTargetLanguageChange = (value: string) => {
+    clearTranslation();
+    setTargetLanguage(value);
+    setError('');
   };
 
   const performOCR = async () => {
-    if (!file) {
-      setError('Please upload an image first');
-      return;
-    }
+    if (!file || !preview || ocrProcessing || processing || downloading) return;
 
+    clearTranslation();
+    const controller = new AbortController();
+    requestRef.current = controller;
     setOcrProcessing(true);
     setError('');
-    setDetectedTexts([]);
-    setOverlays([]);
 
     try {
       const formData = new FormData();
@@ -99,179 +169,224 @@ export default function TranslateImagePage() {
       const response = await fetch('/api/translate-image', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(data.error || `Translation failed (${response.status}).`);
       }
 
-      const data = await response.json();
-      
-      // Convert API response to DetectedText format
-      const detectedItems: DetectedText[] = (data.translations || []).map(
-        (translation: any, index: number) => ({
+      if (!Array.isArray(data.translations)) {
+        throw new Error('Unexpected translation response.');
+      }
+
+      if (controller.signal.aborted) return;
+
+      const detectedItems: DetectedText[] = data.translations.map(
+        (item: {
+          original?: string;
+          translated?: string;
+          translationSuccess?: boolean;
+          x?: number;
+          y?: number;
+          confidence?: number;
+        }, index: number) => ({
           id: String(index),
-          original: translation.original,
-          translated: translation.translated || translation.original,
-          x: translation.x,
-          y: translation.y,
-          confidence: translation.confidence,
+          original: String(item.original || ''),
+          translated: String(item.translated || item.original || ''),
+          translationSuccess: item.translationSuccess === true,
+          x: Number(item.x) || 0,
+          y: Number(item.y) || 0,
+          confidence: Number(item.confidence) || 0,
         })
       );
 
       setDetectedTexts(detectedItems);
-
-      // Create initial overlays for detected text
-      const initialOverlays: TextOverlay[] = detectedItems.map((item, idx) => ({
-        id: String(idx),
+      setOverlays(detectedItems.map((item) => ({
+        id: item.id,
         text: item.translated,
         x: item.x,
         y: item.y,
         fontSize,
         color: textColor,
-      }));
-      setOverlays(initialOverlays);
-    } catch (err) {
-      setError('OCR failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
-      setDetectedTexts([]);
-      setOverlays([]);
+      })));
+
+      const failedCount = detectedItems.filter(
+        (item) => !item.translationSuccess
+      ).length;
+
+      if (failedCount) {
+        setTranslationWarning(
+          `${failedCount} item(s) could not be translated. Original text was retained. Review these entries before exporting.`
+        );
+      }
+
+      if (!detectedItems.length) {
+        setTranslationWarning('No readable text was detected in this image.');
+      }
+    } catch (caughtError) {
+      if (controller.signal.aborted) return;
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to detect or translate image text.'
+      );
     } finally {
-      setOcrProcessing(false);
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+        setOcrProcessing(false);
+      }
     }
   };
 
   const removeOverlay = (id: string) => {
-    setOverlays(overlays.filter((o) => o.id !== id));
-    if (selectedOverlayId === id) {
-      setSelectedOverlayId(null);
-    }
+    clearResult();
+    setOverlays((current) => current.filter((item) => item.id !== id));
+    if (selectedOverlayId === id) setSelectedOverlayId(null);
   };
 
   const updateOverlay = (id: string, updates: Partial<TextOverlay>) => {
-    setOverlays(overlays.map((o) => (o.id === id ? { ...o, ...updates } : o)));
+    clearResult();
+    setOverlays((current) =>
+      current.map((item) =>
+        item.id === id ? { ...item, ...updates } : item
+      )
+    );
   };
 
   const drawPreview = () => {
-    if (!preview) return;
-
     const canvas = previewCanvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !preview) return;
 
     const img = new Image();
+
     img.onload = () => {
-      canvas.width = img.width > 600 ? 600 : img.width;
-      canvas.height = (img.height / img.width) * canvas.width;
+      const width = Math.min(img.naturalWidth, 600);
+      const scale = width / img.naturalWidth;
+
+      canvas.width = width;
+      canvas.height = Math.round(img.naturalHeight * scale);
 
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      // Draw overlays
       overlays.forEach((overlay) => {
-        ctx.font = `${overlay.fontSize}px Arial`;
+        ctx.font = `${overlay.fontSize * scale}px Arial`;
         ctx.fillStyle = overlay.color;
-        
-        // Add text shadow for better visibility
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
         ctx.shadowBlur = 3;
-        ctx.shadowOffsetX = 1;
-        ctx.shadowOffsetY = 1;
-        
-        ctx.fillText(overlay.text, overlay.x, overlay.y);
+        ctx.fillText(overlay.text, overlay.x * scale, overlay.y * scale);
         ctx.shadowColor = 'transparent';
-
-        // Draw selection box if selected
-        if (overlay.id === selectedOverlayId) {
-          const metrics = ctx.measureText(overlay.text);
-          ctx.strokeStyle = '#ff6b6b';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(overlay.x - 2, overlay.y - overlay.fontSize, metrics.width + 4, overlay.fontSize + 4);
-        }
       });
     };
+
     img.src = preview;
   };
 
   const generateImage = async () => {
-    if (!file || !preview || overlays.length === 0) {
-      setError('Please upload an image and run OCR with translations');
+    if (!file || !preview || !overlays.length || processing || ocrProcessing) {
+      setError('Upload an image and detect text before generating.');
       return;
     }
 
+    clearResult();
+    const generation = generationRef.current;
     setProcessing(true);
     setError('');
 
     try {
       const img = new Image();
-      img.onload = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Unable to load the image.'));
+        img.src = preview;
+      });
 
-        canvas.width = img.width;
-        canvas.height = img.height;
+      if (generation !== generationRef.current) return;
 
-        ctx.drawImage(img, 0, 0);
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('Image canvas unavailable.');
 
-        // Draw overlays at original resolution
-        overlays.forEach((overlay) => {
-          ctx.font = `${overlay.fontSize}px Arial`;
-          ctx.fillStyle = overlay.color;
-          
-          // Add text shadow
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-          ctx.shadowBlur = 3;
-          ctx.shadowOffsetX = 1;
-          ctx.shadowOffsetY = 1;
-          
-          ctx.fillText(overlay.text, overlay.x, overlay.y);
-          ctx.shadowColor = 'transparent';
-        });
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
 
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas processing unavailable.');
+
+      ctx.drawImage(img, 0, 0);
+
+      overlays.forEach((overlay) => {
+        ctx.font = `${overlay.fontSize}px Arial`;
+        ctx.fillStyle = overlay.color;
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 3;
+        ctx.fillText(overlay.text, overlay.x, overlay.y);
+        ctx.shadowColor = 'transparent';
+      });
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              setResult(blob);
-            }
-            setProcessing(false);
-          },
-          'image/png',
-          0.95
+          (value) => value
+            ? resolve(value)
+            : reject(new Error('Unable to generate PNG.')),
+          'image/png'
         );
-      };
-      img.onerror = () => {
-        setError('Failed to load image');
-        setProcessing(false);
-      };
-      img.src = preview;
-    } catch (err) {
-      setError('Error generating image: ' + (err instanceof Error ? err.message : 'Unknown error'));
-      setProcessing(false);
+      });
+
+      if (generation !== generationRef.current) return;
+
+      const url = URL.createObjectURL(blob);
+      resultUrlRef.current = url;
+      setResult(blob);
+      setResultPreview(url);
+    } catch (caughtError) {
+      if (generation !== generationRef.current) return;
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Image generation failed.'
+      );
+    } finally {
+      if (generation === generationRef.current) setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+    if (!result || !file || processing || downloading) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `translated-image-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setDownloading(true);
+    setError('');
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'translate-image',
+        originalName: file.name,
+        outputName: 'translated-image.png',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.'
+      );
+    } finally {
+      setDownloading(false);
+    }
   };
 
-  // Update preview when overlays change
   useEffect(() => {
     drawPreview();
-  }, [overlays, selectedOverlayId, preview]);
-
+  }, [overlays, preview]);
   return (
     <div className="min-h-screen bg-gray-50">
       <HomeHeader />
@@ -308,11 +423,11 @@ export default function TranslateImagePage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 mb-4">1. Upload Image</h2>
-              <ImageUploader 
-                onFileSelect={handleFileSelect} 
-                preview={preview} 
-                onClearPreview={handleClearPreview} 
-                accept="image/*" 
+              <ImageUploader
+                onFileSelect={handleFileSelect}
+                preview={preview}
+                onClearPreview={handleClearPreview}
+                accept="image/jpeg,image/png,image/webp"
               />
               {file && (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -329,7 +444,7 @@ export default function TranslateImagePage() {
                     <label className="block text-sm font-medium text-amber-900 mb-1">Source</label>
                     <select
                       value={sourceLanguage}
-                      onChange={(e) => setSourceLanguage(e.target.value)}
+                      onChange={(e) => handleSourceLanguageChange(e.target.value)}
                       className="w-full border border-amber-300 rounded-lg p-2 text-sm"
                     >
                       {languages.map((lang) => (
@@ -344,7 +459,7 @@ export default function TranslateImagePage() {
                     <label className="block text-sm font-medium text-amber-900 mb-1">Target</label>
                     <select
                       value={targetLanguage}
-                      onChange={(e) => setTargetLanguage(e.target.value)}
+                      onChange={(e) => handleTargetLanguageChange(e.target.value)}
                       className="w-full border border-amber-300 rounded-lg p-2 text-sm"
                     >
                       {languages.map((lang) => (
@@ -358,7 +473,7 @@ export default function TranslateImagePage() {
 
                 <button
                   onClick={performOCR}
-                  disabled={!file || ocrProcessing}
+                  disabled={!file || !preview || ocrProcessing || processing || downloading}
                   className="w-full mt-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm"
                 >
                   {ocrProcessing ? (
@@ -408,7 +523,13 @@ export default function TranslateImagePage() {
 
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-700">{error}</p>
+                  <p role="alert" className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              {translationWarning && (
+                <div role="alert" className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-900">{translationWarning}</p>
                 </div>
               )}
 
@@ -429,7 +550,7 @@ export default function TranslateImagePage() {
                       onChange={(e) => {
                         const newSize = parseInt(e.target.value);
                         setFontSize(newSize);
-                        setOverlays(overlays.map(o => ({ ...o, fontSize: newSize })));
+                        clearResult(); setOverlays(overlays.map(o => ({ ...o, fontSize: newSize })));
                       }}
                       className="w-full accent-blue-500"
                     />
@@ -441,7 +562,7 @@ export default function TranslateImagePage() {
                         value={textColor}
                         onChange={(e) => {
                           setTextColor(e.target.value);
-                          setOverlays(overlays.map(o => ({ ...o, color: e.target.value })));
+                          clearResult(); setOverlays(overlays.map(o => ({ ...o, color: e.target.value })));
                         }}
                         className="w-12 h-10 rounded cursor-pointer border border-gray-300"
                       />
@@ -485,7 +606,7 @@ export default function TranslateImagePage() {
                   {/* Generate Button */}
                   <button
                     onClick={generateImage}
-                    disabled={overlays.length === 0 || processing}
+                    disabled={overlays.length === 0 || processing || ocrProcessing || downloading}
                     className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2 px-4 rounded-lg transition mb-3 flex items-center justify-center gap-2 text-sm"
                   >
                     {processing ? (
@@ -498,14 +619,27 @@ export default function TranslateImagePage() {
                     )}
                   </button>
 
+                  {result && resultPreview && (
+                    <div className="mb-4">
+                      <p className="text-sm font-semibold text-gray-800 mb-2">
+                        Generated PNG preview
+                      </p>
+                      <img
+                        src={resultPreview}
+                        alt="Image with translated text overlays"
+                        className="w-full rounded-lg border border-gray-200"
+                      />
+                    </div>
+                  )}
+
                   {/* Download Button */}
                   {result && (
                     <button
-                      onClick={handleDownload}
+                      onClick={handleDownload} disabled={processing || downloading || ocrProcessing}
                       className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm"
                     >
                       <Download size={16} />
-                      Download PNG
+                      {downloading ? "Preparing download..." : "Download PNG"}
                     </button>
                   )}
                 </>
@@ -529,7 +663,121 @@ export default function TranslateImagePage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to translate text in an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image, choose the source and target languages, and
+                run Detect &amp; Translate. The image is analyzed for text and
+                translated entries are returned for review before generating
+                the final image.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Server-assisted OCR and translation
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  OCR and translation use the SimplifyConvert server-side
+                  translation endpoint. The uploaded image and selected
+                  source and target languages are submitted for processing.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Editable translated overlays
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  Returned translations become editable text overlays. You
+                  can correct translated wording or remove overlays before
+                  generating the final image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the translated image is generated
+              </h2>
+              <p className="text-gray-600 leading-7">
+                After translation, the source image is drawn to a browser
+                Canvas and the translated text overlays are rendered on top.
+                The completed canvas is encoded as PNG. Original image text remains visible underneath the overlays; this tool does not automatically erase it.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Review OCR results before exporting
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Small text, unusual fonts, low contrast, blur, and complex
+                backgrounds can affect OCR recognition. Review detected and
+                translated text and edit it when necessary.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Common image translation uses
+              </h2>
+              <ul className="text-gray-600 leading-7 space-y-2">
+                <li>• Translate readable text captured in screenshots.</li>
+                <li>• Review text detected from posters and graphics.</li>
+                <li>• Translate legible text from scanned visual material.</li>
+                <li>• Correct translated wording before generating the PNG.</li>
+              </ul>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Translate Image FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Is OCR performed entirely in the browser?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. OCR and translation use a server-side processing
+                    endpoint.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can translated text be edited?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Returned overlays can be edited before the final
+                    image is generated.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    What output format is generated?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The translated image is generated as PNG.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <Footer />
     </div>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { PdfEdit } from '@/app/types/pdf-editor';
@@ -7,9 +7,10 @@ import { ChevronDown } from 'lucide-react';
 interface Props {
   edit?: PdfEdit;
   onUpdate?: (updates: Partial<PdfEdit>) => void;
+  onDelete?: () => void;
 }
 
-export default function PropertiesPanel({ edit, onUpdate }: Props) {
+export default function PropertiesPanel({ edit, onUpdate, onDelete }: Props) {
   const [expanded, setExpanded] = useState(true);
 
   if (!edit) {
@@ -91,7 +92,12 @@ export default function PropertiesPanel({ edit, onUpdate }: Props) {
                 <input
                   type="number"
                   value={Math.round(edit.x)}
-                  onChange={(e) => onUpdate?.({ x: parseFloat(e.target.value) })}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (Number.isFinite(value)) {
+                      onUpdate?.({ x: value });
+                    }
+                  }}
                   className="w-full px-2 py-1 text-sm bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
                 />
               </div>
@@ -100,7 +106,12 @@ export default function PropertiesPanel({ edit, onUpdate }: Props) {
                 <input
                   type="number"
                   value={Math.round(edit.y)}
-                  onChange={(e) => onUpdate?.({ y: parseFloat(e.target.value) })}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (Number.isFinite(value)) {
+                      onUpdate?.({ y: value });
+                    }
+                  }}
                   className="w-full px-2 py-1 text-sm bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
                 />
               </div>
@@ -109,7 +120,12 @@ export default function PropertiesPanel({ edit, onUpdate }: Props) {
                 <input
                   type="number"
                   value={Math.round(edit.width)}
-                  onChange={(e) => onUpdate?.({ width: parseFloat(e.target.value) })}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (Number.isFinite(value) && value >= 1) {
+                      onUpdate?.({ width: value });
+                    }
+                  }}
                   className="w-full px-2 py-1 text-sm bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
                 />
               </div>
@@ -118,7 +134,12 @@ export default function PropertiesPanel({ edit, onUpdate }: Props) {
                 <input
                   type="number"
                   value={Math.round(edit.height)}
-                  onChange={(e) => onUpdate?.({ height: parseFloat(e.target.value) })}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (Number.isFinite(value) && value >= 1) {
+                      onUpdate?.({ height: value });
+                    }
+                  }}
                   className="w-full px-2 py-1 text-sm bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
                 />
               </div>
@@ -425,6 +446,19 @@ export default function PropertiesPanel({ edit, onUpdate }: Props) {
               </span>
             </div>
           </div>
+
+          {/* Delete */}
+          {onDelete && (
+            <div className="border-t border-gray-700 pt-4">
+              <button
+                type="button"
+                onClick={onDelete}
+                className="w-full rounded border border-red-500/50 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-300 transition hover:bg-red-500/20 hover:text-red-200"
+              >
+                Delete selected object
+              </button>
+            </div>
+          )}
 
           {/* Z-Index */}
           <div className="border-t border-gray-700 pt-4">

@@ -1,50 +1,79 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileText, X } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from "@/app/lib/download-result-client";
+import { useRouter } from "next/navigation";
 
 export default function VsdToPdfPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [pageSize, setPageSize] = useState('A4');
-  const [orientation, setOrientation] = useState('portrait');
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resultFileName, setResultFileName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const operationRef = useRef(0);
+  const resultUrlRef = useRef<string | null>(null);
+
+  const clearResult = () => {
+    operationRef.current += 1;
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+    setResult(null);
+    setResultFileName('');
+    setError(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      operationRef.current += 1;
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current);
+      }
+    };
+  }, []);
 
   const handleFileSelect = (selectedFile: File) => {
+    clearResult();
+    setFile(null);
+    setPreview(null);
+
+    if (!selectedFile.name.toLowerCase().endsWith('.vsd')) {
+      setError('Please select a .vsd file. For .vsdx files, use the VSDX to PDF converter.');
+      return;
+    }
+
     setFile(selectedFile);
-    setError(null);
     setPreview('vsd-selected');
   };
 
   const handleClearPreview = () => {
+    clearResult();
     setFile(null);
     setPreview(null);
-    setResult(null);
-    setError(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
-    
+    if (!file || processing) return;
+
+    clearResult();
+    const operation = operationRef.current;
     setProcessing(true);
-    setError(null);
     try {
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('config', JSON.stringify({ 
+      formData.append('config', JSON.stringify({
         from_format: 'vsd',
         to_format: 'pdf',
-        options: {
-          pageSize,
-          orientation
-        }
+        options: {}
       }));
 
       const response = await fetch('/api/convert', {
@@ -58,24 +87,44 @@ export default function VsdToPdfPage() {
       }
 
       const blob = await response.blob();
+
+      if (operation !== operationRef.current) return;
+
+      if (blob.type !== 'application/pdf') {
+        throw new Error(
+          `Unexpected output type: ${blob.type || 'unknown'}`,
+        );
+      }
+
       const url = URL.createObjectURL(blob);
+      resultUrlRef.current = url;
       setResult(url);
-      setResultFileName(`diagram.pdf`);
+      setResultFileName('diagram.pdf');
     } catch (err) {
-      setError((err as Error).message || 'Error converting file');
+      if (operation === operationRef.current) {
+        setError((err as Error).message || 'Error converting file');
+      }
     } finally {
-      setProcessing(false);
+      if (operation === operationRef.current) {
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = resultFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+
+      if (!result || !resultFileName) return;
+
+      const blob = await fetch(result).then((response) => response.blob());
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: "vsd-to-pdf",
+        originalName: resultFileName,
+        outputName: resultFileName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
   };
 
   return (
@@ -101,7 +150,7 @@ export default function VsdToPdfPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">VSD to PDF Converter</h1>
-                <p className="text-lg text-white/90">Convert Visio VSD/VSDX diagrams to PDF format. Perfect for sharing, printing, and archiving your technical drawings and flowcharts.</p>
+                <p className="text-lg text-white/90">Convert Visio VSD diagrams to PDF format for sharing, printing, and archiving technical drawings and flowcharts.</p>
               </div>
             </div>
           </div>
@@ -115,13 +164,13 @@ export default function VsdToPdfPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Visio File</h2>
-                  
+
                   {!file ? (
                     <ImageUploader
                       onFileSelect={handleFileSelect}
                       preview={null}
                       onClearPreview={handleClearPreview}
-                      accept=".vsd,.vsdx"
+                      accept=".vsd"
                     />
                   ) : (
                     <div className="flex flex-col items-center gap-4">
@@ -137,6 +186,8 @@ export default function VsdToPdfPage() {
                           </div>
                         </div>
                         <button
+                          type="button"
+                          aria-label="Remove selected Visio file"
                           onClick={handleClearPreview}
                           className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                         >
@@ -145,7 +196,7 @@ export default function VsdToPdfPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Industry Info */}
                   <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -154,7 +205,7 @@ export default function VsdToPdfPage() {
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <h4 className="font-semibold text-green-900 mb-2">🎯 Accurate Layout</h4>
-                      <p className="text-sm text-green-800">Preserves all diagrams, shapes, and formatting from source</p>
+                      <p className="text-sm text-green-800">Renders Visio diagram content into a standard PDF</p>
                     </div>
                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                       <h4 className="font-semibold text-purple-900 mb-2">📄 Print Ready</h4>
@@ -170,62 +221,11 @@ export default function VsdToPdfPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
-                    
-                    {/* Page Size */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Page Size
-                      </label>
-                      <select
-                        value={pageSize}
-                        onChange={(e) => setPageSize(e.target.value)}
-                        disabled={processing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100"
-                      >
-                        <option value="A0">A0 (841 × 1189 mm)</option>
-                        <option value="A1">A1 (594 × 841 mm)</option>
-                        <option value="A2">A2 (420 × 594 mm)</option>
-                        <option value="A3">A3 (297 × 420 mm)</option>
-                        <option value="A4">A4 (210 × 297 mm) - Recommended</option>
-                        <option value="A5">A5 (148 × 210 mm)</option>
-                        <option value="Letter">Letter (8.5 × 11 in)</option>
-                        <option value="Tabloid">Tabloid (11 × 17 in)</option>
-                      </select>
-                      <p className="text-xs text-gray-500 mt-1">Choose standard paper size</p>
-                    </div>
 
-                    {/* Orientation */}
-                    <div className="mb-6">
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Orientation
-                      </label>
-                      <div className="flex gap-3">
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="orientation"
-                            value="portrait"
-                            checked={orientation === 'portrait'}
-                            onChange={(e) => setOrientation(e.target.value)}
-                            disabled={processing}
-                            className="w-4 h-4 text-red-500 cursor-pointer"
-                          />
-                          <span className="ml-2 text-sm text-gray-700 cursor-pointer">Portrait</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="orientation"
-                            value="landscape"
-                            checked={orientation === 'landscape'}
-                            onChange={(e) => setOrientation(e.target.value)}
-                            disabled={processing}
-                            className="w-4 h-4 text-red-500 cursor-pointer"
-                          />
-                          <span className="ml-2 text-sm text-gray-700 cursor-pointer">Landscape</span>
-                        </label>
-                      </div>
-                    </div>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Your VSD diagram is rendered to PDF using server-assisted
+                      document conversion.
+                    </p>
 
                     {/* Convert Button */}
                     <button
@@ -270,7 +270,170 @@ export default function VsdToPdfPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to convert VSD to PDF online
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Select your Visio VSD file, click Convert to PDF, and wait while
+                the document is processed on the server. When conversion is
+                complete, use the download button to continue to the PDF download
+                page and save the converted file.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  What is a VSD file?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  VSD is an older Microsoft Visio drawing format used for
+                  flowcharts, process maps, network diagrams, organizational
+                  charts, technical drawings, and other structured diagrams.
+                  Keep the source file when the diagram may still need editing
+                  in compatible diagram software.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Why convert VSD to PDF?
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  PDF is easier to distribute when recipients only need to view,
+                  review, print, or archive a diagram. Converting a VSD drawing
+                  to PDF can reduce the need for recipients to open the original
+                  Visio source file.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens during VSD to PDF conversion?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                SimplifyConvert sends the uploaded VSD document to its
+                server-assisted document conversion process and renders the
+                diagram into PDF output. The resulting PDF is intended for
+                viewing and distribution rather than continued editing of the
+                original Visio diagram structure.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Common uses for a converted Visio PDF
+              </h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                  <li>Share flowcharts with colleagues or clients.</li>
+                  <li>Distribute process and workflow diagrams.</li>
+                  <li>Prepare diagrams for printing or review.</li>
+                </ul>
+                <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                  <li>Archive a viewable copy of an older VSD drawing.</li>
+                  <li>Share network or organizational diagrams.</li>
+                  <li>Provide a reference copy of a drawing.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                VSD vs PDF: which file should you keep?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Keep the original VSD file when you may need to edit shapes,
+                connectors, labels, pages, or other diagram elements later.
+                Keep the PDF when you need a convenient copy for viewing,
+                sharing, printing, or archiving. Converting to PDF does not make
+                the PDF a replacement for the editable Visio source.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Check your diagram after conversion
+              </h2>
+              <p className="text-gray-600 leading-7 mb-4">
+                Older Visio documents can contain fonts, shapes, connectors,
+                page settings, and other elements that depend on the original
+                document environment. After converting an important drawing,
+                review the PDF before distributing it.
+              </p>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>Check that text and labels are readable.</li>
+                <li>Review shapes, connectors, and their positions.</li>
+                <li>Confirm page size, orientation, and page breaks.</li>
+                <li>Inspect fonts and spacing in important sections.</li>
+                <li>Make sure large diagrams remain readable in the PDF.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                VSD and VSDX are different Visio formats
+              </h2>
+              <p className="text-gray-600 leading-7">
+                VSD is associated with older Visio drawings, while VSDX is the
+                newer XML-based Visio drawing format. If your file uses the
+                .vsdx extension, you can use the dedicated{' '}
+                <Link
+                  href="/all-tools/vsdx-to-pdf"
+                  className="text-red-600 hover:text-red-700 font-medium"
+                >
+                  VSDX to PDF converter
+                </Link>
+                {' '}instead.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                VSD to PDF FAQ
+              </FAQHeading>
+
+              <FAQList>
+                {[
+                  [
+                    'What does the VSD to PDF converter do?',
+                    'It takes a Visio VSD drawing and produces a PDF through server-assisted document conversion.',
+                  ],
+                  [
+                    'Why would I convert an older VSD file to PDF?',
+                    'PDF is useful when you need to share, review, print, or archive a drawing without requiring the recipient to work with the editable VSD source.',
+                  ],
+                  [
+                    'Can I edit the resulting PDF like the original VSD?',
+                    'The PDF is intended primarily for viewing and distribution. Keep the original VSD file if you need to continue editing the diagram structure.',
+                  ],
+                  [
+                    'Should I check the PDF after conversion?',
+                    'Yes. For important diagrams, review text, fonts, shapes, connectors, page layout, and other details before sharing or printing the PDF.',
+                  ],
+                  [
+                    'Is VSD the same as VSDX?',
+                    'No. They are different Visio file formats. VSD is an older drawing format, while VSDX is a newer XML-based format.',
+                  ],
+                ].map(([q, a]) => (
+                  <FAQCard key={q}>
+                    <FAQStaticQuestion>{q}</FAQStaticQuestion>
+                    <FAQAnswer>{a}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );

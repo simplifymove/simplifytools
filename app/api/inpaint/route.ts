@@ -207,8 +207,10 @@ async function inpaintImage(
 
   // Process image
   const imageProcessed = await sharp(imageBuffer)
-    .rotate() // Auto-rotate EXIF
     .resize(processWidth, processHeight, { fit: 'fill', withoutEnlargement: false })
+    .flatten({ background: '#ffffff' })
+    .removeAlpha()
+    .toColourspace('srgb')
     .raw()
     .toBuffer({ resolveWithObject: true });
 
@@ -286,6 +288,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No mask provided' }, { status: 400 });
     }
 
+    if (file.size === 0 || mask.size === 0) {
+      return NextResponse.json({ error: 'Image and mask must not be empty' }, { status: 400 });
+    }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: `File too large. Max ${MAX_FILE_SIZE / (1024 * 1024)}MB` },
@@ -322,6 +328,10 @@ export async function POST(request: NextRequest) {
     const mode = (searchParams.get('mode') || 'quality') as 'fast' | 'quality';
     const format = (searchParams.get('format') || 'png') as 'png' | 'jpg' | 'webp';
 
+    if (!['fast', 'quality'].includes(mode) || !['png', 'jpg', 'webp'].includes(format)) {
+      return NextResponse.json({ error: 'Invalid processing options' }, { status: 400 });
+    }
+
     const resultBuffer = await inpaintImage(fileBuffer, maskBuffer, mode, format);
 
     const headers = new Headers();
@@ -342,7 +352,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { error: errorMessage || 'Internal server error' },
+      { error: 'Unable to process this image. Please check the image and mask.' },
       { status: 500 }
     );
   }

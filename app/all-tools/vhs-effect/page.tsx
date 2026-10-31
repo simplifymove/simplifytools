@@ -1,26 +1,67 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function VHSEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(5);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const [toolError, setToolError] = useState<string | null>(null);
+  const resultUrlRef = useRef<string | null>(null);
+  const operationRef = useRef(0);
+
+  const clearResult = () => {
+    operationRef.current += 1;
+    if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    resultUrlRef.current = null;
+    setResult(null);
+    setResultPreview(null);
+    setToolError(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      operationRef.current += 1;
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    };
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      clearResult();
+      setPreview(null);
+      setFile(null);
+
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type)) {
+        setToolError('Please choose a JPG, PNG, or WebP image.');
+        return;
+      }
+
       setFile(selectedFile);
       const reader = new FileReader();
+      const operation = operationRef.current;
       reader.onload = (event) => {
-        setPreview(event.target?.result as string);
+        if (operation === operationRef.current) {
+          setPreview(event.target?.result as string);
+        }
+      };
+      reader.onerror = () => {
+        if (operation === operationRef.current) {
+          setToolError('Unable to read this image. Please try another file.');
+        }
       };
       reader.readAsDataURL(selectedFile);
     }
@@ -28,6 +69,8 @@ export default function VHSEffectPage() {
 
   const applyVHSEffect = async () => {
     if (!file || !preview) return;
+    clearResult();
+    const operation = operationRef.current;
     setProcessing(true);
 
     try {
@@ -86,39 +129,66 @@ export default function VHSEffectPage() {
           ctx.putImageData(imageData, 0, 0);
           canvas.toBlob((blob) => {
             if (!blob) {
-              console.error('Failed to create blob');
+              if (operation !== operationRef.current) return;
+              setToolError('Unable to generate the processed image.');
               setProcessing(false);
               return;
             }
+            if (operation !== operationRef.current) return;
+            const url = URL.createObjectURL(blob);
+            resultUrlRef.current = url;
+            setResultPreview(url);
             setResult(blob);
             setProcessing(false);
           }, 'image/jpeg', 0.95);
         } catch (error) {
+          if (operation !== operationRef.current) return;
           console.error('Error in image onload:', error);
+          setToolError('Unable to process this image. Try a smaller image.');
           setProcessing(false);
         }
       };
       img.onerror = () => {
-        console.error('Error loading image');
+        if (operation !== operationRef.current) return;
+        setToolError('Unable to load the selected image.');
         setProcessing(false);
       };
       img.src = preview;
     } catch (error) {
+      if (operation !== operationRef.current) return;
       console.error('Error applying VHS effect:', error);
+      setToolError('Unable to apply the VHS effect.');
       setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `vhs-effect-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'vhs-effect',
+            originalName: `vhs-effect-${Date.now()}.jpg`,
+            outputName: `vhs-effect-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -147,12 +217,12 @@ export default function VHSEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply VHS Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   onChange={handleFileSelect}
                   className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-red-400 transition"
                 />
@@ -169,7 +239,7 @@ export default function VHSEffectPage() {
                       min="1"
                       max="10"
                       value={intensity}
-                      onChange={(e) => setIntensity(Number(e.target.value))}
+                      onChange={(e) => { clearResult(); setIntensity(Number(e.target.value)); }}
                       className="w-full"
                     />
                     <p className="text-sm text-gray-600 mt-2">1 = subtle, 10 = intense VHS glitch</p>
@@ -184,6 +254,26 @@ export default function VHSEffectPage() {
                     {processing ? 'Processing...' : 'Apply VHS Effect'}
                   </button>
                 </>
+              )}
+
+              {toolError && (
+                <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  {toolError}
+                </p>
+              )}
+
+              {resultPreview && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-800 mb-3">Your VHS-style result</h3>
+                  <img
+                    src={resultPreview}
+                    alt="Photo after applying the VHS-style effect"
+                    className="w-full max-h-96 object-contain rounded-lg border border-gray-200"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">
+                    Preview the scanlines, color shifts, and noise before downloading the JPEG.
+                  </p>
+                </div>
               )}
 
               {result && (
@@ -232,35 +322,35 @@ export default function VHSEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">5 is balanced. Higher for more glitch artifacts.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Results vary by image.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, VHS images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with VHS effect.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-red-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Realistic VHS?</summary>
-                  <p className="text-gray-700 mt-2">Simulates authentic VHS glitch artifacts.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity should I use?</FAQQuestion>
+                  <FAQAnswer>5 is balanced. Higher for more glitch artifacts.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>JPG, PNG, and WebP images are supported by the upload control. Results vary by image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Yes, VHS images can be used commercially.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>The processed result is exported as a JPEG with the VHS-style effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. When you choose Download, the processed JPEG is sent through the download-result service so the download page can be prepared.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Realistic VHS?</FAQQuestion>
+                  <FAQAnswer>Simulates authentic VHS glitch artifacts.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -284,7 +374,85 @@ export default function VHSEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        {/* Batch supporting content: vhs-effect */}
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the VHS-style effect is created
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The VHS Effect modifies image pixels to introduce horizontal shifts, scan-line-style changes, and randomized visual artifacts. The intensity control changes how strongly these alterations appear. It is a visual simulation of a VHS aesthetic rather than restoration or processing of actual videotape footage.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Browser-based image processing
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The visual transformation is performed with browser canvas
+                  processing. The uploaded image is drawn to a canvas and the
+                  selected effect is applied before the result is prepared for
+                  download.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  JPEG output
+                </h3>
+                <p className="text-gray-600 leading-7">
+                  The processed canvas is encoded as a JPEG for download.
+                  The downloaded file is JPEG encoded, so its compression
+                  characteristics can differ from those of the original
+                  uploaded image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Choosing an image for this effect
+              </h2>
+              <p className="text-gray-600 leading-7">
+                JPG, PNG, and WebP images are supported by the upload control.
+                The appearance of the effect depends on the colors, contrast,
+                details, and composition of the source image. Try different
+                settings when available to find a result that suits the image.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What happens to image dimensions?
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The processing canvas uses the loaded image width and height.
+                The effect changes the visual pixel content rather than acting
+                as an image resizing tool.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better effect results
+              </h2>
+              <ul className="text-gray-600 leading-7 list-disc pl-6 space-y-2">
+                <li>Start with a clear source image at a useful resolution.</li>
+                <li>Use the available control gradually instead of assuming the maximum setting will look best.</li>
+                <li>Review the processed image above before downloading; adjust intensity and apply again if needed.</li>
+                <li>Remember that the final downloaded file is JPEG output.</li>
+              </ul>
+            </div>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

@@ -1,64 +1,208 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, Loader, ChevronRight, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function TiffToJpgPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [quality, setQuality] = useState(90);
   const [error, setError] = useState<string | null>(null);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const requestRef = useRef<AbortController | null>(null);
+  const readerRef = useRef<FileReader | null>(null);
+  const resultUrlRef = useRef<string | null>(null);
+  const generationRef = useRef(0);
+  const mountedRef = useRef(true);
 
-  const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
-    setError(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      generationRef.current += 1;
+      requestRef.current?.abort();
+      readerRef.current?.abort();
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
     };
-    reader.readAsDataURL(selectedFile);
-  };
+  }, []);
 
-  const handleClearPreview = () => {
-    setFile(null);
-    setPreview(null);
+  const clearResult = () => {
+    generationRef.current += 1;
+    requestRef.current?.abort();
+    requestRef.current = null;
     setResult(null);
+    setResultPreview(null);
+    setProcessing(false);
     setError(null);
-  };
 
-  const handleConvert = async () => {
-    if (!file) return;
-    setProcessing(true);
-    setError(null);
-    try {
-      const result = await convertImageFormat(file, 'image/jpeg');
-      setResult(result.blob);
-    } catch (err) {
-      setError((err as Error).message || 'Error converting image');
-    } finally {
-      setProcessing(false);
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleFileSelect = (selectedFile: File) => {
+    readerRef.current?.abort();
+    clearResult();
+    setFile(null);
+    setPreview(null);
+
+    if (!/\.(tif|tiff)$/i.test(selectedFile.name)) {
+      setError('Please choose a TIFF image (.tif or .tiff).');
+      return;
+    }
+
+    if (!selectedFile.size) {
+      setError('The selected TIFF file is empty.');
+      return;
+    }
+
+    if (selectedFile.size > 500 * 1024 * 1024) {
+      setError('The TIFF file must not exceed 500 MB.');
+      return;
+    }
+
+    setFile(selectedFile);
+
+    if (selectedFile.size <= 20 * 1024 * 1024) {
+      const reader = new FileReader();
+      const id = generationRef.current;
+      readerRef.current = reader;
+
+      reader.onload = () => {
+        if (
+          mountedRef.current &&
+          id === generationRef.current &&
+          typeof reader.result === 'string'
+        ) {
+          setPreview(reader.result);
+        }
+      };
+
+      reader.readAsDataURL(selectedFile);
+    }
   };
 
+  const handleClearPreview = () => {
+    readerRef.current?.abort();
+    clearResult();
+    setFile(null);
+    setPreview(null);
+  };
+
+  const handleConvert = async () => {
+    if (!file || processing || downloading) return;
+
+    clearResult();
+
+    const id = generationRef.current;
+    const controller = new AbortController();
+    requestRef.current = controller;
+    setProcessing(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'tiff',
+          to_format: 'jpg',
+          options: { quality }
+        })
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+
+        throw new Error(
+          typeof data?.error === 'string'
+            ? data.error
+            : 'TIFF to JPG conversion failed.'
+        );
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'image/jpeg' || blob.size === 0) {
+        throw new Error('The converter did not return a valid JPG file.');
+      }
+
+      if (!mountedRef.current || id !== generationRef.current) return;
+
+      const url = URL.createObjectURL(blob);
+      resultUrlRef.current = url;
+      setResult(blob);
+      setResultPreview(url);
+    } catch (error) {
+      if (!mountedRef.current || id !== generationRef.current) return;
+
+      if (!(error instanceof Error && error.name === 'AbortError')) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to convert the TIFF image.'
+        );
+      }
+    } finally {
+      if (mountedRef.current && id === generationRef.current) {
+        setProcessing(false);
+        requestRef.current = null;
+      }
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!result || !file || processing || downloading) return;
+
+    setDownloading(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name
+          .replace(/\.(tif|tiff)$/i, '')
+          .replace(/[^a-zA-Z0-9._-]/g, '_')
+          .slice(0, 100) || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'tiff-to-jpg',
+        originalName: file.name,
+        outputName: `${baseName}.jpg`
+      });
+
+      if (mountedRef.current) {
+        router.push(downloadResult.downloadPageUrl);
+      }
+    } catch (error) {
+      if (mountedRef.current) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to prepare the JPG download.'
+        );
+      }
+    } finally {
+      if (mountedRef.current) setDownloading(false);
+    }
+  };
   return (
     <>
       <HomeHeader />
@@ -100,13 +244,24 @@ export default function TiffToJpgPage() {
                   onFileSelect={handleFileSelect}
                   preview={preview}
                   onClearPreview={handleClearPreview}
-                  accept="image/tiff"
+                  accept=".tif,.tiff,image/tiff"
                 />
-                {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600">{error}</p>
-                  </div>
-                )}
+                {file && !preview && (
+                   <p className="mt-4 text-sm text-gray-600">
+                     TIFF previews may not work in every browser.
+                     You can still convert the selected image.
+                   </p>
+                 )}
+                 {file && (
+                   <p className="mt-3 text-sm text-gray-600">
+                     Selected: <strong>{file.name}</strong>
+                   </p>
+                 )}
+                 {error && (
+                   <div role="alert" className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                     <p className="text-sm text-red-700">{error}</p>
+                   </div>
+                 )}
               </div>
             </div>
 
@@ -126,14 +281,35 @@ export default function TiffToJpgPage() {
                     min="10"
                     max="100"
                     value={quality}
-                    onChange={(e) => setQuality(parseInt(e.target.value))}
+                    onChange={(e) => {
+                       clearResult();
+                       setQuality(Number(e.target.value));
+                     }}
                     disabled={processing}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                   />
                   <p className="text-xs text-gray-500 mt-2">Higher quality = larger file size</p>
                 </div>
 
-                {/* Image Preview */}
+                {/* Converted JPG Preview */}
+                  {resultPreview && (
+                    <div className="mb-6">
+                      <h4 className="font-semibold text-gray-800 mb-3">
+                        Converted JPG Preview
+                      </h4>
+                      <img
+                        src={resultPreview}
+                        alt="Converted JPG preview"
+                        className="w-full max-h-72 object-contain rounded-lg border border-gray-200"
+                      />
+                      {result && (
+                        <p className="mt-2 text-xs text-gray-600">
+                          Output size: {(result.size / 1024).toFixed(1)} KB
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {/* Download Result */}
                 <div className="mb-6">
                   {result ? (
                     <div className="space-y-4">
@@ -142,16 +318,20 @@ export default function TiffToJpgPage() {
                         <button
                           onClick={handleDownload}
                           className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all flex items-center justify-center gap-2"
-                        >
-                          <Download size={18} />
-                          Download JPG
+                      disabled={processing || downloading}>
+                          {downloading ? (
+                            <Loader size={18} className="animate-spin" />
+                          ) : (
+                            <Download size={18} />
+                          )}
+                          {downloading ? 'Preparing Download...' : 'Continue to Download'}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
                       <Image size={32} className="mx-auto text-orange-400 mb-3" />
-                      <p className="text-sm text-orange-800">Preview will appear here</p>
+                      <p className="text-sm text-orange-800">Your converted JPG preview will appear here.</p>
                     </div>
                   )}
                 </div>
@@ -159,7 +339,7 @@ export default function TiffToJpgPage() {
                 {/* Convert Button */}
                 <button
                   onClick={handleConvert}
-                  disabled={!file || processing}
+                  disabled={!file || processing || downloading}
                   className="w-full px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
                 >
                   {processing ? (
@@ -197,7 +377,7 @@ export default function TiffToJpgPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Adjust Quality Settings</h3>
-                <p className="text-gray-600 mt-2">Use the quality slider to find the perfect balance between file size and image quality.</p>
+                <p className="text-gray-600 mt-2">Use the quality slider to adjust JPEG compression, then compare the resulting file size and visible image quality.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -215,7 +395,7 @@ export default function TiffToJpgPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download Your JPG</h3>
-                <p className="text-gray-600 mt-2">Once conversion is complete, download your JPG file instantly. No signup required.</p>
+                <p className="text-gray-600 mt-2">Once conversion is complete, continue to download the generated JPG file. No signup is required for this converter.</p>
               </div>
             </div>
           </div>
@@ -238,14 +418,14 @@ export default function TiffToJpgPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Universal Compatibility</h3>
-                <p className="text-gray-600 text-sm">JPG is supported by all browsers, devices, and applications. TIFF files are less commonly supported, especially on the web.</p>
+                <p className="text-gray-600 text-sm">JPG is widely supported across browsers, devices, and applications. TIFF support is less common in typical web workflows.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Web-Ready Format</h3>
-                <p className="text-gray-600 text-sm">JPG is optimized for web use, providing excellent quality at smaller sizes. Perfect for websites, blogs, and social media.</p>
+                <p className="text-gray-600 text-sm">JPG is commonly used on websites, blogs, and social platforms because its lossy compression can reduce file size for photographic images.</p>
               </div>
             </div>
           </div>
@@ -253,36 +433,36 @@ export default function TiffToJpgPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is TIFF format?</h3>
-              <p className="text-gray-700">TIFF (Tagged Image File Format) is a lossless image format commonly used for professional photography and scanning. It stores uncompressed or minimally compressed image data, resulting in large file sizes but excellent quality.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Why is JPG better for web use?</h3>
-              <p className="text-gray-700">JPG uses lossy compression, which significantly reduces file size while maintaining acceptable image quality. This makes it ideal for web use where load times matter. TIFF files are much larger and impractical for online use.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will I lose quality converting TIFF to JPG?</h3>
-              <p className="text-gray-700">Our converter allows you to adjust quality settings to minimize quality loss. Higher quality settings (80-100%) provide excellent results with minimal visible difference from the original.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I batch convert multiple TIFF files?</h3>
-              <p className="text-gray-700">Currently, our converter handles one file at a time. However, the conversion is very fast, so you can quickly process multiple files by uploading them sequentially.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What TIFF compression types are supported?</h3>
-              <p className="text-gray-700">Our converter supports all common TIFF compression types including uncompressed, LZW, and JPEG compression. Most TIFF files will convert without any issues.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen locally in your browser. Your TIFF images are never uploaded to any server and remain completely private. No data is stored after conversion.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>What is TIFF format?</FAQStaticQuestion>
+              <FAQAnswer>TIFF (Tagged Image File Format) is used for scans, publishing, and archival images. It supports multiple compression methods and may contain multiple pages.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Why is JPG better for web use?</FAQStaticQuestion>
+              <FAQAnswer>JPG is widely supported by browsers and applications. Its lossy compression often reduces photographic file sizes, depending on the source and quality setting.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will I lose quality converting TIFF to JPG?</FAQStaticQuestion>
+              <FAQAnswer>The quality setting controls JPEG compression. Higher settings generally retain more image detail but can create larger files; the visible difference depends on the source TIFF.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I batch convert multiple TIFF files?</FAQStaticQuestion>
+              <FAQAnswer>This converter processes one TIFF file at a time. Conversion time depends on the image and server workload.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>What TIFF compression types are supported?</FAQStaticQuestion>
+              <FAQAnswer>TIFF compatibility depends on the image encoding and server conversion engine. Unusual compression and multi-page files may require specialized handling.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+              <FAQAnswer>Your TIFF file is uploaded for server-assisted conversion and processed only as needed to create the JPG output.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}
@@ -296,7 +476,7 @@ export default function TiffToJpgPage() {
               "name": "What is TIFF format?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "TIFF (Tagged Image File Format) is a lossless image format commonly used for professional photography and scanning. It stores uncompressed or minimally compressed image data, resulting in large file sizes but excellent quality."
+                "text": "TIFF (Tagged Image File Format) is used for scans, publishing, and archival images. It supports multiple compression methods and may contain multiple pages."
               }
             },
             {
@@ -304,7 +484,7 @@ export default function TiffToJpgPage() {
               "name": "Why is JPG better for web use?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "JPG uses lossy compression, which significantly reduces file size while maintaining acceptable image quality. This makes it ideal for web use where load times matter. TIFF files are much larger and impractical for online use."
+                "text": "JPG is widely supported by browsers and applications. Its lossy compression often reduces photographic file sizes, depending on the source and quality setting."
               }
             },
             {
@@ -312,7 +492,7 @@ export default function TiffToJpgPage() {
               "name": "Will I lose quality converting TIFF to JPG?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Our converter allows you to adjust quality settings to minimize quality loss. Higher quality settings (80-100%) provide excellent results with minimal visible difference from the original."
+                "text": "The quality setting controls JPEG compression. Higher settings generally retain more image detail but can create larger files; the visible difference depends on the source TIFF."
               }
             },
             {
@@ -320,7 +500,7 @@ export default function TiffToJpgPage() {
               "name": "Can I batch convert multiple TIFF files?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Currently, our converter handles one file at a time. However, the conversion is very fast, so you can quickly process multiple files by uploading them sequentially."
+                "text": "This converter processes one TIFF file at a time. Conversion time depends on the image and server workload."
               }
             },
             {
@@ -328,7 +508,7 @@ export default function TiffToJpgPage() {
               "name": "What TIFF compression types are supported?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Our converter supports all common TIFF compression types including uncompressed, LZW, and JPEG compression. Most TIFF files will convert without any issues."
+                "text": "TIFF compatibility depends on the image encoding and server conversion engine. Unusual compression and multi-page files may require specialized handling."
               }
             },
             {
@@ -336,7 +516,7 @@ export default function TiffToJpgPage() {
               "name": "Is the conversion process secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen locally in your browser. Your TIFF images are never uploaded to any server and remain completely private. No data is stored after conversion."
+                "text": "Your TIFF file is uploaded for server-assisted conversion and processed only as needed to create the JPG output."
               }
             }
           ]
@@ -358,7 +538,7 @@ export default function TiffToJpgPage() {
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file size with adjustable JPG quality</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

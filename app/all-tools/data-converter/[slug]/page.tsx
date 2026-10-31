@@ -1,14 +1,24 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import { useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { use, useState, useCallback } from 'react';
+import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { dataTools, getDataToolById } from '@/app/lib/data-tools';
 import { Download, AlertCircle, CheckCircle, Loader2, Upload, ChevronRight, Zap, Shield, FileJson, FileText, Database } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
-import { createConvertedFilename } from '@/app/lib/data-validation';
+import { createConvertedFilename, resolveDataOutputExtension } from '@/app/lib/data-validation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import {
+  formatDataExtension,
+  getDataToolContent,
+  getDataToolFaqs,
+  hasDataEncodingControl,
+} from '@/app/lib/data-content-guidance';
 
 interface FormData {
   [key: string]: string | number | boolean;
@@ -72,10 +82,13 @@ function getRelatedTools(toolId: string): Array<{ id: string; title: string; des
   return relatedMap[toolId] || relatedMap['default'];
 }
 
-export default function DataToolPage() {
-  const params = useParams();
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default function DataToolPage({ params }: PageProps) {
   const router = useRouter();
-  const slug = (params?.slug as string | undefined) ?? '';
+  const { slug } = use(params);
 
   const tool = getDataToolById(slug);
 
@@ -84,62 +97,22 @@ export default function DataToolPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [downloadPageUrl, setDownloadPageUrl] = useState<string | null>(null);
+  const dataContent = tool ? getDataToolContent(tool) : null;
+  const faqItems = tool ? getDataToolFaqs(tool) : [];
 
   // Generate FAQ schema for JSON-LD
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Is the conversion accurate?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, our conversion engines maintain data integrity and formatting. However, we recommend reviewing the output before using it in production."
-        }
+    "mainEntity": faqItems.map((faq) => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a,
       },
-      {
-        "@type": "Question",
-        "name": "What file size limits do you have?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Files up to 100MB can be converted. For larger files, please split them first using our file splitting tools or process them in batches."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is my data stored after conversion?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No. All uploaded files and converted outputs are automatically deleted from our servers after processing. We do not store or log your data."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Which encoding formats are supported?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We support UTF-8, Latin-1, ISO-8859-1, and Windows-1252 encodings. Your file encoding is automatically detected when possible."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I convert multiple files at once?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Currently you can convert one file at a time. For batch conversions, you can repeat the process or use our split/merge tools to organize data."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What happens if conversion fails?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "If an error occurs, you'll see a detailed message. Common issues: unsupported file format, corrupted data, or encoding problems. Try checking your file structure."
-        }
-      }
-    ]
+    }))
   };
 
   // Generate Breadcrumb schema for JSON-LD
@@ -169,27 +142,7 @@ export default function DataToolPage() {
   };
 
   if (!tool) {
-    return (
-      <>
-        <HomeHeader />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 flex flex-col">
-          <div className="flex-1 flex items-center justify-center w-full">
-            <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center border border-gray-200">
-              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
-              <p className="text-gray-600 mb-6">The requested tool "{slug}" does not exist.</p>
-              <Link
-                href="/all-tools/data"
-                className="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition duration-0 font-medium"
-              >
-                Back to Tools
-              </Link>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
+    notFound();
   }
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,7 +203,7 @@ export default function DataToolPage() {
     try {
       // Build options with defaults applied
       const optionsWithDefaults: Record<string, any> = {};
-      
+
       if (tool.options && tool.options.length > 0) {
         for (const option of tool.options) {
           // Use formData value if set, otherwise use default
@@ -260,7 +213,7 @@ export default function DataToolPage() {
               : option.default;
         }
       }
-      
+
       // Merge with any user-set formData values
       let finalOptions = { ...optionsWithDefaults, ...formData };
 
@@ -270,8 +223,9 @@ export default function DataToolPage() {
         columnName: 'column_name',
         parts: 'num_parts',
         numParts: 'num_parts',
+        sheetMode: 'sheet_mode',
       };
-      
+
       const snakeCaseOptions: Record<string, any> = {};
       for (const [key, value] of Object.entries(finalOptions)) {
         const snakeKey = camelToSnakeMap[key] || key;
@@ -304,19 +258,19 @@ export default function DataToolPage() {
 
       // Get converted file
       const blob = await response.blob();
+      const outputExtension = resolveDataOutputExtension(tool.id, tool.output, finalOptions);
+      const outputName = createConvertedFilename(outputExtension);
 
-      // Create download URL
-      const url = window.URL.createObjectURL(blob);
-      setDownloadUrl(url);
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: tool.id,
+        originalName: selectedFile.name,
+        outputName,
+      });
+
+      setDownloadPageUrl(downloadResult.downloadPageUrl);
       setSuccess(true);
-
-      // Auto-download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = createConvertedFilename(tool.output);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      router.push(downloadResult.downloadPageUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Conversion failed');
     } finally {
@@ -327,12 +281,12 @@ export default function DataToolPage() {
   return (
     <>
       <HomeHeader />
-      
+
       {/* JSON-LD Schema Markup */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      {!['csv-to-json', 'excel-to-csv', 'json-to-xml', 'csv-to-xml', 'csv-to-excel', 'excel-to-xml', 'excel-to-pdf', 'split-csv', 'split-excel'].includes(tool.id) && <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
@@ -485,7 +439,7 @@ export default function DataToolPage() {
                             <input
                               type="checkbox"
                               name={option.name}
-                              checked={(formData[option.name] as boolean) || false}
+                              checked={Boolean(formData[option.name] ?? option.default ?? false)}
                               onChange={handleFormChange}
                               disabled={loading}
                               className="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500"
@@ -549,7 +503,7 @@ export default function DataToolPage() {
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <CheckCircle size={16} className="text-teal-600 flex-shrink-0" />
-                  <span>Output: .{tool.output}</span>
+                  <span>Output: {resolveDataOutputExtension(tool.id, tool.output, formData)}</span>
                 </div>
               </div>
             </motion.div>
@@ -576,13 +530,8 @@ export default function DataToolPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
-                      if (downloadUrl) {
-                        const a = document.createElement('a');
-                        a.href = downloadUrl;
-                        a.download = createConvertedFilename(tool.output);
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
+                      if (downloadPageUrl) {
+                        router.push(downloadPageUrl);
                       }
                     }}
                     className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium duration-0 flex items-center justify-center gap-2"
@@ -613,19 +562,29 @@ export default function DataToolPage() {
           </motion.div>
         </motion.div>
 
+        {tool.id === 'csv-to-json' && <PriorityToolGuide toolId="csv-to-json" />}
+        {tool.id === 'excel-to-csv' && <PriorityToolGuide toolId="excel-to-csv" />}
+        {tool.id === 'json-to-xml' && <PriorityToolGuide toolId="json-to-xml" />}
+        {tool.id === 'csv-to-xml' && <PriorityToolGuide toolId="csv-to-xml" />}
+        {tool.id === 'csv-to-excel' && <PriorityToolGuide toolId="csv-to-excel" />}
+        {tool.id === 'excel-to-xml' && <PriorityToolGuide toolId="excel-to-xml" />}
+        {tool.id === 'excel-to-pdf' && <PriorityToolGuide toolId="excel-to-pdf" />}
+        {tool.id === 'split-csv' && <PriorityToolGuide toolId="split-csv" />}
+        {tool.id === 'split-excel' && <PriorityToolGuide toolId="split-excel" />}
+        {!['csv-to-json', 'excel-to-csv', 'json-to-xml', 'csv-to-xml', 'csv-to-excel', 'excel-to-xml', 'excel-to-pdf', 'split-csv', 'split-excel'].includes(tool.id) && (<>
         {/* Footer Feature Cards */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-7xl mx-auto mt-20">
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
                 icon: Zap,
-                title: 'Fast Conversion',
-                description: 'Convert files instantly with our optimized processing engine',
+                title: 'Processing Time Varies',
+                description: 'Processing time depends on the source file, conversion type, selected settings, and current service availability.',
               },
               {
                 icon: Shield,
-                title: 'Secure & Private',
-                description: 'Files are processed securely and automatically deleted after conversion. Your data is not permanently stored or shared.'
+                title: 'Server-Side Processing',
+                description: 'Supported files are uploaded to the server for conversion. Temporary processing and download handling depend on the current server workflow.'
               },
               {
                 icon: CheckCircle,
@@ -660,15 +619,26 @@ export default function DataToolPage() {
                 <strong>Select your file:</strong> Click the upload area and choose the {tool.accepts.join(' or ')} file you want to convert.
               </li>
               <li className="text-gray-700">
-                <strong>Configure options (if needed):</strong> Adjust conversion settings like delimiter, encoding, or format preferences.
+                <strong>Configure the available options:</strong> Review the settings shown for this tool{hasDataEncodingControl(tool) ? '; select the character encoding that matches your source CSV file' : ''}.
               </li>
               <li className="text-gray-700">
                 <strong>Click {getActionText(tool.id)}:</strong> Hit the button to start processing your file conversion.
               </li>
               <li className="text-gray-700">
-                <strong>Download your file:</strong> Once ready, download your converted .{tool.output} file directly to your computer.
+                <strong>Download your result:</strong> Once ready, download the {tool.category === 'split' ? 'ZIP containing the output parts' : `converted ${formatDataExtension(resolveDataOutputExtension(tool.id, tool.output, formData))} file`}.
               </li>
             </ol>
+            {dataContent && (
+              <div className="mt-6 border-t border-gray-200 pt-6 space-y-3 text-gray-700">
+                <p><strong>How it works:</strong> {dataContent.transformation}</p>
+                <div>
+                  <strong>Important limitations:</strong>
+                  <ul className="mt-2 list-disc list-inside space-y-1">
+                    {dataContent.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
+                  </ul>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Why Use This Tool Section */}
@@ -677,20 +647,22 @@ export default function DataToolPage() {
             <div className="grid md:grid-cols-2 gap-6">
               {[
                 {
-                  title: 'Lightning Fast',
-                  description: 'Process your files instantly without slow uploads or complex software.'
+                  title: 'Server-Side Conversion',
+                  description: 'Upload one supported source file for processing by the server conversion workflow.'
                 },
                 {
                   title: 'No Sign-Up Required',
                   description: 'Use immediately without account creation, email verification, or payment information.'
                 },
                 {
-                  title: 'Secure Processing',
-                  description: 'Your files are processed securely and automatically deleted after conversion.'
+                  title: 'Processing Workflow',
+                  description: 'Supported source files are sent to the server and processed according to the selected data-conversion workflow.'
                 },
                 {
-                  title: 'Batch Ready',
-                  description: 'Handle large files efficiently with support for files up to 100MB in size.'
+                  title: tool.category === 'split' ? 'Multiple Output Parts' : 'Single-File Workflow',
+                  description: tool.category === 'split'
+                    ? 'One source file is divided into multiple output parts and returned as a ZIP.'
+                    : 'Convert one supported source file per request. The current upload interface applies a 100 MB client-side file limit, while practical processing limits can vary by conversion.'
                 }
               ].map((benefit, idx) => (
                 <div key={idx} className="bg-white rounded-lg p-4 border border-gray-100">
@@ -702,60 +674,24 @@ export default function DataToolPage() {
           </section>
 
           {/* FAQ Section */}
-          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              {[
-                {
-                  q: 'Is the conversion accurate?',
-                  a: 'Yes, our conversion engines maintain data integrity and formatting. However, we recommend reviewing the output before using it in production.'
-                },
-                {
-                  q: 'What file size limits do you have?',
-                  a: 'Files up to 100MB can be converted. For larger files, please split them first using our file splitting tools or process them in batches.'
-                },
-                {
-                  q: 'Is my data stored after conversion?',
-                  a: 'No. All uploaded files and converted outputs are automatically deleted from our servers after processing. We do not store or log your data.'
-                },
-                {
-                  q: 'Which encoding formats are supported?',
-                  a: 'We support UTF-8, Latin-1, ISO-8859-1, and Windows-1252 encodings. Your file encoding is automatically detected when possible.'
-                },
-                {
-                  q: 'Can I convert multiple files at once?',
-                  a: 'Currently you can convert one file at a time. For batch conversions, you can repeat the process or use our split/merge tools to organize data.'
-                },
-                {
-                  q: 'What happens if conversion fails?',
-                  a: 'If an error occurs, you\'ll see a detailed message. Common issues: unsupported file format, corrupted data, or encoding problems. Try checking your file structure.'
-                }
-              ].map((faq, idx) => (
-                <div key={idx} className="border-b border-gray-200 pb-6 last:border-0">
-                  <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
-                  <p className="text-gray-700">{faq.a}</p>
-                </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
+            <FAQList>
+              {faqItems.map((faq, idx) => (
+                <FAQCard key={idx}>
+                  <FAQStaticQuestion>{faq.q}</FAQStaticQuestion>
+                  <FAQAnswer>{faq.a}</FAQAnswer>
+                </FAQCard>
               ))}
-            </div>
-          </section>
+            </FAQList>
+          </FAQPanel>
 
-          {/* Related Tools Section */}
-          <section className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Related Tools</h2>
-            <p className="text-gray-700 mb-6">Explore other data conversion tools that might be useful for your workflow:</p>
-            <div className="grid md:grid-cols-2 gap-4">
-              {getRelatedTools(tool.id).map((relatedTool, idx) => (
-                <Link
-                  key={idx}
-                  href={`/all-tools/data/${relatedTool.id}`}
-                  className="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:border-teal-300 hover:shadow-md transition"
-                >
-                  <h3 className="font-semibold text-gray-900 group-hover:text-teal-600 mb-1">{relatedTool.title}</h3>
-                  <p className="text-gray-600 text-sm">{relatedTool.description}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
+          <RelatedToolsSection
+            family="data"
+            toolId={tool.id}
+            description="Explore other data conversion tools that might be useful for your workflow."
+            limit={8}
+          />
 
           {/* Data Safety & Best Practices Section */}
           <section className="bg-blue-50 rounded-xl border border-blue-200 p-8">
@@ -768,13 +704,14 @@ export default function DataToolPage() {
                   <li>Review converted data for completeness before using in production</li>
                   <li>Test conversions with sample files before processing large datasets</li>
                   <li>Verify data integrity after complex multi-step conversions</li>
-                  <li>Check for special characters or formatting that may not convert perfectly</li>
+                  <li>Check special characters, formatting, data types, and structure because they may be represented differently after conversion</li>
                   <li>Document your conversion settings if you need to repeat the process</li>
                 </ul>
               </div>
             </div>
           </section>
         </motion.div>
+        </>)}
         </div>
       </div>
       </main>

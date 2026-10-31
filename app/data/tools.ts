@@ -43,15 +43,6 @@ export interface Tool {
 
 const aiEditingTools: Tool[] = [
   {
-    id: 'ai-image-gen',
-    title: 'AI Image Generator',
-    description: 'Generate images from text descriptions using AI',
-    category: 'Image',
-    icon: Wand2,
-    route: '/all-tools/ai-image-generator',
-    headerColor: 'from-purple-400 via-indigo-400 to-purple-500',
-  },
-  {
     id: 'remove-bg',
     title: 'Remove Background',
     description: 'Remove backgrounds from images automatically',
@@ -393,7 +384,7 @@ const converterTools: Tool[] = [
     description: 'Convert PDF pages to JPG images',
     category: 'Image',
     icon: FileImage,
-    route: '/all-tools/pdf-to-jpg',
+    route: '/all-tools/pdf/pdf-to-jpg',
     headerColor: 'from-orange-400 via-red-400 to-orange-500',
   },
   {
@@ -411,13 +402,13 @@ const converterTools: Tool[] = [
     description: 'Extract text from PDF documents',
     category: 'Image',
     icon: FileText,
-    route: '/all-tools/pdf-to-text',
+    route: '/all-tools/pdf/pdf-to-text',
     headerColor: 'from-blue-400 via-indigo-400 to-blue-500',
   },
   {
     id: 'compress',
     title: 'Compress Image Size',
-    description: 'Reduce image file size without quality loss',
+    description: 'Reduce image file size while aiming to retain good visual quality',
     category: 'Image',
     icon: Package,
     route: '/all-tools/compress-image',
@@ -537,7 +528,7 @@ const converterTools: Tool[] = [
     description: 'Convert MP4 videos to animated GIF',
     category: 'Image',
     icon: FileAudio,
-    route: '/all-tools/mp4-to-gif',
+    route: '/all-tools/video/mp4-to-gif',
     headerColor: 'from-pink-400 via-rose-400 to-pink-500',
   },
   {
@@ -581,16 +572,6 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/all-tools/jpg-to-tiff',
-  },
-
-  {
-    id: 'psd-ai',
-    title: 'PSD to AI',
-    description: 'Convert Photoshop to Illustrator format',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/psd-to-ai',
-    headerColor: 'from-violet-400 via-purple-400 to-violet-500',
   },
   {
     id: 'psd-jpg',
@@ -716,30 +697,6 @@ const converterTools: Tool[] = [
     route: '/all-tools/vsdx-to-pdf',
   },
   {
-    id: 'vsdx-pptx',
-    title: 'VSDX to PPTX',
-    description: 'Convert Visio to PowerPoint',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/vsdx-to-pptx',
-  },
-  {
-    id: 'vsdx-docx',
-    title: 'VSDX to DOCX',
-    description: 'Convert Visio to Word document',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/vsdx-to-docx',
-  },
-  {
-    id: 'vsd-docx',
-    title: 'VSD to DOCX',
-    description: 'Convert Visio diagram to Word',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/vsd-to-docx',
-  },
-  {
     id: 'webp-avif',
     title: 'WebP to AVIF',
     description: 'Convert WebP to AVIF format',
@@ -771,14 +728,6 @@ const converterTools: Tool[] = [
     category: 'Image',
     icon: RefreshCw,
     route: '/all-tools/tiff-to-avif',
-  },
-  {
-    id: 'vsd-pptx',
-    title: 'VSD to PPTX',
-    description: 'Convert Visio to PowerPoint',
-    category: 'Image',
-    icon: RefreshCw,
-    route: '/all-tools/vsd-to-pptx',
   },
   {
     id: 'bmp-jpg',
@@ -1677,7 +1626,7 @@ const downloaderTools: Tool[] = [
   {
     id: 'save-from-online',
     title: 'Save From Online',
-    description: 'Download any file from any URL - videos, images, PDFs, documents, and more',
+    description: 'Download supported public files and media from compatible URLs. Availability depends on the source and configured providers.',
     category: 'Downloader',
     icon: Download,
     route: '/all-tools/save-from-online',
@@ -1687,4 +1636,3 @@ const downloaderTools: Tool[] = [
 
 export const allTools: Tool[] = [...aiEditingTools, ...converterTools, ...aiWriteTools, ...videoTools, ...financialTools, ...resumeTools, ...downloaderTools];
 export { aiEditingTools, converterTools, aiWriteTools, videoTools, financialTools, resumeTools, downloaderTools };
-

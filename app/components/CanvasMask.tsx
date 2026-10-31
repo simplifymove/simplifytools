@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { RotateCcw, Download } from 'lucide-react';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export interface CanvasMaskProps {
   imageUrl: string;
   imageWidth: number;
   imageHeight: number;
   onMaskGenerated: (maskBlob: Blob) => void;
+  onMaskChanged?: () => void;
   brushSize?: number;
   setBrushSize?: (size: number) => void;
 }
@@ -17,209 +20,204 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
   imageWidth,
   imageHeight,
   onMaskGenerated,
+  onMaskChanged,
   brushSize = 10,
   setBrushSize,
 }) => {
+  const router = useRouter();
   const displayCanvasRef = useRef<HTMLCanvasElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const drawingRef = useRef(false);
+  const maskRevisionRef = useRef(0);
   const [mode, setMode] = useState<'brush' | 'eraser'>('brush');
-  const [dpr, setDpr] = useState(1);
   const [maskPreview, setMaskPreview] = useState<string | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Initialize canvases with proper DPR
+  // Keep the exported mask at the original image resolution.
   useEffect(() => {
     const displayCanvas = displayCanvasRef.current;
     const maskCanvas = maskCanvasRef.current;
-    if (!displayCanvas || !maskCanvas || !containerRef.current) return;
+    const container = containerRef.current;
+    if (!displayCanvas || !maskCanvas || !container) return;
 
-    // Get device pixel ratio
-    const devicePixelRatio = window.devicePixelRatio || 1;
+    let cancelled = false;
+    imageRef.current = null;
+    drawingRef.current = false;
+    maskRevisionRef.current += 1;
 
-    // Calculate display size
-    const containerWidth = containerRef.current.offsetWidth || imageWidth;
-    const maxWidth = Math.min(containerWidth, imageWidth);
-    const scale = maxWidth / imageWidth;
-    const displayWidth = imageWidth * scale;
-    const displayHeight = imageHeight * scale;
+    const displayWidth = Math.max(1, Math.min(container.clientWidth || imageWidth, imageWidth));
+    const displayHeight = displayWidth * imageHeight / imageWidth;
+    const ratio = window.devicePixelRatio || 1;
 
-    // Set display canvas: CSS size vs internal pixel size
     displayCanvas.style.width = `${displayWidth}px`;
     displayCanvas.style.height = `${displayHeight}px`;
-    displayCanvas.width = displayWidth * devicePixelRatio;
-    displayCanvas.height = displayHeight * devicePixelRatio;
+    displayCanvas.width = Math.max(1, Math.round(displayWidth * ratio));
+    displayCanvas.height = Math.max(1, Math.round(displayHeight * ratio));
 
-    // Hidden mask canvas: full resolution
     maskCanvas.width = imageWidth;
     maskCanvas.height = imageHeight;
 
-    // Draw initial image on display canvas
-    const displayCtx = displayCanvas.getContext('2d');
-    if (displayCtx) {
-      displayCtx.scale(devicePixelRatio, devicePixelRatio);
-      const img = new Image();
-      img.onload = () => {
-        imageRef.current = img;
-        displayCtx.drawImage(img, 0, 0, displayWidth, displayHeight);
-      };
-      img.src = imageUrl;
-    }
-
-    // Initialize mask canvas to pure black (nothing masked)
     const maskCtx = maskCanvas.getContext('2d');
     if (maskCtx) {
       maskCtx.fillStyle = 'black';
       maskCtx.fillRect(0, 0, imageWidth, imageHeight);
     }
-  }, [imageUrl, imageWidth, imageHeight]);
 
-  const getCanvasCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const displayCanvas = displayCanvasRef.current;
-    if (!displayCanvas) return { x: 0, y: 0 };
+    overlayCanvasRef.current = document.createElement('canvas');
 
-    const rect = displayCanvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * dpr;
-    const y = (e.clientY - rect.top) * dpr;
-
-    return { x, y };
-  };
-
-  const getMaskCoords = (canvasX: number, canvasY: number) => {
-    const displayCanvas = displayCanvasRef.current;
-    if (!displayCanvas) return { x: 0, y: 0 };
-
-    // Map from display canvas coords to full-resolution mask canvas coords
-    const displayWidth = displayCanvas.offsetWidth;
-    const scaleX = imageWidth / displayWidth;
-    const scaleY = imageHeight / displayCanvas.offsetHeight;
-
-    return {
-      x: canvasX / dpr * scaleX,
-      y: canvasY / dpr * scaleY,
+    const image = new Image();
+    image.onload = () => {
+      if (cancelled) return;
+      imageRef.current = image;
+      const ctx = displayCanvas.getContext('2d');
+      if (!ctx) return;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+      ctx.drawImage(image, 0, 0, displayCanvas.width, displayCanvas.height);
     };
-  };
+    image.src = imageUrl;
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    setIsDrawing(true);
-    const canvasCoords = getCanvasCoords(e);
-    const maskCoords = getMaskCoords(canvasCoords.x, canvasCoords.y);
-
-    const maskCanvas = maskCanvasRef.current;
-    const maskCtx = maskCanvas?.getContext('2d');
-    if (!maskCtx) return;
-
-    maskCtx.beginPath();
-    maskCtx.moveTo(maskCoords.x, maskCoords.y);
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-
-    const canvasCoords = getCanvasCoords(e);
-    const maskCoords = getMaskCoords(canvasCoords.x, canvasCoords.y);
-
-    const maskCanvas = maskCanvasRef.current;
-    const maskCtx = maskCanvas?.getContext('2d');
-    if (!maskCtx) return;
-
-    // Draw on mask canvas with solid color (white for brush, black for eraser)
-    maskCtx.strokeStyle = mode === 'brush' ? 'white' : 'black';
-    maskCtx.lineWidth = brushSize;
-    maskCtx.lineCap = 'round';
-    maskCtx.lineJoin = 'round';
-
-    maskCtx.lineTo(maskCoords.x, maskCoords.y);
-    maskCtx.stroke();
-
-    // Also draw on display canvas for visual feedback
-    const displayCanvas = displayCanvasRef.current;
-    const displayCtx = displayCanvas?.getContext('2d');
-    if (displayCtx && imageRef.current) {
-      // Redraw image
-      displayCtx.scale(dpr, dpr);
-      displayCtx.drawImage(
-        imageRef.current,
-        0,
-        0,
-        displayCanvas!.offsetWidth,
-        displayCanvas!.offsetHeight
-      );
-
-      // Overlay mask with transparency
-      const maskData = maskCtx.getImageData(0, 0, imageWidth, imageHeight);
-      const scaledCanvas = document.createElement('canvas');
-      scaledCanvas.width = displayCanvas!.offsetWidth;
-      scaledCanvas.height = displayCanvas!.offsetHeight;
-      const scaledCtx = scaledCanvas.getContext('2d');
-      if (scaledCtx) {
-        scaledCtx.putImageData(maskData, 0, 0);
-        displayCtx.globalAlpha = 0.3;
-        displayCtx.drawImage(scaledCanvas, 0, 0);
-        displayCtx.globalAlpha = 1.0;
-      }
-    }
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-  };
-
-  const clearCanvas = () => {
-    const maskCanvas = maskCanvasRef.current;
-    const maskCtx = maskCanvas?.getContext('2d');
-    if (maskCtx && maskCanvas) {
-      maskCtx.fillStyle = 'black';
-      maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-      redrawDisplay();
-    }
-  };
-
-  const resetCanvas = () => {
-    const displayCanvas = displayCanvasRef.current;
-    const displayCtx = displayCanvas?.getContext('2d');
-    if (displayCtx && imageRef.current && displayCanvas) {
-      displayCtx.scale(dpr, dpr);
-      displayCtx.drawImage(
-        imageRef.current,
-        0,
-        0,
-        displayCanvas.offsetWidth,
-        displayCanvas.offsetHeight
-      );
-    }
-    clearCanvas();
-  };
+    return () => {
+      cancelled = true;
+      drawingRef.current = false;
+      maskRevisionRef.current += 1;
+      imageRef.current = null;
+    };
+  }, [imageUrl, imageWidth, imageHeight]);
 
   const redrawDisplay = () => {
     const displayCanvas = displayCanvasRef.current;
     const maskCanvas = maskCanvasRef.current;
-    const displayCtx = displayCanvas?.getContext('2d');
-    const maskCtx = maskCanvas?.getContext('2d');
+    const image = imageRef.current;
+    if (!displayCanvas || !maskCanvas || !image) return;
 
-    if (!displayCtx || !maskCtx || !imageRef.current || !displayCanvas || !maskCanvas) return;
+    const ctx = displayCanvas.getContext('2d');
+    if (!ctx) return;
 
-    displayCtx.scale(dpr, dpr);
-    displayCtx.drawImage(
-      imageRef.current,
-      0,
-      0,
-      displayCanvas.offsetWidth,
-      displayCanvas.offsetHeight
-    );
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+    ctx.drawImage(image, 0, 0, displayCanvas.width, displayCanvas.height);
 
-    const maskData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
-    const scaledCanvas = document.createElement('canvas');
-    scaledCanvas.width = displayCanvas.offsetWidth;
-    scaledCanvas.height = displayCanvas.offsetHeight;
-    const scaledCtx = scaledCanvas.getContext('2d');
-    if (scaledCtx) {
-      scaledCtx.putImageData(maskData, 0, 0);
-      displayCtx.globalAlpha = 0.3;
-      displayCtx.drawImage(scaledCanvas, 0, 0);
-      displayCtx.globalAlpha = 1.0;
+    // Use the mask as a luminance source at display resolution.
+    // Black areas remain transparent; white painted areas become red.
+    const overlay = overlayCanvasRef.current;
+    if (!overlay) return;
+
+    if (
+      overlay.width !== displayCanvas.width ||
+      overlay.height !== displayCanvas.height
+    ) {
+      overlay.width = displayCanvas.width;
+      overlay.height = displayCanvas.height;
     }
+
+    const overlayCtx = overlay.getContext('2d');
+    if (!overlayCtx) return;
+
+    overlayCtx.setTransform(1, 0, 0, 1, 0, 0);
+    overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+    overlayCtx.drawImage(maskCanvas, 0, 0, overlay.width, overlay.height);
+
+    // Convert mask brightness to opacity at display resolution.
+    const pixels = overlayCtx.getImageData(0, 0, overlay.width, overlay.height);
+    const data = pixels.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const coverage = data[i];
+      data[i] = 255;
+      data[i + 1] = 75;
+      data[i + 2] = 75;
+      data[i + 3] = Math.round(coverage * 0.4);
+    }
+
+    overlayCtx.putImageData(pixels, 0, 0);
+    ctx.drawImage(overlay, 0, 0);
+  };
+
+  const getMaskCoords = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const displayCanvas = displayCanvasRef.current;
+    if (!displayCanvas) return { x: 0, y: 0 };
+
+    const rect = displayCanvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * imageWidth / rect.width,
+      y: (e.clientY - rect.top) * imageHeight / rect.height,
+    };
+  };
+
+  const markChanged = () => {
+    maskRevisionRef.current += 1;
+    setMaskPreview(null);
+    onMaskChanged?.();
+  };
+
+  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+    const maskCtx = maskCanvasRef.current?.getContext('2d');
+    if (!maskCtx) return;
+
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    drawingRef.current = true;
+
+    const point = getMaskCoords(e);
+    maskCtx.strokeStyle = mode === 'brush' ? 'white' : 'black';
+    maskCtx.fillStyle = maskCtx.strokeStyle;
+    maskCtx.lineWidth = brushSize;
+    maskCtx.lineCap = 'round';
+    maskCtx.lineJoin = 'round';
+
+    // Paint a dot even if the user does not drag.
+    maskCtx.beginPath();
+    maskCtx.arc(point.x, point.y, brushSize / 2, 0, Math.PI * 2);
+    maskCtx.fill();
+    maskCtx.beginPath();
+    maskCtx.moveTo(point.x, point.y);
+
+    markChanged();
+    redrawDisplay();
+  };
+
+  const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!drawingRef.current) return;
+
+    const maskCtx = maskCanvasRef.current?.getContext('2d');
+    if (!maskCtx) return;
+
+    e.preventDefault();
+    const point = getMaskCoords(e);
+    maskCtx.lineTo(point.x, point.y);
+    maskCtx.stroke();
+    maskCtx.beginPath();
+    maskCtx.moveTo(point.x, point.y);
+
+    markChanged();
+    redrawDisplay();
+  };
+
+  const stopDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    drawingRef.current = false;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+  };
+
+  const clearCanvas = () => {
+    const maskCanvas = maskCanvasRef.current;
+    const ctx = maskCanvas?.getContext('2d');
+    if (!ctx || !maskCanvas) return;
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+    markChanged();
+    redrawDisplay();
+  };
+
+  const resetCanvas = () => {
+    clearCanvas();
   };
 
   const generateMask = () => {
@@ -255,10 +253,11 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
     const previewUrl = maskCanvas.toDataURL('image/png');
     setMaskPreview(previewUrl);
 
-    // Export as PNG blob (no alpha channel, just RGB)
+    // Accept the exported mask only if no edits occurred meanwhile.
+    const revision = maskRevisionRef.current;
     maskCanvas.toBlob(
       (blob) => {
-        if (blob) {
+        if (blob && revision === maskRevisionRef.current) {
           onMaskGenerated(blob);
         }
       },
@@ -266,16 +265,33 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
     );
   };
 
-  const downloadMask = () => {
+  const downloadMask = async () => {
     const maskCanvas = maskCanvasRef.current;
     if (!maskCanvas) return;
 
-    const link = document.createElement('a');
-    link.href = maskCanvas.toDataURL('image/png');
-    link.download = `mask-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        maskCanvas.toBlob((generatedBlob) => {
+          if (generatedBlob) resolve(generatedBlob);
+          else reject(new Error('Unable to generate the mask image.'));
+        }, 'image/png');
+      });
+      const outputName = `mask-${Date.now()}.png`;
+      const download = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'remove-object',
+        originalName: outputName,
+        outputName,
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (caughtError) {
+      window.alert(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    }
   };
 
   return (
@@ -368,11 +384,12 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
       >
         <canvas
           ref={displayCanvasRef}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
+          onPointerDown={startDrawing}
+          onPointerMove={draw}
+          onPointerUp={stopDrawing}
+          onPointerCancel={stopDrawing}
           className="w-full h-full cursor-crosshair"
+          style={{ touchAction: 'none' }}
         />
       </div>
 
@@ -401,6 +418,5 @@ export const CanvasMask: React.FC<CanvasMaskProps> = ({
     </div>
   );
 };
-
 
 

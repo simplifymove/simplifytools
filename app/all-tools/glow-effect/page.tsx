@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -6,8 +7,11 @@ import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function GlowEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(20);
@@ -51,7 +55,7 @@ export default function GlowEffectPage() {
 
           // Draw original image
           ctx.drawImage(img, 0, 0);
-          
+
           // Create glow by brightening and blurring
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
@@ -76,7 +80,7 @@ export default function GlowEffectPage() {
                     const ny = Math.min(canvas.height - 1, Math.max(0, y + Math.round(dy)));
                     const nx = Math.min(canvas.width - 1, Math.max(0, x + Math.round(dx)));
                     const nIdx = (ny * canvas.width + nx) * 4;
-                    
+
                     sumR += data[nIdx];
                     sumG += data[nIdx + 1];
                     sumB += data[nIdx + 2];
@@ -117,16 +121,33 @@ export default function GlowEffectPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `glow-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'glow-effect',
+            originalName: `glow-${Date.now()}.jpg`,
+            outputName: `glow-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -144,7 +165,7 @@ export default function GlowEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">✨ Glow Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Add luminous glow and bloom effects to images. Create stunning glowing photos with custom intensity.
+              Brighten and soften images with adjustable glow intensity and blur. Export the processed result as a JPEG.
             </p>
           </div>
         </div>
@@ -155,7 +176,7 @@ export default function GlowEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Glow Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -238,12 +259,12 @@ export default function GlowEffectPage() {
                   <p className="text-gray-700">Create stunning contemporary glow effects.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-pink-600 mb-2">Professional Quality</h3>
-                  <p className="text-gray-700">Studio-quality luminous glow effects.</p>
+                  <h3 className="font-bold text-lg text-pink-600 mb-2">Glow Processing</h3>
+                  <p className="text-gray-700">Apply a configurable luminous glow effect using the available intensity and blur controls.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-pink-600 mb-2">Customizable</h3>
-                  <p className="text-gray-700">Full control over intensity and blur.</p>
+                  <p className="text-gray-700">Adjust the available intensity and blur sliders to change the effect.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-pink-600 mb-2">100% Free</h3>
@@ -256,7 +277,7 @@ export default function GlowEffectPage() {
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">What This Glow Effect Tool Does</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
-                The Glow Effect tool adds a bright luminous bloom to your image by boosting highlights and softening surrounding detail. It is useful for creating dreamy portraits, social graphics, fantasy edits, product accents, and stylized thumbnails.
+                The Glow Effect tool increases the brightness of image pixels and applies two blur passes to soften details. Adjust intensity and blur to create a luminous appearance for portraits, social graphics, creative edits, and thumbnails.
               </p>
 
               <h3 className="text-xl font-bold text-gray-800 mb-3">Use Cases</h3>
@@ -275,48 +296,48 @@ export default function GlowEffectPage() {
                 </div>
                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                   <h4 className="font-semibold text-gray-900 mb-2">Output</h4>
-                  <p className="text-gray-700 text-sm">A glowing JPEG with brighter highlights, softer transitions, and a more luminous style.</p>
+                  <p className="text-gray-700 text-sm">A JPEG image with increased brightness and softened details. The exact appearance depends on the source image and slider settings.</p>
                 </div>
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
                 <h3 className="font-bold text-blue-900 mb-2">Privacy Note</h3>
                 <p className="text-blue-900 text-sm">
-                  Glow processing runs locally in your browser using canvas. Your image does not need to leave your device for this effect.
+                  The glow effect is processed locally in your browser using Canvas. When you select Download, the generated JPEG is uploaded to the site's download-result service to prepare the download page.
                 </p>
               </div>
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What settings work best?</summary>
-                  <p className="text-gray-700 mt-2">Start with Intensity: 20-30 and Blur: 15-25 for balanced glow.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I make the glow stronger?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Increase Intensity for brighter glow and Blur for softer spread.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Best photo types for glow?</summary>
-                  <p className="text-gray-700 mt-2">Works great on portraits, landscapes, and any bright subjects.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What format is the output?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG format with excellent glow quality.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser.</p>
-                </details>
-                <details className="border-l-4 border-pink-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I undo and retry?</summary>
-                  <p className="text-gray-700 mt-2">Yes, upload again to start fresh with different settings.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What settings work best?</FAQQuestion>
+                  <FAQAnswer>Start with the default intensity of 20 and blur value of 15. Increase intensity to brighten the image, or adjust blur to change how much detail is softened.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I make the glow stronger?</FAQQuestion>
+                  <FAQAnswer>Yes. Increase the intensity slider to brighten image pixels. Increasing blur changes how strongly neighboring pixels are blended, which can soften image details.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Best photo types for glow?</FAQQuestion>
+                  <FAQAnswer>Portraits, landscapes, city lights, and colorful graphics can produce different results. Images with visible detail and contrast are useful starting points.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What format is the output?</FAQQuestion>
+                  <FAQAnswer>The result is exported as a JPEG using a fixed encoding quality setting of 0.95. JPEG compression can affect fine details and does not preserve transparency.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image private?</FAQQuestion>
+                  <FAQAnswer>The glow effect runs in your browser. Downloading the result uploads the generated image to our server for temporary download preparation.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I undo and retry?</FAQQuestion>
+                  <FAQAnswer>Yes. Adjust the intensity or blur sliders and click Apply Glow Effect again. You can also upload another image to start with a different source.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -357,7 +378,7 @@ export default function GlowEffectPage() {
               name: 'What settings work best?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Start with Intensity 20-30 and Blur 15-25 for a balanced glow effect.',
+                text: 'Start with the default intensity of 20 and blur value of 15. Increase intensity to brighten the image, or adjust blur to change how much detail is softened.',
               },
             },
             {
@@ -365,7 +386,23 @@ export default function GlowEffectPage() {
               name: 'Can I make the glow stronger?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Yes. Increase intensity for brighter glow and blur for a softer spread.',
+                text: 'Yes. Increase the intensity slider to brighten image pixels. Increasing blur changes how strongly neighboring pixels are blended, which can soften image details.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Best photo types for glow?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Portraits, landscapes, city lights, and colorful graphics can produce different results. Images with visible detail and contrast are useful starting points.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'What format is the output?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'The result is exported as a JPEG using a fixed encoding quality setting of 0.95. JPEG compression can affect fine details and does not preserve transparency.',
               },
             },
             {
@@ -373,7 +410,15 @@ export default function GlowEffectPage() {
               name: 'Is my image private?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Yes. Glow processing runs locally in your browser.',
+                text: 'The glow effect runs in your browser. Downloading the result uploads the generated image to our server for temporary download preparation.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Can I undo and retry?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Yes. Adjust the intensity or blur sliders and click Apply Glow Effect again. You can also upload another image to start with a different source.',
               },
             },
           ],

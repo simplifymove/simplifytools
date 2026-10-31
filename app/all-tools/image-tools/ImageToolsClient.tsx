@@ -11,6 +11,137 @@ import { motion } from 'framer-motion';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 
+const IMAGE_TOOL_PRIORITY = [
+  // Highest-demand everyday image tools
+  'remove-bg',
+  'compress',
+  'resize',
+  'crop',
+  'upscale',
+  'jpg-png',
+  'png-jpg',
+  'webp-jpg',
+  'jpg-webp',
+  'transparent-bg',
+  'image-to-text',
+  'image-enhancer',
+  'profile-photo',
+  'remove-objects',
+  'remove-watermark',
+  'rotate',
+
+  // Common editing and cleanup
+  'cleanup',
+  'unblur',
+  'blur-bg',
+  'sharpen-image',
+  'blur-image',
+  'add-text',
+  'watermark-image',
+  'combine',
+  'collage',
+  'flip',
+  'mirror-image',
+  'round-image',
+  'add-border',
+  'add-images',
+  'splitter',
+  'bw',
+  'grayscale',
+  'colorize',
+  'brightness-contrast',
+  'hue-saturation',
+  'color-balance',
+  'white-balance',
+  'color-grader',
+  'add-opacity',
+  'metadata',
+  'translate-img',
+
+  // Popular format conversions
+  'webp-png',
+  'png-webp',
+  'heic-jpg',
+  'heic-png',
+  'jpg-avif',
+  'png-avif',
+  'webp-avif',
+  'heic-avif',
+  'png-svg',
+  'jpg-svg',
+  'pdf-jpg',
+  'pdf-to-text',
+  'gif-mp4',
+  'mp4-gif',
+  'jpg-gif',
+  'gif-jpg',
+  'gif-png',
+  'webp-gif',
+
+  // Professional / specialist format conversions
+  'tiff-jpg',
+  'tiff-png',
+  'png-tiff',
+  'jpg-tif',
+  'tiff-avif',
+  'tiff-svg',
+  'tiff-text',
+  'psd-jpg',
+  'psd-png',
+  'psd-svg',
+  'bmp-jpg',
+  'bmp-png',
+  'eps-jpg',
+  'eps-svg',
+  'png-eps',
+  'vsd-pdf',
+  'vsdx-pdf',
+  'vsdx-jpg',
+  'edit-png',
+
+  // Utility / creation tools
+  'chart-maker',
+  'font-awesome',
+  'reverse-img',
+
+  // Common creative effects
+  'pixelate-image',
+  'invert-colors',
+  'cartoon-effect',
+  'sketch-effect',
+  'vintage-filter',
+  'sepia-filter',
+  'vignette-effect',
+  'posterize',
+  'duotone-effect',
+  'glow-effect',
+  'neon-glow',
+  'oil-paint-effect',
+  'emboss-effect',
+  'motion-blur',
+  'glitch-effect',
+  'lens-flare',
+  'tilt-shift',
+
+  // Specialist effects
+  'chromatic-aberration',
+  'kaleidoscope',
+  'dream-effect',
+  'film-noir',
+  'sunburst',
+  'blur-zoom',
+  'vhs-effect',
+  'swirl-distortion',
+  'thermal-vision',
+  'mosaic-tile',
+  'solarize-effect',
+  'edge-detect',
+  'histogram-equalize',
+] as const;
+
+const IMAGE_TOOL_PRIORITY_INDEX = new Map(
+  IMAGE_TOOL_PRIORITY.map((id, index) => [id, index])
+);
 export default function ImageToolsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -43,7 +174,17 @@ export default function ImageToolsPage() {
       );
     }
 
-    return results;
+    return [...results].sort((a, b) => {
+      const aPriority =
+        IMAGE_TOOL_PRIORITY_INDEX.get(a.id as (typeof IMAGE_TOOL_PRIORITY)[number]) ??
+        Number.MAX_SAFE_INTEGER;
+
+      const bPriority =
+        IMAGE_TOOL_PRIORITY_INDEX.get(b.id as (typeof IMAGE_TOOL_PRIORITY)[number]) ??
+        Number.MAX_SAFE_INTEGER;
+
+      return aPriority - bPriority;
+    });
   }, [searchTerm, selectedCategory, allImageTools]);
 
   return (
@@ -71,16 +212,16 @@ export default function ImageToolsPage() {
               </div>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Free Image Tools Online</h1>
                 <p className="text-lg text-white/90 max-w-3xl mb-4">
-                  Use our free image tools to compress, convert, resize, and enhance images instantly. Supports JPG, PNG, WebP, and more. No signup required, no watermarks, completely free.
+                  Use image tools for compression, format conversion, resizing, cropping, enhancement, and other supported workflows. Format support, processing method, and available options vary by tool.
                 </p>
                 <p className="text-base text-white/80 max-w-3xl">
-                  Professional-grade image processing tools for everyone. Fast, secure, and easy to use on all devices.
+                  Choose the tool that matches the image task, review its available controls, and check the result before replacing your original file.
                 </p>
               </motion.div>
             </div>
@@ -91,7 +232,7 @@ export default function ImageToolsPage() {
             <div className="max-w-7xl mx-auto">
               <motion.div
                 className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
@@ -221,23 +362,23 @@ export default function ImageToolsPage() {
                 viewport={{ once: true }}
                 className="space-y-8"
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use Our Free Image Tools?</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Choose the Image Operation That Matches the Goal</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">⚡ Lightning Fast Processing</h3>
-                    <p className="text-gray-700">Image compression and conversion happens instantly in your browser. No waiting, no delays. Process multiple images in seconds.</p>
+                    <h3 className="font-semibold text-gray-900 text-lg">Resize, Compress, or Convert?</h3>
+                    <p className="text-gray-700">Resize changes pixel dimensions, compression targets file size, and conversion changes the format. Each choice affects quality differently.</p>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">🔒 100% Secure & Private</h3>
-                    <p className="text-gray-700">Images are processed securely and automatically deleted after a short period. We do not permanently store your images. All processing uses HTTPS encryption for complete privacy.</p>
+                    <h3 className="font-semibold text-gray-900 text-lg">Understand How Processing Works</h3>
+                    <p className="text-gray-700">Some basic image operations use browser APIs, while AI-assisted and background workflows can upload images for server processing. Check the individual tool before submitting sensitive material.</p>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">📱 Works on All Devices</h3>
-                    <p className="text-gray-700">Use image tools on desktop, tablet, or mobile. No app installation needed. Works on Windows, Mac, iOS, and Android.</p>
+                    <h3 className="font-semibold text-gray-900 text-lg">Browser and Device Compatibility</h3>
+                    <p className="text-gray-700">Many image tools can be used from modern desktop and mobile browsers. Available file pickers, memory limits, browser APIs, and processing behavior can vary by device and browser.</p>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">🎨 Professional Results</h3>
-                    <p className="text-gray-700">Achieve professional-grade image editing and conversion without expensive software. Perfect for social media, web design, and more.</p>
+                    <h3 className="font-semibold text-gray-900 text-lg">Review the Result Before Use</h3>
+                    <p className="text-gray-700">Preview the result at full size and confirm transparency, color, dimensions, and compression artifacts before publishing it.</p>
                   </div>
                 </div>
               </motion.div>
@@ -254,7 +395,7 @@ export default function ImageToolsPage() {
                 viewport={{ once: true }}
               >
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Popular Image Tools</h2>
-                <p className="text-gray-700 mb-6">SimplifyConvert offers 79 image tools. Here are our most popular ones:</p>
+                <p className="text-gray-700 mb-6">Start with these common resize, compression, conversion, and cropping workflows:</p>
                 <div className="space-y-3">
                   <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition">
                     <span className="text-orange-600 font-semibold">→</span>
@@ -286,16 +427,16 @@ export default function ImageToolsPage() {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Use Free Image Tools</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">How to Use the Image Tools</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Using SimplifyConvert image tools is simple and straightforward. Select the tool you need from our 79 tools, upload your image file, configure options if needed, and click process. The tool handles complex image operations in seconds while maintaining quality. Download your edited or converted image instantly. No signup required, no registration needed, no learning curve.
+                  Each image tool has its own supported formats and available settings. Check the tool's instructions before uploading. After processing, compare the downloaded result with the original at full size. Review sharpness, transparency, color, orientation, and file size. Keep the original until you have confirmed that the result meets your needs.
                 </p>
                 <div className="space-y-4">
                   <div className="flex gap-4">
                     <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Upload Your Image</h3>
-                      <p className="text-gray-700">Click on the tool and upload your image file. Supports JPG, PNG, WebP, BMP, GIF, and more.</p>
+                      <p className="text-gray-700">Open the image tool you need and upload a supported file. Accepted formats vary by tool, so check the available options before uploading.</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
@@ -309,7 +450,7 @@ export default function ImageToolsPage() {
                     <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Process & Download</h3>
-                      <p className="text-gray-700">Click the process button and download your result immediately. Files are never stored on our servers.</p>
+                      <p className="text-gray-700">Process the image, download the result, and compare it with the original before discarding your source file.</p>
                     </div>
                   </div>
                 </div>
@@ -323,42 +464,42 @@ export default function ImageToolsPage() {
                 name: 'Are all image tools really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes! All image tools on SimplifyConvert are completely free to use. No signup required, no hidden fees, no premium tiers. Use any image tool unlimited times without payment.'
+                  text: 'The image utilities are available without Premium AI Studio credits. Individual workflows may still impose file-size or rate limits.'
                 }
               },
               {
                 name: 'What image formats do you support?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'We support most common image formats including JPG, PNG, WebP, BMP, GIF, TIFF, and more. Our image converter tools can transform between any of these formats while maintaining quality.'
+                  text: 'Supported formats depend on the individual tool. Common workflows include JPG, PNG, WebP, BMP, GIF, TIFF, HEIC, and other listed formats. Conversion can change transparency, compression, color behavior, metadata, animation, or other image characteristics.'
                 }
               },
               {
                 name: 'Is my image data safe?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Your images are processed securely in your browser and never stored on our servers. We use HTTPS encryption for all transfers. Images are processed immediately and deleted after download.'
+                  text: 'Processing varies by tool: some basic operations use browser APIs, while server-assisted and AI workflows upload the image over HTTPS. Review the individual tool and Privacy Policy before submitting sensitive images.'
                 }
               },
               {
                 name: 'Can I use image tools on mobile?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. All image tools work on iOS, Android, tablets, and mobile browsers. No app installation required. Simply visit SimplifyConvert from your mobile device and start using any tool.'
+                  text: 'Many image tools can be used from modern mobile browsers, but compatibility and practical file-size limits can vary by browser, device memory, file type, and the processing method used by the individual tool.'
                 }
               },
               {
                 name: 'How many images can I process?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'There are no limits! Process as many images as you need, anytime. Unlike other tools, we don\'t restrict the number of files you can compress, convert, or edit.'
+                  text: 'Limits vary by operation, file size, and current service capacity. The individual tool displays applicable validation or error messages.'
                 }
               },
               {
                 name: 'Which image tools are most popular?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Image compression, resizing, PNG to JPG conversion, and image cropping are our most popular tools. All are free, fast, and work without signup or installation. Perfect for social media, web design, and general photo editing.'
+                  text: 'Common image workflows include compression, resizing, PNG to JPG conversion, and cropping. Choose the operation according to the required dimensions, file size, format compatibility, transparency, and visual result.'
                 }
               }
             ]}
@@ -371,9 +512,5 @@ export default function ImageToolsPage() {
     </>
   );
 }
-
-
-
-
 
 

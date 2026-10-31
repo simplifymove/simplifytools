@@ -1,8 +1,8 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Brightness Contrast Adjuster - Free Online Tool',
-  description: 'Adjust brightness and contrast levels in your images. Perfect for photo enhancement and adjustment with easy-to-use sliders.',
+  title: 'Brightness & Contrast - Adjust Image Tonal Levels | SimplifyConvert',
+  description: 'Adjust image brightness and contrast in your browser, preview the tonal changes, and download the processed image.',
   keywords: [
     'brightness adjuster',
     'contrast enhancer',

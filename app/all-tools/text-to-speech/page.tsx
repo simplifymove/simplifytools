@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Play, Pause, Download, Volume2, Heart, Loader, ChevronRight, Sparkles, Zap, Shield, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -47,6 +47,61 @@ export default function TextToSpeech() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioBlobRef = useRef<Blob | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const busyRef = useRef(false);
+  const generationId = useRef(0);
+  const mountedRef = useRef(true);
+  const [hasAudio, setHasAudio] = useState(false);
+
+  const clearAudio = () => {
+    generationId.current += 1;
+    requestRef.current?.abort();
+    requestRef.current = null;
+    busyRef.current = false;
+
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    }
+
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+
+    audioBlobRef.current = null;
+
+    if (mountedRef.current) {
+      setHasAudio(false);
+      setIsPlaying(false);
+      setIsLoading(false);
+      setError('');
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      generationId.current += 1;
+      requestRef.current?.abort();
+      audioRef.current?.pause();
+
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+        audioUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    clearAudio();
+    // Regenerate when text or voice settings change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [introText, text, outroText, language, voice, emotion, speed, pitch]);
 
   const emotionSettings: Record<string, { pitch: number; speed: number; volume: number; name: string }> = {
     neutral: { pitch: 1, speed: 1, volume: 1, name: 'Neutral' },
@@ -77,112 +132,197 @@ export default function TextToSpeech() {
     }
   }, [language, availableVoices, voice]);
 
-  const handleSpeak = async () => {
-    if (!text.trim()) return;
+  const generateAudio = async (): Promise<Blob> => {
+    const controller = new AbortController();
+    const currentId = ++generationId.current;
+    requestRef.current = controller;
 
-    if (isPlaying) {
-      audioRef.current?.pause();
-      setIsPlaying(false);
-      return;
+    const fullText = [introText, text, outroText]
+      .map(part => part.trim())
+      .filter(Boolean)
+      .join('\n\n');
+
+    if (!text.trim()) {
+      throw new Error('Enter the main text before generating speech.');
     }
 
-    setIsLoading(true);
-    setError('');
+    if (fullText.length > 10000) {
+      throw new Error('Combined text must not exceed 10,000 characters.');
+    }
 
-    try {
-      // Build text parts - only include non-empty parts
-      const textParts = [];
-      if (introText.trim()) textParts.push(introText.trim());
-      if (text.trim()) textParts.push(text.trim());
-      if (outroText.trim()) textParts.push(outroText.trim());
-      
-      // Join with clear pauses (double newline for better break)
-      const fullText = textParts.join('\n\n');
-      
-      // Log for debugging
-      console.log('[TTS] Text parts:', {
-        intro: introText.trim() ? `✓ "${introText.trim().substring(0, 20)}..."` : '✗ Empty',
-        main: text.trim() ? `✓ "${text.trim().substring(0, 20)}..."` : '✗ Empty',
-        outro: outroText.trim() ? `✓ "${outroText.trim().substring(0, 20)}..."` : '✗ Empty',
+    const response = await fetch('/api/text-to-speech', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        text: fullText,
         language,
         voice,
         emotion,
-        speed: `${speed}x`,
-        pitch: `${pitch}x`,
-      });
+        speed,
+        pitch
+      })
+    });
 
-      const response = await fetch('/api/text-to-speech', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: fullText, language, voice, emotion, speed, pitch }),
-      });
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      throw new Error(
+        typeof data?.error === 'string'
+          ? data.error
+          : 'Unable to generate speech.'
+      );
+    }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate speech');
+    const blob = await response.blob();
+
+    if (!blob.size) {
+      throw new Error('The speech service returned an empty audio file.');
+    }
+
+    if (currentId !== generationId.current || controller.signal.aborted) {
+      throw new DOMException('Request cancelled', 'AbortError');
+    }
+
+    audioBlobRef.current = blob;
+
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+    }
+
+    const url = URL.createObjectURL(blob);
+    audioUrlRef.current = url;
+
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+    }
+
+    const audio = audioRef.current;
+    audio.src = url;
+
+    audio.onended = () => {
+      if (mountedRef.current) setIsPlaying(false);
+    };
+
+    audio.onerror = () => {
+      if (mountedRef.current) {
+        setIsPlaying(false);
+        setError('Unable to play the generated audio.');
+      }
+    };
+
+    if (mountedRef.current) setHasAudio(true);
+
+    return blob;
+  };
+
+  const handleSpeak = async () => {
+    if (!text.trim() || busyRef.current) return;
+
+    const audio = audioRef.current;
+
+    if (audioBlobRef.current && audio) {
+      if (!audio.paused) {
+        audio.pause();
+        setIsPlaying(false);
+        return;
       }
 
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      if (!audioRef.current) {
-        audioRef.current = new Audio();
+      try {
+        if (audio.ended) audio.currentTime = 0;
+        await audio.play();
+        setIsPlaying(true);
+        setError('');
+      } catch {
+        setError('Audio playback was blocked or could not start.');
       }
+      return;
+    }
 
-      audioRef.current.src = audioUrl;
-      audioRef.current.onended = () => setIsPlaying(false);
-      audioRef.current.play();
-      setIsPlaying(true);
+    busyRef.current = true;
+    setIsLoading(true);
+    setError('');
+    const currentId = generationId.current + 1;
+
+    try {
+      await generateAudio();
+
+      if (currentId !== generationId.current) return;
+
+      const player = audioRef.current;
+      if (!player) throw new Error('Audio player is unavailable.');
+
+      await player.play();
+
+      if (currentId === generationId.current && mountedRef.current) {
+        setIsPlaying(true);
+      }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMsg);
-      console.error('Speech generation error:', err);
+      if (currentId !== generationId.current) return;
+
+      if (!(err instanceof Error && err.name === 'AbortError')) {
+        setError(
+          err instanceof Error ? err.message : 'Unable to generate speech.'
+        );
+      }
     } finally {
-      setIsLoading(false);
+      if (currentId === generationId.current && mountedRef.current) {
+        busyRef.current = false;
+        requestRef.current = null;
+        setIsLoading(false);
+      }
     }
   };
 
   const handleStop = () => {
-    audioRef.current?.pause();
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
     setIsPlaying(false);
   };
 
   const handleDownload = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || busyRef.current) return;
 
+    busyRef.current = true;
     setIsLoading(true);
     setError('');
 
+    const currentId = audioBlobRef.current
+      ? generationId.current
+      : generationId.current + 1;
+
     try {
-      // Build text parts - only include non-empty parts
-      const textParts = [];
-      if (introText.trim()) textParts.push(introText.trim());
-      if (text.trim()) textParts.push(text.trim());
-      if (outroText.trim()) textParts.push(outroText.trim());
-      
-      const fullText = textParts.join('\n\n');
+      const blob = audioBlobRef.current || await generateAudio();
 
-      const response = await fetch('/api/text-to-speech', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: fullText, language, voice, emotion, speed, pitch }),
-      });
+      if (currentId !== generationId.current) return;
 
-      if (!response.ok) throw new Error('Failed to generate audio');
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = audioUrl;
-      link.download = `speech_${language}_${Date.now()}.mp3`;
+
+      link.href = url;
+      link.download = `speech_${language}.mp3`;
+
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(audioUrl);
+      link.remove();
+
+      window.setTimeout(() => URL.revokeObjectURL(url), 30000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to download');
+      if (currentId !== generationId.current) return;
+
+      if (!(err instanceof Error && err.name === 'AbortError')) {
+        setError(
+          err instanceof Error ? err.message : 'Unable to download speech.'
+        );
+      }
     } finally {
-      setIsLoading(false);
+      if (currentId === generationId.current && mountedRef.current) {
+        busyRef.current = false;
+        requestRef.current = null;
+        setIsLoading(false);
+      }
     }
   };
 
@@ -209,10 +349,10 @@ export default function TextToSpeech() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-              Free Text to Speech Converter with AI Voices
+              Text to Speech Converter with Voice Options
             </h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert text to speech instantly with 20+ natural neural voices in multiple languages. Control emotion, speed, and pitch. No signup required.
+              Enter text, choose from the available multilingual voices, adjust the provided voice settings, listen to the result, and download the generated audio as an MP3. No signup is required.
             </p>
           </motion.div>
         </div>
@@ -335,11 +475,11 @@ export default function TextToSpeech() {
                     </>
                   ) : (
                     <>
-                      <Volume2 size={18} /> {isPlaying ? 'Pause' : 'Play'}
+                      <Volume2 size={18} /> {isPlaying ? 'Pause' : hasAudio ? 'Resume / Play' : 'Generate & Play'}
                     </>
                   )}
                 </button>
-                {isPlaying && (
+                {hasAudio && (
                   <button
                     onClick={handleStop}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg duration-0 shadow-lg"
@@ -366,7 +506,7 @@ export default function TextToSpeech() {
             transition={{ delay: 0.3 }}
           >
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-600 p-4 rounded-lg">
+              <div role="alert" className="bg-red-50 border-l-4 border-red-600 p-4 rounded-lg">
                 <p className="text-sm text-red-900 font-medium">❌ {error}</p>
               </div>
             )}
@@ -434,8 +574,8 @@ export default function TextToSpeech() {
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Natural Speech</h3>
-                <p className="text-white/90 text-sm">Neural voices with natural pronunciation in 20+ languages</p>
+                <h3 className="text-lg font-semibold mb-2">Voice Selection</h3>
+                <p className="text-white/90 text-sm">Choose from the multilingual voices currently available in the tool</p>
               </div>
             </motion.div>
             <motion.div className="flex gap-4" whileHover={{ x: 5 }}>
@@ -445,8 +585,8 @@ export default function TextToSpeech() {
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Emotion Control</h3>
-                <p className="text-white/90 text-sm">Adjust emotions, speed, and pitch for perfect tone</p>
+                <h3 className="text-lg font-semibold mb-2">Voice Settings</h3>
+                <p className="text-white/90 text-sm">Use the available presets together with speed and pitch controls</p>
               </div>
             </motion.div>
             <motion.div className="flex gap-4" whileHover={{ x: 5 }}>
@@ -457,7 +597,7 @@ export default function TextToSpeech() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-2">Easy Download</h3>
-                <p className="text-white/90 text-sm">Generate and download high-quality MP3 files instantly</p>
+                <p className="text-white/90 text-sm">Generate speech and save the returned audio as an MP3 file</p>
               </div>
             </motion.div>
           </div>
@@ -473,62 +613,62 @@ export default function TextToSpeech() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Choose Our Free Text to Speech?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">What You Can Do with Text to Speech</h2>
             
             <p className="text-gray-700 leading-relaxed mb-6">
-              SimplifyConvert provides a free text to speech converter with advanced neural voice technology. Generate natural-sounding audio, adjust emotions and speed, and download high-quality MP3 files instantly. Perfect for content creators, educators, and developers who need a simple yet powerful <Link href="/all-tools" className="text-blue-600 font-medium hover:underline">online converter tool</Link>.
+              SimplifyConvert's text-to-speech tool converts entered text into spoken audio using the available voice choices. You can select a language and voice, use the provided presets, adjust speed and pitch settings, preview the generated speech, and download the result as an MP3. You can also explore <Link href="/all-tools" className="text-blue-600 font-medium hover:underline">other online tools</Link> for related file and content workflows.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
               <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ 20+ Neural Voices</h3>
-                <p className="text-gray-700 text-sm">Natural-sounding AI voices in English, Hindi, Spanish, French, German, and more languages. Each voice is professionally trained for realistic pronunciation.</p>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Multilingual Voice Choices</h3>
+                <p className="text-gray-700 text-sm">Choose from the language and voice options listed in the tool, including English and several Indian and international language variants.</p>
               </div>
               <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Emotion Control</h3>
-                <p className="text-gray-700 text-sm">Choose from 8 emotions: neutral, happy, sad, angry, excited, serious, calm, and romantic. Customize speed and pitch for perfect tone and delivery.</p>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Adjustable Voice Settings</h3>
+                <p className="text-gray-700 text-sm">The interface includes several named presets along with speed and pitch controls. Generated speech can vary by the selected voice and source text.</p>
               </div>
               <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Instant Download</h3>
-                <p className="text-gray-700 text-sm">Generate audio in seconds and download as MP3. No registration required. Use for podcasts, videos, presentations, or voiceovers immediately.</p>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ MP3 Download</h3>
+                <p className="text-gray-700 text-sm">After speech generation completes, use the Download button to save the returned audio as an MP3 file. No account is required to use the current tool.</p>
               </div>
               <div className="bg-gradient-to-br from-blue-50 to-cyan-100 p-6 rounded-lg border border-blue-200">
-                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ Completely Free</h3>
-                <p className="text-gray-700 text-sm">No hidden fees, no premium tiers, no signup required. Convert unlimited text to speech without payment. Always free, always accessible.</p>
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">✓ No Signup Required</h3>
+                <p className="text-gray-700 text-sm">No signup is required to use the available text-to-speech controls.</p>
               </div>
             </div>
 
             {/* Popular Features - Internal Linking */}
             <div className="mb-12 bg-gray-50 p-8 rounded-lg border border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Use Cases</h2>
-              <p className="text-gray-700 mb-6">Our text to speech tool works great for:</p>
+              <p className="text-gray-700 mb-6">Possible uses for generated speech include:</p>
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-start gap-3">
                   <span className="text-blue-600 font-bold">•</span>
-                  <span><strong>Podcast Creation:</strong> Generate consistent voiceovers for podcast episodes in multiple voices and languages</span>
+                  <span><strong>Podcast Drafts:</strong> Create spoken versions of prepared scripts for review or use in audio projects</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-600 font-bold">•</span>
-                  <span><strong>Video Narration:</strong> Create professional voiceovers for YouTube videos, tutorials, and educational content</span>
+                  <span><strong>Video Narration:</strong> Turn prepared narration text into an audio track for video projects</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-600 font-bold">•</span>
-                  <span><strong>E-Learning Content:</strong> Build accessible learning materials with natural audio for students</span>
+                  <span><strong>Learning Materials:</strong> Create spoken versions of notes, explanations, or other educational text</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-600 font-bold">•</span>
-                  <span><strong>Business Presentations:</strong> Add voiceovers to presentations and slideshows automatically</span>
+                  <span><strong>Presentations:</strong> Generate narration audio from text prepared for slides or demonstrations</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-600 font-bold">•</span>
-                  <span><strong>Accessibility:</strong> Create audio versions of web content for visually impaired users</span>
+                  <span><strong>Listening Copies:</strong> Create an audio version of text when listening is more convenient than reading</span>
                 </li>
               </ul>
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Use Our Text to Speech Tool</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              Using our free text to speech converter is simple. First, select your language and preferred neural voice from 20+ options. Then, type or paste your text into the main input field. Optional: add intro text (spoken at the beginning) and outro text (spoken at the end). Next, customize the emotion, speed, and pitch to match your needs—preview with the Play button before downloading. Finally, click Download to save your audio as an MP3 file. You can also <Link href="/all-tools/ai-tools" className="text-blue-600 font-medium hover:underline">explore other AI tools</Link> for additional content creation needs.
+              Select a language and one of the voices available for it, then type or paste your main text. You can optionally add intro and outro text. Use the preset, speed, and pitch controls as needed, select Play to generate and listen to the speech, and use Download when you want to generate and save an MP3 copy. You can also <Link href="/all-tools/ai-tools" className="text-blue-600 font-medium hover:underline">explore other AI tools</Link> for additional content creation needs.
             </p>
           </motion.div>
         </div>
@@ -538,45 +678,45 @@ export default function TextToSpeech() {
       <FAQ
         items={[
           {
-            name: 'Is text to speech really free?',
+            name: 'Do I need an account to use text to speech?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! Our text to speech converter is completely free with no hidden costs, signup requirements, or premium features. Convert unlimited text to speech without payment. We believe everyone deserves access to professional voice generation tools.'
+              text: 'You can use the available text-to-speech controls without creating an account.'
             }
           },
           {
             name: 'What languages and voices are supported?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'We support 20+ languages including English (US, UK), Spanish, French, German, Italian, Portuguese, Japanese, Chinese, and Indian languages (Hindi, Tamil, Telugu, Kannada, Malayalam, Marathi, Gujarati, Bengali, Punjabi). Each language has multiple male and female voices to choose from.'
+              text: 'The tool currently lists 18 language and regional variants, including English (US and UK), several Indian languages, and other international options. Available voice choices vary by language.'
             }
           },
           {
             name: 'Can I control the emotion, speed, and pitch?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Absolutely! Choose from 8 emotions (neutral, happy, sad, angry, excited, serious, calm, romantic). Adjust speed from 0.5x to 2x and pitch from 0.5x to 2x. Customize each setting to get the exact tone and delivery you want for your project.'
+              text: 'Speed and pitch are applied during speech generation. The named emotion presets modify speaking rate rather than producing expressive emotional voice acting. Results vary by voice and text.'
             }
           },
           {
             name: 'How do I download the audio file?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Click the Download button after entering your text and customizing settings. Your audio is generated instantly and downloads as an MP3 file. No signup or email verification required. Files are ready to use in videos, podcasts, presentations, or any project.'
+              text: 'Enter your text, choose the settings you want, and click Download. The tool requests the speech audio and, when generation succeeds, saves the returned result as an MP3 file.'
             }
           },
           {
             name: 'Can I use generated audio commercially?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! Audio generated from our text to speech tool can be used commercially in videos, podcasts, e-learning courses, business presentations, and other projects. No attribution required, though appreciated. Respect copyright for any text you use.'
+              text: 'Usage rights for generated speech can depend on the speech provider and the content being synthesized. Review the applicable provider terms and make sure you have the necessary rights to the source text before publishing or using generated audio commercially.'
             }
           },
           {
             name: 'What file format do you provide?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'All generated audio files are provided in MP3 format, which is compatible with all devices—computers, smartphones, tablets, and video editing software. MP3 offers excellent quality at a reasonable file size, perfect for any use case.'
+              text: 'The current download flow saves generated speech as an MP3 file. Whether it can be opened or imported depends on the software or device you use.'
             }
           }
         ]}
@@ -589,14 +729,14 @@ export default function TextToSpeech() {
         {JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'ItemList',
-          name: 'Free Text to Speech Features',
-          description: 'Complete text to speech converter with natural neural voices, emotion control, and multilingual support',
+          name: 'Text to Speech Features',
+          description: 'Text to speech converter with multilingual voice choices, adjustable settings, playback, and MP3 download',
           itemListElement: [
             {
               '@type': 'SoftwareApplication',
               position: 1,
               name: 'English Text to Speech',
-              description: 'Convert English text to natural speech with US and UK voices',
+              description: 'Convert English text to speech using the available US and UK voice options',
               url: 'https://simplifyconvert.com/all-tools/text-to-speech',
               applicationCategory: 'AudioApplication',
               operatingSystem: 'Web',
@@ -610,7 +750,7 @@ export default function TextToSpeech() {
               '@type': 'SoftwareApplication',
               position: 2,
               name: 'Multilingual Text to Speech',
-              description: 'Generate speech in 20+ languages including Spanish, French, German, Japanese, and Indian languages',
+              description: 'Generate speech using 18 listed language and regional variants, including English, European and Indian language options',
               url: 'https://simplifyconvert.com/all-tools/text-to-speech',
               applicationCategory: 'AudioApplication',
               operatingSystem: 'Web',
@@ -623,8 +763,8 @@ export default function TextToSpeech() {
             {
               '@type': 'SoftwareApplication',
               position: 3,
-              name: 'Emotion-Controlled Voice Generator',
-              description: 'Create speech with customizable emotions: happy, sad, angry, excited, serious, calm, romantic',
+              name: 'Speaking Style Rate Presets',
+              description: 'Choose named presets that adjust speaking rate, alongside manual speed and pitch controls',
               url: 'https://simplifyconvert.com/all-tools/text-to-speech',
               applicationCategory: 'AudioApplication',
               operatingSystem: 'Web',
@@ -652,7 +792,7 @@ export default function TextToSpeech() {
               '@type': 'SoftwareApplication',
               position: 5,
               name: 'MP3 Download',
-              description: 'Download generated audio instantly as MP3 files for use in videos, podcasts, and presentations',
+              description: 'Download successfully generated speech audio as an MP3 file',
               url: 'https://simplifyconvert.com/all-tools/text-to-speech',
               applicationCategory: 'AudioApplication',
               operatingSystem: 'Web',

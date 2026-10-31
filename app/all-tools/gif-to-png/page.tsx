@@ -1,20 +1,23 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function GifToPngPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [quality, setQuality] = useState(90);
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
@@ -39,9 +42,7 @@ export default function GifToPngPage() {
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/png', {
-        quality: quality,
-      });
+      const result = await convertImageFormat(file, 'image/png');
       setResult(result.blob);
     } catch (err) {
       setError((err as Error).message || 'Error converting file');
@@ -50,16 +51,33 @@ export default function GifToPngPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'gif-to-png',
+        originalName: file.name,
+        outputName: `${baseName}.png`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -85,7 +103,7 @@ export default function GifToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">GIF to PNG Converter</h1>
-                <p className="text-lg text-white/90">Convert GIF images to PNG format with transparency support. First frame of animated GIFs will be used.</p>
+                <p className="text-lg text-white/90">Convert GIF images into static PNG files using your browser. Animated GIFs become a single still image.</p>
               </div>
             </div>
           </div>
@@ -116,28 +134,6 @@ export default function GifToPngPage() {
               {/* Controls - Right (sticky sidebar) */}
               <div className="lg:col-span-1">
                 <div className="sticky top-4 space-y-4">
-                  {/* Options */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
-                    {/* Quality */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-2">
-                        Output Quality: {quality}%
-                      </label>
-                      <input
-                        type="range"
-                        min="10"
-                        max="100"
-                        step="5"
-                        value={quality}
-                        onChange={(e) => setQuality(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
-                    </div>
-                  </div>
-
                   {/* Convert Button */}
                   <button
                     onClick={handleConvert}
@@ -159,9 +155,9 @@ export default function GifToPngPage() {
                     <button
                       onClick={handleDownload}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-                    >
+                      disabled={processing}>
                       <Download size={20} />
-                      Download PNG
+                      {processing ? 'Preparing Download...' : 'Continue to Download'}
                     </button>
                   )}
 
@@ -169,10 +165,10 @@ export default function GifToPngPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Preserves transparency</li>
-                      <li>• Uses first frame of animated GIFs</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Browser-based GIF-to-PNG conversion</li>
+                      <li>• Supports transparency from the rendered GIF frame</li>
+                      <li>• Animated GIFs become one static image</li>
+                      <li>• Browser-based image conversion</li>
                     </ul>
                   </div>
                 </div>
@@ -192,7 +188,7 @@ export default function GifToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Upload Your GIF File</h3>
-                <p className="text-gray-600 mt-2">Click the upload area or drag and drop your GIF file. Animated GIFs will use the first frame.</p>
+                <p className="text-gray-600 mt-2">Click the upload area or drag and drop your GIF file. Static and animated GIFs are supported.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -200,8 +196,8 @@ export default function GifToPngPage() {
                 <div className="flex items-center justify-center h-10 w-10 rounded-md bg-orange-500 text-white font-bold">2</div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Adjust Quality Settings</h3>
-                <p className="text-gray-600 mt-2">Set the output quality level (10-100%) to control file size and image clarity.</p>
+                <h3 className="text-lg font-semibold text-gray-900">Understand the Output</h3>
+                <p className="text-gray-600 mt-2">The browser-decoded GIF image is exported as a single PNG. This tool has no quality or frame-selection controls.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -210,7 +206,7 @@ export default function GifToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Click Convert to PNG</h3>
-                <p className="text-gray-600 mt-2">Press the convert button to instantly transform your GIF to PNG format.</p>
+                <p className="text-gray-600 mt-2">Press the convert button to render the browser-decoded GIF frame and encode it as a static PNG.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -219,7 +215,7 @@ export default function GifToPngPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download PNG File</h3>
-                <p className="text-gray-600 mt-2">Download your converted PNG file instantly. Conversion happens locally - no signup required.</p>
+                <p className="text-gray-600 mt-2">Prepare the converted PNG result for download. The image conversion itself is performed in the browser.</p>
               </div>
             </div>
           </div>
@@ -234,22 +230,22 @@ export default function GifToPngPage() {
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Better Compression</h3>
-                <p className="text-gray-600 text-sm">PNG uses more efficient compression algorithms than GIF, resulting in smaller file sizes while maintaining quality.</p>
+                <h3 className="text-lg font-semibold text-gray-900">Lossless PNG Encoding</h3>
+                <p className="text-gray-600 text-sm">PNG uses lossless compression and is well suited to static graphics, screenshots, logos, and images requiring transparency.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Full Transparency Support</h3>
-                <p className="text-gray-600 text-sm">PNG supports full alpha channel transparency, allowing for precise control over transparency levels in your images.</p>
+                <p className="text-gray-600 text-sm">PNG supports alpha transparency. Transparent pixels decoded from the GIF may be preserved, but this converter does not add or edit transparency.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Modern Format</h3>
-                <p className="text-gray-600 text-sm">PNG is the modern standard for web images. It's better supported and optimized for contemporary web browsers and applications.</p>
+                <p className="text-gray-600 text-sm">PNG is widely supported by modern browsers and image applications and is commonly used for static graphics, screenshots, and transparent images.</p>
               </div>
             </div>
           </div>
@@ -257,36 +253,36 @@ export default function GifToPngPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will animated GIFs remain animated?</h3>
-              <p className="text-gray-700">No. PNG is a static image format and does not support animation. Our converter extracts the first frame of animated GIFs and converts it to a static PNG image. For animated formats, consider WEBP or APNG.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What happens to GIF transparency?</h3>
-              <p className="text-gray-700">PNG preserves GIF transparency perfectly. If your GIF has a transparent background, it will remain transparent in the PNG file. PNG actually provides better transparency support than GIF.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I convert GIFs with text or graphics?</h3>
-              <p className="text-gray-700">Yes, absolutely. Our converter handles all types of GIFs - text overlays, graphics, photographs, and logos. The quality remains excellent regardless of content type.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What file size limits exist?</h3>
-              <p className="text-gray-700">Our converter can handle GIFs up to 50MB. For larger files, consider compressing them first or breaking them into smaller pieces.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen entirely in your browser. Your GIF files are never uploaded to any server. Your privacy is completely protected.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Which GIF types are supported?</h3>
-              <p className="text-gray-700">We support all GIF types: static GIFs, animated GIFs, GIFs with transparency, and interlaced GIFs. All convert successfully to high-quality PNG files.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>Will animated GIFs remain animated?</FAQStaticQuestion>
+              <FAQAnswer>No. This converter exports one static PNG image from the browser-decoded GIF. It does not extract multiple frames or preserve animation. Animated PNG (APNG) and animated WebP are separate formats.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>What happens to GIF transparency?</FAQStaticQuestion>
+              <FAQAnswer>PNG supports alpha transparency. The browser-based Canvas export can preserve transparent pixels from the decoded GIF image, but it does not create a transparent background or retain animation and GIF-specific metadata.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Can I convert GIFs with text or graphics?</FAQStaticQuestion>
+              <FAQAnswer>The converter can process many common GIF images, including graphics, photographs, logos, and text-based artwork. Animated GIFs are exported as a single static PNG.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>What file size limits exist?</FAQStaticQuestion>
+              <FAQAnswer>Our converter can handle GIFs up to 50MB. For larger files, consider compressing them first or breaking them into smaller pieces.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+              <FAQAnswer>Image conversion is performed in the browser. When you continue to download, the generated PNG result is passed through the site's download-result flow.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Which GIF types are supported?</FAQStaticQuestion>
+              <FAQAnswer>Common static and animated GIF files can be converted. The output is one static PNG image, without animation or manual frame selection.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}
@@ -300,7 +296,7 @@ export default function GifToPngPage() {
               "name": "Will animated GIFs remain animated?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. PNG is a static image format and does not support animation. Our converter extracts the first frame of animated GIFs and converts it to a static PNG image. For animated formats, consider WEBP or APNG."
+                "text": "No. This converter exports one static PNG image from the browser-decoded GIF. It does not extract multiple frames or preserve animation. Animated PNG (APNG) and animated WebP are separate formats."
               }
             },
             {
@@ -308,7 +304,7 @@ export default function GifToPngPage() {
               "name": "What happens to GIF transparency?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PNG preserves GIF transparency perfectly. If your GIF has a transparent background, it will remain transparent in the PNG file. PNG actually provides better transparency support than GIF."
+                "text": "PNG supports alpha transparency. The browser-based Canvas export can preserve transparent pixels from the decoded GIF image, but it does not create a transparent background or retain animation and GIF-specific metadata."
               }
             },
             {
@@ -316,7 +312,7 @@ export default function GifToPngPage() {
               "name": "Can I convert GIFs with text or graphics?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, absolutely. Our converter handles all types of GIFs - text overlays, graphics, photographs, and logos. The quality remains excellent regardless of content type."
+                "text": "The converter can process many common GIF images, including graphics, photographs, logos, and text-based artwork. Animated GIFs are exported as a single static PNG."
               }
             },
             {
@@ -332,7 +328,7 @@ export default function GifToPngPage() {
               "name": "Is the conversion process secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen entirely in your browser. Your GIF files are never uploaded to any server. Your privacy is completely protected."
+                "text": "Image conversion is performed in the browser. When you continue to download, the generated PNG result is passed through the site's download-result flow."
               }
             },
             {
@@ -340,7 +336,7 @@ export default function GifToPngPage() {
               "name": "Which GIF types are supported?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "We support all GIF types: static GIFs, animated GIFs, GIFs with transparency, and interlaced GIFs. All convert successfully to high-quality PNG files."
+                "text": "Common static and animated GIF files can be converted. The output is one static PNG image, without animation or manual frame selection."
               }
             }
           ]
@@ -358,11 +354,11 @@ export default function GifToPngPage() {
             </Link>
             <Link href="/all-tools/jpg-to-png" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">JPG to PNG Converter</h3>
-              <p className="text-gray-600 text-sm mt-2">Convert JPG to PNG with transparency</p>
+              <p className="text-gray-600 text-sm mt-2">Convert JPG images into PNG format</p>
             </Link>
             <Link href="/all-tools/compress-image" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">Image Compressor</h3>
-              <p className="text-gray-600 text-sm mt-2">Reduce image file size without quality loss</p>
+              <p className="text-gray-600 text-sm mt-2">Reduce image file sizes with compression</p>
             </Link>
             <Link href="/all-tools/webp-to-jpg" className="group bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">WebP to JPG Converter</h3>

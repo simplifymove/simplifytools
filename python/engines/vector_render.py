@@ -126,6 +126,71 @@ def convert_eps_to_raster(
         return False
 
 
+
+def convert_eps_to_svg(
+    input_file: str,
+    output_file: str,
+) -> bool:
+    """
+    Convert EPS to genuine SVG vector output using pstoedit/GNU libplot.
+    """
+    try:
+        logger.info("[VectorRender] Converting EPS → SVG")
+
+        if not validate_file_exists(input_file):
+            return False
+
+        cmd = [
+            'pstoedit',
+            '-f',
+            'plot-svg',
+            input_file,
+            output_file,
+        ]
+
+        logger.info("Executing pstoedit EPS → SVG")
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+
+        if result.returncode != 0:
+            logger.error(f"pstoedit failed: {result.stderr}")
+            safe_remove(output_file)
+            return False
+
+        if not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
+            logger.error("pstoedit did not create a valid SVG output file")
+            safe_remove(output_file)
+            return False
+
+        # Reject an unexpected non-SVG result before reporting success.
+        with open(output_file, 'rb') as output:
+            head = output.read(4096).lower()
+
+        if b'<svg' not in head:
+            logger.error("pstoedit output does not contain an SVG root element")
+            safe_remove(output_file)
+            return False
+
+        log_execution(
+            'VectorRenderEngine',
+            'eps',
+            'svg',
+            input_file,
+            output_file,
+            True,
+        )
+        return True
+
+    except Exception as e:
+        logger.error(f"EPS to SVG conversion failed: {e}", exc_info=True)
+        safe_remove(output_file)
+        return False
+
+
 def vector_render(
     input_file: str,
     output_file: str,
@@ -162,7 +227,15 @@ def vector_render(
                 return False
         
         elif from_format.lower() == 'eps':
-            return convert_eps_to_raster(input_file, output_file, dpi, to_format)
+            if to_format.lower() == 'svg':
+                return convert_eps_to_svg(input_file, output_file)
+
+            return convert_eps_to_raster(
+                input_file,
+                output_file,
+                dpi,
+                to_format,
+            )
         
         else:
             logger.error(f"Unsupported format: {from_format}")

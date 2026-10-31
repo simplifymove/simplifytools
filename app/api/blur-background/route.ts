@@ -2,11 +2,12 @@ import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { randomUUID } from "crypto";
 
 export const maxDuration = 180;
 
-// File size limit: 500MB for local processing
-const MAX_FILE_SIZE = 500 * 1024 * 1024;
+// Enforce the 10 MB limit advertised by the upload interface.
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export async function POST(request: Request): Promise<Response> {
   const formData = await request.formData();
@@ -38,8 +39,8 @@ export async function POST(request: Request): Promise<Response> {
 
   // Create temp files
   const tempDir = os.tmpdir();
-  const inputFile = path.join(tempDir, `input_${Date.now()}.jpg`);
-  const outputFile = path.join(tempDir, `output_${Date.now()}.jpg`);
+  const inputFile = path.join(tempDir, `input_${randomUUID()}.jpg`);
+  const outputFile = path.join(tempDir, `output_${randomUUID()}.jpg`);
 
   try {
     // Save uploaded image
@@ -86,13 +87,6 @@ export async function POST(request: Request): Promise<Response> {
           const result = fs.readFileSync(outputFile);
           const base64 = result.toString("base64");
 
-          // Cleanup
-          try {
-            fs.unlinkSync(inputFile);
-            fs.unlinkSync(outputFile);
-          } catch (e) {
-            console.warn("Cleanup failed:", e);
-          }
 
           resolve(
             new Response(JSON.stringify({ image: base64 }), {
@@ -104,6 +98,14 @@ export async function POST(request: Request): Promise<Response> {
           resolve(
             new Response(JSON.stringify({ error: "Server error" }), { status: 500 })
           );
+        } finally {
+          for (const file of [inputFile, outputFile]) {
+            try {
+              if (fs.existsSync(file)) fs.unlinkSync(file);
+            } catch (cleanupError) {
+              console.warn("Cleanup failed:", cleanupError);
+            }
+          }
         }
       });
     });

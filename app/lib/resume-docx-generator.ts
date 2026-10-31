@@ -5,7 +5,7 @@
 
 import { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle, Table, TableRow, TableCell, WidthType, HeadingLevel } from 'docx';
 
-export async function generateResumeDOCX(resume: any, fileName: string = 'resume.docx') {
+export async function generateResumeDOCX(resume: any): Promise<Blob | null> {
   try {
     const sections = [];
 
@@ -223,18 +223,10 @@ export async function generateResumeDOCX(resume: any, fileName: string = 'resume
       ],
     });
 
-    // Generate and download
-    const blob = await Packer.toBlob(doc);
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    return await Packer.toBlob(doc);
   } catch (error) {
     console.error('Error generating DOCX:', error);
     alert('Error generating resume. Please try again.');
+    return null;
   }
 }

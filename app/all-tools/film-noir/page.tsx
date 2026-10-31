@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Palette } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function FilmNoirPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [contrast, setContrast] = useState(50);
@@ -54,7 +58,7 @@ export default function FilmNoirPage() {
 
           for (let i = 0; i < data.length; i += 4) {
             const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-            
+
             let value = gray;
             if (factor > 0) {
               value = gray + (255 - gray) * factor * 0.5;
@@ -93,16 +97,33 @@ export default function FilmNoirPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `film-noir-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'film-noir',
+            originalName: `film-noir-${Date.now()}.jpg`,
+            outputName: `film-noir-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -131,7 +152,7 @@ export default function FilmNoirPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Film Noir Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -156,7 +177,7 @@ export default function FilmNoirPage() {
                       onChange={(e) => setContrast(Number(e.target.value))}
                       className="w-full"
                     />
-                    <p className="text-sm text-gray-600 mt-2">0 = low contrast, 100 = high contrast</p>
+                    <p className="text-sm text-gray-600 mt-2">0 = darker grayscale, 100 = lighter grayscale</p>
                   </div>
 
                   <button
@@ -186,7 +207,7 @@ export default function FilmNoirPage() {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">How to Create Film Noir</h2>
               <ol className="space-y-4 text-gray-700">
                 <li><strong>1. Upload Photo:</strong> Select a JPG, PNG, or WebP image.</li>
-                <li><strong>2. Adjust Contrast:</strong> Control darkness and contrast (0-100).</li>
+                <li><strong>2. Adjust Contrast:</strong> Adjust the grayscale brightness (0-100).</li>
                 <li><strong>3. Apply Effect:</strong> Click "Apply Film Noir".</li>
                 <li><strong>4. Download:</strong> Save your noir image.</li>
               </ol>
@@ -216,35 +237,35 @@ export default function FilmNoirPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What contrast should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced noir. Higher for more dramatic.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Portraits work especially well.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, noir images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent contrast.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">True black and white?</summary>
-                  <p className="text-gray-700 mt-2">Yes, grayscale conversion with contrast.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What contrast should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for the original grayscale brightness. Lower settings darken the image; higher settings lighten it.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>Works with images your browser can decode, including common JPG, PNG, and WebP files. Results vary with the source photo.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on your rights to the original image and any applicable licenses or permissions.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>The result is exported as JPEG at a 95% quality setting. JPEG compression is lossy, so some detail may change.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The effect is applied in your browser. When you request a download, the generated JPEG is uploaded to prepare the download page.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>True black and white?</FAQQuestion>
+                  <FAQAnswer>Yes, grayscale conversion with contrast.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -268,7 +289,84 @@ export default function FilmNoirPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Film Noir effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Upload an image and apply the available film noir controls.
+                The browser processes the image pixels to create a
+                grayscale result with adjustable brightness. View the original
+                image before processing, then download the generated JPEG.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The image effect is produced with browser image and Canvas
+                  processing. The upload preview shows the original image before
+                  processing; the download action saves the processed result.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect changes color and tonal values for a noir-inspired appearance; results depend on the lighting and contrast in the original image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and consider the lighting and detail in
+                the original before processing. Extreme brightness settings can
+                intentionally remove or alter visible detail, so choose the
+                setting according to the result you need.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Film Noir effect FAQs
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does the effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. The tool changes the appearance of existing image
+                    pixels; it does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the result before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The on-page preview shows the uploaded image. Apply the effect to
+                    generate the JPEG; the current page does not display a processed-image preview.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

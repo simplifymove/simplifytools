@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, BarChart3 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function HistogramEqualizePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(100);
@@ -111,16 +115,33 @@ export default function HistogramEqualizePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `histogram-equalize-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'histogram-equalize',
+            originalName: `histogram-equalize-${Date.now()}.jpg`,
+            outputName: `histogram-equalize-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -138,7 +159,7 @@ export default function HistogramEqualizePage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">📊 Histogram Equalization</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Automatically enhance contrast using histogram equalization. Improve visibility in dark or overexposed photos.
+              Apply histogram equalization to redistribute image brightness levels. This can improve contrast in some low-contrast photos, but may exaggerate noise or highlights in others.
             </p>
           </div>
         </div>
@@ -149,7 +170,7 @@ export default function HistogramEqualizePage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Enhance with Histogram Equalization</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -206,7 +227,7 @@ export default function HistogramEqualizePage() {
                 <li><strong>1. Upload Photo:</strong> Select a JPG, PNG, or WebP image.</li>
                 <li><strong>2. Set Intensity:</strong> Adjust enhancement strength (0-100%).</li>
                 <li><strong>3. Enhance:</strong> Click "Enhance Contrast".</li>
-                <li><strong>4. Download:</strong> Save your enhanced image.</li>
+                <li><strong>4. Download:</strong> Click "Download Enhanced Image" to prepare the processed JPG and continue to the download page. PNG transparency is not retained in JPG output.</li>
               </ol>
             </div>
 
@@ -216,11 +237,11 @@ export default function HistogramEqualizePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Auto Enhancement</h3>
-                  <p className="text-gray-700">Automatically improve image contrast.</p>
+                  <p className="text-gray-700">Redistribute brightness values to adjust contrast. Results vary with the source image.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Better Visibility</h3>
-                  <p className="text-gray-700">Enhance details in dark areas.</p>
+                  <p className="text-gray-700">Make some existing tonal differences easier to see, without recovering missing image detail.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-indigo-600 mb-2">Adjustable</h3>
@@ -234,35 +255,35 @@ export default function HistogramEqualizePage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is histogram equalization?</summary>
-                  <p className="text-gray-700 mt-2">Method to enhance contrast by redistributing pixel intensities.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">When should I use this?</summary>
-                  <p className="text-gray-700 mt-2">For underexposed, overexposed, or flat-looking images.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo format.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, enhanced images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-indigo-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Non-destructive?</summary>
-                  <p className="text-gray-700 mt-2">Intensity slider allows partial enhancement.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is histogram equalization?</FAQQuestion>
+                  <FAQAnswer>Method to enhance contrast by redistributing pixel intensities.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>When should I use this?</FAQQuestion>
+                  <FAQAnswer>Try it on images with a narrow range of brightness values. It cannot recover clipped highlights or shadows, and strong equalization may amplify noise.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>Use JPG, PNG, or WebP images that your browser can decode. Other formats may not load, and the downloaded result is a JPG.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>You can use the processed image where you have the necessary rights to the original. Conversion does not grant additional copyright or usage permissions.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The histogram effect is calculated in your browser. When you choose to download, the generated JPG is uploaded to prepare the download page.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Non-destructive?</FAQQuestion>
+                  <FAQAnswer>The slider blends the original and equalized pixel values. The source file is not overwritten, but the exported JPG is newly encoded and does not preserve PNG transparency.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -286,7 +307,81 @@ export default function HistogramEqualizePage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How histogram equalization works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Histogram equalization analyzes the distribution of pixel
+                brightness values and remaps them across a broader tonal
+                range. This can make details more visible in images where
+                brightness values are concentrated in a narrow range.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The histogram adjustment is calculated using browser Canvas processing. The generated JPG is uploaded only when you continue through the download workflow.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Histogram equalization redistributes existing tonal values; it does not reconstruct missing detail or guarantee an improvement for every image.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and moderate intensity. The page does not display a separate preview of the processed result, so download and inspect the JPG before deciding whether to keep it. Strong equalization can exaggerate noise or tonal differences.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Histogram Equalization: Additional Questions
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. Histogram equalization remaps existing pixel brightness values. It does not increase resolution or reconstruct missing image detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The page shows the selected source image and an intensity slider, but does not render a separate enhanced-result preview. Download the generated JPG to inspect the processed result.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

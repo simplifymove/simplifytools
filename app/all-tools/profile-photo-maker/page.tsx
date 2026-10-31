@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, User } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
 
 export default function ProfilePhotoMakerPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -20,86 +24,269 @@ export default function ProfilePhotoMakerPage() {
 
   const gradientColors = ['blue', 'purple', 'pink', 'teal', 'white', 'black'];
 
-  const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+  const previewUrlRef = useRef<string | null>(null);
+  const resultUrlRef = useRef<string | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
+  const generationRef = useRef(0);
+  const processingRef = useRef(false);
+  const downloadRef = useRef(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      generationRef.current += 1;
+      controllerRef.current?.abort();
+
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current);
+      }
     };
-    reader.readAsDataURL(selectedFile);
-    setError(null);
+  }, []);
+
+  const clearResult = () => {
+    generationRef.current += 1;
+    controllerRef.current?.abort();
+    controllerRef.current = null;
+    processingRef.current = false;
+    setProcessing(false);
+
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+
     setResult(null);
+    setProcessingTime(null);
+  };
+
+  const handleFileSelect = (selectedFile: File) => {
+    clearResult();
+    setError(null);
+
+    const acceptedTypes: Record<string, string[]> = {
+      '.jpg': ['image/jpeg'],
+      '.jpeg': ['image/jpeg'],
+      '.png': ['image/png'],
+      '.webp': ['image/webp'],
+    };
+
+    const extension = selectedFile.name
+      .slice(selectedFile.name.lastIndexOf('.'))
+      .toLowerCase();
+
+    if (!acceptedTypes[extension]?.includes(selectedFile.type)) {
+      setError('Please select a valid JPG, PNG, or WebP image.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected image is empty.');
+      return;
+    }
+
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError('The image must not exceed 10 MB.');
+      return;
+    }
+
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+    }
+
+    const previewUrl = URL.createObjectURL(selectedFile);
+    previewUrlRef.current = previewUrl;
+
+    setFile(selectedFile);
+    setPreview(previewUrl);
   };
 
   const handleClear = () => {
+    clearResult();
+
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
+
     setFile(null);
     setPreview(null);
-    setResult(null);
     setError(null);
-    setProcessingTime(null);
+
+    const input = document.getElementById('imageInput');
+    if (input instanceof HTMLInputElement) {
+      input.value = '';
+    }
+  };
+
+  const invalidateSettings = () => {
+    clearResult();
+    setError(null);
   };
 
   const processPhoto = async () => {
     if (!file) {
-      setError('Please select an image first');
+      setError('Please select an image first.');
       return;
     }
+
+    if (processingRef.current || downloadRef.current) return;
+
+    clearResult();
+
+    const generation = generationRef.current;
+    const controller = new AbortController();
+
+    controllerRef.current = controller;
+    processingRef.current = true;
 
     setProcessing(true);
     setError(null);
 
+    const startTime = Date.now();
+
     try {
       const formData = new FormData();
+
       formData.append('image', file);
       formData.append('bgType', bgType);
       formData.append('gradientColor1', gradientColor1);
       formData.append('gradientColor2', gradientColor2);
-      formData.append('outputSize', outputSize.toString());
+      formData.append('outputSize', String(outputSize));
 
-      const startTime = Date.now();
       const response = await fetch('/api/profile-photo-maker', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
-      const processingTimeMs = Date.now() - startTime;
-      setProcessingTime(processingTimeMs);
-
       if (!response.ok) {
-        let errorMessage = 'Failed to process image';
+        let errorMessage = 'Unable to process this image.';
+
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
+          if (typeof errorData.error === 'string') {
+            errorMessage = errorData.error;
+          }
         } catch {
-          errorMessage = `Server error (${response.status})`;
+          errorMessage = `Processing failed (${response.status}).`;
         }
+
         throw new Error(errorMessage);
       }
 
       const blob = await response.blob();
-      if (blob.size === 0) {
-        throw new Error('Empty response from server');
+
+      if (
+        blob.size === 0 ||
+        blob.type !== 'image/png'
+      ) {
+        throw new Error('The server returned an invalid PNG image.');
+      }
+
+      if (
+        controller.signal.aborted ||
+        generation !== generationRef.current ||
+        !mountedRef.current
+      ) {
+        return;
       }
 
       const url = URL.createObjectURL(blob);
+
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current);
+      }
+
+      resultUrlRef.current = url;
+
       setResult(url);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      console.error('Error:', err);
+      setProcessingTime(Date.now() - startTime);
+    } catch (caughtError) {
+      if (
+        controller.signal.aborted ||
+        generation !== generationRef.current ||
+        !mountedRef.current
+      ) {
+        return;
+      }
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to process this image.',
+      );
     } finally {
-      setProcessing(false);
+      if (
+        generation === generationRef.current &&
+        mountedRef.current
+      ) {
+        processingRef.current = false;
+        controllerRef.current = null;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `profile-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (
+      !result ||
+      !file ||
+      processingRef.current ||
+      downloadRef.current
+    ) {
+      return;
+    }
+
+    downloadRef.current = true;
+    setProcessing(true);
+    setError(null);
+
+    const generation = generationRef.current;
+
+    try {
+      const baseName = file.name
+        .replace(/\\.[^.]+$/, '')
+        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+        .slice(0, 80) || 'profile';
+
+      const downloadResult = await uploadBrowserDownloadResultFromUrl({
+        url: result,
+        toolSlug: 'profile-photo-maker',
+        originalName: file.name,
+        outputName: `${baseName}-profile.png`,
+      });
+
+      if (
+        generation === generationRef.current &&
+        mountedRef.current
+      ) {
+        router.push(downloadResult.downloadPageUrl);
+      }
+    } catch (caughtError) {
+      if (
+        generation === generationRef.current &&
+        mountedRef.current
+      ) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      }
+    } finally {
+      downloadRef.current = false;
+
+      if (mountedRef.current) {
+        setProcessing(false);
+      }
+    }
   };
 
   return (
@@ -139,7 +326,7 @@ export default function ProfilePhotoMakerPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Photo</h2>
-                  
+
                   <div
                     className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
                       preview ? 'border-orange-300 bg-orange-50' : 'border-gray-300 hover:border-orange-500 hover:bg-orange-50'
@@ -149,7 +336,7 @@ export default function ProfilePhotoMakerPage() {
                     {preview ? (
                       <div>
                         <p className="text-xs text-orange-600 font-medium truncate mb-3">{file?.name}</p>
-                        <img src={preview} alt="preview" className="w-full h-64 object-cover rounded-lg" />
+                        <img src={preview} alt="Uploaded portrait preview" className="w-full h-64 object-cover rounded-lg" />
                       </div>
                     ) : (
                       <div>
@@ -162,9 +349,9 @@ export default function ProfilePhotoMakerPage() {
                   <input
                     id="imageInput"
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                     hidden
-                    onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                    onChange={(e) => { const selected = e.target.files?.[0]; if (selected) handleFileSelect(selected); e.target.value = ""; }}
                   />
 
                   {file && (
@@ -184,7 +371,7 @@ export default function ProfilePhotoMakerPage() {
                     <div className="flex justify-center mb-6">
                       <img
                         src={result}
-                        alt="result"
+                        alt="Generated square profile photo"
                         className="rounded-lg shadow-lg"
                         style={{ maxWidth: '400px', maxHeight: '400px' }}
                       />
@@ -211,7 +398,7 @@ export default function ProfilePhotoMakerPage() {
                         <label className="text-sm font-medium text-gray-700 block mb-2">Background</label>
                         <select
                           value={bgType}
-                          onChange={(e) => setBgType(e.target.value as any)}
+                          onChange={(e) => { invalidateSettings(); setBgType(e.target.value as typeof bgType); }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="white">White</option>
@@ -229,7 +416,7 @@ export default function ProfilePhotoMakerPage() {
                           <div className="grid grid-cols-2 gap-2">
                             <select
                               value={gradientColor1}
-                              onChange={(e) => setGradientColor1(e.target.value)}
+                              onChange={(e) => { invalidateSettings(); setGradientColor1(e.target.value); }}
                               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             >
                               {gradientColors.map((color) => (
@@ -240,7 +427,7 @@ export default function ProfilePhotoMakerPage() {
                             </select>
                             <select
                               value={gradientColor2}
-                              onChange={(e) => setGradientColor2(e.target.value)}
+                              onChange={(e) => { invalidateSettings(); setGradientColor2(e.target.value); }}
                               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             >
                               {gradientColors.map((color) => (
@@ -260,7 +447,7 @@ export default function ProfilePhotoMakerPage() {
                         </label>
                         <select
                           value={outputSize}
-                          onChange={(e) => setOutputSize(parseInt(e.target.value))}
+                          onChange={(e) => { invalidateSettings(); setOutputSize(Number(e.target.value)); }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value={512}>512x512 (Web)</option>
@@ -273,7 +460,7 @@ export default function ProfilePhotoMakerPage() {
 
                   {/* Error Message */}
                   {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-4">
                       <p className="text-red-900 font-semibold text-sm">Error</p>
                       <p className="text-red-700 text-xs mt-1">{error}</p>
                     </div>
@@ -301,10 +488,11 @@ export default function ProfilePhotoMakerPage() {
                   {result && (
                     <button
                       onClick={handleDownload}
+                      disabled={processing}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
-                      Download Photo
+                      {processing ? 'Preparing download...' : 'Download Photo'}
                     </button>
                   )}
 
@@ -321,7 +509,7 @@ export default function ProfilePhotoMakerPage() {
 
                   {/* Use Cases */}
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-amber-900 mb-2">Perfect for:</h3>
+                    <h3 className="font-semibold text-amber-900 mb-2">Common uses:</h3>
                     <ul className="text-sm text-amber-800 space-y-1">
                       <li>• LinkedIn profile</li>
                       <li>• Instagram account</li>
@@ -348,12 +536,229 @@ export default function ProfilePhotoMakerPage() {
             </div>
           </div>
         </div>
+
+          {/* Supporting content */}
+          <section className="max-w-6xl mx-auto px-4 md:px-8 pb-16">
+            <div className="space-y-12">
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How to Make a Profile Photo
+                </h2>
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">1. Upload a portrait</h3>
+                    <p className="text-gray-700">
+                      Choose a JPG, PNG, or WebP image up to 10 MB. A clear photo with the
+                      face and shoulders visible gives the automatic framing more information
+                      to work with.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">2. Choose the background</h3>
+                    <p className="text-gray-700">
+                      Replace the original background with white, blue, gray, a two-color
+                      gradient, or a blurred version of the uploaded image.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">3. Choose an output size</h3>
+                    <p className="text-gray-700">
+                      Select 512×512, 1024×1024, or 1536×1536 pixels. Every generated
+                      result uses a square layout suitable for profile-picture use.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">4. Create and review</h3>
+                    <p className="text-gray-700">
+                      The tool removes the background, attempts to detect the primary face,
+                      applies face-aware framing, and returns the finished image as a PNG.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Profile Photo Background Options
+                </h2>
+                <div className="grid md:grid-cols-2 gap-5 text-gray-700">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Solid backgrounds</h3>
+                    <p>
+                      White provides a neutral background, while blue and gray offer
+                      alternative solid-color treatments for profiles, portfolios, and
+                      company directories.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Gradient background</h3>
+                    <p>
+                      Choose two colors from blue, purple, pink, teal, white, and black.
+                      The tool creates a vertical gradient behind the extracted subject.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Blurred background</h3>
+                    <p>
+                      This option keeps the visual character of the original photograph
+                      while reducing background detail with a strong blur.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">PNG output</h3>
+                    <p>
+                      The finished profile picture is generated as a square PNG at the
+                      selected resolution.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Face-Aware Profile Photo Framing
+                </h2>
+                <div className="space-y-3 text-gray-700">
+                  <p>
+                    Profile Photo Maker attempts to locate the primary face before creating
+                    the final composition. When a face is detected, its position is used to
+                    scale and place the portrait so the face sits above the center of the
+                    square canvas with space for the head and shoulders.
+                  </p>
+                  <p>
+                    If face detection does not find a reliable face, processing does not
+                    automatically fail. The tool falls back to the visible foreground area
+                    obtained during background removal and uses that subject area for framing.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Choosing a Profile Photo Size
+                </h2>
+                <div className="grid md:grid-cols-3 gap-5">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">512×512</h3>
+                    <p className="text-gray-700">
+                      A lighter option for web avatars and services that display profile
+                      pictures at relatively small sizes.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">1024×1024</h3>
+                    <p className="text-gray-700">
+                      A balanced general-purpose choice when you want additional resolution
+                      for modern screens and later resizing.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">1536×1536</h3>
+                    <p className="text-gray-700">
+                      The highest size offered by the current interface when you want more
+                      pixels available for reuse or downscaling.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Tips for Better Results
+                  </h2>
+                  <ul className="space-y-3 text-gray-700">
+                    <li>• Use a sharp image where the face is clearly visible.</li>
+                    <li>• Front-facing or near-front-facing portraits are easier to detect reliably.</li>
+                    <li>• Leave some room around the head and shoulders in the source image.</li>
+                    <li>• Good contrast between the person and background can help subject separation.</li>
+                    <li>• Check fine hair and clothing edges in the preview before downloading.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Automatic Processing Limitations
+                  </h2>
+                  <div className="space-y-3 text-gray-700">
+                    <p>
+                      Background removal and face detection are automatic, so the result
+                      depends on the source photo. Fine hair, motion blur, low contrast,
+                      shadows, transparent objects, or a partially hidden face can reduce
+                      separation or framing accuracy.
+                    </p>
+                    <p>
+                      Face detection is used to help compose the profile picture. It is not
+                      used to identify the person in the photograph.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <FAQPanel>
+                <FAQHeading>
+                  Profile Photo Maker FAQ
+                </FAQHeading>
+
+                <FAQList>
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      Does Profile Photo Maker remove the original background?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      Yes. The tool separates the foreground subject before applying the
+                      selected solid, gradient, or blurred background.
+                    </FAQAnswer>
+                  </FAQCard>
+
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      What happens if my face is not detected?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      The tool uses the extracted foreground area as a fallback so the image
+                      can still be framed and processed.
+                    </FAQAnswer>
+                  </FAQCard>
+
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      Which image formats can I upload?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      The current interface accepts JPG, PNG, and WebP files up to 10 MB.
+                    </FAQAnswer>
+                  </FAQCard>
+
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      What format will I download?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      Profile Photo Maker generates a square PNG at the size selected in
+                      the tool settings.
+                    </FAQAnswer>
+                  </FAQCard>
+                </FAQList>
+              </FAQPanel>
+
+            </div>
+          </section>
+
       </main>
       <Footer />
     </>
   );
 }
-
 
 
 

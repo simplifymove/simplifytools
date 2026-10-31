@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -15,11 +16,14 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'flip-image';
 const TOOL_NAME = 'Flip Image';
 
 export default function FlipImagePage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
   const [flipHorizontal, setFlipHorizontal] = useState(false);
@@ -214,18 +218,33 @@ export default function FlipImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+      if (!result || processing) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `flipped-image-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'flip-image',
+            originalName: `flipped-image-${Date.now()}.png`,
+            outputName: `flipped-image-${Date.now()}.png`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -359,7 +378,7 @@ export default function FlipImagePage() {
                 <li>• Flip horizontally (mirror left-right)</li>
                 <li>• Flip vertically (mirror up-down)</li>
                 <li>• Combine both for 180° rotation</li>
-                <li>• Supports all image formats</li>
+                <li>• Processes supported browser-readable image files</li>
               </ul>
             </div>
           </div>
@@ -384,7 +403,7 @@ export default function FlipImagePage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Flip Image:</strong> Process instantly, preview updates in real-time</p></div>
+              <div><p className="text-gray-700"><strong>Click Flip Image:</strong> Process the image and review the updated preview</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -401,73 +420,73 @@ export default function FlipImagePage() {
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Mirror selfies - create the original camera view instead of mirrored front-camera photos</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Fix text direction - reverse text images for clarity or specific layouts</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Perfect symmetry - create mirror images for design and artistic work</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Mirror layouts - create horizontal or vertical reflections for design and artistic work</li>
             <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Logo adjustments - flip logos and graphics to match design requirements</li>
-            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> No quality loss - flipping preserves full image resolution and clarity</li>
+            <li className="flex gap-2"><span className="text-orange-600 font-bold">•</span> Flipping preserves the working image dimensions before PNG encoding</li>
           </ul>
         </div>
       </div>
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 What's the difference between horizontal and vertical flip?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Horizontal flips the image left-right (mirror), vertical flips it up-down. Combine both for a 180° rotation.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>Horizontal flips the image left-right (mirror), vertical flips it up-down. Combine both for a 180° rotation.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can I flip specific parts of an image?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, this tool flips the entire image. For partial flips, use an advanced image editor.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>No, this tool flips the entire image. For partial flips, use an advanced image editor.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What image formats are supported?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">All formats: JPG, PNG, WebP, GIF, BMP. Output is always PNG format.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The uploader accepts JPG, JPEG, PNG, WebP, GIF, BMP, SVG, AVIF, HEIC, ICO, TIFF, and TIF extensions. The image must also be readable by your browser to flip successfully. The result is exported as PNG.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is there a file size limit?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No size limits. Flip any image no matter how large. Processing happens locally in your browser.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The maximum upload size is 50 MB. Processing also depends on your browser, available device memory, and image dimensions.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Does flipping reduce image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No, flipping is lossless. Your image quality remains exactly the same.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The flip operation changes orientation without intentionally resizing the image. The processed result is exported as PNG.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is the flip image tool free to use?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes, 100% free with no limits. Flip unlimited images, no signup required.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>You can use the available flip controls without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       <script type="application/ld+json">{JSON.stringify({
@@ -476,10 +495,10 @@ export default function FlipImagePage() {
         "mainEntity": [
           { "@type": "Question", "name": "What's the difference between horizontal and vertical flip?", "acceptedAnswer": { "@type": "Answer", "text": "Horizontal flips left-right, vertical flips up-down. Combine both for 180° rotation." } },
           { "@type": "Question", "name": "Can I flip specific parts of an image?", "acceptedAnswer": { "@type": "Answer", "text": "No, this tool flips the entire image." } },
-          { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "All formats: JPG, PNG, WebP, GIF, BMP. Output is PNG." } },
-          { "@type": "Question", "name": "Is there a file size limit?", "acceptedAnswer": { "@type": "Answer", "text": "No size limits. Processing happens locally." } },
-          { "@type": "Question", "name": "Does flipping reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "No, flipping is lossless and preserves quality." } },
-          { "@type": "Question", "name": "Is the flip image tool free to use?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free with no limits." } }
+          { "@type": "Question", "name": "What image formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "The uploader accepts common image extensions, including JPG, PNG, WebP, GIF, BMP, SVG, AVIF, HEIC, ICO, and TIFF. Successful processing requires browser image support. Output is PNG." } },
+          { "@type": "Question", "name": "Is there a file size limit?", "acceptedAnswer": { "@type": "Answer", "text": "The maximum upload size is 50 MB. Browser capabilities, device memory, and image dimensions can also affect processing." } },
+          { "@type": "Question", "name": "Does flipping reduce image quality?", "acceptedAnswer": { "@type": "Answer", "text": "The flip operation keeps the source dimensions, but the generated image is exported again as PNG." } },
+          { "@type": "Question", "name": "Is the flip image tool free to use?", "acceptedAnswer": { "@type": "Answer", "text": "You can use the available flip controls without creating an account." } }
         ]
       })}</script>
 

@@ -1,6 +1,7 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { ImageUploader } from '@/app/components/ImageUploader';
@@ -15,11 +16,14 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'make-background-transparent';
 const TOOL_NAME = 'Make Background Transparent';
 
 export default function MakeBackgroundTransparentPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -29,17 +33,29 @@ export default function MakeBackgroundTransparentPage() {
   const [edgePreservation, setEdgePreservation] = useState(true);
   const [colorToRemove, setColorToRemove] = useState('#ffffff');
   const [useAutoDetect, setUseAutoDetect] = useState(true);
-  const [compareMode, setCompareMode] = useState(false);
-  const [sliderPosition, setSliderPosition] = useState(50);
-  const [downloadSuccess, setDownloadSuccess] = useState(false);
-  const [advancedMode, setAdvancedMode] = useState(false);
+  const [resultPreviewUrl, setResultPreviewUrl] = useState<string | null>(null);
   const { error, clearError, createError } = useImageToolErrors();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
+  useEffect(() => {
+    if (!result) {
+      setResultPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(result);
+    setResultPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [result]);
+
   const handleFileSelect = (selectedFile: File) => {
     clearError();
+    setFile(null);
+    setPreview(null);
+    setResult(null);
 
     // Validate file
     const emptyCheck = validateImageNotEmpty(selectedFile);
@@ -95,7 +111,6 @@ export default function MakeBackgroundTransparentPage() {
       const img = new Image();
       img.onload = () => {
         setPreview(img.src);
-        updatePreview(img);
       };
       img.onerror = () => {
         createError(
@@ -246,7 +261,7 @@ export default function MakeBackgroundTransparentPage() {
 
       // Use stricter threshold near edges to preserve object boundaries
       let effectiveThreshold = thresh * 2.55;
-      
+
       if (preserveEdges && edgeMap) {
         const edgeStrength = edgeMap[y * width + x];
         // If pixel is on an edge, dramatically reduce removal threshold
@@ -308,7 +323,7 @@ export default function MakeBackgroundTransparentPage() {
 
       // Use stricter threshold near edges
       let effectiveThreshold = threshold * 2.55;
-      
+
       if (edgePreservation && edgeMap) {
         const edgeStrength = edgeMap[y * width + x];
         if (edgeStrength > 10) {
@@ -329,10 +344,33 @@ export default function MakeBackgroundTransparentPage() {
     ctx.putImageData(imageData, 0, 0);
   };
 
+  useEffect(() => {
+    if (!preview) return;
+
+    let cancelled = false;
+    const img = new Image();
+
+    img.onload = () => {
+      if (cancelled) return;
+
+      try {
+        updatePreview(img);
+      } catch (err) {
+        console.error('Background preview failed:', err);
+      }
+    };
+
+    img.src = preview;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [preview, threshold, feather, edgePreservation, colorToRemove, useAutoDetect]);
+
   const getCornerColor = (img: HTMLImageElement) => {
     // Sample a larger corner area (30x30) to get more accurate background color
     const tempCanvas = document.createElement('canvas');
-    const sampleSize = Math.min(30, Math.floor(img.width / 10), Math.floor(img.height / 10));
+    const sampleSize = Math.max(1, Math.min(30, Math.floor(img.width / 10), Math.floor(img.height / 10)));
     tempCanvas.width = sampleSize;
     tempCanvas.height = sampleSize;
     const ctx = tempCanvas.getContext('2d');
@@ -376,13 +414,16 @@ export default function MakeBackgroundTransparentPage() {
       return;
     }
 
+    if (processing) return;
+
     setProcessing(true);
+    setResult(null);
     clearError();
-    setDownloadSuccess(false);
 
     try {
       const img = new Image();
       img.onload = () => {
+        try {
         if (!canvasRef.current) {
           createError(
             ImageToolErrorType.SHARP_FAILED,
@@ -422,6 +463,16 @@ export default function MakeBackgroundTransparentPage() {
           );
           setProcessing(false);
         }
+        } catch (err) {
+          console.error('Background processing failed:', err);
+          createError(
+            ImageToolErrorType.SHARP_FAILED,
+            TOOL_ID,
+            TOOL_NAME,
+            { file }
+          );
+          setProcessing(false);
+        }
       };
       img.onerror = () => {
         createError(
@@ -444,21 +495,33 @@ export default function MakeBackgroundTransparentPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
+  const handleDownload = async () => {
+      if (!result || processing) return;
 
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'transparent-background.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
 
-    setDownloadSuccess(true);
-    setTimeout(() => setDownloadSuccess(false), 3000);
-  };
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'make-background-transparent',
+            originalName: 'transparent-background.png',
+            outputName: 'transparent-background.png',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   const handleClearPreview = () => {
     setFile(null);
@@ -473,7 +536,7 @@ export default function MakeBackgroundTransparentPage() {
 
       <main>
       {/* Hero Section with Breadcrumb */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
@@ -493,7 +556,7 @@ export default function MakeBackgroundTransparentPage() {
           </div>
 
           <div className="flex items-center gap-4 mb-4">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.1, rotate: 10 }}
               className="bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur"
             >
@@ -502,7 +565,7 @@ export default function MakeBackgroundTransparentPage() {
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-2">Background Transparency</h1>
               <p className="text-lg text-orange-50">
-                Remove backgrounds instantly with clean edges and transparency
+                Make selected background areas transparent using adjustable controls
               </p>
             </div>
           </div>
@@ -517,7 +580,7 @@ export default function MakeBackgroundTransparentPage() {
           {/* Left Column - Upload & Preview */}
           <div className="lg:col-span-2 space-y-6">
             {/* Upload Section */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-xl border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow"
@@ -540,7 +603,7 @@ export default function MakeBackgroundTransparentPage() {
 
             {/* Preview & Results Section */}
             {preview && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
@@ -580,7 +643,7 @@ export default function MakeBackgroundTransparentPage() {
                 </div>
 
                 {/* Result Section */}
-                {result && (
+                {result && resultPreviewUrl && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -589,8 +652,8 @@ export default function MakeBackgroundTransparentPage() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">✓ Result Ready</h3>
                     <div className="flex justify-center mb-6 bg-[linear-gradient(45deg,#e5e7eb_25%,transparent_25%,transparent_75%,#e5e7eb_75%,#e5e7eb),linear-gradient(45deg,#e5e7eb_25%,transparent_25%,transparent_75%,#e5e7eb_75%,#e5e7eb)] bg-[length:20px_20px] bg-[position:0_0,10px_10px] p-4 rounded-lg">
                       <img
-                        src={URL.createObjectURL(result)}
-                        alt="Result"
+                        src={resultPreviewUrl || undefined}
+                        alt="Processed PNG with transparent background"
                         className="max-w-full h-auto rounded-lg border-2 border-green-300 shadow-md"
                         style={{ maxHeight: '400px' }}
                       />
@@ -609,6 +672,7 @@ export default function MakeBackgroundTransparentPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleDownload}
+                      disabled={processing}
                       className="w-full bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all shadow-lg"
                     >
                       <Download size={20} />
@@ -617,23 +681,13 @@ export default function MakeBackgroundTransparentPage() {
                   </motion.div>
                 )}
 
-                {downloadSuccess && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="bg-green-50 border-2 border-green-300 rounded-lg p-4 flex items-center gap-3"
-                  >
-                    <Copy className="text-green-600" size={20} />
-                    <span className="text-green-800 font-medium">Downloaded successfully!</span>
-                  </motion.div>
-                )}
+
               </motion.div>
             )}
           </div>
 
           {/* Right Column - Controls */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="lg:sticky lg:top-4 h-fit space-y-6"
@@ -653,11 +707,7 @@ export default function MakeBackgroundTransparentPage() {
                     checked={useAutoDetect}
                     onChange={(e) => {
                       setUseAutoDetect(e.target.checked);
-                      if (preview) {
-                        const img = new Image();
-                        img.onload = () => updatePreview(img);
-                        img.src = preview;
-                      }
+                      setResult(null);
                     }}
                     className="w-5 h-5 accent-orange-500 cursor-pointer"
                   />
@@ -682,11 +732,7 @@ export default function MakeBackgroundTransparentPage() {
                       value={colorToRemove}
                       onChange={(e) => {
                         setColorToRemove(e.target.value);
-                        if (preview) {
-                          const img = new Image();
-                          img.onload = () => updatePreview(img);
-                          img.src = preview;
-                        }
+                        setResult(null);
                       }}
                       className="w-16 h-12 rounded-lg cursor-pointer border-2 border-gray-300 hover:border-orange-400 transition-colors"
                     />
@@ -712,11 +758,7 @@ export default function MakeBackgroundTransparentPage() {
                   value={threshold}
                   onChange={(e) => {
                     setThreshold(Number(e.target.value));
-                    if (preview) {
-                      const img = new Image();
-                      img.onload = () => updatePreview(img);
-                      img.src = preview;
-                    }
+                    setResult(null);
                   }}
                   className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                 />
@@ -738,16 +780,12 @@ export default function MakeBackgroundTransparentPage() {
                   value={feather}
                   onChange={(e) => {
                     setFeather(Number(e.target.value));
-                    if (preview) {
-                      const img = new Image();
-                      img.onload = () => updatePreview(img);
-                      img.src = preview;
-                    }
+                    setResult(null);
                   }}
                   className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                 />
                 <p className="text-xs text-gray-600 mt-2">
-                  Smooths edges for more professional results (0 = sharp, 10 = soft)
+                  Smooths the transition around processed edges (0 = sharp, 10 = soft)
                 </p>
               </div>
 
@@ -759,11 +797,7 @@ export default function MakeBackgroundTransparentPage() {
                     checked={edgePreservation}
                     onChange={(e) => {
                       setEdgePreservation(e.target.checked);
-                      if (preview) {
-                        const img = new Image();
-                        img.onload = () => updatePreview(img);
-                        img.src = preview;
-                      }
+                      setResult(null);
                     }}
                     className="w-5 h-5 accent-orange-500 cursor-pointer"
                   />
@@ -789,7 +823,7 @@ export default function MakeBackgroundTransparentPage() {
             </div>
 
             {/* How to Use */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -821,7 +855,7 @@ export default function MakeBackgroundTransparentPage() {
             </motion.div>
 
             {/* Pro Tips */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -830,10 +864,10 @@ export default function MakeBackgroundTransparentPage() {
               <h4 className="font-semibold text-purple-900 mb-3 text-sm">Pro Tips</h4>
               <ul className="text-sm text-purple-800 space-y-2">
                 <li>✓ Enable <strong>Smart Edge Preservation</strong> to protect object edges</li>
-                <li>✓ Use <strong>auto-detect</strong> for accurate background color</li>
+                <li>✓ Use <strong>auto-detect</strong> when the top-left corner matches the background; otherwise select the color manually</li>
                 <li>✓ <strong>Lower sensitivity</strong> for precise results (doesn't remove objects)</li>
                 <li>✓ <strong>Feather edges</strong> for smooth, professional look</li>
-                <li>✓ PNG format preserves transparency perfectly</li>
+                <li>✓ PNG output supports transparent pixels</li>
               </ul>
             </motion.div>
           </motion.div>
@@ -842,13 +876,108 @@ export default function MakeBackgroundTransparentPage() {
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-9">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How background transparency is created
+              </h2>
+              <p className="text-gray-600 leading-7">
+
+                The tool examines image pixel colors and changes matching
+                background pixels to transparent values according to the
+                selected settings. Tolerance and edge controls help determine
+                which pixels are affected.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the tool changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Color-based transparency works best when the background is visually distinct from the subject. Complex backgrounds, shadows, hair, or similar foreground and background colors can require additional adjustment.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Check the preview
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Review the processed image before downloading it. The final
+                  appearance depends on the source image and the settings you
+                  select.
+                </p>
+              </div>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Make Background Transparent FAQ
+              </FAQHeading>
+
+              <FAQList>
+                  <FAQDisclosure>
+                    <FAQQuestion>
+                      How does this tool make an image background transparent?
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      It compares image pixel colors with a selected background color and makes matching pixels transparent. You can adjust color sensitivity, edge preservation, and feathering to refine the result.
+                    </FAQAnswer>
+                  </FAQDisclosure>
+
+                  <FAQDisclosure>
+                    <FAQQuestion>
+                      Does automatic detection recognize the main subject?
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      No. Automatic detection samples the top-left area to estimate the background color. It does not use AI subject segmentation. If the corner does not match the background, select the color manually.
+                    </FAQAnswer>
+                  </FAQDisclosure>
+
+                  <FAQDisclosure>
+                    <FAQQuestion>
+                      Which images work best?
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      Images with a relatively uniform background that differs from the subject usually work best. Similar foreground colors, shadows, fine hair, and detailed backgrounds can make precise removal difficult.
+                    </FAQAnswer>
+                  </FAQDisclosure>
+
+                  <FAQDisclosure>
+                    <FAQQuestion>
+                      Why is the downloaded image a PNG?
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      PNG supports transparent pixels. The tool generates a PNG so that transparent areas can be preserved in compatible applications.
+                    </FAQAnswer>
+                  </FAQDisclosure>
+
+                  <FAQDisclosure>
+                    <FAQQuestion>
+                      Is the image processed in my browser?
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      Background transparency is created using your browser's canvas. When you choose to download the result, the generated PNG is uploaded to SimplifyConvert's server to prepare a temporary download link.
+                    </FAQAnswer>
+                  </FAQDisclosure>
+                </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-12 mt-20">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <p className="text-center text-slate-400">
-            © 2024 Image Tools. All rights reserved.
+            © SimplifyConvert. All rights reserved.
           </p>
         </div>
       </footer>

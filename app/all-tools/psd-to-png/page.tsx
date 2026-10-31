@@ -1,6 +1,10 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, RotateCcw, AlertCircle, FileText } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
@@ -8,74 +12,163 @@ import { ImageUploader } from '../../components/ImageUploader';
 import { Footer } from '../../components/Footer';
 
 export default function PsdToPngPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const controllerRef = useRef<AbortController | null>(null);
+  const generationRef = useRef(0);
+  const resultRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+  const downloadBusyRef = useRef(false);
+
+  const cancelConversion = () => {
+    generationRef.current++;
+    controllerRef.current?.abort();
+    controllerRef.current = null;
+    setProcessing(false);
+  };
+
+  const clearResult = () => {
+    if (resultRef.current) {
+      URL.revokeObjectURL(resultRef.current);
+      resultRef.current = null;
+    }
+    setResult(null);
+  };
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      generationRef.current++;
+      controllerRef.current?.abort();
+      if (resultRef.current) URL.revokeObjectURL(resultRef.current);
+      resultRef.current = null;
+    };
+  }, []);
 
   const handleFileSelect = (selectedFile: File) => {
-    // Validate file type
+    cancelConversion();
+    clearResult();
+    setFile(null);
+    setPreview(null);
+    setError(null);
+
     if (!selectedFile.name.toLowerCase().endsWith('.psd')) {
-      setError('Please select a valid PSD file');
+      setError('Please select a .psd file.');
+      return;
+    }
+
+    if (selectedFile.size === 0 || selectedFile.size > 200 * 1024 * 1024) {
+      setError('PSD files must be larger than 0 bytes and no more than 200 MB.');
       return;
     }
 
     setFile(selectedFile);
-    setError(null);
     setPreview(`PSD File: ${selectedFile.name} (${(selectedFile.size / 1024 / 1024).toFixed(2)} MB)`);
-    setResult(null);
   };
 
   const handleClearPreview = () => {
+    cancelConversion();
+    clearResult();
     setFile(null);
     setPreview(null);
-    setResult(null);
     setError(null);
   };
 
   const convertPsdToPng = async () => {
-    if (!file) {
-      setError('Please select a PSD file first');
-      return;
-    }
+    if (!file || processing) return;
+
+    cancelConversion();
+    clearResult();
+
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    const generation = generationRef.current;
 
     setProcessing(true);
     setError(null);
 
     try {
-      // Create FormData for file upload
       const formData = new FormData();
       formData.append('file', file);
 
-      // Call the conversion API
       const response = await fetch('/api/convert/psd-to-png', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        throw new Error(
+          response.status === 413
+            ? 'File exceeds the upload limit.'
+            : 'Conversion failed. Check that the PSD is supported.'
+        );
       }
 
       const blob = await response.blob();
+
+      if (controller.signal.aborted ||
+          generation !== generationRef.current ||
+          !mountedRef.current) return;
+
+      if (blob.type !== 'image/png') {
+        throw new Error('Unexpected conversion output.');
+      }
+
       const url = URL.createObjectURL(blob);
+      resultRef.current = url;
       setResult(url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to convert PSD file');
+      if (controller.signal.aborted ||
+          generation !== generationRef.current ||
+          !mountedRef.current) return;
+
+      setError(err instanceof Error ? err.message : 'Conversion failed.');
     } finally {
-      setProcessing(false);
+      if (generation === generationRef.current && mountedRef.current) {
+        controllerRef.current = null;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `converted-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || downloadBusyRef.current) return;
+
+    downloadBusyRef.current = true;
+    setDownloading(true);
+    setError(null);
+
+    try {
+      const outputName = `converted-${Date.now()}.png`;
+      const response = await fetch(result);
+      if (!response.ok) throw new Error('PNG unavailable');
+
+      const blob = await response.blob();
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: 'psd-to-png',
+        originalName: outputName,
+        outputName,
+      });
+
+      if (mountedRef.current) {
+        router.push(downloadResult.downloadPageUrl);
+      }
+    } catch {
+      if (mountedRef.current) {
+        setError('Unable to prepare the download. Please try again.');
+      }
+    } finally {
+      downloadBusyRef.current = false;
+      if (mountedRef.current) setDownloading(false);
+    }
   };
 
   return (
@@ -98,7 +191,7 @@ export default function PsdToPngPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PSD to PNG Converter</h1>
-                <p className="text-lg text-white/90">Convert Photoshop files to PNG format instantly with transparency support.</p>
+                <p className="text-lg text-white/90">Convert Photoshop PSD files to PNG format with transparency support.</p>
               </div>
             </div>
           </div>
@@ -116,7 +209,7 @@ export default function PsdToPngPage() {
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Upload PSD File</h2>
                     <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 text-center bg-purple-50">
                       <FileText size={48} className="mx-auto mb-4 text-purple-500" />
-                      <p className="text-gray-700 mb-4">Drag and drop your PSD file here, or click to select</p>
+                      <p className="text-gray-700 mb-4">Choose a Photoshop PSD file to convert</p>
                       <input
                         type="file"
                         accept=".psd"
@@ -133,7 +226,7 @@ export default function PsdToPngPage() {
                       >
                         Select PSD File
                       </label>
-                      <p className="text-xs text-gray-600 mt-4">Maximum file size: 100 MB</p>
+                      <p className="text-xs text-gray-600 mt-4">Maximum file size: 200 MB</p>
                     </div>
                   </div>
                 )}
@@ -179,10 +272,10 @@ export default function PsdToPngPage() {
                       Convert your Adobe Photoshop PSD files to PNG format. Our converter supports:
                     </p>
                     <ul className="text-sm text-blue-800 space-y-1 ml-4">
-                      <li>✓ Full transparency/alpha channel preservation</li>
+                      <li>✓ PNG output supports transparency</li>
                       <li>✓ High-quality color conversion</li>
                       <li>✓ Support for various PSD versions</li>
-                      <li>✓ Fast processing for files up to 100 MB</li>
+                      <li>✓ Supports PSD files up to 200 MB</li>
                     </ul>
                   </div>
                 )}
@@ -195,12 +288,12 @@ export default function PsdToPngPage() {
                     <div className="bg-white rounded-lg border border-gray-200 p-4">
                       <h3 className="font-semibold text-gray-900 mb-3">Features</h3>
                       <ul className="text-sm text-gray-700 space-y-2">
-                        <li>✓ Instant conversion</li>
+                        <li>✓ Server-assisted conversion</li>
                         <li>✓ No installation needed</li>
-                        <li>✓ Keep transparency</li>
+                        <li>✓ PNG transparency support</li>
                         <li>✓ Free and easy</li>
                         <li>✓ No registration</li>
-                        <li>✓ 100% secure</li>
+                        <li>✓ Files processed only as needed for conversion</li>
                       </ul>
                     </div>
                   )}
@@ -238,10 +331,15 @@ export default function PsdToPngPage() {
                   {result && (
                     <button
                       onClick={handleDownload}
-                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                      disabled={downloading}
+                      className="w-full py-3 px-6 disabled:opacity-60 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
-                      <Download size={20} />
-                      Download PNG
+                      {downloading ? (
+                        <RotateCcw size={20} className="animate-spin" />
+                      ) : (
+                        <Download size={20} />
+                      )}
+                      {downloading ? 'Preparing download...' : 'Download PNG'}
                     </button>
                   )}
 
@@ -269,7 +367,7 @@ export default function PsdToPngPage() {
           <ol className="space-y-4 text-gray-700">
             <li className="flex gap-4">
               <span className="text-purple-500 font-bold min-w-8">1.</span>
-              <span><strong>Upload PSD:</strong> Click "Select PSD File" or drag and drop your Photoshop file here.</span>
+              <span><strong>Upload PSD:</strong> Click "Select PSD File" and choose your Photoshop document.</span>
             </li>
             <li className="flex gap-4">
               <span className="text-purple-500 font-bold min-w-8">2.</span>
@@ -298,15 +396,15 @@ export default function PsdToPngPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Transparency Support</h3>
-              <p className="text-gray-700">Full alpha channel preservation ensures transparent areas remain intact in the PNG output.</p>
+              <p className="text-gray-700">PNG output can retain transparency produced by the conversion workflow.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Universal Compatibility</h3>
               <p className="text-gray-700">PNG files work on all platforms and devices. Use the converted images anywhere without restrictions.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Instant Conversion</h3>
-              <p className="text-gray-700">Fast processing means your files are converted in seconds, not minutes or hours.</p>
+              <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Online Conversion</h3>
+              <p className="text-gray-700">Processing time depends on the PSD file size, complexity, and current server load.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-purple-500 mb-2">✓ No Software Required</h3>
@@ -314,11 +412,11 @@ export default function PsdToPngPage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-purple-500 mb-2">✓ High Quality</h3>
-              <p className="text-gray-700">Lossless conversion preserves your image quality and color accuracy perfectly.</p>
+              <p className="text-gray-700">PNG uses lossless image compression. The rendered result depends on the PSD content supported by the conversion engine.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-purple-500 mb-2">✓ 100% Private</h3>
-              <p className="text-gray-700">Your files are processed securely and never stored on our servers. Your privacy is guaranteed.</p>
+              <h3 className="text-lg font-bold text-purple-500 mb-2">✓ Server Processing</h3>
+              <p className="text-gray-700">PSD files are uploaded to the conversion server and processed only as needed to create the PNG output.</p>
             </div>
           </div>
         </div>
@@ -326,35 +424,35 @@ export default function PsdToPngPage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What is a PSD file?</summary>
-              <p className="text-gray-700 mt-2">A PSD (Photoshop Document) is Adobe's native file format for Photoshop. It contains layers, effects, and other editable elements. PNG is a universal image format that works everywhere.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Will transparency be preserved?</summary>
-              <p className="text-gray-700 mt-2">Yes! Our converter preserves the full alpha channel and transparency information. Any transparent areas in your PSD will remain transparent in the PNG output.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I convert large PSD files?</summary>
-              <p className="text-gray-700 mt-2">We support PSD files up to 100 MB. If your file is larger, consider reducing the image dimensions or exporting specific layers from Photoshop before converting.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is this tool free?</summary>
-              <p className="text-gray-700 mt-2">Yes, completely free! No hidden fees, subscriptions, or charges. Convert as many files as you need without any limitations.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Do I need Adobe Photoshop installed?</summary>
-              <p className="text-gray-700 mt-2">No! Our online converter requires no software installation. Just upload your file and download the PNG. It works on any device with a web browser.</p>
-            </details>
-            <details className="border-l-4 border-purple-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Are my files safe?</summary>
-              <p className="text-gray-700 mt-2">Absolutely. Files are processed securely and deleted immediately after conversion. We never store your files on our servers. Your privacy is our priority.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What is a PSD file?</FAQQuestion>
+              <FAQAnswer>A PSD (Photoshop Document) is Adobe's native file format for Photoshop. It contains layers, effects, and other editable elements. PNG is a universal image format that works everywhere.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Will transparency be preserved?</FAQQuestion>
+              <FAQAnswer>PNG supports transparency, and transparent PSD content is preserved when it is available in the rendered PSD image.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I convert large PSD files?</FAQQuestion>
+              <FAQAnswer>We support PSD files up to 200 MB. If your file is larger, consider reducing the image dimensions or exporting a smaller version before converting.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is this tool free?</FAQQuestion>
+              <FAQAnswer>The converter can be used online without installing Photoshop. Availability is subject to the site's normal file-size and server limits.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Do I need Adobe Photoshop installed?</FAQQuestion>
+              <FAQAnswer>No! Our online converter requires no software installation. Just upload your file and download the PNG. It works on any device with a web browser.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Are my files safe?</FAQQuestion>
+              <FAQAnswer>Files are uploaded to the conversion server and processed only as needed to create the PNG output.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}
@@ -384,7 +482,7 @@ export default function PsdToPngPage() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'PSD to PNG Converter - Free Online Photoshop File Converter',
-        description: 'Convert Photoshop PSD files to PNG format instantly with full transparency support. Free, fast, and secure online converter.',
+        description: 'Convert Photoshop PSD files to PNG format online with transparency support.',
         url: 'https://simplifyconvert.com/all-tools/psd-to-png',
         applicationCategory: 'Multimedia',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
@@ -392,15 +490,15 @@ export default function PsdToPngPage() {
         datePublished: '2024-01-01',
         image: 'https://simplifyconvert.com/og-image.jpg',
         featureList: [
-          'Convert PSD files to PNG instantly',
-          'Full transparency support',
+          'Convert PSD files to PNG online',
+          'PNG transparency support',
           'No software installation required',
-          'Support for files up to 100 MB',
-          'Lossless high-quality conversion',
-          'Fast processing',
-          ' 100% secure and private',
+          'Support for files up to 200 MB',
+          'PNG lossless image compression',
+          'Server-assisted processing',
+          'Server-assisted file conversion',
           'No registration required',
-          'Works on all devices',
+          'Web-based conversion workflow',
         ],
       })}} />
     </>

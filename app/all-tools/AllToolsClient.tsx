@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
-import { Search, Clock, ChevronRight, Sparkles, TrendingUp } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Search, Clock, ChevronRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { ToolCard } from '@/app/components/ToolCard';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { SearchBox } from '@/app/components/SearchBox';
 import { allTools } from '@/app/data/tools';
@@ -20,19 +18,304 @@ const categoryColors: Record<string, { bg: string; gradient: string; text: strin
   'File': { bg: 'bg-indigo-50', gradient: 'from-indigo-500 to-indigo-600', text: 'text-indigo-600' },
 };
 
-function ToolsContent() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('default');
-  const searchParams = useSearchParams();
-  const categoryParam = searchParams?.get('category');
-  const searchParam = searchParams?.get('search');
+interface ToolsPageProps {
+  initialCategory?: string;
+  initialSearch?: string;
+}
 
-  // Initialize searchTerm from URL parameter
-  React.useEffect(() => {
-    if (searchParam) {
-      setSearchTerm(searchParam);
-    }
-  }, [searchParam]);
+function AllToolsGuidance() {
+  return (
+    <section
+      aria-label="Guidance for choosing and using tools"
+      className="border-t border-slate-200 bg-white px-4 py-16 md:px-8 md:py-20"
+    >
+      <div className="mx-auto max-w-5xl">
+        <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
+          <section aria-labelledby="find-right-tool-heading">
+            <h2
+              id="find-right-tool-heading"
+              className="text-3xl font-bold tracking-tight text-slate-950"
+            >
+              Find the Right Tool for Your File or Task
+            </h2>
+            <div className="mt-5 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                SimplifyConvert brings together focused tools for documents, images, video, audio,
+                structured data, code and AI-assisted tasks. Use the search and category controls
+                above to narrow the catalog instead of scrolling through tools that are unrelated
+                to what you need.
+              </p>
+              <p>
+                If you already know the operation you want&mdash;for example, &ldquo;merge
+                PDF,&rdquo; &ldquo;compress image,&rdquo; or &ldquo;MP4 to MP3&rdquo;&mdash;search
+                for that task directly. If you are unsure which format or tool is appropriate, the
+                guidance below can help you choose.
+              </p>
+            </div>
+          </section>
+
+          <section aria-labelledby="start-with-result-heading">
+            <h2
+              id="start-with-result-heading"
+              className="text-3xl font-bold tracking-tight text-slate-950"
+            >
+              Start With the Result You Need
+            </h2>
+            <div className="mt-5 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                Choosing a tool is easier when you begin with the output rather than the file you
+                currently have.
+              </p>
+              <p>
+                If you need an editable document, look for a PDF or document conversion tool. If a
+                website rejects an image because it is too large, compression or resizing may be
+                more appropriate than changing the image format. If you only need the sound from a
+                video, extracting audio is usually more direct than converting the entire video.
+              </p>
+              <p>
+                The same principle applies to data and code tools: choose the operation that matches
+                what the receiving application expects.
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <div className="mt-14 grid gap-x-12 gap-y-10 md:grid-cols-2">
+          <section className="border-t border-slate-200 pt-6" aria-labelledby="pdf-document-tasks-heading">
+            <h2 id="pdf-document-tasks-heading" className="text-2xl font-bold text-slate-950">
+              PDF and Document Tasks
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                Use PDF tools when you need to convert, combine, split, compress, organize or modify
+                a PDF document.
+              </p>
+              <p>
+                Some operations mainly rearrange existing PDF pages, while others rebuild content
+                into a different format. Converting a PDF to an editable document, for example, can
+                change fonts, tables, spacing or complex page layouts because PDF and word-processing
+                formats represent documents differently.
+              </p>
+              <p>
+                For important documents, review the converted file before replacing or deleting the
+                original.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 pt-6" aria-labelledby="image-tasks-heading">
+            <h2 id="image-tasks-heading" className="text-2xl font-bold text-slate-950">
+              Image Tasks
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>Image tools cover several different types of work:</p>
+              <ul className="list-disc space-y-2 pl-5">
+                <li>Format conversion changes the file type, such as JPG to PNG.</li>
+                <li>Compression reduces file size and may also reduce image quality.</li>
+                <li>Resizing changes pixel dimensions.</li>
+                <li>Cropping removes part of the image.</li>
+                <li>Background tools attempt to separate a subject from its surroundings.</li>
+                <li>Enhancement tools adjust or process the existing visual information.</li>
+              </ul>
+              <p>
+                These operations are not interchangeable. Converting a JPG to PNG does not restore
+                detail that was lost when the JPG was originally compressed, and increasing image
+                dimensions cannot create genuine detail that was never present in the source.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 pt-6" aria-labelledby="video-audio-tasks-heading">
+            <h2 id="video-audio-tasks-heading" className="text-2xl font-bold text-slate-950">
+              Video and Audio Tasks
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                Video tools can convert formats, compress media, resize or trim footage, extract
+                audio, create transcripts and perform other supported operations.
+              </p>
+              <p>
+                Media files are usually larger and more processing-intensive than documents or
+                images. Conversions and edits may require re-encoding, so file size, processing time
+                and output quality can differ from the source.
+              </p>
+              <p>
+                For URL-based media tools, availability can also depend on whether the source is
+                publicly accessible and supported by the configured provider.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 pt-6" aria-labelledby="data-conversion-tasks-heading">
+            <h2 id="data-conversion-tasks-heading" className="text-2xl font-bold text-slate-950">
+              Data Conversion Tasks
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                Use Data Tools when information needs to move between structured formats such as
+                CSV, Excel, XML and JSON.
+              </p>
+              <p>
+                A format conversion can change how information is represented. Nested XML may need
+                to be flattened for CSV, spreadsheet formulas or formatting may not have a direct
+                equivalent in another format, and column types can be interpreted differently by
+                different applications.
+              </p>
+              <p>
+                Check important datasets after conversion, particularly when the files will be
+                imported into another system.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 pt-6" aria-labelledby="code-utilities-heading">
+            <h2 id="code-utilities-heading" className="text-2xl font-bold text-slate-950">
+              Code and Developer Utilities
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                Code tools are useful for focused development tasks such as formatting, validating,
+                transforming or inspecting code and structured text.
+              </p>
+              <p>
+                They can save time on repetitive operations, but transformed code should still be
+                reviewed before it is used in production. Formatting and conversion tools cannot
+                determine whether the underlying program logic is correct.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 pt-6" aria-labelledby="ai-assisted-tools-heading">
+            <h2 id="ai-assisted-tools-heading" className="text-2xl font-bold text-slate-950">
+              AI-Assisted Tools
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                AI tools can help generate, summarize, analyze or transform supported types of
+                content.
+              </p>
+              <p>
+                Treat AI-generated output as material to review rather than a guaranteed final
+                answer. Generated text can contain errors, omit context or make incorrect
+                assumptions. This is especially important when the output will be published or used
+                for decisions where accuracy matters.
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <div className="mt-14 space-y-10">
+          <section className="border-t border-slate-200 pt-8" aria-labelledby="conversion-reversible-heading">
+            <h2 id="conversion-reversible-heading" className="text-2xl font-bold text-slate-950">
+              Conversion Is Not Always Reversible
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                Changing a file from one format to another does not necessarily preserve every
+                property of the original.
+              </p>
+              <p>A few examples:</p>
+              <ul className="list-disc space-y-2 pl-5">
+                <li>
+                  JPEG compression may already have removed image detail before a JPG-to-PNG
+                  conversion begins.
+                </li>
+                <li>Compressing an image or video can trade visual quality for a smaller file.</li>
+                <li>PDF-to-document conversion can change layout.</li>
+                <li>
+                  Structured-data conversion can flatten or transform relationships between fields.
+                </li>
+                <li>Media conversion can change codecs, bitrates or other technical properties.</li>
+              </ul>
+              <p>
+                If preserving the original is important, keep a separate copy until you have checked
+                the result.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 pt-8" aria-labelledby="file-processing-varies-heading">
+            <h2 id="file-processing-varies-heading" className="text-2xl font-bold text-slate-950">
+              File Size and Processing Can Vary by Tool
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                SimplifyConvert contains different types of tools with different technical
+                requirements. There is no single upload limit or processing method that applies to
+                every page.
+              </p>
+              <p>
+                Some operations can run in the browser. Others require files to be uploaded for
+                server-side processing, and some features depend on external providers.
+              </p>
+              <p>
+                The individual tool page should be treated as the source of truth for supported
+                input types, limits, processing requirements and known limitations.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 pt-8" aria-labelledby="simple-way-heading">
+            <h2 id="simple-way-heading" className="text-2xl font-bold text-slate-950">
+              A Simple Way to Choose
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>Before processing a file, ask three questions:</p>
+              <ol className="list-decimal space-y-4 pl-5">
+                <li>
+                  <p className="font-semibold text-slate-900">What do I have?</p>
+                  <p>Check the current file type or input format.</p>
+                </li>
+                <li>
+                  <p className="font-semibold text-slate-900">What do I need?</p>
+                  <p>Identify the format, size, dimensions or information the destination requires.</p>
+                </li>
+                <li>
+                  <p className="font-semibold text-slate-900">What can change during the process?</p>
+                  <p>
+                    Consider whether layout, image quality, media quality, formulas, formatting or
+                    structured information must be preserved.
+                  </p>
+                </li>
+              </ol>
+              <p>
+                That usually makes it much easier to choose between converting, compressing,
+                resizing, splitting, extracting or editing.
+              </p>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 pt-8" aria-labelledby="keep-original-heading">
+            <h2 id="keep-original-heading" className="text-2xl font-bold text-slate-950">
+              Keep the Original When It Matters
+            </h2>
+            <div className="mt-4 space-y-4 text-base leading-8 text-slate-600">
+              <p>
+                For files that are difficult to replace, keep the source until you have opened and
+                reviewed the processed result.
+              </p>
+              <p>
+                This is particularly useful for business documents, spreadsheets with formulas,
+                high-resolution images, long videos and structured datasets. A technically
+                successful conversion can still produce an output that is unsuitable for a
+                particular workflow.
+              </p>
+              <p>
+                Use the search and category filters above to find the operation you need, then check
+                the individual tool page for its supported formats and limitations.
+              </p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ToolsContent({ initialCategory = '', initialSearch = '' }: ToolsPageProps) {
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [sortBy, setSortBy] = useState('default');
+  const categoryParam = initialCategory;
 
   // Check if category is coming soon or is data tools
   const isDataTools = categoryParam && ['data', 'Data'].includes(categoryParam);
@@ -79,9 +362,15 @@ function ToolsContent() {
     return tool.route || '#';
   };
 
-  const categories = ['Image', 'PDF', 'Video', 'AI Write', 'File'];
-  const uniqueCategories = [...new Set(allTools.map(t => t.category))];
-
+  const categoryDestinations = [
+    { label: 'PDF', href: '/all-tools/pdf-tools', detail: 'Combine, compress, convert, and edit documents' },
+    { label: 'Image', href: '/all-tools/image-tools', detail: 'Resize, convert, compress, and adjust images' },
+    { label: 'Video', href: '/all-tools/video-tools', detail: 'Convert, compress, trim, and extract media' },
+    { label: 'Data', href: '/all-tools/data', detail: 'Move between spreadsheet and structured-data formats' },
+    { label: 'Code', href: '/all-tools/code-tools', detail: 'Format, validate, encode, and transform developer text' },
+    { label: 'AI Writing', href: '/all-tools/ai-tools', detail: 'Generate, rewrite, summarize, and analyze text' },
+    { label: 'Calculators', href: '/all-tools/financial-calculators', detail: 'Explore startup, SaaS, loan, and India tax estimates' },
+  ];
   return (
     <>
       <HomeHeader />
@@ -110,7 +399,7 @@ function ToolsContent() {
 
           <motion.h1 
             className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
@@ -121,13 +410,13 @@ function ToolsContent() {
           </motion.h1>
           <motion.p 
             className="text-lg text-white/90 max-w-2xl"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             {categoryParam 
-              ? `Discover our powerful collection of ${categoryParam.toLowerCase()} tools`
-              : 'Browse our complete collection of free online tools'
+              ? `Browse available tools in this category or search for a specific task.`
+              : 'Explore PDF, image, video, data, code, and AI tools. Search for a specific task or browse by category.'
             }
           </motion.p>
         </div>
@@ -138,7 +427,7 @@ function ToolsContent() {
         <div className="max-w-7xl mx-auto">
           <motion.div 
             className="space-y-6"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
@@ -146,7 +435,7 @@ function ToolsContent() {
             <div className="flex gap-2 flex-col sm:flex-row">
               <div className="flex-1">
                 <SearchBox
-                  placeholder={categoryParam ? `Search ${categoryParam} tools...` : "Search 300+ tools..."}
+                  placeholder={categoryParam ? `Search ${categoryParam} tools...` : "Search all tools..."}
                   onSearch={(query) => setSearchTerm(query)}
                   variant="header"
                   showSuggestions={true}
@@ -158,6 +447,8 @@ function ToolsContent() {
             <div className="flex gap-4 flex-wrap items-center justify-between">
               <div className="flex gap-2 flex-wrap">
                 <select
+                  id="tool-sort"
+                  aria-label="Sort tools"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="px-4 py-2 rounded-full border-2 border-gray-300 focus:outline-none focus:border-purple-500 bg-white font-medium transition-all"
@@ -174,30 +465,27 @@ function ToolsContent() {
 
           {/* Category Pills */}
           {!categoryParam && (
-            <motion.div
-              className="flex gap-2 flex-wrap mt-8"
-              initial={{ opacity: 0 }}
+            <motion.nav
+              aria-label="Tool categories"
+              className="mt-8"
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <span className="text-sm font-semibold text-gray-700">Quick categories:</span>
-              {categories.map((cat) => {
-                const getCategoryLink = (category: string) => {
-                  if (category === 'AI Write') return '/all-tools/ai-tools';
-                  return `/all-tools?category=${category}`;
-                };
-                
-                return (
+              <h2 className="text-xl font-bold text-gray-900">Choose a category</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {categoryDestinations.map((category) => (
                   <Link
-                    key={cat}
-                    href={getCategoryLink(cat)}
-                    className="px-4 py-2 rounded-full bg-white border-2 border-gray-200 hover:border-purple-500 text-gray-700 hover:text-purple-600 font-medium transition-all hover:shadow-md text-sm"
+                    key={category.href}
+                    href={category.href}
+                    className="rounded-xl border-2 border-gray-200 bg-white px-4 py-3 transition-all hover:border-purple-500 hover:shadow-md"
                   >
-                    {cat}
+                    <span className="block text-sm font-semibold text-gray-900">{category.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-gray-600">{category.detail}</span>
                   </Link>
-                );
-              })}
-            </motion.div>
+                ))}
+              </div>
+            </motion.nav>
           )}
         </div>
       </div>
@@ -277,14 +565,14 @@ function ToolsContent() {
           ) : (
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ staggerChildren: 0.05, delayChildren: 0.3 }}
             >
               {filteredTools.map((tool, idx) => (
                 <motion.div
                   key={tool.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                 >
@@ -358,19 +646,13 @@ function ToolsContent() {
           )}
         </div>
       </div>
+      {!categoryParam && <AllToolsGuidance />}
     </main>
     <Footer />
     </>
   );
 }
 
-export default function ToolsPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
-      <ToolsContent />
-    </Suspense>
-  );
+export default function ToolsPage(props: ToolsPageProps) {
+  return <ToolsContent {...props} />;
 }
-
-
-

@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, Suspense } from 'react';
 import dynamic from 'next/dynamic';
@@ -12,7 +13,17 @@ import { Upload, Download, AlertCircle, Loader, ChevronRight, CheckCircle, Zap, 
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { FAQSection } from '@/app/components/FAQSection';
+import { PdfToolSupportingContent } from '@/app/components/PdfToolSupportingContent';
 import { readDownloadResultResponse } from '@/app/lib/download-result-client';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import { BATCH_ONE_PDF_TOOL_IDS, getBatchOnePdfHeroDescription, HumanizedPdfBatchOneContent } from '@/app/components/HumanizedPdfBatchOneContent';
+import HumanizedPdfBatchTwoContent, { BATCH_TWO_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchTwoContent';
+import HumanizedPdfBatchThreeContent, { BATCH_THREE_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchThreeContent';
+import HumanizedPdfBatchFourContent, { BATCH_FOUR_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchFourContent';
+import HumanizedPdfBatchFiveContent, { BATCH_FIVE_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchFiveContent';
+import HumanizedPdfBatchSixContent, { BATCH_SIX_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchSixContent';
+import HumanizedPdfBatchSevenContent, { BATCH_SEVEN_PDF_TOOL_IDS } from '@/app/components/HumanizedPdfBatchSevenContent';
 
 // Dynamically import PDF components to avoid DOMMatrix errors
 const PdfCropEditor = dynamic(() => import('@/app/components/PdfCropEditor').then(mod => ({ default: mod.PdfCropEditor })), {
@@ -35,6 +46,23 @@ interface PageProps {
     slug: string;
   }>;
 }
+
+const PDF_TOOLS_WITH_EXISTING_RELATED_SECTIONS = new Set([
+  'eps-to-pdf',
+  'gif-to-pdf',
+  'heic-to-pdf',
+  'images-to-pdf',
+  'jpg-to-pdf',
+  'pdf-to-jpg',
+  'pdf-to-png',
+  'pdf-to-tiff',
+  'pdf-to-word',
+  'pdf-watermark-remover',
+  'png-to-pdf',
+  'tiff-to-pdf',
+  'unlock-pdf',
+  'webp-to-pdf',
+]);
 
 export default function PdfToolPage({ params }: PageProps) {
   const router = useRouter();
@@ -149,7 +177,7 @@ export default function PdfToolPage({ params }: PageProps) {
     try {
       const formData = new FormData();
       formData.append('tool', tool.id);
-      
+
       formData.append('options', JSON.stringify(submissionOptions));
 
       // Add files or URL
@@ -176,7 +204,7 @@ export default function PdfToolPage({ params }: PageProps) {
       router.push(downloadResult.downloadPageUrl);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred';
-      
+
       // Try to parse debug info from error message
       try {
         const debugInfo = JSON.parse(errorMsg);
@@ -221,7 +249,7 @@ export default function PdfToolPage({ params }: PageProps) {
           <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
             <Link href="/" className="hover:text-white transition">Home</Link>
             <ChevronRight size={16} />
-            <Link href="/all-tools/pdf" className="hover:text-white transition">PDF Tools</Link>
+            <Link href="/all-tools/pdf-tools" className="hover:text-white transition">PDF Tools</Link>
             <ChevronRight size={16} />
             <span className="text-white">{tool.title}</span>
           </div>
@@ -242,13 +270,8 @@ export default function PdfToolPage({ params }: PageProps) {
                    tool.title}
                 </h1>
                 <p className="text-lg text-white/90 max-w-2xl">
-                  {tool.description}
+                  {getBatchOnePdfHeroDescription(tool.id, tool.description)}
                 </p>
-                {tool.id === 'eps-to-pdf' && (
-                  <p className="text-sm md:text-base text-yellow-200 font-semibold mt-3 max-w-2xl">
-                    ✓ No Adobe Illustrator required. Open and convert EPS files instantly.
-                  </p>
-                )}
               </div>
             </div>
           </div>
@@ -319,8 +342,8 @@ export default function PdfToolPage({ params }: PageProps) {
                   <div className="flex items-start gap-3">
                     <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-green-700 mb-1">Your PDF is processed securely and automatically removed after processing</p>
-                      <p className="text-xs text-gray-600">No account needed • Files never stored • Encrypted transmission</p>
+                      <p className="text-sm font-semibold text-green-700 mb-1">Your PDF is sent to our server for processing</p>
+                      <p className="text-xs text-gray-600">No account needed • Temporary processing • HTTPS connection</p>
                     </div>
                   </div>
                 </div>
@@ -362,7 +385,7 @@ export default function PdfToolPage({ params }: PageProps) {
                             <Suspense fallback={
                               <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-center">
                                 <p className="text-gray-600 font-medium">Visual PDF Crop Editor</p>
-                                <p className="text-sm text-gray-500 mt-2">Upload your PDF to see the visual crop editor and select areas to crop. Use the editor to remove margins, trim pages, and extract specific regions from your PDF document.</p>
+                                <p className="text-sm text-gray-500 mt-2">Upload your PDF to see the visual crop editor and select areas to crop. Use the editor to adjust page boundaries and hide margins, whitespace, or unwanted outer areas.</p>
                               </div>
                             }>
                               <PdfCropEditor
@@ -448,7 +471,7 @@ export default function PdfToolPage({ params }: PageProps) {
                         <p className="text-sm text-red-700">{error}</p>
                       </div>
                     </div>
-                    
+
                     {/* Debug Logs */}
                     {result?.debug && (
                       <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
@@ -471,7 +494,7 @@ export default function PdfToolPage({ params }: PageProps) {
                         <p className="text-sm text-green-700">{result.message}</p>
                       </div>
                     </div>
-                    
+
                     {/* Debug Logs */}
                     {result.debug && (
                       <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
@@ -586,6 +609,7 @@ export default function PdfToolPage({ params }: PageProps) {
       </div>
 
       {/* Footer Section - Features */}
+      {!['split-pdf', 'pdf-to-jpg'].includes(tool.id) && (
       <div className="mt-12 grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 md:px-8 pb-12">
         <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-purple-600 hover:shadow-xl transition-all">
           <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
@@ -603,7 +627,7 @@ export default function PdfToolPage({ params }: PageProps) {
             Secure & Private
           </h3>
           <p className="text-sm text-gray-600">
-            Files are processed securely. Files are automatically removed after processing.
+            Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.
           </p>
         </div>
 
@@ -617,9 +641,11 @@ export default function PdfToolPage({ params }: PageProps) {
           </p>
         </div>
       </div>
+      )}
+
 
         {/* SEO Content for Unlock PDF */}
-        {tool.id === 'unlock-pdf' && (
+        {!BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && tool.id === 'unlock-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -651,7 +677,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   {
                     step: '4',
                     title: 'Secure & Private',
-                    description: 'Your PDF is processed securely using encrypted connections and automatically removed after processing.'
+                    description: 'Your PDF is sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((item, idx) => (
                   <motion.div
@@ -688,7 +714,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Secure Processing',
-                    description: 'Your files are encrypted during transfer and automatically deleted after processing.'
+                    description: 'Files are sent over an HTTPS connection for processing. Generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     title: 'No Installation',
@@ -700,7 +726,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your privacy is protected with secure, encrypted processing.'
+                    description: 'Files are sent to our server for processing. Avoid uploading sensitive or confidential documents.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -743,9 +769,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About Unlocking PDFs</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About Unlocking PDFs</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Is it legal to unlock a password-protected PDF?',
@@ -769,25 +795,21 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my information kept confidential?',
-                    a: 'Yes. Your files are processed using secure, encrypted connections and automatically removed after processing. We do not permanently store your documents or passwords. Your privacy is protected throughout the process.'
+                    a: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents or passwords.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools Section */}
             <div className="mb-16">
@@ -875,7 +897,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my information kept confidential?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes. Your files are processed using secure, encrypted connections and automatically removed after processing. We do not permanently store your documents or passwords. Your privacy is protected throughout the process.'
+                    text: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents or passwords.'
                   }
                 }
               ]
@@ -884,7 +906,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF Watermark Remover */}
-        {tool.id === 'pdf-watermark-remover' && (
+        {!BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && tool.id === 'pdf-watermark-remover' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -965,7 +987,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your documents are protected with secure, encrypted processing.'
+                    description: 'Files are sent to our server for processing. Avoid uploading sensitive or confidential documents.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -1008,9 +1030,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About Watermark Removal</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About Watermark Removal</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Is it legal to remove watermarks from PDFs?',
@@ -1018,7 +1040,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Will removing watermarks damage my PDF?',
-                    a: 'No, your PDF remains completely intact. Our watermark removal only eliminates watermarks and unwanted elements. All original content, text, formatting, images, and layout are preserved exactly as they were.'
+                    a: 'Watermark detection and removal may affect nearby text, graphics, colors, or page rendering. Complex or overlapping watermarks may require manual review. Review the resulting PDF before relying on it.'
                   },
                   {
                     q: 'What watermark removal methods are available?',
@@ -1034,25 +1056,21 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my information kept confidential?',
-                    a: 'Yes. Your files are processed using secure, encrypted connections and automatically removed after processing. We do not permanently store your documents. Your privacy is protected throughout the process.'
+                    a: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools Section */}
             <div className="mb-16">
@@ -1066,16 +1084,18 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Merge PDF',
-                    description: 'Combine multiple PDF files into one document quickly and easily.'
+                    description: 'Combine multiple PDF files into one document quickly and easily.',
+                    link: '/all-tools/pdf/merge-pdf'
                   },
                   {
                     title: 'Compress PDF',
-                    description: 'Reduce PDF file size while maintaining quality for easier sharing and storage.'
+                    description: 'Reduce PDF file size while maintaining quality for easier sharing and storage.',
+                    link: '/all-tools/pdf/compress-pdf'
                   }
                 ].map((relatedTool, idx) => (
                   <Link
                     key={idx}
-                    href={relatedTool.link || '#'}
+                    href={relatedTool.link}
                     className="group p-6 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-lg transition-all"
                   >
                     <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 group-hover:text-indigo-600 transition-colors">
@@ -1106,7 +1126,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Will removing watermarks damage my PDF?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'No, your PDF remains completely intact. Our watermark removal only eliminates watermarks and unwanted elements. All original content, text, formatting, images, and layout are preserved exactly as they were.'
+                    text: 'Watermark detection and removal may affect nearby text, graphics, colors, or page rendering. Complex or overlapping watermarks may require manual review. Review the resulting PDF before relying on it.'
                   }
                 },
                 {
@@ -1138,7 +1158,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my information kept confidential?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes. Your files are processed using secure, encrypted connections and automatically removed after processing. We do not permanently store your documents. Your privacy is protected throughout the process.'
+                    text: 'Files are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 }
               ]
@@ -1147,14 +1167,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF to JPG Converter */}
-        {tool.id === 'pdf-to-jpg' && (
+        {false && tool?.id === 'pdf-to-jpg' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Convert PDF pages to high-quality JPG images instantly with our free online PDF to JPG converter. Extract all pages from your PDF or <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">convert specific pages</Link> into individual JPG images. No software installation required—just upload, select your quality settings (72-600 DPI), and download your JPG images in seconds.
               </p>
-              
+
               {/* Preview Image Placeholder - Alt text ready */}
               {/* 
                 TODO: Add preview image here
@@ -1242,7 +1262,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your PDFs are processed securely and automatically deleted after conversion.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -1285,9 +1305,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">PDF to JPG Converter FAQs - Quick Answers & Guides</h2>
-              
+            <FAQPanel>
+              <FAQHeading>PDF to JPG Converter FAQs - Quick Answers & Guides</FAQHeading>
+
               {/* Before/After Comparison Placeholder - Alt text ready */}
               {/*
                 TODO: Add before/after comparison image here
@@ -1299,16 +1319,16 @@ export default function PdfToolPage({ params }: PageProps) {
                   />
                 </div>
               */}
-              
-              <div className="space-y-4">
+
+              <FAQList>
                 {[
                   {
                     q: 'What DPI setting should I choose?',
-                    a: 'DPI (dots per inch) controls image quality and file size. Choose 72 DPI for screen viewing and small files, 150 DPI for balanced quality, 300 DPI for high-quality prints, or 600 DPI for professional use. Higher DPI creates larger files but better quality.'
+                    a: 'DPI (dots per inch) controls the raster resolution of each generated image. Higher DPI settings produce more pixels and can retain more visible page detail, but they also increase image dimensions, file size, and processing requirements.'
                   },
                   {
                     q: 'Will converting PDF to JPG reduce image quality?',
-                    a: 'No, our converter maintains high quality at all DPI levels. The conversion process preserves image clarity, colors, and details. Quality depends on your chosen DPI setting—higher DPI means better quality but larger files.'
+                    a: 'PDF pages are rasterized at the selected DPI and then encoded as JPG images. Because JPG uses lossy compression, some source detail can change during image encoding. Higher DPI provides more raster detail but also creates larger images.'
                   },
                   {
                     q: 'Can I convert all pages or just specific pages?',
@@ -1324,25 +1344,21 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my PDF file secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* Workflow Tips Section */}
             <div className="mb-16 p-6 bg-indigo-50 rounded-2xl border border-indigo-200">
@@ -1350,7 +1366,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-gray-700 mb-4">
                 Enhance your PDF to JPG conversion with complementary tools. If you need specific pages, use <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">split PDF</Link> to extract them first. For smaller file sizes after conversion, try <Link href="/all-tools/pdf/compress-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">compress PDF</Link>. If you're working with multiple PDF sources, <Link href="/all-tools/pdf/merge-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">merge PDF</Link> files together before converting for streamlined batch processing.
               </p>
-              
+
               {/* DPI Comparison Chart Placeholder - Alt text ready */}
               {/* 
                 TODO: Add DPI comparison chart image here
@@ -1411,7 +1427,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'What DPI setting should I choose?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'DPI (dots per inch) controls image quality and file size. Choose 72 DPI for screen viewing and small files, 150 DPI for balanced quality, 300 DPI for high-quality prints, or 600 DPI for professional use. Higher DPI creates larger files but better quality.'
+                    text: 'DPI (dots per inch) controls the raster resolution of each generated image. Higher DPI settings produce more pixels and can retain more visible page detail, but they also increase image dimensions, file size, and processing requirements.'
                   }
                 },
                 {
@@ -1419,7 +1435,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Will converting PDF to JPG reduce image quality?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'No, our converter maintains high quality at all DPI levels. The conversion process preserves image clarity, colors, and details. Quality depends on your chosen DPI setting—higher DPI means better quality but larger files.'
+                    text: 'PDF pages are rasterized at the selected DPI and then encoded as JPG images. Because JPG uses lossy compression, some source detail can change during image encoding. Higher DPI provides more raster detail but also creates larger images.'
                   }
                 },
                 {
@@ -1451,7 +1467,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my PDF file secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 }
               ]
@@ -1460,14 +1476,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF to PNG Converter */}
-        {tool.id === 'pdf-to-png' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'pdf-to-png' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Convert PDF pages to high-quality PNG images with transparent backgrounds instantly with our free online PDF to PNG converter. Extract all pages from your PDF or <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">convert specific pages</Link> into individual PNG images. No software installation required—just upload, select your quality settings (72-600 DPI), and download your PNG images in seconds.
               </p>
-              
+
               {/* Preview Image Placeholder - Alt text ready */}
               {/* 
                 TODO: Add preview image here
@@ -1543,7 +1559,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Lossless Compression',
-                    description: 'PNG uses lossless compression to maintain perfect quality. No image degradation, perfect for graphics and text.'
+                    description: 'PNG uses lossless compression for the generated raster image. The visible detail depends on the DPI selected when the PDF page is rendered.'
                   },
                   {
                     title: 'No Installation',
@@ -1555,7 +1571,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your PDFs are processed securely and automatically deleted after conversion.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -1580,7 +1596,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 {[
                   'Converting PDFs for web use with transparent backgrounds for professional websites',
                   'Creating PNG graphics from PDF documents for presentations and marketing materials',
-                  'Converting scanned documents to lossless PNG format for perfect archival storage',
+                  'Converting scanned document pages to PNG images for image-based storage or editing',
                   'Preparing PDF pages as individual PNG files for graphic design and editing in Photoshop',
                   'Extracting specific pages from PDFs (try splitting PDFs first with split PDF tool)',
                   'Converting and combining multiple PDFs to PNG for easy browsing and organization'
@@ -1607,7 +1623,7 @@ export default function PdfToolPage({ params }: PageProps) {
                     icon: '🎨',
                     best: 'Best for',
                     features: ['Transparent backgrounds', 'Graphics & logos', 'Web design', 'Lossless quality'],
-                    pros: ['Perfect quality', 'Supports transparency', 'No quality loss'],
+                    pros: ['Lossless PNG encoding', 'Supports transparency', 'Useful for graphics'],
                     cons: ['Larger file size', 'Less compression']
                   },
                   {
@@ -1634,7 +1650,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   >
                     <div className="text-4xl mb-3">{format.icon}</div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">{format.format}</h3>
-                    
+
                     <div className="mb-4">
                       <p className="text-sm font-semibold text-indigo-600 mb-2">{format.best}</p>
                       <ul className="space-y-1">
@@ -1667,7 +1683,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   </motion.div>
                 ))}
               </div>
-              
+
               <div className="mt-8 p-4 bg-white rounded-lg border border-indigo-100">
                 <p className="text-gray-700">
                   <span className="font-semibold text-indigo-600">When to use PNG:</span> Convert PDF to PNG when you need transparent backgrounds, web-optimized graphics, or professional design files. PNG provides lossless quality perfect for logos, icons, and digital designs.
@@ -1681,7 +1697,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-gray-700 mb-4">
                 Enhance your PDF to PNG conversion with complementary tools. If you need specific pages, use <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">split PDF</Link> to extract them first. For smaller file sizes after conversion, try <Link href="/all-tools/pdf/compress-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">compress PDF</Link>. If you're working with multiple PDF sources, <Link href="/all-tools/pdf/merge-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">merge PDF</Link> files together before converting for streamlined batch processing.
               </p>
-              
+
               {/* DPI Comparison Chart Placeholder - Alt text ready */}
               {/* 
                 TODO: Add DPI comparison chart image here
@@ -1733,9 +1749,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Convert PDF Pages to PNG Images - Frequently Asked Questions</h2>
-              
+            <FAQPanel>
+              <FAQHeading>Convert PDF Pages to PNG Images - Frequently Asked Questions</FAQHeading>
+
               {/* Before/After Comparison Placeholder - Alt text ready */}
               {/*
                 TODO: Add before/after comparison image here
@@ -1747,12 +1763,12 @@ export default function PdfToolPage({ params }: PageProps) {
                   />
                 </div>
               */}
-              
-              <div className="space-y-4">
+
+              <FAQList>
                 {[
                   {
                     q: 'What is the difference between PNG and JPG?',
-                    a: 'PNG uses lossless compression and supports transparency, making it ideal for graphics, logos, and web design. JPG uses lossy compression and is better for photographs. PNG files are typically larger but maintain perfect quality.'
+                    a: 'PNG uses lossless compression and supports transparency, while JPG uses lossy compression. When a PDF page is converted to PNG, the page is first rendered at the selected DPI, so output detail depends on that rendering resolution.'
                   },
                   {
                     q: 'Will converting PDF to PNG preserve transparency?',
@@ -1772,25 +1788,21 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my PDF file secure and private?',
-                    a: 'Yes. Your PDF is processed using secure, encrypted connections and automatically deleted from our servers immediately after conversion. We never store your files permanently or share them with anyone. Your privacy is completely protected.'
+                    a: 'Your PDF is sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -1802,7 +1814,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'What is the difference between PNG and JPG?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'PNG uses lossless compression and supports transparency, making it ideal for graphics, logos, and web design. JPG uses lossy compression and is better for photographs. PNG files are typically larger but maintain perfect quality.'
+                    text: 'PNG uses lossless compression and supports transparency, while JPG uses lossy compression. When a PDF page is converted to PNG, the page is first rendered at the selected DPI, so output detail depends on that rendering resolution.'
                   }
                 },
                 {
@@ -1842,7 +1854,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my PDF file secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 }
               ]
@@ -1851,14 +1863,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF to TIFF Converter */}
-        {tool.id === 'pdf-to-tiff' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'pdf-to-tiff' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Convert PDF pages to high-quality TIFF images online for free. Choose DPI settings (72–600) for archival storage, printing, or professional use. Fast, secure, and no installation required.
               </p>
-              
+
               {/* Preview Image Placeholder - Alt text ready */}
               {/* 
                 TODO: Add preview image here
@@ -1934,7 +1946,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Lossless Compression',
-                    description: 'TIFF uses lossless compression to maintain perfect quality. No image degradation, ideal for legal, medical, and archival documents.'
+                    description: 'TIFF supports lossless image compression for the generated raster output. Visible detail depends on the DPI used when rendering each PDF page.'
                   },
                   {
                     title: 'No Installation',
@@ -1946,7 +1958,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'We do not permanently store your files. Your PDFs are processed securely and automatically deleted after conversion.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -2006,7 +2018,7 @@ export default function PdfToolPage({ params }: PageProps) {
                     icon: '📋',
                     best: 'Best for',
                     features: ['Archival storage', 'Professional printing', 'Document preservation', 'Lossless quality'],
-                    pros: ['Perfect quality', 'Industry standard', 'No quality loss', 'Multi-page support'],
+                    pros: ['Lossless image encoding', 'Widely used format', 'High-resolution output', 'Multi-page support'],
                     cons: ['Larger file size', 'More storage needed']
                   },
                   {
@@ -2033,7 +2045,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   >
                     <div className="text-4xl mb-3">{format.icon}</div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">{format.format}</h3>
-                    
+
                     <div className="mb-4">
                       <p className="text-sm font-semibold text-indigo-600 mb-2">{format.best}</p>
                       <ul className="space-y-1">
@@ -2066,7 +2078,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   </motion.div>
                 ))}
               </div>
-              
+
               <div className="mt-8 p-4 bg-white rounded-lg border border-indigo-100">
                 <p className="text-gray-700">
                   <span className="font-semibold text-indigo-600">When to use TIFF:</span> Convert PDF to TIFF for professional archival storage, legal document preservation, medical records, and high-quality printing. TIFF is the industry standard for long-term document storage and compliance requirements.
@@ -2080,7 +2092,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <p className="text-gray-700 mb-4">
                 Enhance your PDF to TIFF conversion with complementary tools. If you need specific pages, use <Link href="/all-tools/pdf/split-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">split PDF</Link> to extract them first. For smaller file sizes after conversion, try <Link href="/all-tools/pdf/compress-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">compress PDF</Link>. If you're working with multiple PDF sources, <Link href="/all-tools/pdf/merge-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">merge PDF</Link> files together before converting for streamlined batch processing.
               </p>
-              
+
               {/* DPI Comparison Chart Placeholder - Alt text ready */}
               {/* 
                 TODO: Add DPI comparison chart image here
@@ -2132,9 +2144,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Convert PDF Pages to TIFF - Frequently Asked Questions</h2>
-              
+            <FAQPanel>
+              <FAQHeading>Convert PDF Pages to TIFF - Frequently Asked Questions</FAQHeading>
+
               {/* Before/After Comparison Placeholder - Alt text ready */}
               {/*
                 TODO: Add before/after comparison image here
@@ -2146,16 +2158,16 @@ export default function PdfToolPage({ params }: PageProps) {
                   />
                 </div>
               */}
-              
-              <div className="space-y-4">
+
+              <FAQList>
                 {[
                   {
                     q: 'What is TIFF format and why should I use it?',
-                    a: 'TIFF (Tagged Image File Format) is an industry-standard image format designed for professional use, archival storage, and high-quality printing. Unlike lossy formats like JPG, TIFF maintains perfect image quality without compression, making it ideal for legal documents, medical records, and long-term storage.'
+                    a: 'TIFF (Tagged Image File Format) supports high-resolution raster images and lossless compression options. It is commonly used in document imaging, publishing, scanning, and archival workflows.'
                   },
                   {
                     q: 'Will converting PDF to TIFF preserve quality?',
-                    a: 'Yes, absolutely. Our converter uses lossless conversion that preserves every detail of your original PDF. The resulting TIFF images maintain perfect quality at all DPI levels. This makes TIFF ideal for professional documents, legal archives, and compliance-sensitive records.'
+                    a: 'PDF pages are rasterized to TIFF at the selected DPI. Higher DPI settings retain more visible page detail but also create larger files. TIFF encoding can be lossless, but rasterization does not preserve PDF vector content as vectors.'
                   },
                   {
                     q: 'Can I convert all pages or just specific pages?',
@@ -2171,25 +2183,21 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my PDF file secure when converting to TIFF?',
-                    a: 'Yes. Your PDF is processed using secure, encrypted connections and automatically deleted from our servers immediately after conversion. We never store your files permanently or share them with anyone. Your privacy and document security are completely protected.'
+                    a: 'Your PDF is sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -2201,7 +2209,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'What is TIFF format and why should I use it?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'TIFF (Tagged Image File Format) is an industry-standard image format designed for professional use, archival storage, and high-quality printing. Unlike lossy formats like JPG, TIFF maintains perfect image quality without compression, making it ideal for legal documents, medical records, and long-term storage.'
+                    text: 'TIFF (Tagged Image File Format) supports high-resolution raster images and lossless compression options. It is commonly used in document imaging, publishing, scanning, and archival workflows.'
                   }
                 },
                 {
@@ -2209,7 +2217,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Will converting PDF to TIFF preserve quality?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes, absolutely. Our converter uses lossless conversion that preserves every detail of your original PDF. The resulting TIFF images maintain perfect quality at all DPI levels. This makes TIFF ideal for professional documents, legal archives, and compliance-sensitive records.'
+                    text: 'PDF pages are rasterized to TIFF at the selected DPI. Higher DPI settings retain more visible page detail but also create larger files. TIFF encoding can be lossless, but rasterization does not preserve PDF vector content as vectors.'
                   }
                 },
                 {
@@ -2241,7 +2249,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my PDF file secure when converting to TIFF?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 }
               ]
@@ -2250,14 +2258,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for JPG to PDF Converter */}
-        {tool.id === 'jpg-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'jpg-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Whether you're scanning documents, organizing photos, or preparing images for professional use, combining multiple JPG and PNG files into a single PDF is essential. Our free converter streamlines this process, allowing you to merge unlimited images while maintaining quality control.
+                Whether you're scanning documents, organizing photos, or preparing images for professional use, combining multiple JPG and PNG files into a single PDF is essential. Our free converter streamlines this process, allowing you to merge multiple images while maintaining quality control.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -2347,7 +2355,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'Files are processed securely and automatically deleted after processing.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -2406,8 +2414,8 @@ export default function PdfToolPage({ params }: PageProps) {
                     format: 'PNG',
                     icon: '🎨',
                     best: 'Best for',
-                    features: ['Graphics & logos', 'Transparency support', 'Lossless quality', 'Web design'],
-                    pros: ['Perfect quality', 'Supports transparency', 'No quality loss'],
+                    features: ['Graphics & logos', 'Transparency support', 'Lossless PNG encoding', 'Web design'],
+                    pros: ['Lossless PNG encoding', 'Supports transparency', 'Useful for graphics'],
                     cons: ['Larger file size', 'Single image format', 'Less compression']
                   },
                   {
@@ -2426,7 +2434,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   >
                     <div className="text-4xl mb-3">{format.icon}</div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">{format.format}</h3>
-                    
+
                     <div className="mb-4">
                       <p className="text-sm font-semibold text-indigo-600 mb-2">{format.best}</p>
                       <ul className="space-y-1">
@@ -2459,7 +2467,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   </motion.div>
                 ))}
               </div>
-              
+
               <div className="mt-8 p-4 bg-white rounded-lg border border-indigo-100">
                 <p className="text-gray-700">
                   <span className="font-semibold text-indigo-600">When to convert JPG to PDF:</span> Create PDFs from JPG images when you need a professional, multi-page document format. Perfect for combining photos, scans, or receipts into shareable PDF files.
@@ -2515,9 +2523,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">JPG to PDF Converter - Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>JPG to PDF Converter - Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple JPG images into one PDF?',
@@ -2537,29 +2545,25 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my image data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     q: 'Can I reorder images before converting to PDF?',
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -2603,7 +2607,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my image data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 },
                 {
@@ -2619,14 +2623,14 @@ export default function PdfToolPage({ params }: PageProps) {
           </div>
         )}
 
-        {tool.id === 'png-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'png-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 PNG files are commonly used for high-quality images, but managing multiple files can be difficult. Converting them into a single PDF makes sharing, printing, and organizing much easier. If you work with <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG images</Link>, we also offer a dedicated JPG to PDF converter for seamless conversion.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -2716,7 +2720,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'Files are processed securely and automatically deleted after processing.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -2791,9 +2795,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">PNG to PDF Converter - Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>PNG to PDF Converter - Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple PNG images into one PDF?',
@@ -2813,29 +2817,25 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my PNG data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     q: 'Can I reorder PNG images before converting to PDF?',
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -2879,7 +2879,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my PNG data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 },
                 {
@@ -2904,14 +2904,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for TIFF to PDF Converter */}
-        {tool.id === 'tiff-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'tiff-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 TIFF files are professional-grade image formats commonly used in scanning, archiving, and high-quality document storage. Converting multiple TIFF files into a single PDF makes sharing, printing, and organizing much easier. If you work with other image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link> and <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -3001,7 +3001,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'Files are processed securely and automatically deleted after processing.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -3147,9 +3147,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">TIFF to PDF Converter - Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>TIFF to PDF Converter - Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple TIFF images into one PDF?',
@@ -3169,29 +3169,25 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my TIFF data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     q: 'Can I reorder TIFF images before converting to PDF?',
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -3235,7 +3231,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my TIFF data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 },
                 {
@@ -3252,14 +3248,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for GIF to PDF Converter */}
-        {tool.id === 'gif-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'gif-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 GIF images are popular for animations, memes, and quick visual demonstrations, but they're not ideal for professional sharing or printing. Converting GIF files to PDF creates a static, printable document that's perfect for presentations and archives. Whether you have a single GIF or multiple animated images to merge, our GIF to PDF converter makes it quick and easy. If you work with other image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link>, <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link>, and <Link href="/all-tools/pdf/webp-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">WebP to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {[
@@ -3314,7 +3310,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   { icon: '📦', title: 'Compression Control', description: 'Choose compression levels 0–9 to balance file size and image quality perfectly.' },
                   { icon: '⚡', title: 'No Installation', description: 'Our online converter requires no software downloads or installations on your computer.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most GIF to PDF conversions complete in seconds, even with multiple large files.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after processing. We do not store your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -3423,9 +3419,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About GIF to PDF Conversion</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About GIF to PDF Conversion</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple GIF images into one PDF?',
@@ -3445,28 +3441,23 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my GIF data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing. We never permanently store your files on our servers, ensuring your privacy and data security throughout the conversion.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   },
                   {
                     q: 'Can I reorder GIF images before converting to PDF?',
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order, giving you complete control over the final document layout.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                    className="p-6 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
-                  >
-                    <motion.summary className="font-semibold text-gray-900 list-none flex justify-between items-center">
+                  <FAQDisclosure key={idx}>
+                    <FAQAnswer>
                       <span>{faq.q}</span>
                       <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
-                    </motion.summary>
-                    <p className="mt-3 text-gray-700 leading-relaxed text-sm">{faq.a}</p>
-                  </motion.details>
+                    </FAQAnswer>
+                    <FAQAnswer>{faq.a}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -3510,7 +3501,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my GIF data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We never permanently store your files on our servers, ensuring your privacy and data security throughout the conversion.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                   }
                 },
                 {
@@ -3527,14 +3518,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for HEIC to PDF Converter */}
-        {tool.id === 'heic-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'heic-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 HEIC is Apple's modern image format used by iPhones, iPads, and Mac devices. While HEIC offers superior compression and quality, it's not universally compatible with all devices and applications. Converting HEIC files to PDF creates a universally readable document that works everywhere—perfect for sharing photos, creating archives, or printing. Batch convert multiple HEIC files in seconds. Whether you have a single HEIC image from your iPhone or want to batch convert multiple HEIC files to a single PDF document, our HEIC to PDF converter makes it quick and easy. If you work with other image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link>, <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link>, and <Link href="/all-tools/pdf/webp-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">WebP to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {[
@@ -3589,7 +3580,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   { icon: '📦', title: 'Compression Control', description: 'Choose compression levels 0–9 to balance file size and image quality perfectly.' },
                   { icon: '⚡', title: 'No Installation', description: 'Our online converter requires no software downloads or installations on your computer.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most HEIC to PDF conversions complete in seconds, even with multiple large files.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after processing. We do not store your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -3698,9 +3689,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About HEIC to PDF Conversion</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About HEIC to PDF Conversion</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple HEIC images into one PDF?',
@@ -3720,28 +3711,23 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my HEIC data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing. We do not store your files. Your HEIC photos remain completely private throughout the conversion process.'
+                    a: 'HEIC files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive photos.'
                   },
                   {
                     q: 'Can I reorder HEIC images before converting to PDF?',
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order, giving you complete control over the final document layout.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                    className="p-6 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
-                  >
-                    <motion.summary className="font-semibold text-gray-900 list-none flex justify-between items-center">
+                  <FAQDisclosure key={idx}>
+                    <FAQAnswer>
                       <span>{faq.q}</span>
                       <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
-                    </motion.summary>
-                    <p className="mt-3 text-gray-700 leading-relaxed text-sm">{faq.a}</p>
-                  </motion.details>
+                    </FAQAnswer>
+                    <FAQAnswer>{faq.a}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -3785,7 +3771,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my HEIC data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files. Your HEIC photos remain completely private throughout the conversion process.'
+                    text: 'HEIC files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive photos.'
                   }
                 },
                 {
@@ -3816,14 +3802,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for EPS to PDF Converter */}
-        {tool.id === 'eps-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'eps-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 EPS (Encapsulated PostScript) is a vector graphics format widely used by designers, artists, and print professionals for logos, illustrations, and technical drawings. While EPS files are powerful for design work, you need Adobe Illustrator or expensive design software to open them. Converting EPS files to PDF creates a shareable, universally readable document that preserves vector quality—perfect for opening EPS files on any device without Illustrator or design software. Batch convert multiple EPS files in seconds. Whether you have a single EPS graphic or multiple EPS files to batch convert to PDF, our EPS to PDF converter makes it quick and easy, working as an EPS file viewer and converter. If you work with other vector or image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link>, <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link>, and <Link href="/all-tools/pdf/webp-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">WebP to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {[
@@ -3889,7 +3875,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   { icon: '📦', title: 'Compression Control', description: 'Choose compression levels 0–9 to balance file size and vector quality perfectly.' },
                   { icon: '⚡', title: 'No Installation', description: 'Our online converter requires no software downloads or installations on your computer.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most EPS to PDF conversions complete in seconds, even with multiple large vector files.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after processing. We do not store your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -3919,7 +3905,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   </thead>
                   <tbody>
                     {[
-                      { feature: 'Vector Quality', eps: 'Fully scalable without quality loss', pdf: 'Vector preserved in PDF (scalable)' },
+                      { feature: 'Vector Quality', eps: 'Scales as vector artwork', pdf: 'Vector preserved in PDF (scalable)' },
                       { feature: 'Device Compatibility', eps: 'Limited (mainly design software)', pdf: 'Works on all devices and platforms' },
                       { feature: 'Shareability', eps: 'Not easily shareable', pdf: 'Universally shareable via email, messaging' },
                       { feature: 'Printing Quality', eps: 'Professional print quality', pdf: 'Excellent print quality' },
@@ -3998,9 +3984,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About EPS to PDF Conversion</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About EPS to PDF Conversion</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I batch convert multiple EPS files to PDF?',
@@ -4016,7 +4002,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my EPS data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing. We do not store your files. Your EPS designs and vector graphics remain completely private throughout the conversion process.'
+                    a: 'EPS files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive designs.'
                   },
                   {
                     q: 'Can designers edit the converted PDF?',
@@ -4027,21 +4013,16 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'Our converter supports EPS files from all major versions (EPS 2.0, 3.0, and higher) created by Adobe, CorelDRAW, Illustrator, and other professional design software. Vector quality is preserved across all versions.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                    className="p-6 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
-                  >
-                    <motion.summary className="font-semibold text-gray-900 list-none flex justify-between items-center">
+                  <FAQDisclosure key={idx}>
+                    <FAQAnswer>
                       <span>{faq.q}</span>
                       <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
-                    </motion.summary>
-                    <p className="mt-3 text-gray-700 leading-relaxed text-sm">{faq.a}</p>
-                  </motion.details>
+                    </FAQAnswer>
+                    <FAQAnswer>{faq.a}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -4077,7 +4058,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my EPS data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing. We do not store your files. Your EPS designs and vector graphics remain completely private throughout the conversion process.'
+                    text: 'EPS files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval. Avoid uploading sensitive designs.'
                   }
                 },
                 {
@@ -4116,14 +4097,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Images to PDF Converter */}
-        {tool.id === 'images-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'images-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Converting images to PDF is one of the most practical tasks for document creation and sharing. Whether you have JPG photos, PNG screenshots, GIF animations, WEBP images, TIFF documents, or HEIC files from your iPhone, our free batch image-to-PDF converter makes it simple to merge multiple images into a single, professional PDF document. Convert photos to PDF, combine pictures into a single document, or create scanned documents from images instantly. Create PDFs from images without downloading software or signing up for an account. Perfect for creating photo albums, scanned documents, digital presentations, and more. Our converter supports all major image formats and lets you adjust compression levels to balance file size with quality. Merge unlimited images and convert with just a few clicks.
+                Converting images to PDF is one of the most practical tasks for document creation and sharing. Whether you have JPG photos, PNG screenshots, GIF animations, WEBP images, TIFF documents, or HEIC files from your iPhone, our free batch image-to-PDF converter makes it simple to merge multiple images into a single, professional PDF document. Convert photos to PDF, combine pictures into a single document, or create scanned documents from images instantly. Create PDFs from images without downloading software or signing up for an account. Perfect for creating photo albums, scanned documents, digital presentations, and more. Our converter supports all major image formats and lets you adjust compression levels to balance file size with quality. Merge multiple images and convert with just a few clicks.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {[
@@ -4189,12 +4170,12 @@ export default function PdfToolPage({ params }: PageProps) {
               <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Choose Our Image to PDF Converter?</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
-                  { icon: '✓', title: 'Completely Free', description: 'No hidden fees, watermarks, or premium tiers. Convert unlimited images to PDF without paying a dime.' },
+                  { icon: '✓', title: 'Free to Use', description: 'No subscription or credit card is required. File-count and size limits may apply.' },
                   { icon: '🔄', title: 'Batch Merge Images', description: 'Combine multiple images in one operation. Create multi-page PDFs from JPG, PNG, GIF, WEBP, TIFF, and HEIC files simultaneously.' },
                   { icon: '📦', title: 'Compression Control', description: 'Choose compression levels 0–9 to balance PDF file size and image quality based on your specific needs.' },
                   { icon: '⚡', title: 'No Installation', description: 'Works entirely online in your browser. No software downloads, installations, or system requirements needed.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most image-to-PDF conversions complete in seconds, even with multiple large images or batch operations.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after conversion. We do not store or access your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -4340,7 +4321,7 @@ export default function PdfToolPage({ params }: PageProps) {
             <div className="mb-16 p-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Image to PDF Converter - The Smarter Solution</h2>
               <p className="text-lg text-gray-700 mb-4">
-                Instead of hunting for image-to-PDF software or paying for subscriptions, use our free online converter. We support all major image formats—JPG, PNG, GIF, WEBP, TIFF, and HEIC—in one simple tool. Merge images into PDFs without limits, adjust compression to your needs, and download instantly. No registration, no watermarks, no complications.
+                Instead of hunting for image-to-PDF software or paying for subscriptions, use our free online converter. We support JPG, PNG, GIF, WEBP, TIFF, and HEIC in one simple tool. Merge images up to the documented 100 MB-per-file limit, adjust compression to your needs, and download the resulting PDF. No registration or added watermarks.
               </p>
               <p className="text-lg text-gray-700">
                 Perfect for students creating study guides from lecture slides, professionals organizing project documentation, photographers compiling portfolios, and anyone who needs to convert and merge images into portable PDF documents.
@@ -4348,9 +4329,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions About Image to PDF Conversion</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions About Image to PDF Conversion</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple images of different formats into one PDF?',
@@ -4366,7 +4347,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my data secure when converting images to PDF?',
-                    a: 'Yes. All files are processed securely in the cloud and automatically deleted after conversion. We never store your files or access them after processing is complete.'
+                    a: 'Images are sent to our server for processing. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive images.'
                   },
                   {
                     q: 'Can I convert HEIC photos from my iPhone to PDF?',
@@ -4377,21 +4358,16 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'No account required! You can start converting images to PDF immediately. No registration, no sign-up, no email verification needed. It\'s completely free and anonymous.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                    className="p-6 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
-                  >
-                    <motion.summary className="font-semibold text-gray-900 list-none flex justify-between items-center">
+                  <FAQDisclosure key={idx}>
+                    <FAQAnswer>
                       <span>{faq.q}</span>
                       <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
-                    </motion.summary>
-                    <p className="mt-3 text-gray-700 leading-relaxed text-sm">{faq.a}</p>
-                  </motion.details>
+                    </FAQAnswer>
+                    <FAQAnswer>{faq.a}</FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -4427,7 +4403,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my data secure when converting images to PDF?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes. All files are processed securely in the cloud and automatically deleted after conversion. We never store your files or access them after processing is complete.'
+                    text: 'Images are sent to our server for processing. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive images.'
                   }
                 },
                 {
@@ -4466,14 +4442,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF to Word Converter */}
-        {tool.id === 'pdf-to-word' && (
+        {false && tool?.id === 'pdf-to-word' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Converting PDF to Word is one of the most practical tasks for document editing and repurposing. Whether you have scanned documents, generated PDFs, or other text files, our free PDF to Word converter makes it simple to extract text and convert it into editable Microsoft Word documents. Convert PDF to editable Word documents (DOCX) instantly. Use this free PDF to Word converter online without email or registration. Convert PDFs to DOCX format without installing software or signing up for an account. Perfect for editing documents, reusing content, extracting data from PDFs, and more. Our converter preserves formatting and structure to ensure your documents remain professional and properly formatted. Convert unlimited PDFs with just a few clicks.
+                Converting PDF to Word is one of the most practical tasks for document editing and repurposing. Whether you have scanned documents, generated PDFs, or other text files, our free PDF to Word converter makes it simple to extract text and convert it into editable Microsoft Word documents. Convert PDF to editable Word documents (DOCX) instantly. Use this free PDF to Word converter online without email or registration. Convert PDFs to DOCX format without installing software or signing up for an account. Perfect for editing documents, reusing content, extracting data from PDFs, and more. Our converter preserves formatting and structure to ensure your documents remain professional and properly formatted. Convert PDFs with just a few clicks.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -4571,12 +4547,12 @@ export default function PdfToolPage({ params }: PageProps) {
               <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Choose Our PDF to Word Converter?</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
-                  { icon: '✓', title: 'Completely Free', description: 'No hidden fees, watermarks, or premium tiers. Convert unlimited PDFs to Word documents without paying a dime.' },
-                  { icon: '🔄', title: 'Batch Convert', description: 'Convert multiple PDFs to Word in succession. Process numerous documents without size limitations or conversion count restrictions.' },
+                  { icon: '✓', title: 'Free to Use', description: 'No subscription or credit card is required. File-count and size limits may apply.' },
+                  { icon: '🔄', title: 'Batch Convert', description: 'Convert PDFs to Word in succession. Each uploaded PDF must be no larger than 100MB, and file-count limits may apply.' },
                   { icon: '📄', title: 'Preserve Formatting', description: 'Our converter maintains text layout, font sizes, and document structure. Your Word files are properly formatted and ready to edit.' },
                   { icon: '⚡', title: 'No Installation', description: 'Works entirely online in your browser. No software downloads, installations, or system requirements needed. Start converting immediately.' },
                   { icon: '⏱️', title: 'Lightning Fast', description: 'Most PDF-to-Word conversions complete in seconds, even with large files. Get your editable Word document instantly.' },
-                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are processed securely and automatically deleted after conversion. We do not store or access your files.' }
+                  { icon: '🔒', title: 'Your Privacy Matters', description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.' }
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -4651,9 +4627,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'What file formats does the PDF to Word converter support?',
@@ -4680,22 +4656,18 @@ export default function PdfToolPage({ params }: PageProps) {
                     a: 'No account required! No signup or email required—convert PDFs to Word instantly and securely. No registration, no email verification, no sign-up needed. It\'s completely free and anonymous.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all cursor-pointer"
-                    whileHover={{ borderColor: 'rgb(99, 102, 241)' }}
-                  >
-                    <summary className="p-4 font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       {faq.q}
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
-                    </summary>
-                    <div className="px-4 pb-4 text-gray-700 border-t border-gray-100">
+
+                    </FAQQuestion>
+                    <FAQAnswer>
                       {faq.a}
-                    </div>
-                  </motion.details>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -4770,7 +4742,7 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Merge PDF */}
-        {tool.id === 'merge-pdf' && (
+        {false && tool?.id === 'merge-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
@@ -4955,7 +4927,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 },
                 {
                   question: 'Is my data safe when merging PDFs online?',
-                  answer: 'Yes, completely safe. All files are processed using secure SSL encryption, and all documents are automatically deleted from our servers immediately after merging. Files are automatically removed after processing.'
+                  answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                 }
               ]}
               bgColor="white"
@@ -4966,16 +4938,16 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for Split PDF */}
-        {tool.id === 'split-pdf' && (
+        {false && tool?.id === 'split-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
-              <h1 className="text-4xl font-bold text-gray-900 mb-6">Free Online PDF Splitter - Extract & Split PDF Pages</h1>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">Free Online PDF Splitter - Extract & Split PDF Pages</h2>
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Split PDF files instantly with our free online PDF splitter. Extract specific pages, remove unwanted pages, or separate large PDF documents into smaller files. No installation required—just upload, select the pages you want, and download. Our tool preserves PDF quality while splitting, making it perfect for organizing documents, sharing specific pages, or creating custom PDF compilations.
               </p>
               <p className="text-base text-gray-600 mb-4">
-                Whether you need to extract a single page from a 200-page document or separate different sections into individual files, our PDF splitter handles all scenarios with ease. All processing happens securely in your browser, and files are automatically deleted after conversion.
+                Whether you need to extract a single page from a 200-page document or separate different sections into individual files, our PDF splitter handles all scenarios with ease. Files are sent to our server for processing, temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.
               </p>
             </div>
 
@@ -5060,7 +5032,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Preserve Quality',
-                    description: 'Split PDFs while maintaining original formatting, fonts, images, and document structure. No quality loss during splitting.'
+                    description: 'Splitting copies the selected PDF pages into new files without rasterizing the page content.'
                   },
                   {
                     title: 'Completely Free',
@@ -5164,7 +5136,7 @@ export default function PdfToolPage({ params }: PageProps) {
                 },
                 {
                   question: 'Are my PDFs safe when using this splitter?',
-                  answer: 'Absolutely! All files are processed using secure SSL encryption and are automatically deleted from our servers immediately after splitting. Files are automatically removed after processing. All processing happens securely in your browser.'
+                  answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.'
                 }
               ]}
               bgColor="white"
@@ -5175,14 +5147,14 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for WebP to PDF Converter */}
-        {tool.id === 'webp-to-pdf' && (
+        {!BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'webp-to-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section */}
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 WebP is a modern, optimized image format that delivers superior compression and quality compared to older formats. Converting WebP files into PDF makes sharing, printing, and organizing much easier. If you work with other image formats, we also offer <Link href="/all-tools/pdf/jpg-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">JPG to PDF</Link> and <Link href="/all-tools/pdf/png-to-pdf" className="text-indigo-600 hover:text-indigo-700 font-semibold">PNG to PDF</Link> converters.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex items-start gap-3">
@@ -5272,7 +5244,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Privacy-Focused Processing',
-                    description: 'Files are processed securely and automatically deleted after processing.'
+                    description: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request.'
                   }
                 ].map((benefit, idx) => (
                   <motion.div
@@ -5410,9 +5382,9 @@ export default function PdfToolPage({ params }: PageProps) {
             </div>
 
             {/* FAQ Section */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">WebP to PDF Converter - Frequently Asked Questions</h2>
-              <div className="space-y-4">
+            <FAQPanel>
+              <FAQHeading>WebP to PDF Converter - Frequently Asked Questions</FAQHeading>
+              <FAQList>
                 {[
                   {
                     q: 'Can I merge multiple WebP images into one PDF?',
@@ -5432,29 +5404,25 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     q: 'Is my WebP data secure and private?',
-                    a: 'Files are processed securely and automatically deleted after processing.'
+                    a: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   },
                   {
                     q: 'Can I reorder WebP images before converting to PDF?',
                     a: 'Yes, you can drag and drop images to rearrange them before conversion. This allows you to create PDFs with images in your preferred order.'
                   }
                 ].map((faq, idx) => (
-                  <motion.details
-                    key={idx}
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-all"
-                    whileHover={{ x: 5 }}
-                  >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-gray-900 bg-gray-50 group-open:bg-indigo-50 transition-colors">
+                  <FAQDisclosure key={idx}>
+                    <FAQQuestion>
                       <span>{faq.q}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-6 py-4 bg-white border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </div>
-                  </motion.details>
+
+                    </FAQQuestion>
+                    <FAQAnswer>
+                      <p className="">{faq.a}</p>
+                    </FAQAnswer>
+                  </FAQDisclosure>
                 ))}
-              </div>
-            </div>
+              </FAQList>
+            </FAQPanel>
 
             {/* FAQ Schema JSON-LD */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
@@ -5498,7 +5466,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   name: 'Is my WebP data secure and private?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Files are processed securely and automatically deleted after processing.'
+                    text: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 },
                 {
@@ -5515,15 +5483,15 @@ export default function PdfToolPage({ params }: PageProps) {
         )}
 
         {/* SEO Content for PDF Rotation Tool */}
-        {tool.id === 'rotate-pdf' && (
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'rotate-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             {/* Introduction Section - Primary keyword in first 100 words */}
             <div className="mb-16">
-              <h1 className="text-4xl font-bold text-gray-900 mb-6">Rotate PDF Pages Online - Free PDF Rotation Tool</h1>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">Rotate PDF Pages Online - Free PDF Rotation Tool</h2>
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Need to rotate PDF pages? Our free online PDF rotation tool lets you rotate any PDF by 90°, 180°, or 270° in seconds. Rotate PDF pages while preserving quality, no signup required, and supports files up to 100MB. Whether you need to fix scanned document orientation or rotate individual pages, our PDF page rotator handles it all instantly.
               </p>
-              
+
               {/* Quick Benefits */}
               <div className="grid md:grid-cols-3 gap-4 mb-8">
                 <div className="flex items-start gap-3">
@@ -5559,7 +5527,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   {
                     step: '3',
                     title: 'Download Rotated PDF',
-                    description: 'Your rotated PDF is ready instantly. Download and save your file. No watermarks, no quality loss, completely free.'
+                    description: 'Download the rotated PDF after processing. Page rotation changes orientation without rasterizing the existing PDF page content.'
                   }
                 ].map((item, idx) => (
                   <motion.div
@@ -5602,7 +5570,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     title: 'Fast & Secure',
-                    description: 'Rotations complete in seconds. Files are automatically deleted after processing. Your PDFs stay private and secure.'
+                    description: 'Rotations are processed on our server. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly.'
                   },
                   {
                     title: 'Completely Free',
@@ -5690,7 +5658,7 @@ export default function PdfToolPage({ params }: PageProps) {
                   },
                   {
                     question: 'Is rotating a PDF secure and private?',
-                    answer: 'Files are processed securely and automatically deleted after processing.'
+                    answer: 'Files are sent to our server for processing. Temporary working files are cleaned up after the request, and generated downloads may be retained briefly for retrieval.'
                   }
                 ]}
                 bgColor="white"
@@ -5711,18 +5679,18 @@ export default function PdfToolPage({ params }: PageProps) {
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Free Online PDF Rotator - No Installation Needed</h2>
               <p className="text-lg leading-relaxed text-gray-700">
-                Rotate PDF pages online instantly using our fast, free, and secure PDF rotation tool. Whether you need to fix document orientation, rotate scanned images, or adjust page angles for printing, our PDF rotator delivers results in seconds. No signup, no installation, no quality loss—just simple, effective PDF page rotation.
+                Rotate PDF pages online to change page orientation without rasterizing the existing PDF page content. Choose 90°, 180°, or 270° rotation and download the processed PDF when it is ready.
               </p>
             </div>
           </div>
         )}
 
         {/* SEO Content for Crop PDF */}
-        {tool.id === 'crop-pdf' && (
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'crop-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                Crop PDF pages online with our free visual PDF cropper tool. Remove unnecessary margins, trim blank areas, resize pages, and extract specific regions from your PDFs instantly. No software installation required—just upload, select crop areas visually, and download your optimized PDF in seconds. Perfect for scanners, presentations, documents, and images.
+                Crop the visible area of PDF pages with the visual crop controls. Adjust page boundaries to hide margins or unwanted outer areas, then download the processed PDF.
               </p>
             </div>
 
@@ -5732,8 +5700,8 @@ export default function PdfToolPage({ params }: PageProps) {
                 {[
                   { step: '1', title: 'Upload Your PDF', description: 'Select the PDF file you want to crop. We support files up to 100MB. No account or registration needed.' },
                   { step: '2', title: 'Select Pages to Crop', description: 'Choose which pages to crop. Crop all pages, a single page, or specific page ranges like 1-5 or 1,3,5.' },
-                  { step: '3', title: 'Set Crop Area', description: 'Use the visual editor to select the crop area on your pages. Adjust margins, trim whitespace, or extract specific regions.' },
-                  { step: '4', title: 'Download Cropped PDF', description: 'Your cropped PDF is ready instantly. Download your optimized document with removed margins and unnecessary space.' }
+                  { step: '3', title: 'Set Crop Area', description: 'Use the visual editor to select the visible crop area on your pages. Adjust page boundaries to hide margins, whitespace, or unwanted outer areas.' },
+                  { step: '4', title: 'Download Cropped PDF', description: 'Download the cropped PDF after the selected page boundaries have been applied.' }
                 ].map((item, idx) => (
                   <motion.div key={idx} className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 hover:shadow-lg transition-all" whileHover={{ y: -5 }}>
                     <div className="flex items-start gap-4">
@@ -5750,11 +5718,11 @@ export default function PdfToolPage({ params }: PageProps) {
               <div className="grid md:grid-cols-2 gap-6">
                 {[
                   { title: 'Remove Unnecessary Margins', description: 'Eliminate white space and unwanted borders to create professional-looking documents.' },
-                  { title: 'Reduce File Size', description: 'Cropping can significantly reduce PDF file size, making it easier to email and share.' },
+                  { title: 'Reduce File Size', description: 'Cropping changes the visible page area but may not significantly reduce file size because underlying PDF page content can remain in the document.' },
                   { title: 'Improve Readability', description: 'Zoom in on important content by removing distracting margins and whitespace.' },
                   { title: 'Prepare for Print', description: 'Crop to standard paper sizes (letter, A4) for proper printing and professional output.' },
-                  { title: 'Extract Specific Content', description: 'Isolate and extract specific regions or text areas from multi-content pages.' },
-                  { title: 'Preserves Quality', description: 'Cropping preserves PDF quality—it\'s lossless editing without compression artifacts.' }
+                  { title: 'Focus the Visible Page Area', description: 'Adjust the visible page bounds around the region you want to keep in view.' },
+                  { title: 'Preserves Quality', description: 'Cropping changes PDF page boundaries without rasterizing or recompressing the existing page content.' }
                 ].map((item, idx) => (
                   <motion.div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all" whileHover={{ x: 5 }}>
                     <CheckCircle className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-0.5" />
@@ -5779,18 +5747,18 @@ export default function PdfToolPage({ params }: PageProps) {
             <div className="mb-16">
               <FAQSection title="Crop PDF - Frequently Asked Questions" faqs={[
                 { question: 'Can I crop specific pages in my PDF?', answer: 'Yes, absolutely! You can choose to crop all pages uniformly, crop a single page, or select specific page ranges such as pages 1-5 or 10-15. Our tool lets you leave other pages completely unchanged while only cropping the specific pages you need. This gives you precise control over which pages get cropped and which remain untouched.' },
-                { question: 'Will cropping a PDF reduce file size?', answer: 'Yes, cropping typically reduces PDF file size because you are removing content and whitespace from your document. When you trim margins, remove blank areas, or extract specific regions, you are eliminating unnecessary data that contributes to file size. The exact amount of file size reduction depends on how much content you crop from your PDF pages. Removing large whitespace areas or blank sections can result in significantly smaller files, making them easier to email and share.' },
-                { question: 'Does PDF cropping lose image quality?', answer: 'No, PDF cropping does not lose image quality because it is a lossless editing process. Unlike compression or re-encoding, cropping simply removes the areas you don\'t need without modifying or re-compressing the remaining content. Your PDF quality is preserved as much as possible throughout the cropping process. The text, images, and formatting in the cropped area remain intact and unchanged. No quality loss, compression artifacts, or degradation occurs—we are simply extracting the portions of the document you want to keep.' },
+                { question: 'Will cropping a PDF reduce file size?', answer: 'Not necessarily. This crop operation changes the visible page boundaries. Content outside the visible crop area may remain in the PDF, so cropping should not be relied on as a file-size reduction or content-removal method.' },
+                { question: 'Does PDF cropping lose image quality?', answer: 'The crop operation changes page boundaries rather than rasterizing or recompressing the existing PDF page content. This avoids image re-encoding, although content outside the visible crop area may still remain in the PDF file.' },
                 { question: 'Can I adjust crop areas manually?', answer: 'Yes, you can adjust crop areas manually with complete precision! Our visual PDF crop editor displays your pages and lets you select crop areas by dragging and adjusting borders directly on the preview. You can click and drag to define exact crop boundaries, resize the crop box as needed, and see real-time previews of your changes. This gives you full control over which parts of each page to keep and which areas to remove.' },
-                { question: 'What if I make a mistake while cropping?', answer: 'No problem! If you make a mistake or are unhappy with your crop, simply re-upload your original PDF file and crop it again. Your original file remains completely untouched and safe—we never modify your uploaded files. You can crop the same PDF multiple times until you get the exact result you want, trying different crop areas each time. This risk-free approach means you can experiment and refine your cropping without any consequences.' },
-                { question: 'Is my PDF data secure when cropping?', answer: 'Yes, your PDF data is completely secure when you crop with our tool. Files are automatically deleted and permanently removed from our servers immediately after processing, ensuring your documents never remain in our system. We use secure, encrypted connections for all file transfers and processing. Your PDFs are processed securely on our servers and are never stored, accessed, or shared with anyone. We prioritize your privacy and data security throughout the entire cropping process.' }
+                { question: 'What if I make a mistake while cropping?', answer: 'If you want a different crop, upload the original PDF again and choose new page boundaries. The crop operation creates a processed output PDF rather than replacing your local source file.' },
+                { question: 'Is my PDF data secure when cropping?', answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
         )}
 
         {/* SEO Content for PDF Page Deleter */}
-        {tool.id === 'pdf-page-deleter' && (
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'pdf-page-deleter' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
@@ -5855,14 +5823,14 @@ export default function PdfToolPage({ params }: PageProps) {
                 { question: 'Does deleting pages reduce file size?', answer: 'Yes, absolutely! Removing pages significantly reduces your PDF file size. Fewer pages mean a much smaller file, making it easier to email, upload, and share with others. This is especially helpful for large documents where size matters. File size reduction also speeds up download and upload times, and makes storage more efficient.' },
                 { question: 'Can I see which pages I\'m deleting before confirming?', answer: 'Yes, you can review your deletion selections before processing. Enter the specific page numbers or ranges you want to delete (such as pages 1-5 or pages 2, 8, 15), and review them carefully to ensure accuracy. Take your time to double-check your selections before clicking the delete button to process your PDF.' },
                 { question: 'Does page deletion affect PDF quality?', answer: 'No, deleting pages is a lossless operation that doesn\'t degrade quality. Remaining pages preserve their original formatting, text, images, and all content as much as possible. Since we\'re only removing pages rather than recompressing the PDF, the quality of the remaining pages stays intact. Your document will look exactly the same, just with fewer pages.' },
-                { question: 'Is my PDF secure when deleting pages?', answer: 'Yes, your PDF is completely secure. All files are processed using encrypted, secure connections. Files are automatically removed after processing. We don\'t store your data, keep backups, or share information with third parties. Your privacy is protected throughout the entire process.' }
+                { question: 'Is my PDF secure when deleting pages?', answer: 'PDFs are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive documents.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
         )}
 
         {/* SEO Content for Create PDF */}
-        {tool.id === 'create-pdf' && (
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && tool.id === 'create-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
@@ -5894,7 +5862,7 @@ export default function PdfToolPage({ params }: PageProps) {
               <div className="grid md:grid-cols-2 gap-6">
                 {[
                   { title: 'Universal Compatibility', description: 'PDFs work everywhere—all devices, all browsers, all operating systems without compatibility issues.' },
-                  { title: 'Merge Multiple Images', description: 'Combine unlimited images from different formats into one organized, professional PDF document.' },
+                  { title: 'Merge Multiple Images', description: 'Combine multiple images from different formats into one organized PDF document. File-count and size limits may apply.' },
                   { title: 'Preserve Quality', description: 'High-quality conversion maintains clarity and detail. Choose compression levels (0-9) for your needs.' },
                   { title: 'Reduce File Sizes', description: 'PDF compression options create smaller files perfect for emailing, sharing, and cloud storage.' },
                   { title: 'Professional Appearance', description: 'Create polished documents from photos, scans, or images with consistent formatting and layout.' },
@@ -5927,14 +5895,14 @@ export default function PdfToolPage({ params }: PageProps) {
                 { question: 'How do I control PDF file size?', answer: 'You can adjust the compression level to control file size and quality balance. Note that the exact compression options may vary, but our tool optimizes file sizes automatically. For most uses, the default settings provide an excellent balance between reducing file size for easy sharing while maintaining good image clarity and detail.' },
                 { question: 'Does conversion reduce image quality?', answer: 'Our converter preserves image quality as much as possible during the conversion process. The final quality depends on your source images and settings. We use optimized conversion methods to maintain clarity and detail while creating professional PDF documents. For best results, start with high-quality source images.' },
                 { question: 'Can I reorder images before converting?', answer: 'Yes! When uploading multiple images, you can arrange them in your preferred order before conversion. Upload images in the sequence you want them to appear in the final PDF. This controls the page order in your document, making it easy to organize scanned pages, photo collections, or mixed document batches exactly as you need them.' },
-                { question: 'Is my image data kept private?', answer: 'Your privacy is our priority. Files are processed securely using encrypted connections and are automatically deleted from our servers after processing completes. We do not store, share, or use your images for any other purpose. Your data remains private throughout the entire conversion process, and you have complete control over your files.' }
+                { question: 'Is my image data kept private?', answer: 'Images are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid uploading sensitive images.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
           </div>
         )}
 
         {/* SEO Content for Protect PDF */}
-        {tool.id === 'protect-pdf' && (
+        {!BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && tool.id === 'protect-pdf' && (
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
             <div className="mb-16">
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
@@ -5999,9 +5967,30 @@ export default function PdfToolPage({ params }: PageProps) {
                 { question: 'Can I change the password after protection?', answer: 'Yes, you can change passwords by downloading your protected PDF and re-uploading it to our tool to apply a new password. Alternatively, you can share your current password with trusted recipients and later communicate a new password if needed. Keep password records in a secure location for future reference.' },
                 { question: 'What if someone forgets the password?', answer: 'Passwords cannot be recovered or reset once set. Make sure to keep your password stored securely in a password manager or safe location. If the password is lost, you\'ll need the original unprotected PDF file to create a new protected version with a different password. Always maintain backups of unprotected files.' },
                 { question: 'Can recipients print protected PDFs?', answer: 'Password-protected PDFs can typically still be printed by anyone who has the password to open the file. The primary function of password protection is to control who can access the document. For more granular control over printing, editing, or copying specific features, check if your PDF reader offers additional security options.' },
-                { question: 'Is password protection secure and private?', answer: 'Yes, our tool processes your files securely using encrypted connections. Your files are automatically deleted from our servers immediately after protection is applied—we don\'t store or keep copies of your documents or passwords. Your data remains completely private and is never used for any other purpose.' }
+                { question: 'Is password protection secure and private?', answer: 'PDFs and protection settings are sent to our server for processing over an HTTPS connection. Temporary working files are cleaned up after the request, and the generated download may be retained briefly for retrieval. Avoid reusing sensitive passwords.' }
               ]} bgColor="white" borderTop={true} includeSchema={true} />
             </div>
+          </div>
+        )}
+        {BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchOneContent toolId={tool.id} />}
+        {BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchTwoContent toolId={tool.id} />}
+        {BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchThreeContent toolId={tool.id} />}
+        {BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchFourContent toolId={tool.id} />}
+        {BATCH_FIVE_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchFiveContent toolId={tool.id} />}
+        {BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchSixContent toolId={tool.id} />}
+        {BATCH_SEVEN_PDF_TOOL_IDS.has(tool.id) && <HumanizedPdfBatchSevenContent toolId={tool.id} />}
+        {!BATCH_ONE_PDF_TOOL_IDS.has(tool.id) && !BATCH_TWO_PDF_TOOL_IDS.has(tool.id) && !BATCH_THREE_PDF_TOOL_IDS.has(tool.id) && !BATCH_FOUR_PDF_TOOL_IDS.has(tool.id) && !BATCH_FIVE_PDF_TOOL_IDS.has(tool.id) && !BATCH_SIX_PDF_TOOL_IDS.has(tool.id) && !BATCH_SEVEN_PDF_TOOL_IDS.has(tool.id) && (
+          <PdfToolSupportingContent toolId={tool.id} />
+        )}
+
+        {!PDF_TOOLS_WITH_EXISTING_RELATED_SECTIONS.has(tool.id) && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 pb-16">
+            <RelatedToolsSection
+              family="pdf"
+              toolId={tool.id}
+              description="Explore related PDF tools that can help with the same document workflow."
+              limit={8}
+            />
           </div>
         )}
         </div>
@@ -6094,7 +6083,7 @@ function AnnotatePdfPage({ tool }: { tool: PdfToolConfig }) {
             <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
               <Link href="/" className="hover:text-white transition">Home</Link>
               <ChevronRight size={16} />
-              <Link href="/all-tools/pdf" className="hover:text-white transition">PDF Tools</Link>
+              <Link href="/all-tools/pdf-tools" className="hover:text-white transition">PDF Tools</Link>
               <ChevronRight size={16} />
               <span className="text-white">{tool.title}</span>
             </div>
@@ -6265,6 +6254,16 @@ function AnnotatePdfPage({ tool }: { tool: PdfToolConfig }) {
                 )}
               </motion.div>
             )}
+          </div>
+          <HumanizedPdfBatchSevenContent toolId="annotate-pdf" />
+
+            <div className="mt-8">
+            <RelatedToolsSection
+              family="pdf"
+              toolId={tool.id}
+              description="Explore related PDF tools that can help with the same document workflow."
+              limit={8}
+            />
           </div>
         </div>
       </main>

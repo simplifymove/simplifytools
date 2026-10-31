@@ -1,0 +1,797 @@
+import { mkdir, unlink, writeFile } from 'fs/promises';
+import path from 'path';
+import { randomUUID } from 'crypto';
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  createDownloadResult,
+  getAllowedDownloadDirectories,
+} from '@/lib/services/download-result';
+import { sanitizePublicFilename } from '@/lib/services/pdf-download-result';
+import { aiWriteTools } from '@/app/lib/ai-tools';
+import { codeTools } from '@/app/lib/code-tools';
+import { allTools } from '@/app/data/tools';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const MAX_BROWSER_RESULT_BYTES = 100 * 1024 * 1024;
+
+interface BrowserResultToolPolicy {
+  extensions: string[];
+  mimeTypes: string[];
+}
+
+const PNG_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.png'],
+  mimeTypes: ['image/png'],
+};
+
+const JPEG_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.jpg', '.jpeg'],
+  mimeTypes: ['image/jpeg'],
+};
+
+const EDITABLE_RASTER_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.png', '.jpg', '.jpeg', '.webp'],
+  mimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
+};
+
+const FONT_AWESOME_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.png', '.jpg', '.jpeg', '.webp', '.svg'],
+  mimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'],
+};
+
+const TEXT_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.txt'],
+  mimeTypes: ['text/plain', 'text/plain;charset=utf-8'],
+};
+
+const CODE_MINIFIER_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.html', '.css', '.js'],
+  mimeTypes: ['text/plain'],
+};
+
+const CSV_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.csv'],
+  mimeTypes: ['text/csv'],
+};
+
+const JSON_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.json'],
+  mimeTypes: ['application/json'],
+};
+
+const XLSX_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.xlsx'],
+  mimeTypes: [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ],
+};
+
+const EXCEL_TO_CSV_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.csv', '.zip'],
+  mimeTypes: ['text/csv', 'application/zip'],
+};
+
+const ZIP_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.zip'],
+  mimeTypes: ['application/zip'],
+};
+
+const XML_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.xml'],
+  mimeTypes: ['application/xml', 'text/xml'],
+};
+
+const DOCX_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.docx'],
+  mimeTypes: [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ],
+};
+
+const PDF_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.pdf'],
+  mimeTypes: ['application/pdf'],
+};
+
+const MP4_POLICY: BrowserResultToolPolicy = {
+  extensions: ['.mp4'],
+  mimeTypes: ['video/mp4'],
+};
+
+const TEXT_BROWSER_TOOLS = [
+  'ocr-to-text',
+  ...Object.keys(aiWriteTools),
+  ...Object.keys(codeTools),
+  ...allTools
+    .filter((tool) => tool.category === 'Financial Calculator')
+    .map((tool) => tool.id),
+];
+
+const PNG_BROWSER_TOOLS = [
+  'add-border',
+  'add-images',
+  'add-opacity',
+  'add-text',
+  'black-white',
+  'chart-maker',
+  'cleanup-picture',
+  'collage-maker',
+  'colorize-photo',
+  'combine-images',
+  'flip-image',
+  'image-splitter',
+  'make-background-transparent',
+  'make-round-image',
+  'profile-photo-maker',
+  'resize-image',
+  'reverse-image',
+  'rotate-image',
+  'translate-image',
+];
+
+const JPEG_BROWSER_TOOLS = [
+  'batch-compress-images',
+  'batch-resize-images',
+  'blur-background',
+  'blur-image',
+  'blur-zoom',
+  'brightness-contrast',
+  'cartoon-effect',
+  'chromatic-aberration',
+  'color-balance',
+  'color-grader',
+  'compress-image',
+  'dream-effect',
+  'duotone-effect',
+  'edge-detect',
+  'emboss-effect',
+  'film-noir',
+  'glitch-effect',
+  'glow-effect',
+  'grayscale-image',
+  'histogram-equalize',
+  'hue-saturation',
+  'image-compressor',
+  'image-enhancer',
+  'invert-colors',
+  'kaleidoscope',
+  'lens-flare',
+  'mirror-image',
+  'mosaic-tile',
+  'motion-blur',
+  'neon-glow',
+  'oil-paint-effect',
+  'pixelate-image',
+  'posterize-image',
+  'remove-object',
+  'sepia-filter',
+  'sharpen-image',
+  'sketch-effect',
+  'solarize-effect',
+  'sunburst',
+  'swirl-distortion',
+  'thermal-vision',
+  'tilt-shift',
+  'unblur-image',
+  'vhs-effect',
+  'vignette-effect',
+  'vintage-filter',
+  'watermark-image',
+  'white-balance',
+];
+
+const ALLOWED_BROWSER_RESULT_TOOLS: Record<
+  string,
+  BrowserResultToolPolicy
+> = {
+  ...Object.fromEntries(PNG_BROWSER_TOOLS.map((toolSlug) => [toolSlug, PNG_POLICY])),
+  ...Object.fromEntries(JPEG_BROWSER_TOOLS.map((toolSlug) => [toolSlug, JPEG_POLICY])),
+  ...Object.fromEntries(TEXT_BROWSER_TOOLS.map((toolSlug) => [toolSlug, TEXT_POLICY])),
+  'image-to-text': {
+    extensions: ['.txt', '.pdf'],
+    mimeTypes: [
+      'text/plain',
+      'text/plain;charset=utf-8',
+      'application/pdf',
+    ],
+  },
+  'jpg-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'png-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'webp-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'heic-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'tiff-to-avif': {
+    extensions: ['.avif'],
+    mimeTypes: ['image/avif'],
+  },
+  'jpg-to-gif': {
+    extensions: ['.gif'],
+    mimeTypes: ['image/gif'],
+  },
+  'webp-to-gif': {
+    extensions: ['.gif'],
+    mimeTypes: ['image/gif'],
+  },
+  'mp4-to-gif': {
+    extensions: ['.gif'],
+    mimeTypes: ['image/gif'],
+  },
+  'png-to-eps': {
+    extensions: ['.eps'],
+    mimeTypes: ['application/postscript'],
+  },
+  'tiff-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
+  'jpg-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
+  'png-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
+  'jpg-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'png-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'webp-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'webp-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'jpg-to-webp': {
+    extensions: ['.webp'],
+    mimeTypes: ['image/webp'],
+  },
+  'png-to-webp': {
+    extensions: ['.webp'],
+    mimeTypes: ['image/webp'],
+  },
+  'bmp-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'bmp-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'heic-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'heic-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'jpg-to-tiff': {
+    extensions: ['.tiff', '.tif'],
+    mimeTypes: ['image/tiff'],
+  },
+  'png-to-tiff': {
+    extensions: ['.tiff', '.tif'],
+    mimeTypes: ['image/tiff'],
+  },
+  'webp-to-tiff': {
+    extensions: ['.tiff', '.tif'],
+    mimeTypes: ['image/tiff'],
+  },
+  'tiff-to-text': {
+    extensions: ['.txt', '.pdf'],
+    mimeTypes: [
+      'text/plain',
+      'text/plain;charset=utf-8',
+      'application/pdf',
+    ],
+  },
+  'tiff-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'tiff-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'gif-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'gif-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'edit-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'eps-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'eps-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'eps-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
+  'vsdx-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'vsdx-to-pdf': PDF_POLICY,
+  'vsd-to-pdf': PDF_POLICY,
+  'gif-to-mp4': MP4_POLICY,
+  'psd-to-jpg': {
+    extensions: ['.jpg', '.jpeg'],
+    mimeTypes: ['image/jpeg'],
+  },
+  'psd-to-png': {
+    extensions: ['.png'],
+    mimeTypes: ['image/png'],
+  },
+  'psd-to-svg': {
+    extensions: ['.svg'],
+    mimeTypes: ['image/svg+xml'],
+  },
+  'crop-image': EDITABLE_RASTER_POLICY,
+  'excel-to-csv': EXCEL_TO_CSV_POLICY,
+  'split-csv': ZIP_POLICY,
+  'split-excel': ZIP_POLICY,
+  'xml-to-csv': CSV_POLICY,
+  'csv-to-excel': XLSX_POLICY,
+  'xml-to-excel': XLSX_POLICY,
+  'csv-to-json': JSON_POLICY,
+  'xml-to-json': JSON_POLICY,
+  'json-to-xml': XML_POLICY,
+  'excel-to-xml': XML_POLICY,
+  'excel-to-pdf': PDF_POLICY,
+  'csv-to-xml': XML_POLICY,
+  'code-minifier': CODE_MINIFIER_POLICY,
+  'font-awesome-to-png': FONT_AWESOME_POLICY,
+  'remove-background': EDITABLE_RASTER_POLICY,
+  'remove-object': {
+    extensions: ['.png', '.jpg', '.jpeg'],
+    mimeTypes: ['image/png', 'image/jpeg'],
+  },
+  'remove-watermark': EDITABLE_RASTER_POLICY,
+  'resume-job-match': DOCX_POLICY,
+  'text-diff': CSV_POLICY,
+  'upscale-image': EDITABLE_RASTER_POLICY,
+};
+
+function json(body: unknown, status = 200): NextResponse {
+  return NextResponse.json(body, {
+    status,
+    headers: {
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
+}
+
+function isSameOrigin(request: NextRequest): boolean {
+  const origin = request.headers.get('origin');
+  const fetchSite = request.headers.get('sec-fetch-site');
+
+  if (fetchSite && fetchSite !== 'same-origin') {
+    return false;
+  }
+
+  if (!origin) {
+    return process.env.NODE_ENV !== 'production';
+  }
+
+  try {
+    const forwardedProto =
+      request.headers.get('x-forwarded-proto') ||
+      request.nextUrl.protocol.replace(':', '');
+
+    const forwardedHost =
+      request.headers.get('x-forwarded-host') ||
+      request.headers.get('host');
+
+    if (!forwardedHost) {
+      return false;
+    }
+
+    const publicOrigin = `${forwardedProto}://${forwardedHost}`;
+
+    return new URL(origin).origin === new URL(publicOrigin).origin;
+  } catch {
+    return false;
+  }
+}
+
+function hasValidXlsxArchive(buffer: Buffer): boolean {
+  // XLSX files are ZIP archives containing Office Open XML parts.
+  // Read the central directory without extracting untrusted content.
+  if (buffer.length < 22 || buffer.readUInt32LE(0) !== 0x04034b50) {
+    return false;
+  }
+
+  // ZIP end-of-central-directory records may have a 65535-byte comment.
+  const searchStart = Math.max(0, buffer.length - 22 - 65535);
+  let endOffset = -1;
+
+  for (let offset = buffer.length - 22; offset >= searchStart; offset--) {
+    if (
+      buffer.readUInt32LE(offset) === 0x06054b50 &&
+      offset + 22 + buffer.readUInt16LE(offset + 20) === buffer.length
+    ) {
+      endOffset = offset;
+      break;
+    }
+  }
+
+  if (endOffset < 0) {
+    return false;
+  }
+
+  // Reject multi-disk and ZIP64 archives; neither is needed here.
+  const diskNumber = buffer.readUInt16LE(endOffset + 4);
+  const centralDisk = buffer.readUInt16LE(endOffset + 6);
+  const diskEntries = buffer.readUInt16LE(endOffset + 8);
+  const totalEntries = buffer.readUInt16LE(endOffset + 10);
+  const centralSize = buffer.readUInt32LE(endOffset + 12);
+  const centralOffset = buffer.readUInt32LE(endOffset + 16);
+
+  if (
+    diskNumber !== 0 ||
+    centralDisk !== 0 ||
+    diskEntries !== totalEntries ||
+    totalEntries === 0 ||
+    totalEntries === 0xffff ||
+    centralSize === 0xffffffff ||
+    centralOffset === 0xffffffff ||
+    centralOffset + centralSize !== endOffset
+  ) {
+    return false;
+  }
+
+  const required = new Set([
+    '[Content_Types].xml',
+    'xl/workbook.xml',
+    'xl/_rels/workbook.xml.rels',
+  ]);
+
+  let hasWorksheet = false;
+  let offset = centralOffset;
+  const centralEnd = centralOffset + centralSize;
+
+  for (let index = 0; index < totalEntries; index++) {
+    if (
+      offset + 46 > centralEnd ||
+      buffer.readUInt32LE(offset) !== 0x02014b50
+    ) {
+      return false;
+    }
+
+    const flags = buffer.readUInt16LE(offset + 8);
+    const method = buffer.readUInt16LE(offset + 10);
+    const compressedSize = buffer.readUInt32LE(offset + 20);
+    const uncompressedSize = buffer.readUInt32LE(offset + 24);
+    const nameLength = buffer.readUInt16LE(offset + 28);
+    const extraLength = buffer.readUInt16LE(offset + 30);
+    const commentLength = buffer.readUInt16LE(offset + 32);
+    const localOffset = buffer.readUInt32LE(offset + 42);
+    const nextOffset =
+      offset + 46 + nameLength + extraLength + commentLength;
+
+    if (
+      nextOffset > centralEnd ||
+      (flags & 1) !== 0 ||
+      ![0, 8].includes(method) ||
+      compressedSize === 0xffffffff ||
+      uncompressedSize === 0xffffffff ||
+      localOffset + 30 > centralOffset ||
+      buffer.readUInt32LE(localOffset) !== 0x04034b50
+    ) {
+      return false;
+    }
+
+    const name = buffer
+      .subarray(offset + 46, offset + 46 + nameLength)
+      .toString('utf8');
+
+    const localNameLength = buffer.readUInt16LE(localOffset + 26);
+    const localExtraLength = buffer.readUInt16LE(localOffset + 28);
+    const dataStart =
+      localOffset + 30 + localNameLength + localExtraLength;
+
+    if (
+      dataStart + compressedSize > centralOffset ||
+      buffer.readUInt16LE(localOffset + 8) !== method ||
+      buffer
+        .subarray(localOffset + 30, localOffset + 30 + localNameLength)
+        .toString('utf8') !== name
+    ) {
+      return false;
+    }
+
+    required.delete(name);
+
+    if (/^xl\/worksheets\/[^/]+\.xml$/.test(name)) {
+      hasWorksheet = true;
+    }
+
+    offset = nextOffset;
+  }
+
+  return offset === centralEnd && required.size === 0 && hasWorksheet;
+}
+
+function hasValidSignature(buffer: Buffer, extension: string): boolean {
+  if (extension === '.png') {
+    return buffer.subarray(0, 8).toString('hex') === '89504e470d0a1a0a';
+  }
+
+  if (extension === '.jpg' || extension === '.jpeg') {
+    return (
+      buffer.length >= 3 &&
+      buffer[0] === 0xff &&
+      buffer[1] === 0xd8 &&
+      buffer[2] === 0xff
+    );
+  }
+
+  if (extension === '.webp') {
+    return (
+      buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
+      buffer.subarray(8, 12).toString('ascii') === 'WEBP'
+    );
+  }
+
+  if (extension === '.eps') {
+    const prefix = buffer
+      .subarray(0, Math.min(buffer.length, 256))
+      .toString('ascii');
+
+    return (
+      prefix.startsWith('%!PS-Adobe-') &&
+      prefix.includes('EPSF-')
+    );
+  }
+
+  if (extension === '.pdf') {
+    return (
+      buffer.length >= 5 &&
+      buffer.subarray(0, 5).toString('ascii') === '%PDF-'
+    );
+  }
+
+  if (extension === '.mp4') {
+    return (
+      buffer.length >= 12 &&
+      buffer.subarray(4, 8).toString('ascii') === 'ftyp'
+    );
+  }
+
+  if (extension === '.svg') {
+    const svgPrefix = buffer
+      .subarray(0, Math.min(buffer.length, 4096))
+      .toString('utf8')
+      .replace(/^\uFEFF/, '')
+      .trimStart();
+
+    return /^(?:<\?xml[^>]*>\s*)?<svg(?:\s|>)/i.test(svgPrefix);
+  }
+
+  if (extension === '.json') {
+    try {
+      const content = buffer.toString('utf8');
+      if (!Buffer.from(content, 'utf8').equals(buffer)) {
+        return false;
+      }
+      JSON.parse(content.replace(/^\uFEFF/, ''));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  if (
+    extension === '.txt' ||
+    extension === '.csv' ||
+    extension === '.html' ||
+    extension === '.css' ||
+    extension === '.js'
+  ) {
+    return buffer.length > 0;
+  }
+
+  if (extension === '.xlsx') {
+    return hasValidXlsxArchive(buffer);
+  }
+
+  if (extension === '.docx') {
+    const signature = buffer.subarray(0, 4).toString('hex');
+    return ['504b0304', '504b0506', '504b0708'].includes(signature);
+  }
+
+  if (extension === '.zip') {
+    const signature = buffer.subarray(0, 4).toString('hex');
+    return ['504b0304', '504b0506', '504b0708'].includes(signature);
+  }
+
+  if (extension === '.xml') {
+    const prefix = buffer
+      .subarray(0, Math.min(buffer.length, 4096))
+      .toString('utf8')
+      .replace(/^\uFEFF/, '')
+      .trimStart();
+    return /^(?:<\?xml[^>]*>\s*)?<[A-Za-z_][A-Za-z0-9._-]*(?:\s|>|\/)/.test(prefix);
+  }
+
+  return false;
+}
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  let outputPath = '';
+
+  try {
+    if (!isSameOrigin(request)) {
+      return json(
+        {
+          success: false,
+          error: 'Cross-origin result uploads are not allowed',
+        },
+        403,
+      );
+    }
+
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const toolSlug = String(formData.get('toolSlug') || '').trim();
+    const originalName = String(formData.get('originalName') || 'image');
+    const requestedOutputName = String(
+      formData.get('outputName') || 'converted-file',
+    );
+
+    if (!(file instanceof File)) {
+      return json(
+        {
+          success: false,
+          error: 'A generated file is required',
+        },
+        400,
+      );
+    }
+
+    const toolPolicy = ALLOWED_BROWSER_RESULT_TOOLS[toolSlug];
+
+    if (!toolPolicy) {
+      return json(
+        {
+          success: false,
+          error: 'This tool cannot upload browser-generated results',
+        },
+        400,
+      );
+    }
+
+    if (file.size <= 0 || file.size > MAX_BROWSER_RESULT_BYTES) {
+      return json(
+        {
+          success: false,
+          error: 'Generated file must be between 1 byte and 100 MB',
+        },
+        413,
+      );
+    }
+
+    const outputName = sanitizePublicFilename(
+      requestedOutputName,
+      'converted-file',
+    );
+    const extension = path.extname(outputName).toLowerCase();
+
+    if (!toolPolicy.extensions.includes(extension)) {
+      return json(
+        {
+          success: false,
+          error: 'The generated file extension is not allowed for this tool',
+        },
+        415,
+      );
+    }
+
+    console.log('[browser-download-result] MIME validation', {
+      toolSlug,
+      outputName,
+      receivedMimeType: file.type,
+      allowedMimeTypes: toolPolicy.mimeTypes,
+      extension,
+      fileSize: file.size,
+    });
+
+    if (!toolPolicy.mimeTypes.includes(file.type)) {
+      return json(
+        {
+          success: false,
+          error: 'The generated file MIME type is not allowed for this tool',
+        },
+        415,
+      );
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    if (!hasValidSignature(buffer, extension)) {
+      return json(
+        {
+          success: false,
+          error: 'The generated file signature is invalid',
+        },
+        415,
+      );
+    }
+
+    const downloadDirectory = getAllowedDownloadDirectories()[0];
+    await mkdir(downloadDirectory, { recursive: true });
+
+    outputPath = path.join(
+      downloadDirectory,
+      `${toolSlug}-${randomUUID()}${extension}`,
+    );
+
+    await writeFile(outputPath, buffer, { flag: 'wx' });
+
+    const result = await createDownloadResult({
+      toolSlug,
+      originalName: sanitizePublicFilename(originalName, 'image'),
+      outputName,
+      outputPath,
+      mimeType: file.type,
+    });
+
+    outputPath = '';
+
+    return json({
+      success: true,
+      resultId: result.id,
+      downloadPageUrl: result.downloadPageUrl,
+      outputName: result.outputName,
+      mimeType: result.mimeType,
+      fileSize: result.fileSize,
+      expiresAt: result.expiresAt,
+    });
+  } catch (error) {
+    if (outputPath) {
+      await unlink(outputPath).catch(() => undefined);
+    }
+
+    return json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to retain generated file',
+      },
+      500,
+    );
+  }
+}

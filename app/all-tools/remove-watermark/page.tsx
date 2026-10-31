@@ -1,13 +1,17 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Undo2, RotateCcw, Eye, EyeOff, Wand2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
 
 export default function RemoveWatermarkPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -20,7 +24,13 @@ export default function RemoveWatermarkPage() {
   const baseImageRef = useRef<HTMLImageElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [brushSize, setBrushSize] = useState(30);
-  const [drawHistory, setDrawHistory] = useState<Uint8ClampedArray[]>([]);
+  const historyRef = useRef<ImageData[]>([]);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const drawingRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const generationRef = useRef(0);
+  const previewUrlRef = useRef<string | null>(null);
+  const resultUrlRef = useRef<string | null>(null);
   const [showMaskPreview, setShowMaskPreview] = useState(false);
 
   // Settings
@@ -32,17 +42,53 @@ export default function RemoveWatermarkPage() {
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
+  const clearResult = () => {
+    if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    resultUrlRef.current = null;
     setResult(null);
-    setDrawHistory([]);
-    setShowMaskPreview(false);
-    setImageReady(false);
+    setProcessingTime(null);
+  };
+
+  const invalidateProcessing = () => {
+    generationRef.current += 1;
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setProcessing(false);
+    clearResult();
+  };
+
+  useEffect(() => {
+    return () => {
+      generationRef.current += 1;
+      abortRef.current?.abort();
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    };
+  }, []);
+
+  const handleFileSelect = (selectedFile: File) => {
+    invalidateProcessing();
     setError(null);
 
-    // Instant blob URL - no encoding
+    if (
+      !['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type) ||
+      selectedFile.size === 0 ||
+      selectedFile.size > 20 * 1024 * 1024
+    ) {
+      setError('Choose a JPG, PNG, or WebP image up to 20 MB.');
+      return;
+    }
+
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     const url = URL.createObjectURL(selectedFile);
+    previewUrlRef.current = url;
+    setFile(selectedFile);
     setPreview(url);
+    historyRef.current = [];
+    drawingRef.current = false;
+    setShowMaskPreview(false);
+    setImageReady(false);
+    setTermsAccepted(false);
   };
 
   // Initialize canvas when preview is set
@@ -51,13 +97,7 @@ export default function RemoveWatermarkPage() {
 
     const canvas = canvasRef.current;
     const maskCanvas = maskCanvasRef.current;
-    if (!canvas || !maskCanvas) {
-      console.log('Canvas or mask canvas not ready, retrying...');
-      const timer = setTimeout(() => {
-        setPreview(preview);
-      }, 50);
-      return () => clearTimeout(timer);
-    }
+    if (!canvas || !maskCanvas) return;
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -87,108 +127,150 @@ export default function RemoveWatermarkPage() {
 
       setImageReady(true);
     };
-    
+
     img.onerror = () => {
-      setError('Failed to load image');
-      setImageReady(true);
+      setError('Unable to decode this image.');
+      setImageReady(false);
     };
-    
+
     img.src = preview;
 
     return () => {
-      URL.revokeObjectURL(preview);
+      img.onload = null;
+      img.onerror = null;
     };
   }, [preview]);
 
   const handleClearPreview = () => {
+    invalidateProcessing();
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = null;
     setFile(null);
     setPreview(null);
-    setResult(null);
-    setDrawHistory([]);
     setImageReady(false);
+    setError(null);
+    setTermsAccepted(false);
+    historyRef.current = [];
+    drawingRef.current = false;
+    lastPointRef.current = null;
+    baseImageRef.current = null;
   };
 
-  // Drawing functions - draw red overlay to mark regions
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current || !imageReady) return;
+  const redrawMask = () => {
+    const canvas = canvasRef.current;
+    const mask = maskCanvasRef.current;
+    const image = baseImageRef.current;
+    if (!canvas || !mask || !image) return;
+
+    const ctx = canvas.getContext('2d');
+    const maskCtx = mask.getContext('2d');
+    if (!ctx || !maskCtx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0);
+
+    const pixels = maskCtx.getImageData(0, 0, mask.width, mask.height).data;
+    const overlay = ctx.createImageData(canvas.width, canvas.height);
+
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (pixels[i] > 128) {
+        overlay.data[i] = 255;
+        overlay.data[i + 3] = 150;
+      }
+    }
+
+    const overlayCanvas = document.createElement('canvas');
+    overlayCanvas.width = canvas.width;
+    overlayCanvas.height = canvas.height;
+    const overlayCtx = overlayCanvas.getContext('2d');
+    if (!overlayCtx) return;
+    overlayCtx.putImageData(overlay, 0, 0);
+    ctx.drawImage(overlayCanvas, 0, 0);
+  };
+
+  const drawStroke = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    const mask = maskCanvasRef.current;
+    if (!canvas || !mask) return;
+
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    const point = {
+      x: (e.clientX - rect.left) * canvas.width / rect.width,
+      y: (e.clientY - rect.top) * canvas.height / rect.height,
+    };
+
+    const previous = lastPointRef.current ?? point;
+    const ctx = mask.getContext('2d');
+    if (!ctx) return;
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(previous.x, previous.y);
+    ctx.lineTo(point.x, point.y);
+    ctx.stroke();
+
+    lastPointRef.current = point;
+    redrawMask();
+  };
+
+  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const mask = maskCanvasRef.current;
+    if (!mask || !imageReady || drawingRef.current) return;
+    const ctx = mask.getContext('2d');
+    if (!ctx) return;
+
+    invalidateProcessing();
+    historyRef.current.push(ctx.getImageData(0, 0, mask.width, mask.height));
+    if (historyRef.current.length > 10) historyRef.current.shift();
+
+    drawingRef.current = true;
+    lastPointRef.current = null;
     setIsDrawing(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
     drawStroke(e);
   };
 
-  const drawStroke = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current || !maskCanvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const maskCanvas = maskCanvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    
-    // Map screen coordinates to canvas coordinates, accounting for scaling
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-
-    console.log(`Drawing at canvas: (${Math.round(x)}, ${Math.round(y)}), size: ${canvas.width}x${canvas.height}, scale: ${scaleX.toFixed(2)}x${scaleY.toFixed(2)}`);
-
-    // Draw to DISPLAY canvas (red for user feedback)
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
-      ctx.beginPath();
-      ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Draw to MASK canvas (white for removal regions)
-    const maskCtx = maskCanvas.getContext('2d');
-    if (maskCtx) {
-      maskCtx.fillStyle = 'white';
-      maskCtx.beginPath();
-      maskCtx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
-      maskCtx.fill();
-    }
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !canvasRef.current) return;
+  const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!drawingRef.current) return;
     drawStroke(e);
   };
 
   const stopDrawing = () => {
+    drawingRef.current = false;
     setIsDrawing(false);
+    lastPointRef.current = null;
   };
 
   const undo = () => {
-    const canvas = canvasRef.current;
-    const maskCanvas = maskCanvasRef.current;
-    if (canvas && maskCanvas && baseImageRef.current) {
-      const ctx = canvas.getContext('2d');
-      const maskCtx = maskCanvas.getContext('2d');
-      if (ctx && maskCtx) {
-        ctx.drawImage(baseImageRef.current, 0, 0);
-        maskCtx.fillStyle = 'black';
-        maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-      }
-    }
+    const mask = maskCanvasRef.current;
+    const snapshot = historyRef.current.pop();
+    if (!mask || !snapshot) return;
+    mask.getContext('2d')?.putImageData(snapshot, 0, 0);
+    redrawMask();
+    invalidateProcessing();
   };
 
   const reset = () => {
-    const canvas = canvasRef.current;
-    const maskCanvas = maskCanvasRef.current;
-    if (canvas && maskCanvas && baseImageRef.current) {
-      const ctx = canvas.getContext('2d');
-      const maskCtx = maskCanvas.getContext('2d');
-      if (ctx && maskCtx) {
-        ctx.drawImage(baseImageRef.current, 0, 0);
-        maskCtx.fillStyle = 'black';
-        maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-      }
-    }
+    const mask = maskCanvasRef.current;
+    if (!mask) return;
+    const ctx = mask.getContext('2d');
+    if (!ctx) return;
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, mask.width, mask.height);
+    historyRef.current = [];
+    redrawMask();
+    invalidateProcessing();
   };
 
   const removeObjects = async () => {
     console.log('removeObjects called');
-    
+
     if (!file) {
       setError('Please upload an image first');
       return;
@@ -199,13 +281,18 @@ export default function RemoveWatermarkPage() {
       return;
     }
 
+    const generation = ++generationRef.current;
+    const controller = new AbortController();
+    abortRef.current?.abort();
+    abortRef.current = controller;
+    clearResult();
     setProcessing(true);
     setError(null);
 
     try {
       const maskCanvas = maskCanvasRef.current;
       console.log('maskCanvas ref:', maskCanvas);
-      
+
       if (!maskCanvas) throw new Error('Mask canvas not found');
 
       // Debug: Check if mask canvas has any white pixels
@@ -234,7 +321,7 @@ export default function RemoveWatermarkPage() {
       // Convert mask canvas directly to PNG blob
       maskCanvas.toBlob(async (maskBlob) => {
         console.log('toBlob callback fired, maskBlob:', maskBlob);
-        
+
         if (!maskBlob) {
           setError('Failed to create mask');
           setProcessing(false);
@@ -254,11 +341,10 @@ export default function RemoveWatermarkPage() {
           const response = await fetch(`/api/inpaint?mode=${mode}&format=${outputFormat}`, {
             method: 'POST',
             body: formData,
+            signal: controller.signal,
           });
 
           const processingTimeMs = Date.now() - startTime;
-          setProcessingTime(processingTimeMs);
-
           console.log('API response status:', response.status, 'processing time:', processingTimeMs);
 
           if (!response.ok) {
@@ -275,20 +361,29 @@ export default function RemoveWatermarkPage() {
 
           const blob = await response.blob();
           console.log('Result blob size:', blob.size);
-          
+
           if (blob.size === 0) {
             throw new Error('Empty response from server');
           }
 
+          if (generation !== generationRef.current) return;
           const url = URL.createObjectURL(blob);
+          clearResult();
+          resultUrlRef.current = url;
           setResult(url);
+          setProcessingTime(processingTimeMs);
           console.log('Result set successfully');
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-          setError(errorMessage);
+          if (generation === generationRef.current && !controller.signal.aborted) {
+            setError(errorMessage);
+          }
           console.error('Fetch error:', err);
         } finally {
-          setProcessing(false);
+          if (generation === generationRef.current) {
+            abortRef.current = null;
+            setProcessing(false);
+          }
         }
       }, 'image/png');
     } catch (err) {
@@ -299,14 +394,31 @@ export default function RemoveWatermarkPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `watermark-removed-${Date.now()}.${outputFormat}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !file || processing) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const outputName = `watermark-removed-${Date.now()}.${outputFormat}`;
+      const downloadResult = await uploadBrowserDownloadResultFromUrl({
+        url: result,
+        toolSlug: 'remove-watermark',
+        originalName: file.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -348,8 +460,11 @@ export default function RemoveWatermarkPage() {
                 {!preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                    <ImageUploader 
+                    <ImageUploader
                       onFileSelect={handleFileSelect}
+                      accept="image/jpeg,image/png,image/webp"
+                      toolId="remove-watermark"
+                      onValidationError={(message) => setError(message)}
                       preview={preview}
                       onClearPreview={handleClearPreview}
                     />
@@ -360,7 +475,7 @@ export default function RemoveWatermarkPage() {
                 {preview && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 2: Mark Areas</h2>
-                    
+
                     {!imageReady && (
                       <div className="text-center py-12">
                         <Loader className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-3" />
@@ -377,10 +492,11 @@ export default function RemoveWatermarkPage() {
                           {/* Display canvas - shows image + red marks */}
                           <canvas
                             ref={canvasRef}
-                            onMouseDown={startDrawing}
-                            onMouseMove={draw}
-                            onMouseUp={stopDrawing}
-                            onMouseLeave={stopDrawing}
+                            onPointerDown={startDrawing}
+                            onPointerMove={draw}
+                            onPointerUp={stopDrawing}
+                            onPointerCancel={stopDrawing}
+                            onPointerLeave={stopDrawing}
                             style={{
                               cursor: 'crosshair',
                               display: imageReady && !showMaskPreview ? 'block' : 'none',
@@ -510,7 +626,7 @@ export default function RemoveWatermarkPage() {
                           {(['fast', 'quality'] as const).map((m) => (
                             <button
                               key={m}
-                              onClick={() => setMode(m)}
+                              onClick={() => { invalidateProcessing(); setMode(m); }}
                               className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition ${
                                 mode === m
                                   ? 'bg-orange-500 text-white'
@@ -531,10 +647,10 @@ export default function RemoveWatermarkPage() {
                         <label className="text-sm font-medium text-gray-700 block mb-2">Output Format</label>
                         <select
                           value={outputFormat}
-                          onChange={(e) => setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp')}
+                          onChange={(e) => { invalidateProcessing(); setOutputFormat(e.target.value as 'png' | 'jpg' | 'webp'); }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
-                          <option value="png">PNG (best quality)</option>
+                          <option value="png">PNG (lossless output)</option>
                           <option value="webp">WebP (balanced)</option>
                           <option value="jpg">JPEG (smaller size)</option>
                         </select>
@@ -590,6 +706,7 @@ export default function RemoveWatermarkPage() {
                   {result && (
                     <button
                       onClick={handleDownload}
+                      disabled={processing}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
@@ -610,7 +727,7 @@ export default function RemoveWatermarkPage() {
 
                   {/* Use Cases */}
                   <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-indigo-900 mb-2">Perfect for:</h3>
+                    <h3 className="font-semibold text-indigo-900 mb-2">Useful for:</h3>
                     <ul className="text-sm text-indigo-800 space-y-1">
                       <li>• Removing watermarks</li>
                       <li>• Deleting logos</li>
@@ -640,7 +757,7 @@ export default function RemoveWatermarkPage() {
             </li>
             <li className="flex gap-4">
               <span className="text-orange-500 font-bold min-w-8">3.</span>
-              <span><strong>Choose Mode:</strong> Select between Fast mode (quick processing) or Quality mode (best results with smart inpainting).</span>
+              <span><strong>Choose Mode:</strong> Select Fast mode for quicker processing or Quality mode for more detailed inpainting.</span>
             </li>
             <li className="flex gap-4">
               <span className="text-orange-500 font-bold min-w-8">4.</span>
@@ -648,7 +765,7 @@ export default function RemoveWatermarkPage() {
             </li>
             <li className="flex gap-4">
               <span className="text-orange-500 font-bold min-w-8">5.</span>
-              <span><strong>Remove & Download:</strong> Click "Remove Watermark" and download your cleaned image instantly.</span>
+              <span><strong>Remove & Download:</strong> Click "Remove Objects", review the processed result, and continue to download.</span>
             </li>
           </ol>
         </div>
@@ -660,8 +777,8 @@ export default function RemoveWatermarkPage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Benefits of Our Watermark Remover</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Smart AI Inpainting</h3>
-              <p className="text-gray-700">Advanced algorithms intelligently fill in removed areas, seamlessly blending with surrounding content for natural results.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Inpainting Processing</h3>
+              <p className="text-gray-700">The processor fills marked regions using surrounding image information. Results vary with the size of the marked area, background texture, edges, and image complexity.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Precise Brush Control</h3>
@@ -669,19 +786,19 @@ export default function RemoveWatermarkPage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Fast & Quality Modes</h3>
-              <p className="text-gray-700">Choose fast mode for quick results or quality mode for superior inpainting. Perfect for any use case.</p>
+              <p className="text-gray-700">Choose fast mode for quicker processing or quality mode for more detailed inpainting.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Output Formats</h3>
               <p className="text-gray-700">Export as PNG (lossless), JPG (compressed), or WebP (modern). Choose the best format for your needs.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Undo & Redo Support</h3>
-              <p className="text-gray-700">Full undo/redo history lets you fine-tune your selections. Revert marks with a single click.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Undo and Reset Controls</h3>
+              <p className="text-gray-700">Undo recent brush strokes or reset the selection before processing.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
-              <p className="text-gray-700">No sign-up required. All processing happens securely. Your images are completely private and never stored.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Simple Processing</h3>
+              <p className="text-gray-700">No sign-up is required to use the available watermark-removal controls.</p>
             </div>
           </div>
         </div>
@@ -689,35 +806,35 @@ export default function RemoveWatermarkPage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What kind of watermarks can be removed?</summary>
-              <p className="text-gray-700 mt-2">Most watermarks, logos, timestamps, text overlays, and other unwanted elements can be removed. The quality depends on the watermark type and complexity. Simple, solid watermarks work best.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What's the difference between Fast and Quality modes?</summary>
-              <p className="text-gray-700 mt-2">Fast mode processes quickly with basic inpainting. Quality mode uses advanced AI algorithms for superior results with better blending. Quality mode takes longer but produces better outcomes for complex watermarks.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">How accurate is the watermark removal?</summary>
-              <p className="text-gray-700 mt-2">Our AI inpainting algorithm works best on solid backgrounds and simple watermarks. Complex patterns or large watermarks may require manual touch-ups. The more precise your brush marking, the better the results.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What image formats are supported?</summary>
-              <p className="text-gray-700 mt-2">We support JPG, PNG, WebP, GIF, BMP, and TIFF input formats. Output can be PNG (lossless), JPG (compressed), or WebP (modern format).</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Absolutely. All processing happens locally or on secure servers. Your images are never stored, shared, or used for any purpose. Complete privacy guaranteed.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I use the edited images commercially?</summary>
-              <p className="text-gray-700 mt-2">Yes, images processed with our tool can be used for personal or commercial purposes without any restrictions or attribution required.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>What kind of watermarks can be removed?</FAQQuestion>
+              <FAQAnswer>The tool can process marked watermarks, logos, timestamps, text overlays, and other unwanted regions. Results depend on the size, texture, surrounding image content, and complexity of the marked area.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What's the difference between Fast and Quality modes?</FAQQuestion>
+              <FAQAnswer>Fast mode uses quicker inpainting, while Quality mode applies more detailed processing and can take longer. Compare the result with the surrounding image before using the edited file.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>How accurate is the watermark removal?</FAQQuestion>
+              <FAQAnswer>Inpainting is generally easier when the marked region is surrounded by consistent visual information. Complex textures, patterns, large marked areas, or important objects behind the selection can produce visible artifacts. Precise brush marking helps limit processing to the intended area.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What image formats are supported?</FAQQuestion>
+              <FAQAnswer>Supported input formats are JPG, PNG, and WebP. Output can be PNG (lossless), JPG (compressed), or WebP (modern format).</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is my image data safe?</FAQQuestion>
+              <FAQAnswer>Images are processed as needed to perform the requested watermark-removal operation.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I use the edited images commercially?</FAQQuestion>
+              <FAQAnswer>Using this tool does not grant rights to an image. Only edit or use images when you own them or have the necessary permission, and follow any applicable copyright or licensing terms.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}
@@ -727,7 +844,7 @@ export default function RemoveWatermarkPage() {
           <div className="grid md:grid-cols-3 gap-6">
             <Link href="/all-tools/remove-background" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Remove Background</h3>
-              <p className="text-sm text-gray-600">Remove or replace image backgrounds instantly</p>
+              <p className="text-sm text-gray-600">Create a foreground cutout from an image</p>
             </Link>
             <Link href="/all-tools/blur-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Blur Image</h3>
@@ -747,7 +864,7 @@ export default function RemoveWatermarkPage() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'Remove Watermark - Free Online Watermark & Logo Remover Tool',
-        description: 'Remove watermarks, logos, timestamps, and text from images instantly using AI inpainting technology.',
+        description: 'Remove marked watermarks, logos, timestamps, text, and unwanted objects from images using AI inpainting technology.',
         url: 'https://simplifyconvert.com/all-tools/remove-watermark',
         applicationCategory: 'Multimedia',
         offers: {
@@ -764,20 +881,19 @@ export default function RemoveWatermarkPage() {
         datePublished: '2024-01-01',
         image: 'https://simplifyconvert.com/og-image.jpg',
         featureList: [
-          'Smart AI inpainting algorithm',
+          'Inpainting-based marked-area processing',
           'Adjustable brush size control',
           'Fast and quality processing modes',
           'Multiple output formats (PNG, JPG, WebP)',
-          'Full undo/redo support',
+          'Undo and reset controls',
           'Real-time mask preview',
           'No sign-up required',
-          'Privacy-focused local processing',
+          'Server-side image processing',
         ],
       })}} />
     </>
   );
 }
-
 
 
 

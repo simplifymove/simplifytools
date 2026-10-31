@@ -1,6 +1,6 @@
 ﻿export const metadata = {
-  title: 'Free Add Opacity Tool - Control Image Transparency',
-  description: 'Add transparency and opacity control to images. Create transparent PNG files.',
+  title: 'Add Opacity - Adjust Image Transparency | SimplifyConvert',
+  description: 'Adjust image opacity in your browser, preview the transparency level, and download the processed result.',
   keywords: 'opacity, transparency, PNG, transparent background, image transparency',
   openGraph: {
     title: 'Free Add Opacity Tool - Image Transparency',

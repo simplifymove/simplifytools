@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function SunburstPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [posX, setPosX] = useState(50);
@@ -15,101 +19,189 @@ export default function SunburstPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const operationId = useRef(0);
+  const processingRef = useRef(false);
+  const downloadBusy = useRef(false);
+  const [error, setError] = useState('');
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      operationId.current += 1;
+    };
+  }, []);
+
+  const invalidateResult = () => {
+    operationId.current += 1;
+    setResult(null);
+    setResultPreview(null);
+    setError('');
+    setProcessing(false);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
+
+    if (!selectedFile) return;
+
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please select a supported image file.');
+      return;
     }
+
+    const currentId = operationId.current;
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (currentId !== operationId.current) return;
+
+      if (typeof reader.result !== 'string') {
+        setError('Unable to read the selected image.');
+        return;
+      }
+
+      setFile(selectedFile);
+      setPreview(reader.result);
+    };
+
+    reader.onerror = () => {
+      if (currentId === operationId.current) {
+        setError('Unable to read the selected image.');
+      }
+    };
+
+    reader.readAsDataURL(selectedFile);
   };
 
   const applySunburst = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processingRef.current || downloadBusy.current) return;
+
+    const currentId = ++operationId.current;
+    processingRef.current = true;
     setProcessing(true);
+    setResult(null);
+    setResultPreview(null);
+    setError('');
 
     try {
       const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setProcessing(false);
-            return;
-          }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setProcessing(false);
-            return;
-          }
 
-          ctx.drawImage(img, 0, 0);
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Unable to load the image.'));
+        img.src = preview;
+      });
 
-          const centerX = (posX / 100) * canvas.width;
-          const centerY = (posY / 100) * canvas.height;
-          const scale = (intensity / 50) * 2;
+      if (currentId !== operationId.current) return;
 
-          for (let i = 0; i < 8; i++) {
-            const angle = (i * Math.PI) / 4;
-            const gradient = ctx.createLinearGradient(
-              centerX,
-              centerY,
-              centerX + Math.cos(angle) * canvas.width * scale,
-              centerY + Math.sin(angle) * canvas.height * scale
-            );
-            gradient.addColorStop(0, `rgba(255, 200, 0, ${0.3 * (intensity / 100)})`);
-            gradient.addColorStop(1, 'rgba(255, 200, 0, 0)');
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('Image canvas is unavailable.');
 
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(centerX + Math.cos(angle) * canvas.width * scale, centerY + Math.sin(angle) * canvas.height * scale);
-            ctx.lineTo(centerX + Math.cos(angle + 0.3) * canvas.width * scale, centerY + Math.sin(angle + 0.3) * canvas.height * scale);
-            ctx.closePath();
-            ctx.fill();
-          }
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
 
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
-              return;
-            }
-            setResult(blob);
-            setProcessing(false);
-          }, 'image/jpeg', 0.95);
-        } catch (error) {
-          console.error('Error in image onload:', error);
-          setProcessing(false);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Unable to initialize image processing.');
+
+      ctx.drawImage(img, 0, 0);
+
+      const centerX = (posX / 100) * canvas.width;
+      const centerY = (posY / 100) * canvas.height;
+      const scale = (intensity / 50) * 2;
+
+      if (intensity > 0) {
+        for (let i = 0; i < 8; i++) {
+          const angle = (i * Math.PI) / 4;
+          const endX = centerX + Math.cos(angle) * canvas.width * scale;
+          const endY = centerY + Math.sin(angle) * canvas.height * scale;
+
+          const gradient = ctx.createLinearGradient(
+            centerX, centerY, endX, endY
+          );
+
+          gradient.addColorStop(
+            0,
+            `rgba(255, 200, 0, ${0.3 * (intensity / 100)})`
+          );
+          gradient.addColorStop(1, 'rgba(255, 200, 0, 0)');
+
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(endX, endY);
+          ctx.lineTo(
+            centerX + Math.cos(angle + 0.3) * canvas.width * scale,
+            centerY + Math.sin(angle + 0.3) * canvas.height * scale
+          );
+          ctx.closePath();
+          ctx.fill();
         }
-      };
-      img.onerror = () => {
-        console.error('Error loading image');
+      }
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          value => {
+            if (value) resolve(value);
+            else reject(new Error('Unable to create the sunburst image.'));
+          },
+          'image/jpeg',
+          0.95
+        );
+      });
+
+      if (currentId !== operationId.current) return;
+
+      setResult(blob);
+      setResultPreview(canvas.toDataURL('image/jpeg', 0.85));
+    } catch (caughtError) {
+      if (currentId !== operationId.current) return;
+
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to apply the sunburst effect.'
+      );
+    } finally {
+      processingRef.current = false;
+      if (currentId === operationId.current) {
         setProcessing(false);
-      };
-      img.src = preview;
-    } catch (error) {
-      console.error('Error applying sunburst:', error);
-      setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `sunburst-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing || processingRef.current || downloadBusy.current) return;
+      downloadBusy.current = true;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'sunburst',
+            originalName: 'sunburst.jpg',
+            outputName: 'sunburst.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        downloadBusy.current = false;
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -127,7 +219,7 @@ export default function SunburstPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">☀️ Sunburst Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Add radial sunburst and light ray effects. Create stunning sunburst lighting instantly.
+              Add a stylized radial sunburst and light-ray effect to an image.
             </p>
           </div>
         </div>
@@ -138,7 +230,7 @@ export default function SunburstPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Add Sunburst Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -161,7 +253,10 @@ export default function SunburstPage() {
                         min="0"
                         max="100"
                         value={posX}
-                        onChange={(e) => setPosX(Number(e.target.value))}
+                        onChange={(e) => {
+                          invalidateResult();
+                          setPosX(Number(e.target.value));
+                        }}
                         className="w-full"
                       />
                     </div>
@@ -174,7 +269,10 @@ export default function SunburstPage() {
                         min="0"
                         max="100"
                         value={posY}
-                        onChange={(e) => setPosY(Number(e.target.value))}
+                        onChange={(e) => {
+                          invalidateResult();
+                          setPosY(Number(e.target.value));
+                        }}
                         className="w-full"
                       />
                     </div>
@@ -189,7 +287,10 @@ export default function SunburstPage() {
                       min="0"
                       max="100"
                       value={intensity}
-                      onChange={(e) => setIntensity(Number(e.target.value))}
+                      onChange={(e) => {
+                          invalidateResult();
+                          setIntensity(Number(e.target.value));
+                        }}
                       className="w-full"
                     />
                     <p className="text-sm text-gray-600 mt-2">0 = no rays, 100 = intense sunburst</p>
@@ -206,9 +307,29 @@ export default function SunburstPage() {
                 </>
               )}
 
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+
+              {resultPreview && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    Sunburst Preview
+                  </h3>
+                  <img
+                    src={resultPreview}
+                    alt="Preview of the image with radial sunburst rays"
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
+                  disabled={processing}
                   className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Download size={20} />
@@ -224,7 +345,8 @@ export default function SunburstPage() {
                 <li><strong>1. Upload Photo:</strong> Select a JPG, PNG, or WebP image.</li>
                 <li><strong>2. Position Rays:</strong> Set X and Y coordinates for sunburst center.</li>
                 <li><strong>3. Adjust Intensity:</strong> Control ray brightness (0-100).</li>
-                <li><strong>4. Download:</strong> Save your sunburst image.</li>
+                <li><strong>4. Apply Effect:</strong> Generate and review the sunburst preview.</li>
+                <li><strong>5. Download:</strong> Save your sunburst image.</li>
               </ol>
             </div>
 
@@ -252,35 +374,35 @@ export default function SunburstPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Where should I place the sunburst?</summary>
-                  <p className="text-gray-700 mt-2">Place in light areas. Top-left or top-right is typical.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity works best?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced. Higher for dramatic effect.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, sunburst images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-amber-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I add multiple sunbursts?</summary>
-                  <p className="text-gray-700 mt-2">Download and upload again to add more.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>Where should I place the sunburst?</FAQQuestion>
+                  <FAQAnswer>Place in light areas. Top-left or top-right is typical.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity works best?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for balanced. Higher for dramatic effect.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>Works with supported image files such as JPG, PNG, and WebP. Results depend on the source image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on the rights and permissions associated with your original image.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed in your browser. Preparing a download sends the processed image through the site's download service.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I add multiple sunbursts?</FAQQuestion>
+                  <FAQAnswer>Download and upload again to add more.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -304,7 +426,88 @@ export default function SunburstPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Sunburst Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The Sunburst tool draws radial light-ray graphics over the
+                source image using browser Canvas rendering. The effect is
+                composited with the original image to create a stylized burst
+                of light.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect is generated with browser image and Canvas
+                  processing. No separate server conversion step is used for
+                  the visual effect itself.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Sunburst is a decorative overlay effect; it does not detect real light sources or physically simulate scene lighting.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and use moderate settings
+                before increasing the effect. Compare the preview with the
+                original because stronger processing can intentionally reduce
+                or exaggerate visible detail.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Additional Sunburst Questions
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. The tool changes or overlays existing image pixels and
+                    does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Use the available controls and preview to inspect the
+                    result before downloading it.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

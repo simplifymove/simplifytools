@@ -1,11 +1,12 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Download, ChevronRight, Zap, Shield, CheckCircle, Loader } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
@@ -17,20 +18,54 @@ import {
   validateImageFileSize,
 } from '@/app/utils/validation/image-validation';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import {
+  normalizePngToJpgQuality,
+  PNG_TO_JPG_DEFAULT_QUALITY,
+  PNG_TO_JPG_MAX_QUALITY,
+  PNG_TO_JPG_MIN_QUALITY,
+} from '@/app/lib/png-to-jpg-quality';
 
 const TOOL_ID = 'png-to-jpg';
 const TOOL_NAME = 'PNG to JPG Converter';
 
 export default function PngToJpgPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
-  const [quality, setQuality] = useState(90);
+  const [quality, setQuality] = useState(PNG_TO_JPG_DEFAULT_QUALITY);
+  const requestGeneration = useRef(0);
+  const processingRef = useRef(false);
+  const downloadRef = useRef(false);
   const { error, clearError, createError } = useImageToolErrors();
 
   const handleFileSelect = (selectedFile: File) => {
+    if (downloadRef.current) return;
+
+    const generation = ++requestGeneration.current;
+
+    processingRef.current = false;
+    setProcessing(false);
+    setFile(null);
+    setPreview(null);
+    setResult(null);
     clearError();
+
+    if (
+      selectedFile.type !== 'image/png' ||
+      !selectedFile.name.toLowerCase().endsWith('.png')
+    ) {
+      createError(
+        ImageToolErrorType.UNSUPPORTED_FORMAT,
+        TOOL_ID,
+        TOOL_NAME,
+        { file: selectedFile }
+      );
+      return;
+    }
 
     // Validate file
     const emptyCheck = validateImageNotEmpty(selectedFile);
@@ -81,20 +116,31 @@ export default function PngToJpgPage() {
     setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+      if (generation === requestGeneration.current) {
+        setPreview(e.target?.result as string);
+      }
     };
     reader.onerror = () => {
-      createError(
-        ImageToolErrorType.FILE_CORRUPTED,
-        TOOL_ID,
-        TOOL_NAME,
-        { file: selectedFile }
-      );
+      if (generation === requestGeneration.current) {
+        setFile(null);
+        setPreview(null);
+        createError(
+          ImageToolErrorType.FILE_CORRUPTED,
+          TOOL_ID,
+          TOOL_NAME,
+          { file: selectedFile }
+        );
+      }
     };
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    if (downloadRef.current) return;
+
+    requestGeneration.current += 1;
+    processingRef.current = false;
+    setProcessing(false);
     setFile(null);
     setPreview(null);
     setResult(null);
@@ -102,6 +148,8 @@ export default function PngToJpgPage() {
   };
 
   const handleConvert = async () => {
+    if (processingRef.current) return;
+
     if (!file) {
       createError(
         ImageToolErrorType.EMPTY_FILE,
@@ -111,33 +159,107 @@ export default function PngToJpgPage() {
       return;
     }
 
+    const generation = ++requestGeneration.current;
+
+    processingRef.current = true;
+    setProcessing(true);
+    setResult(null);
+    clearError();
+
+    try {
+      const imageUrl = URL.createObjectURL(file);
+
+      try {
+        const image = new Image();
+
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error('Unable to decode PNG'));
+          image.src = imageUrl;
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+
+        const context = canvas.getContext('2d');
+        if (!context) {
+          throw new Error('Canvas context unavailable');
+        }
+
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0);
+
+        const jpegBlob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob || blob.type !== 'image/jpeg') {
+                reject(new Error('JPEG encoding failed'));
+                return;
+              }
+              resolve(blob);
+            },
+            'image/jpeg',
+            normalizePngToJpgQuality(quality) / 100
+          );
+        });
+
+        if (generation === requestGeneration.current) {
+          setResult(jpegBlob);
+        }
+      } finally {
+        URL.revokeObjectURL(imageUrl);
+      }
+    } catch {
+      if (generation === requestGeneration.current) {
+        createError(
+          ImageToolErrorType.SHARP_FAILED,
+          TOOL_ID,
+          TOOL_NAME,
+          { file }
+        );
+      }
+    } finally {
+      if (generation === requestGeneration.current) {
+        processingRef.current = false;
+        setProcessing(false);
+      }
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!result || !file || processingRef.current) return;
+
+    processingRef.current = true;
+    downloadRef.current = true;
     setProcessing(true);
     clearError();
+
     try {
-      const result = await convertImageFormat(file, 'image/jpeg');
-      setResult(result.blob);
-    } catch (err) {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName: `${baseName}.jpg`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch {
       createError(
         ImageToolErrorType.SHARP_FAILED,
         TOOL_ID,
         TOOL_NAME,
-        { file }
+        { file },
       );
     } finally {
+      downloadRef.current = false;
+      processingRef.current = false;
       setProcessing(false);
     }
-  };
-
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -179,7 +301,7 @@ export default function PngToJpgPage() {
               PNG to JPG Converter
             </h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Convert PNG images to JPG format with quality control. Reduce file size while maintaining image quality.
+              Convert PNG images to JPG format with adjustable JPEG quality. File size and visible quality depend on the source image and selected setting.
             </p>
           </motion.div>
         </div>
@@ -189,7 +311,7 @@ export default function PngToJpgPage() {
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-12">
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
 
-        <motion.div 
+        <motion.div
           className="grid md:grid-cols-2 gap-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -219,7 +341,22 @@ export default function PngToJpgPage() {
                     preview={preview}
                     onClearPreview={handleClearPreview}
                     toolId={TOOL_ID}
-                    onValidationError={() => {}}
+                    accept=".png,image/png"
+                    onValidationError={(message) => {
+                      if (message && !downloadRef.current) {
+                        requestGeneration.current += 1;
+                        processingRef.current = false;
+                        setProcessing(false);
+                        setFile(null);
+                        setPreview(null);
+                        setResult(null);
+                        createError(
+                          ImageToolErrorType.UNSUPPORTED_FORMAT,
+                          TOOL_ID,
+                          TOOL_NAME
+                        );
+                      }
+                    }}
                   />
                 </motion.div>
 
@@ -235,14 +372,25 @@ export default function PngToJpgPage() {
                   </label>
                   <input
                     type="range"
-                    min="10"
-                    max="100"
+                    name="quality"
+                    aria-label="JPEG quality"
+                    min={PNG_TO_JPG_MIN_QUALITY}
+                    max={PNG_TO_JPG_MAX_QUALITY}
                     value={quality}
-                    onChange={(e) => setQuality(parseInt(e.target.value))}
+                    onChange={(e) => {
+                      if (downloadRef.current) return;
+
+                      requestGeneration.current += 1;
+                      processingRef.current = false;
+                      setProcessing(false);
+                      setResult(null);
+                      setQuality(normalizePngToJpgQuality(e.target.valueAsNumber));
+                    }}
+                    disabled={processing && downloadRef.current}
                     className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
                   />
                   <p className="text-xs text-orange-700 mt-2">
-                    Higher = better quality, larger file • Lower = smaller file, less quality
+                    Higher settings usually retain more detail and can create larger files; lower settings apply stronger JPEG compression
                   </p>
                 </motion.div>
 
@@ -295,12 +443,13 @@ export default function PngToJpgPage() {
 
                   <motion.button
                     onClick={handleDownload}
+                    disabled={processing}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-green-500/30 flex items-center justify-center gap-2 transition-all"
                   >
                     <Download className="w-5 h-5" />
-                    Download JPG
+                    {processing ? 'Preparing Download...' : 'Continue to Download'}
                   </motion.button>
                 </motion.div>
               ) : (
@@ -316,7 +465,10 @@ export default function PngToJpgPage() {
           </motion.div>
         </motion.div>
       </div>
+    </div>
 
+      <PriorityToolGuide toolId="png-to-jpg" />
+      {false && (<>
       {/* Footer Features */}
       <motion.div
         className="mt-12 grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 md:px-8 pb-12"
@@ -330,7 +482,7 @@ export default function PngToJpgPage() {
             Smaller Files
           </h3>
           <p className="text-sm text-gray-600">
-            Reduce file size significantly while maintaining acceptable image quality through compression.
+            JPEG encoding can reduce file size for many photographic images, but the result depends on image content, dimensions, and the selected quality.
           </p>
         </motion.div>
 
@@ -340,7 +492,7 @@ export default function PngToJpgPage() {
             Quality Control
           </h3>
           <p className="text-sm text-gray-600">
-            Adjust quality slider (10-100%) to find the perfect balance for your needs.
+            Adjust the quality slider from 10% to 100%, then compare the resulting file size and visible artifacts.
           </p>
         </motion.div>
 
@@ -350,11 +502,10 @@ export default function PngToJpgPage() {
             Wide Compatibility
           </h3>
           <p className="text-sm text-gray-600">
-            JPG format works universally across all devices, browsers, and applications.
+            JPG is widely supported across browsers, devices, image editors, document tools, and publishing workflows.
           </p>
         </motion.div>
       </motion.div>
-    </div>
 
     {/* How To Section */}
     <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
@@ -371,7 +522,7 @@ export default function PngToJpgPage() {
           </div>
           <div className="flex gap-4 items-start">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
-            <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> The tool will process your image instantly</p></div>
+            <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> The browser decodes the PNG and creates a JPEG using the selected quality setting</p></div>
           </div>
           <div className="flex gap-4 items-start">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -398,64 +549,64 @@ export default function PngToJpgPage() {
 
     {/* FAQ Section */}
     <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-        <div className="space-y-4">
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+      <FAQPanel>
+        <FAQHeading>Frequently Asked Questions</FAQHeading>
+        <FAQList>
+          <FAQDisclosure>
+            <FAQQuestion>
               What happens to transparency when converting PNG to JPG?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">JPG doesn't support transparency. Our converter fills transparent areas with white by default. You can upload a background color if needed.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>JPG does not support transparency. This converter places transparent or partially transparent PNG pixels over a white background before creating the JPEG. Transparency is not preserved.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               What quality setting should I use?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">For most use cases, 85-90% quality provides excellent results with good file size reduction. For web use, 75% is often sufficient. Increase to 95%+ only for professional printing.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>There is no single quality setting that is best for every image. Start with a moderate-to-high setting, inspect text, edges, gradients, and fine detail, then adjust according to the resulting file size and visible artifacts.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               How much smaller will my file be?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">File size reduction depends on your image content. Typically, JPG files are 30-70% smaller than PNG files. Graphics with solid colors may compress less than photos.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>File-size differences depend on the image content and selected JPG quality. Photographs and graphics can produce different results.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               Are my files stored or shared?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">No. Conversion happens entirely in your browser. Files are never uploaded to our servers and are automatically deleted after download.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               Can I convert multiple PNG files at once?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">Currently, this tool processes one image at a time. For batch conversion of multiple files, check out our Batch Convert Images tool.</p>
-          </details>
 
-          <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-            <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+            </FAQQuestion>
+            <FAQAnswer>Currently, this tool processes one image at a time. For batch conversion of multiple files, check out our Batch Convert Images tool.</FAQAnswer>
+          </FAQDisclosure>
+
+          <FAQDisclosure>
+            <FAQQuestion>
               Is this converter really free?
-              <span className="text-gray-500 group-open:hidden">+</span>
-              <span className="text-gray-500 hidden group-open:inline">−</span>
-            </summary>
-            <p className="text-gray-700 mt-3 text-sm">Yes, completely free with no limits. No signup required, no hidden costs, no watermarks on your converted images.</p>
-          </details>
-        </div>
-      </div>
+
+
+            </FAQQuestion>
+            <FAQAnswer>You can use the available PNG-to-JPG conversion controls without creating an account.</FAQAnswer>
+          </FAQDisclosure>
+        </FAQList>
+      </FAQPanel>
     </div>
 
     {/* FAQ Schema */}
@@ -468,7 +619,7 @@ export default function PngToJpgPage() {
           "name": "What happens to transparency when converting PNG to JPG?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "JPG doesn't support transparency. Our converter fills transparent areas with white by default. You can upload a background color if needed."
+            "text": "JPG does not support transparency. This converter places transparent or partially transparent PNG pixels over a white background before creating the JPEG. Transparency is not preserved."
           }
         },
         {
@@ -476,7 +627,7 @@ export default function PngToJpgPage() {
           "name": "What quality setting should I use?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "For most use cases, 85-90% quality provides excellent results with good file size reduction. For web use, 75% is often sufficient. Increase to 95%+ only for professional printing."
+            "text": "There is no single quality setting that is best for every image. Start with a moderate-to-high setting, inspect text, edges, gradients, and fine detail, then adjust according to the resulting file size and visible artifacts."
           }
         },
         {
@@ -484,7 +635,7 @@ export default function PngToJpgPage() {
           "name": "How much smaller will my file be?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "File size reduction depends on your image content. Typically, JPG files are 30-70% smaller than PNG files. Graphics with solid colors may compress less than photos."
+            "text": "File-size differences depend on the image content and selected JPG quality. Photographs and graphics can produce different results."
           }
         },
         {
@@ -492,7 +643,7 @@ export default function PngToJpgPage() {
           "name": "Are my files stored or shared?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Conversion happens entirely in your browser. Files are never uploaded to our servers and are automatically deleted after download."
+            "text": "The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared."
           }
         },
         {
@@ -508,7 +659,7 @@ export default function PngToJpgPage() {
           "name": "Is this converter really free?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, completely free with no limits. No signup required, no hidden costs, no watermarks on your converted images."
+            "text": "You can use the available PNG-to-JPG conversion controls without creating an account."
           }
         }
       ]
@@ -521,9 +672,9 @@ export default function PngToJpgPage() {
         <div className="grid md:grid-cols-2 gap-4">
           <Link href="/all-tools/jpg-to-png" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
             <span className="text-orange-600 font-bold">→</span>
-            <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Add transparency support</p></div>
+            <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Convert JPG to PNG format</p></div>
           </Link>
-          <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+          <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
             <span className="text-orange-600 font-bold">→</span>
             <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce any image size</p></div>
           </Link>
@@ -538,16 +689,13 @@ export default function PngToJpgPage() {
         </div>
       </div>
     </div>
+      </>)}
       </main>
 
       <Footer />
     </>
   );
 }
-
-
-
-
 
 
 

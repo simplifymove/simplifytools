@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { 
   FileText, Image as ImageIcon, Video, PenTool, Database, Code2, Volume2,
-  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, AlertCircle, ChevronDown, LogOut, Settings
+  Search, Menu, X, ChevronRight, Sparkles, TrendingUp, FileCheck, Download, ChevronDown, LogOut, Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -16,13 +16,26 @@ export function HomeHeader() {
   const { data: session } = useSession();
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [showNotification, setShowNotification] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => setIsHeaderScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setToolsMenuOpen(false);
+        setMobileMenuOpen(false);
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
   const categories = [
@@ -33,8 +46,7 @@ export function HomeHeader() {
       icon: FileText,
       color: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-50',
-      count: '55+',
-      link: '/all-tools/pdf',
+      link: '/all-tools/pdf-tools',
       glowColor: 'group-hover:shadow-purple-500/20'
     },
     {
@@ -44,7 +56,6 @@ export function HomeHeader() {
       icon: ImageIcon,
       color: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-50',
-      count: '79',
       link: '/all-tools/image-tools',
       glowColor: 'group-hover:shadow-orange-500/20'
     },
@@ -55,7 +66,6 @@ export function HomeHeader() {
       icon: Video,
       color: 'from-pink-500 via-pink-600 to-pink-700',
       bgColor: 'bg-pink-50',
-      count: '58',
       link: '/all-tools/video-tools',
       glowColor: 'group-hover:shadow-pink-500/20'
     },
@@ -66,7 +76,6 @@ export function HomeHeader() {
       icon: PenTool,
       color: 'from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-50',
-      count: '60+',
       link: '/all-tools/ai-tools',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
@@ -77,7 +86,6 @@ export function HomeHeader() {
       icon: Database,
       color: 'from-teal-500 via-teal-600 to-teal-700',
       bgColor: 'bg-teal-50',
-      count: '12',
       link: '/all-tools/data',
       glowColor: 'group-hover:shadow-teal-500/20'
     },
@@ -88,7 +96,6 @@ export function HomeHeader() {
       icon: Code2,
       color: 'from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-50',
-      count: '49',
       link: '/all-tools/code-tools',
       glowColor: 'group-hover:shadow-green-500/20'
     },
@@ -99,7 +106,6 @@ export function HomeHeader() {
       icon: Volume2,
       color: 'from-indigo-500 via-indigo-600 to-indigo-700',
       bgColor: 'bg-indigo-50',
-      count: 'Voice',
       link: '/all-tools/text-to-speech',
       glowColor: 'group-hover:shadow-indigo-500/20'
     },
@@ -110,7 +116,6 @@ export function HomeHeader() {
       icon: TrendingUp,
       color: 'from-emerald-500 via-emerald-600 to-emerald-700',
       bgColor: 'bg-emerald-50',
-      count: '4',
       link: '/all-tools/financial-calculators',
       glowColor: 'group-hover:shadow-emerald-500/20'
     },
@@ -121,18 +126,16 @@ export function HomeHeader() {
       icon: FileCheck,
       color: 'from-blue-500 via-cyan-600 to-teal-700',
       bgColor: 'bg-blue-50',
-      count: '1',
-      link: '/all-tools/resume-maker/job-match',
+      link: '/all-tools/resume-maker',
       glowColor: 'group-hover:shadow-blue-500/20'
     },
     {
       id: 'downloader',
       title: 'Save From Online',
-      description: 'Download any file from any URL - videos, images, PDFs, and more',
+      description: 'Download supported media and files from compatible URLs',
       icon: Download,
       color: 'from-green-500 via-emerald-600 to-green-700',
       bgColor: 'bg-green-50',
-      count: 'Universal',
       link: '/all-tools/save-from-online',
       glowColor: 'group-hover:shadow-green-500/20'
     }
@@ -140,33 +143,6 @@ export function HomeHeader() {
 
   return (
     <>
-      {/* TOP NOTIFICATION BAR */}
-      {showNotification && (
-        <motion.div
-          initial={{ y: -20 }}
-          animate={{ y: 0 }}
-          exit={{ y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="bg-linear-to-r from-yellow-50 to-orange-50 border-b border-yellow-200 shadow-sm"
-        >
-          <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <AlertCircle size={20} className="text-orange-500 shrink-0" />
-              <p className="text-sm text-gray-700 text-center md:text-left">
-                We're currently improving some features. If you notice any issues, please report them - we appreciate your feedback!
-              </p>
-            </div>
-            <button
-              onClick={() => setShowNotification(false)}
-              className="shrink-0 p-1 hover:bg-white/50 rounded-md transition-colors"
-              aria-label="Close notification"
-            >
-              <X size={18} className="text-gray-600" />
-            </button>
-          </div>
-        </motion.div>
-      )}
-
       {/* NAVBAR */}
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${
@@ -194,25 +170,55 @@ export function HomeHeader() {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex flex-1 items-center justify-center gap-5 xl:gap-7 min-w-0">
             {/* All Tools Dropdown */}
-            <div className="relative group">
-              <Link 
-                href="/all-tools"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition relative flex items-center gap-1 py-2 px-1"
+            <div
+              className="relative"
+              onMouseEnter={() => setToolsMenuOpen(true)}
+              onMouseLeave={() => setToolsMenuOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setToolsMenuOpen((open) => !open)}
+                aria-expanded={toolsMenuOpen}
+                aria-controls="desktop-tools-menu"
+                aria-haspopup="true"
+                className="relative flex items-center gap-1 px-1 py-2 text-sm font-medium text-gray-600 transition hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
               >
                 All Tools
-                <ChevronRight size={16} className="group-hover:rotate-90 transition-transform" />
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
-              </Link>
+                <ChevronRight
+                  size={16}
+                  className={`transition-transform ${toolsMenuOpen ? 'rotate-90' : ''}`}
+                />
+                <span
+                  className={`absolute bottom-0 left-0 h-0.5 bg-orange-500 transition-all duration-300 ${
+                    toolsMenuOpen ? 'w-full' : 'w-0'
+                  }`}
+                />
+              </button>
 
               {/* Dropdown Menu */}
-              <div
-                className="absolute left-0 top-full min-w-max bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-6 pointer-events-none group-hover:pointer-events-auto"
-              >
-                <div className="grid grid-cols-5 gap-4">
+              {toolsMenuOpen && (
+                <div
+                  id="desktop-tools-menu"
+                  className="absolute left-0 top-full z-50 min-w-max rounded-xl border border-gray-200 bg-white p-6 shadow-2xl"
+                >
+                  <Link
+                    href="/all-tools"
+                    className="mb-4 inline-flex items-center gap-2 rounded-md text-sm font-semibold text-orange-700 hover:text-orange-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                    onClick={() => setToolsMenuOpen(false)}
+                  >
+                    Browse all tools
+                    <ChevronRight size={16} />
+                  </Link>
+                  <div className="grid grid-cols-5 gap-4">
                   {categories.map((cat) => {
                     const Icon = cat.icon;
                     return (
-                      <Link key={cat.id} href={cat.link}>
+                      <Link
+                        key={cat.id}
+                        href={cat.link}
+                        onClick={() => setToolsMenuOpen(false)}
+                        className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                      >
                         <motion.div
                           className="p-3 rounded-lg border border-gray-100 hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-all group/item w-40"
                           whileHover={{ scale: 1.05 }}
@@ -223,13 +229,14 @@ export function HomeHeader() {
                             </div>
                             <p className="text-xs font-semibold text-gray-900 group-hover/item:text-orange-600 transition">{cat.title}</p>
                           </div>
-                          <p className="text-xs text-gray-500">{cat.count} tools</p>
+                          <p className="text-xs text-gray-500">Explore tools</p>
                         </motion.div>
                       </Link>
                     );
                   })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Other Navigation Items */}
@@ -293,6 +300,8 @@ export function HomeHeader() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  aria-expanded={userMenuOpen}
+                  aria-controls="header-user-menu"
                   className="hidden sm:flex items-center gap-2 px-4 py-2 border-2 border-orange-500 rounded-full hover:bg-orange-50 transition-colors"
                 >
                   {session.user.image ? (
@@ -308,6 +317,7 @@ export function HomeHeader() {
 
                 {userMenuOpen && (
                   <motion.div
+                    id="header-user-menu"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -337,22 +347,18 @@ export function HomeHeader() {
             ) : (
               // Not Logged In - Auth Buttons
               <div className="hidden sm:flex items-center gap-3">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link
-                    href="/auth/signin"
-                    className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:border-orange-500 hover:text-orange-600 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link
-                    href="/auth/signup"
-                    className="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600 transition-colors"
-                  >
-                    Sign Up
-                  </Link>
-                </motion.div>
+                <Link
+                  href="/auth/signin"
+                  className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-orange-500 hover:text-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="rounded-full bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                >
+                  Sign Up
+                </Link>
               </div>
             )}
 
@@ -360,6 +366,9 @@ export function HomeHeader() {
             <button
               className="lg:hidden p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-menu"
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -369,12 +378,13 @@ export function HomeHeader() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <motion.div
+            id="mobile-navigation-menu"
             className="lg:hidden border-t border-gray-200 bg-white px-4 py-4"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
           >
             <div className="flex flex-col gap-4">
-              <Link href="/all-tools/pdf" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link href="/all-tools/pdf-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 PDF
               </Link>
               <Link href="/all-tools/image-tools" className="text-sm font-medium text-gray-600 hover:text-gray-900">
@@ -398,7 +408,7 @@ export function HomeHeader() {
               <Link href="/all-tools/financial-calculators" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Financial Calculators
               </Link>
-              <Link href="/all-tools/resume-maker/job-match" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link href="/all-tools/resume-maker" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Resume Maker
               </Link>
 
@@ -446,5 +456,3 @@ export function HomeHeader() {
     </>
   );
 }
-
-

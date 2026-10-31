@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, use } from 'react';
 import { motion } from 'framer-motion';
@@ -13,6 +14,37 @@ import { useVideoToolErrors } from '@/app/hooks/useVideoToolErrors';
 import { validateFile } from '@/app/utils/validation/file-validation';
 import { ErrorAlert } from '@/app/components/error-components';
 import { VideoToolErrorType } from '@/app/utils/types/errors';
+import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { notFound, useRouter } from 'next/navigation';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
+import { Mp4ToMp3Guide } from '@/app/components/Mp4ToMp3Guide';
+import { ExtractAudioFromVideoGuide } from '@/app/components/ExtractAudioFromVideoGuide';
+import { MovToMp3Guide } from '@/app/components/MovToMp3Guide';
+import { Mp4ToWavGuide } from '@/app/components/Mp4ToWavGuide';
+import { MuteVideoGuide } from '@/app/components/MuteVideoGuide';
+import { VideoToGifGuide } from '@/app/components/VideoToGifGuide';
+import { VideoToWebpGuide } from '@/app/components/VideoToWebpGuide';
+import { Mp4ToWebmGuide } from '@/app/components/Mp4ToWebmGuide';
+import { AudioToTextGuide } from '@/app/components/AudioToTextGuide';
+import { VideoToTextGuide } from '@/app/components/VideoToTextGuide';
+import { MovToMp4Guide } from '@/app/components/MovToMp4Guide';
+import { AviToMp4Guide } from '@/app/components/AviToMp4Guide';
+import { MkvToMp4Guide } from '@/app/components/MkvToMp4Guide';
+import { WebmToMp4Guide } from '@/app/components/WebmToMp4Guide';
+import { AacToMp3Guide } from '@/app/components/AacToMp3Guide';
+import { Mp4ToAviGuide } from '@/app/components/Mp4ToAviGuide';
+import { CompressMovGuide } from '@/app/components/CompressMovGuide';
+import { CompressAviGuide } from '@/app/components/CompressAviGuide';
+import { CompressMkvGuide } from '@/app/components/CompressMkvGuide';
+import {
+  getVideoFaqs,
+  getVideoInputGuidance,
+  getVideoOutputGuidance,
+  getVideoOutputLabel,
+  getVideoProcessingGuidance,
+  getVideoQualityGuidance,
+  getVideoReadyGuidance,
+} from '@/app/lib/video-content-guidance';
 
 // Action-specific CTA text for each tool
 function getActionText(toolId: string): string {
@@ -54,7 +86,7 @@ function getActionText(toolId: string): string {
     'aac-to-mp4': 'Convert to MP4',
     'mp4-to-ogg': 'Convert to OGG',
     'mp4-to-webm': 'Convert to WebM',
-    
+
     // Editing tools
     'trim-video': 'Trim Video',
     'resize-video': 'Resize Video',
@@ -66,20 +98,20 @@ function getActionText(toolId: string): string {
     'compress-avi': 'Compress AVI',
     'compress-mkv': 'Compress MKV',
     'video-to-webp': 'Convert to WebP',
-    
+
     // Transcription tools
     'audio-to-text': 'Transcribe Audio',
     'video-to-text': 'Transcribe Video',
     'youtube-to-text': 'Download & Transcribe',
     'youtube-transcript': 'Get Transcript',
     'transcribe-podcast': 'Transcribe Podcast',
-    
+
     // Download tools
     'instagram-download': 'Download Video',
     'tiktok-video-download': 'Download TikTok Video',
     'twitter-download': 'Download Video',
     'facebook-download': 'Download Video',
-    
+
     // Special tools
     'summarize-podcast': 'Summarize Podcast',
     'add-subtitles': 'Add Subtitles',
@@ -96,15 +128,16 @@ interface PageProps {
 }
 
 export default function VideoToolPage({ params }: PageProps) {
+  const router = useRouter();
   const resolvedParams = use(params);
   const tool = getToolById(resolvedParams.slug);
-  
+
   // Use centralized error handling
   const { error, isError, createAndHandleError, clearError } = useVideoToolErrors({
     toolId: resolvedParams.slug,
     toolName: tool?.title || 'Video Tool'
   });
-  
+
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [options, setOptions] = useState<Record<string, any>>({});
@@ -113,21 +146,18 @@ export default function VideoToolPage({ params }: PageProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!tool) {
-    return (
-      <>
-        <HomeHeader />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center flex flex-col">
-          <div className="flex-1 flex items-center justify-center w-full">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Tool Not Found</h1>
-              <p className="text-gray-600">The requested tool could not be found.</p>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
+    notFound();
   }
+
+  const inputGuidance = getVideoInputGuidance(tool);
+  const outputGuidance = getVideoOutputGuidance(tool);
+  const outputLabel = getVideoOutputLabel(tool);
+  const processingGuidance = getVideoProcessingGuidance(tool);
+  const qualityGuidance = getVideoQualityGuidance(tool);
+  const faqItems = getVideoFaqs(tool);
+  const isYouTubeTranscriptionUnavailable =
+    resolvedParams.slug === 'youtube-to-text' ||
+    resolvedParams.slug === 'youtube-transcript';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -148,6 +178,11 @@ export default function VideoToolPage({ params }: PageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isYouTubeTranscriptionUnavailable) {
+      return;
+    }
+
     clearError();
     setResult(null);
 
@@ -194,8 +229,25 @@ export default function VideoToolPage({ params }: PageProps) {
         formData.append('url', url);
       }
 
-      // Add options
-      Object.entries(options).forEach(([key, value]) => {
+      // Include the configured MP3 quality default when unchanged.
+      const mp3QualityTools = ['mp4-to-mp3', 'extract-audio-from-video', 'mov-to-mp3'];
+      const submittedOptions = { ...options };
+
+      if (tool.id === 'mp4-to-wav' && submittedOptions.sampleRate == null) {
+        const sampleRateOption = tool.options.find(option => option.id === 'sampleRate');
+        if (sampleRateOption?.default != null) {
+          submittedOptions.sampleRate = sampleRateOption.default;
+        }
+      }
+
+      if (mp3QualityTools.includes(tool.id) && submittedOptions.audioQuality == null) {
+        const qualityOption = tool.options.find(option => option.id === 'audioQuality');
+        if (qualityOption?.default != null) {
+          submittedOptions.audioQuality = qualityOption.default;
+        }
+      }
+
+      Object.entries(submittedOptions).forEach(([key, value]) => {
         formData.append(key, String(value));
       });
 
@@ -208,7 +260,7 @@ export default function VideoToolPage({ params }: PageProps) {
         const errorData = await response.json();
         const errorType = errorData.type || VideoToolErrorType.API_ERROR;
         const errorMessage = errorData.error || errorData.message || 'Processing failed';
-        
+
         // Log detailed error for debugging - use JSON.stringify for reliability
         const errorLogData = {
           status: response.status,
@@ -232,6 +284,10 @@ export default function VideoToolPage({ params }: PageProps) {
 
       if (contentType?.includes('application/json')) {
         const data = await response.json();
+        if (data.type === 'download-result' && typeof data.downloadPageUrl === 'string') {
+          router.push(data.downloadPageUrl);
+          return;
+        }
         setResult(data);
       } else if (contentType?.includes('text')) {
         const text = await response.text();
@@ -258,7 +314,7 @@ export default function VideoToolPage({ params }: PageProps) {
         stack: errorStack,
       };
       console.error(`[${resolvedParams.slug}] Network/Processing Error: ${JSON.stringify(errorLogData)}`);
-      
+
       createAndHandleError(VideoToolErrorType.NETWORK_ERROR, {
         networkError: errorMessage,
         errorType: err instanceof TypeError ? 'NETWORK_ERROR' : 'UNKNOWN_ERROR',
@@ -340,6 +396,14 @@ export default function VideoToolPage({ params }: PageProps) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                  {isYouTubeTranscriptionUnavailable && (
+                    <div role="status" className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+                      <p className="font-semibold">Temporarily unavailable</p>
+                      <p className="mt-1">
+                        YouTube transcription is currently unavailable while secure download processing is being configured. Please use Audio to Text or Video to Text with a supported file instead.
+                      </p>
+                    </div>
+                  )}
                   {/* File/URL Input */}
                   <div className="space-y-4">
                     {(tool.inputMethod === 'file' || tool.inputMethod === 'both') && (
@@ -467,7 +531,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   {/* Submit Button - Action-Specific CTA */}
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || isYouTubeTranscriptionUnavailable}
                     className="w-full bg-pink-600 hover:bg-pink-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 duration-0"
                   >
                     {loading ? (
@@ -501,7 +565,7 @@ export default function VideoToolPage({ params }: PageProps) {
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">About this tool</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Process your video files with advanced compression and conversion capabilities. All operations are performed instantly and securely, without storing your files.
+                {inputGuidance.text} {processingGuidance}
               </p>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 text-gray-700">
@@ -510,7 +574,7 @@ export default function VideoToolPage({ params }: PageProps) {
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <CheckCircle size={16} className="text-pink-600 flex-shrink-0" />
-                  <span>Output: {tool.outputType.toUpperCase()}</span>
+                  <span>Result: {outputLabel}</span>
                 </div>
               </div>
             </motion.div>
@@ -531,7 +595,10 @@ export default function VideoToolPage({ params }: PageProps) {
                 {result.type === 'text' && (
                   <div>
                     <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-96 overflow-y-auto mb-4">
-                      <pre className="text-sm text-gray-800 whitespace-pre-wrap break-words font-mono">
+                      <pre
+                        data-testid="podcast-summary-output"
+                        className="text-sm text-gray-800 whitespace-pre-wrap break-words font-mono"
+                      >
                         {result.content}
                       </pre>
                     </div>
@@ -574,47 +641,70 @@ export default function VideoToolPage({ params }: PageProps) {
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to process</h3>
-                <p className="text-gray-600">Upload a file or enter a URL and click Process to get started</p>
+                <p className="text-gray-600">{getVideoReadyGuidance(tool)}</p>
               </motion.div>
             )}
           </motion.div>
         </motion.div>
 
+        {resolvedParams.slug === 'compress-video' && <PriorityToolGuide toolId="compress-video" />}
+        {resolvedParams.slug === 'trim-video' && <PriorityToolGuide toolId="trim-video" />}
+        {resolvedParams.slug === 'resize-video' && <PriorityToolGuide toolId="resize-video" />}
+        {resolvedParams.slug === 'mp4-to-mp3' && <Mp4ToMp3Guide />}
+        {resolvedParams.slug === 'extract-audio-from-video' && <ExtractAudioFromVideoGuide />}
+        {resolvedParams.slug === 'mov-to-mp3' && <MovToMp3Guide />}
+        {resolvedParams.slug === 'mp4-to-wav' && <Mp4ToWavGuide />}
+        {resolvedParams.slug === 'mute-video' && <MuteVideoGuide />}
+        {resolvedParams.slug === 'video-to-gif' && <VideoToGifGuide />}
+            {resolvedParams.slug === 'video-to-webp' && <VideoToWebpGuide />}
+            {resolvedParams.slug === 'mp4-to-webm' && <Mp4ToWebmGuide />}
+            {resolvedParams.slug === 'audio-to-text' && <AudioToTextGuide />}
+            {resolvedParams.slug === 'video-to-text' && <VideoToTextGuide />}
+            {resolvedParams.slug === 'mov-to-mp4' && <MovToMp4Guide />}
+            {resolvedParams.slug === 'avi-to-mp4' && <AviToMp4Guide />}
+            {resolvedParams.slug === 'mkv-to-mp4' && <MkvToMp4Guide />}
+            {resolvedParams.slug === 'webm-to-mp4' && <WebmToMp4Guide />}
+            {resolvedParams.slug === 'aac-to-mp3' && <AacToMp3Guide />}
+            {resolvedParams.slug === 'mp4-to-avi' && <Mp4ToAviGuide />}
+            {resolvedParams.slug === 'compress-mov' && <CompressMovGuide />}
+            {resolvedParams.slug === 'compress-avi' && <CompressAviGuide />}
+            {resolvedParams.slug === 'compress-mkv' && <CompressMkvGuide />}
+        {!['compress-video', 'trim-video', 'resize-video'].includes(resolvedParams.slug) && (<>
         {/* Footer Feature Cards */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="max-w-6xl mx-auto mt-20 mb-20">
           {/* SEO Content Sections */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-12">
             <motion.h2 className="text-3xl font-bold text-gray-900 mb-6">How to {getActionText(resolvedParams.slug)}</motion.h2>
-            
+
             <div className="space-y-6 mb-12">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 1: Upload Your File</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 1: {inputGuidance.heading}</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Click the upload area above and select your {tool.accepts.join(', ')} file from your computer. Alternatively, you can paste a URL to process files from the web.
+                  {inputGuidance.text}
                 </p>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 2: Configure Options (if needed)</h3>
                 <p className="text-gray-700 leading-relaxed">
                   {tool.options.length > 0 
-                    ? `Choose your preferred settings from the available options such as quality, format, or dimensions to customize the output.`
-                    : `This tool works with default settings, but you can customize if needed.`
+                    ? 'Review the settings shown for this tool and choose the values that fit your intended result.'
+                    : 'This tool has no additional settings on this page.'
                   }
                 </p>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 3: Click {getActionText(resolvedParams.slug)}</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Press the conversion button to start processing. The tool will process your file in seconds and provide you with the result.
+                  Submit the request to the server-side processing workflow. Completion time depends on the input, operation, and current service availability.
                 </p>
               </div>
-              
+
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 4: Download Your Result</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Step 4: Review Your Result</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Once processing is complete, download your converted file. No file limits, no watermarks, completely free.
+                  {outputGuidance}
                 </p>
               </div>
             </div>
@@ -623,7 +713,7 @@ export default function VideoToolPage({ params }: PageProps) {
           {/* Why Use This Tool */}
           <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border border-pink-200 p-8 mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Use {tool.title}?</h2>
-            
+
             <div className="grid md:grid-cols-2 gap-6">
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
@@ -632,11 +722,11 @@ export default function VideoToolPage({ params }: PageProps) {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Completely Free</h3>
-                  <p className="text-gray-700 text-sm">No hidden charges, no premium tiers, no credit card required. Use unlimited conversions forever.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">Free to Use</h3>
+                  <p className="text-gray-700 text-sm">No subscription or credit card is required. Processing limits can vary by tool, file type, and file size.</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
@@ -648,7 +738,7 @@ export default function VideoToolPage({ params }: PageProps) {
                   <p className="text-gray-700 text-sm">Works directly in your web browser. Use on Windows, Mac, iPhone, Android, or any device with internet.</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
@@ -656,11 +746,11 @@ export default function VideoToolPage({ params }: PageProps) {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Fast & Reliable</h3>
-                  <p className="text-gray-700 text-sm">Process files in seconds. Advanced engines handle large files with optimal speed and quality preservation.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">Result Expectations</h3>
+                  <p className="text-gray-700 text-sm">{qualityGuidance}</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-4">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
@@ -668,77 +758,36 @@ export default function VideoToolPage({ params }: PageProps) {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Secure & Private</h3>
-                  <p className="text-gray-700 text-sm">Your files are processed securely with HTTPS encryption. Files are never stored on our servers.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">Server-Side Processing</h3>
+                  <p className="text-gray-700 text-sm">{processingGuidance}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* FAQ Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8 mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-            
-            <div className="space-y-4">
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Is this tool really free?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">Yes, {tool.title} is completely free. There are no hidden charges, subscription fees, or premium tiers. You can process unlimited files at no cost.</p>
-              </details>
-              
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Do you store my files?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">No, we don't store your files. All processing happens securely in your browser or our servers with immediate deletion after processing.</p>
-              </details>
-              
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  What's the file size limit?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">We support files up to several hundred MB depending on your internet connection and browser capabilities. Larger files may take longer to process.</p>
-              </details>
-              
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Which browsers are supported?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">This tool works on all modern browsers including Chrome, Firefox, Safari, and Edge on desktop, tablet, and mobile devices.</p>
-              </details>
-              
-              <details className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Is there a watermark on the output?
-                  <span className="text-pink-600">+</span>
-                </summary>
-                <p className="text-gray-700 mt-3 text-sm">No watermarks! Your converted files are clean and ready to use immediately. No branding or quality degradation.</p>
-              </details>
-            </div>
-          </div>
+          <FAQPanel>
+            <FAQHeading>Frequently Asked Questions</FAQHeading>
 
-          {/* Related Tools Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Related Tools</h2>
-            <p className="text-gray-700 mb-6">Check out these related video and audio tools that might help with your media processing needs:</p>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {getRelatedTools(resolvedParams.slug).map((relatedTool) => (
-                <Link key={relatedTool.id} href={relatedTool.route}>
-                  <div className="border border-gray-300 rounded-lg p-4 hover:border-pink-500 hover:bg-pink-50 transition h-full">
-                    <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{relatedTool.title}</h3>
-                    <p className="text-gray-600 text-xs line-clamp-2 mb-3">{relatedTool.description}</p>
-                    <span className="text-pink-600 text-xs font-medium">Use Tool →</span>
-                  </div>
-                </Link>
+            <FAQList>
+              {faqItems.map((faq) => (
+                <FAQDisclosure key={faq.q}>
+                  <FAQQuestion>
+                    {faq.q}
+
+                  </FAQQuestion>
+                  <FAQAnswer>{faq.a}</FAQAnswer>
+                </FAQDisclosure>
               ))}
-            </div>
-          </div>
+            </FAQList>
+          </FAQPanel>
+
+          <RelatedToolsSection
+            family="video"
+            toolId={resolvedParams.slug}
+            description="Check out these related video and audio tools that might help with your media processing needs."
+            limit={8}
+          />
         </motion.div>
 
         {/* Feature Cards */}
@@ -747,18 +796,18 @@ export default function VideoToolPage({ params }: PageProps) {
             {[
               {
                 icon: Zap,
-                title: 'Fast Processing',
-                description: 'Optimized conversion engines for rapid video processing',
+                title: 'Tool-Specific Workflow',
+                description: inputGuidance.text,
               },
               {
                 icon: Shield,
-                title: 'Secure & Private',
-                description: 'Your files are never stored. All processing is secure.',
+                title: 'Processing Details',
+                description: processingGuidance,
               },
               {
                 icon: CheckCircle,
-                title: 'Multiple Formats',
-                description: 'Support for all major video and audio formats',
+                title: 'Clear Result Expectations',
+                description: qualityGuidance,
               },
             ].map((feature, index) => (
               <motion.div
@@ -777,6 +826,7 @@ export default function VideoToolPage({ params }: PageProps) {
             ))}
           </div>
         </motion.div>
+        </>)}
       </div>
         </div>
       </main>
@@ -804,7 +854,7 @@ function getRelatedTools(toolId: string): ToolItem[] {
   const relatedMap: Record<string, ToolItem[]> = {
     // MP4 tools should link to other conversions
     'mp4-to-mp3': [
-      { id: 'extract-audio-from-video', title: 'Extract Audio from Video', description: 'Extract audio track from any video', route: '/all-tools/video/extract-audio-from-video' },
+      { id: 'extract-audio-from-video', title: 'Extract Audio from Video', description: 'Extract available audio from supported video files', route: '/all-tools/video/extract-audio-from-video' },
       { id: 'mov-to-mp3', title: 'MOV to MP3', description: 'Convert MOV videos to MP3', route: '/all-tools/video/mov-to-mp3' },
       { id: 'compress-video', title: 'Compress Video', description: 'Reduce video file size', route: '/all-tools/video/compress-video' },
       { id: 'video-to-gif', title: 'Video to GIF', description: 'Create animated GIFs', route: '/all-tools/video/video-to-gif' },
@@ -816,7 +866,7 @@ function getRelatedTools(toolId: string): ToolItem[] {
       { id: 'resize-video', title: 'Resize Video', description: 'Change video dimensions', route: '/all-tools/video/resize-video' },
     ],
     'mp4-to-wav': [
-      { id: 'extract-audio-from-video', title: 'Extract Audio from Video', description: 'Extract audio from any video', route: '/all-tools/video/extract-audio-from-video' },
+      { id: 'extract-audio-from-video', title: 'Extract Audio from Video', description: 'Extract audio from supported video files', route: '/all-tools/video/extract-audio-from-video' },
       { id: 'mp4-to-mp3', title: 'MP4 to MP3', description: 'Convert MP4 to MP3 audio', route: '/all-tools/video/mp4-to-mp3' },
       { id: 'audio-to-text', title: 'Audio to Text', description: 'Transcribe audio to text', route: '/all-tools/video/audio-to-text' },
       { id: 'video-to-text', title: 'Video to Text', description: 'Transcribe video to text', route: '/all-tools/video/video-to-text' },

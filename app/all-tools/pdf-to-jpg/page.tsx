@@ -1,19 +1,23 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, ChevronRight, Loader, FileText } from 'lucide-react';
+import { ChevronRight, Loader, FileText } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { readDownloadResultResponse } from '@/app/lib/download-result-client';
 
 export default function PdfToJpgPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dpi, setDpi] = useState(300);
   const [quality, setQuality] = useState(85);
   const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<Blob | null>(null);
+
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
@@ -27,18 +31,18 @@ export default function PdfToJpgPage() {
   const handleClearPreview = () => {
     setFile(null);
     setPreview(null);
-    setResult(null);
+
   };
 
   const handleConvert = async () => {
     if (!file) return;
-    
+
     setProcessing(true);
     try {
       const formData = new FormData();
       formData.append('tool', 'pdf-to-jpg');
       formData.append('file', file);
-      formData.append('options', JSON.stringify({ 
+      formData.append('options', JSON.stringify({
         dpi: parseInt(dpi.toString()),
         quality: parseInt(quality.toString())
       }));
@@ -52,25 +56,13 @@ export default function PdfToJpgPage() {
         throw new Error(await response.text());
       }
 
-      const blob = await response.blob();
-      setResult(blob);
+      const downloadResult = await readDownloadResultResponse(response);
+      router.push(downloadResult.downloadPageUrl);
     } catch (error) {
       alert('Error converting PDF: ' + (error as Error).message);
     } finally {
       setProcessing(false);
     }
-  };
-
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.zip';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -130,7 +122,7 @@ export default function PdfToJpgPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Settings</h3>
-                    
+
                     {/* DPI Selection */}
                     <div className="mb-4">
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -184,24 +176,7 @@ export default function PdfToJpgPage() {
                     )}
                   </button>
 
-                  {/* Download Button */}
-                  {result && (
-                    <button
-                      onClick={handleDownload}
-                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-                    >
-                      <Download size={20} />
-                      Download ZIP
-                    </button>
-                  )}
 
-                  {/* Success Box */}
-                  {result && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-green-900 mb-2">✓ Conversion Complete!</h4>
-                      <p className="text-sm text-green-800">Your PDF has been successfully converted to JPG. Download the ZIP file containing all pages.</p>
-                    </div>
-                  )}
 
                   {/* Info Box */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -210,7 +185,7 @@ export default function PdfToJpgPage() {
                       <li>• Multiple DPI options</li>
                       <li>• Adjustable quality settings</li>
                       <li>• Multi-page support</li>
-                      <li>• Secure & instant conversion</li>
+                      <li>• Server-assisted PDF page rendering</li>
                     </ul>
                   </div>
                 </div>
@@ -218,7 +193,95 @@ export default function PdfToJpgPage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How PDF to JPG conversion works
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload a PDF and choose the available output resolution.
+                Each PDF page is rendered as a separate JPG image. When the
+                conversion finishes, the generated page images are packaged
+                together for download.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5">
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Understanding the output
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  JPG is a raster image format, so text and vector elements from
+                the PDF become pixels in the generated image. Higher rendering
+                resolution can preserve more visible detail but can also
+                increase processing time and output file size.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Before converting
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Check the source file and choose settings appropriate for
+                  how you plan to use the converted image. Conversion changes
+                  the file format and may also change file size and image
+                  characteristics.
+                </p>
+              </div>
+            </div>
+
+
+            <FAQPanel>
+              <FAQHeading>
+                PDF to JPG FAQ
+              </FAQHeading>
+              <FAQList>
+
+              <FAQCard>
+                <FAQStaticQuestion>
+                  Does PDF to JPG create one image for each page?
+                </FAQStaticQuestion>
+                <FAQAnswer>
+                  Yes. Each processed PDF page is rendered as a separate JPG image and the generated images are provided together for download.
+                </FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>
+                  What does the resolution setting change?
+                </FAQStaticQuestion>
+                <FAQAnswer>
+                  The resolution setting controls how densely each PDF page is rendered into pixels. Higher settings can produce larger images with more visible detail.
+                </FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>
+                  Can JPG preserve selectable PDF text?
+                </FAQStaticQuestion>
+                <FAQAnswer>
+                  No. JPG is an image format, so text in the converted page becomes part of the raster image rather than remaining selectable PDF text.
+                </FAQAnswer>
+              </FAQCard>
+              <FAQCard>
+                <FAQStaticQuestion>
+                  Why is the download provided as a ZIP file?
+                </FAQStaticQuestion>
+                <FAQAnswer>
+                  A PDF can contain multiple pages. Packaging the generated JPG files into a ZIP makes it possible to download the page images together.
+                </FAQAnswer>
+              </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );

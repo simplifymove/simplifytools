@@ -1,31 +1,62 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, FileUp } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function PngToEpsPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const requestGeneration = useRef(0);
 
   const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
+    const generation = ++requestGeneration.current;
+
+    setFile(null);
+    setPreview(null);
+    setResult(null);
     setError(null);
+
+    if (
+      selectedFile.type !== 'image/png' ||
+      !selectedFile.name.toLowerCase().endsWith('.png')
+    ) {
+      setError('Please select a valid PNG image.');
+      return;
+    }
+
+    setFile(selectedFile);
+
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+
+    reader.onload = (event) => {
+      if (generation === requestGeneration.current) {
+        setPreview(event.target?.result as string);
+      }
     };
+
+    reader.onerror = () => {
+      if (generation === requestGeneration.current) {
+        setFile(null);
+        setError('Unable to preview the selected PNG image.');
+      }
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    requestGeneration.current += 1;
     setFile(null);
     setPreview(null);
     setResult(null);
@@ -33,31 +64,83 @@ export default function PngToEpsPage() {
   };
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!file || processing) return;
+
+    const generation = ++requestGeneration.current;
 
     setProcessing(true);
+    setResult(null);
     setError(null);
+
     try {
-      const result = await convertImageFormat(file, 'image/png');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append(
+        'config',
+        JSON.stringify({
+          from_format: 'png',
+          to_format: 'eps',
+          options: {},
+        }),
+      );
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || 'EPS conversion failed');
+      }
+
+      const blob = await response.blob();
+
+      if (blob.type !== 'application/postscript') {
+        throw new Error(
+          `Expected EPS output but received ${blob.type || 'unknown'}`,
+        );
+      }
+
+      if (generation === requestGeneration.current) {
+        setResult(blob);
+      }
     } catch (err) {
-      setError((err as Error).message || 'Error converting file');
+      if (generation === requestGeneration.current) {
+        setError(
+          err instanceof Error ? err.message : 'Error converting file'
+        );
+      }
     } finally {
       setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.eps';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+      setError(null);
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'png-to-eps',
+            originalName: 'converted.eps',
+            outputName: 'converted.eps',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -82,7 +165,7 @@ export default function PngToEpsPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">PNG to EPS Converter</h1>
-                <p className="text-lg text-white/90">Convert PNG images to EPS vector format for professional printing and scalable graphics.</p>
+                <p className="text-lg text-white/90">Trace PNG artwork into monochrome EPS vector paths. Best results come from simple, high-contrast graphics.</p>
               </div>
             </div>
           </div>
@@ -101,10 +184,19 @@ export default function PngToEpsPage() {
                     preview={preview}
                     onClearPreview={handleClearPreview}
                     accept=".png"
+                    onValidationError={(message) => {
+                      if (message) {
+                        requestGeneration.current += 1;
+                        setFile(null);
+                        setPreview(null);
+                        setResult(null);
+                        setError(message);
+                      }
+                    }}
                   />
                   {error && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-600">{error}</p>
+                      <p role="alert" className="text-sm text-red-600">{error}</p>
                     </div>
                   )}
                 </div>
@@ -133,7 +225,8 @@ export default function PngToEpsPage() {
                   {result && (
                     <button
                       onClick={handleDownload}
-                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                      disabled={processing}
+                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
                       Download EPS
@@ -144,11 +237,11 @@ export default function PngToEpsPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Convert to scalable vector format</li>
-                      <li>• Perfect for professional printing</li>
-                      <li>• No file size limits</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Server-assisted vector tracing</li>
+                      <li>• Creates monochrome EPS vector paths from raster shapes</li>
+                      <li>• Best suited to logos, icons, and high-contrast artwork</li>
+                      <li>• Complex photographs may not trace cleanly</li>
+                      <li>• Files are temporarily processed for conversion</li>
                     </ul>
                   </div>
                 </div>
@@ -156,6 +249,163 @@ export default function PngToEpsPage() {
             </div>
           </div>
         </div>
+
+        {/* Supporting Content */}
+        <section className="px-4 md:px-8 pb-16">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                How to convert PNG to EPS online
+              </h2>
+              <p className="text-gray-600 mb-6">
+                This PNG to EPS converter traces raster shapes from a PNG image
+                and creates monochrome EPS vector paths. It is best suited
+                to simple graphics such as logos, icons, and symbols with clear
+                edges and strong contrast. Original colors are not preserved.
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  ['1', 'Upload a PNG', 'Choose the PNG artwork you want to trace into EPS format.'],
+                  ['2', 'Convert to EPS', 'Start the conversion and allow the server to trace the raster shapes into vector paths.'],
+                  ['3', 'Download the EPS', 'Review the completed conversion and download the resulting EPS file.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="border border-gray-200 rounded-lg p-5">
+                    <div className="text-orange-500 font-bold text-lg mb-2">{number}</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600">{description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  What happens during PNG to EPS conversion?
+                </h2>
+                <p className="text-gray-600">
+                  PNG is a raster image format made from pixels. This tool does
+                  not simply rename the file extension. It sends the image for
+                  processing and traces visible raster shapes into paths that
+                  can be stored in an EPS file.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  Which PNG images work best?
+                </h2>
+                <p className="text-gray-600">
+                  Simple artwork with distinct shapes, limited colors, clean
+                  boundaries, and strong contrast generally traces more cleanly.
+                  Logos, icons, symbols, and flat illustrations are usually
+                  better candidates than detailed photographs.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                PNG vs EPS
+              </h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">PNG</h3>
+                  <p className="text-gray-600">
+                    PNG stores an image as pixels. It is commonly used for web
+                    graphics, screenshots, logos, and images that may require
+                    transparency.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">EPS</h3>
+                  <p className="text-gray-600">
+                    EPS can store vector paths that describe shapes
+                    mathematically. The EPS produced by this tool is generated
+                    by tracing shapes from a grayscale version of the
+                    uploaded image. The output is not a full-color vector copy.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Raster tracing has limitations
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Converting a raster PNG to EPS cannot recover original vector
+                information that was lost when artwork was rasterized. The
+                converter traces the visible image instead.
+              </p>
+              <p className="text-gray-600">
+                Photographs, gradients, shadows, textures, tiny details, and
+                soft edges can produce more complex or less accurate tracing.
+                Original colors and PNG transparency are not preserved as
+                equivalent full-color, transparent vector artwork. Inspect the
+                resulting EPS before using it in print or design work.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Tips for better PNG to EPS results
+              </h2>
+              <ul className="space-y-3 text-gray-600">
+                <li>• Start with the highest-quality PNG available.</li>
+                <li>• Prefer graphics with clear boundaries and strong contrast. Use artwork that works well in black and white because original colors are not preserved.</li>
+                <li>• Avoid unnecessary noise or very small details when possible.</li>
+                <li>• Inspect curves, corners, text-like shapes, and fine details after conversion.</li>
+                <li>• Keep the original PNG in case you need to compare it with the traced result.</li>
+              </ul>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                PNG to EPS FAQ
+              </FAQHeading>
+
+              <FAQList>
+                {[
+                  ['Does this create real vector paths?', 'Yes. The converter uses monochrome tracing to create new EPS vector paths from the PNG. It does not preserve original colors or recover original editable paths.'],
+                  ['Will the EPS look exactly like my PNG?', 'No exact match is guaranteed. The converter traces a grayscale interpretation into monochrome vector shapes. Original colors are not preserved, and photographs or complex artwork may trace poorly.'],
+                  ['Can this restore the original vector artwork?', 'No. If the PNG was originally exported from a vector design, the original paths are no longer present in the raster image. The converter creates new paths by tracing the visible pixels.'],
+                  ['Is PNG to EPS suitable for photographs?', 'The conversion can be attempted, but detailed photographs are not ideal for vector tracing and may create complicated results.'],
+                  ['Where is the conversion performed?', 'The PNG is sent to the SimplifyConvert conversion service for processing, and the resulting EPS is then prepared for download.'],
+                ].map(([question, answer]) => (
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>{question}</FAQStaticQuestion>
+                    <FAQAnswer>{answer}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Related image tools
+              </h2>
+              <div className="flex flex-wrap gap-4">
+                <Link href="/all-tools/png-to-jpg" className="text-orange-700 font-semibold hover:underline">
+                  PNG to JPG
+                </Link>
+                <Link href="/all-tools/png-to-webp" className="text-orange-700 font-semibold hover:underline">
+                  PNG to WebP
+                </Link>
+                <Link href="/all-tools/eps-to-png" className="text-orange-700 font-semibold hover:underline">
+                  EPS to PNG
+                </Link>
+                <Link href="/all-tools/image-tools" className="text-orange-700 font-semibold hover:underline">
+                  All Image Tools
+                </Link>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
       </main>
       <Footer />
     </>

@@ -1,54 +1,142 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, Trash2 } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { CanvasMask } from '../../components/CanvasMask';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResultFromUrl } from '@/app/lib/download-result-client';
 
 export default function RemoveObjectPage() {
+  const router = useRouter();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [maskFile, setMaskFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [method, setMethod] = useState<'telea' | 'ns'>('ns');
+  const [method, setMethod] = useState<'telea' | 'ns'>('telea');
   const [radius, setRadius] = useState(5);
   const [processingTime, setProcessingTime] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [brushSize, setBrushSize] = useState(10);
 
+  const requestRef = useRef<AbortController | null>(null);
+  const generationRef = useRef(0);
+  const readerRef = useRef<FileReader | null>(null);
+  const resultUrlRef = useRef<string | null>(null);
+
+  const clearResult = () => {
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+    setResult(null);
+  };
+
+  const invalidateProcessing = () => {
+    generationRef.current += 1;
+    requestRef.current?.abort();
+    requestRef.current = null;
+    setProcessing(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      generationRef.current += 1;
+      requestRef.current?.abort();
+      readerRef.current?.abort();
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current);
+        resultUrlRef.current = null;
+      }
+    };
+  }, []);
+
   const handleImageSelect = (selectedFile: File) => {
+    invalidateProcessing();
+    readerRef.current?.abort();
+    setMaskFile(null);
+    clearResult();
+    setProcessingTime(null);
+    setError(null);
+    setImagePreview(null);
+    setImageDimensions(null);
+    setImageFile(null);
+
+    if (
+      !['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type) ||
+      selectedFile.size === 0 ||
+      selectedFile.size > 10 * 1024 * 1024
+    ) {
+      setError('Choose a JPG, PNG, or WebP image between 1 byte and 10 MB.');
+      return;
+    }
+
     setImageFile(selectedFile);
     const reader = new FileReader();
+    readerRef.current = reader;
+    const generation = generationRef.current;
     reader.onload = (e) => {
+      if (generation !== generationRef.current) return;
       const imgUrl = e.target?.result as string;
+      if (!imgUrl) return;
       setImagePreview(imgUrl);
-      
+
       // Get image dimensions
       const img = new Image();
       img.onload = () => {
+        if (generation !== generationRef.current) return;
         setImageDimensions({ width: img.width, height: img.height });
       };
+      img.onerror = () => {
+        if (generation !== generationRef.current) return;
+        setImageFile(null);
+        setImagePreview(null);
+        setImageDimensions(null);
+        setError('Unable to decode this image. Please choose another file.');
+      };
       img.src = imgUrl;
+    };
+    reader.onerror = () => {
+      if (generation !== generationRef.current) return;
+      setImageFile(null);
+      setImagePreview(null);
+      setImageDimensions(null);
+      setError('Unable to read this image. Please try another file.');
     };
     reader.readAsDataURL(selectedFile);
   };
 
   const handleMaskGenerated = (maskBlob: Blob) => {
+    invalidateProcessing();
     const file = new File([maskBlob], 'mask.png', { type: 'image/png' });
     setMaskFile(file);
+    clearResult();
+    setProcessingTime(null);
+    setError(null);
+  };
+
+  const handleMaskChanged = () => {
+    invalidateProcessing();
+    setMaskFile(null);
+    clearResult();
+    setProcessingTime(null);
     setError(null);
   };
 
   const handleClearImages = () => {
+    invalidateProcessing();
+    readerRef.current?.abort();
     setImageFile(null);
     setMaskFile(null);
     setImagePreview(null);
     setImageDimensions(null);
-    setResult(null);
+    clearResult();
+    setProcessingTime(null);
     setError(null);
   };
 
@@ -58,6 +146,15 @@ export default function RemoveObjectPage() {
       return;
     }
 
+    if (processing) return;
+
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
+    const generation = ++generationRef.current;
+
+    clearResult();
+    setProcessingTime(null);
     setProcessing(true);
     setError(null);
 
@@ -72,10 +169,12 @@ export default function RemoveObjectPage() {
       const response = await fetch('/api/remove-object', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
+      if (generation !== generationRef.current) return;
+
       const processingTimeMs = Date.now() - startTime;
-      setProcessingTime(processingTimeMs);
 
       if (!response.ok) {
         let errorMessage = 'Failed to process image';
@@ -89,29 +188,57 @@ export default function RemoveObjectPage() {
       }
 
       const blob = await response.blob();
+      if (generation !== generationRef.current) return;
       if (blob.size === 0) {
         throw new Error('Empty response from server');
       }
 
       const url = URL.createObjectURL(blob);
+      if (generation !== generationRef.current) {
+        URL.revokeObjectURL(url);
+        return;
+      }
+      resultUrlRef.current = url;
       setResult(url);
+      setProcessingTime(processingTimeMs);
     } catch (err) {
+      if (generation !== generationRef.current || controller.signal.aborted) return;
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
       console.error('Error:', err);
     } finally {
-      setProcessing(false);
+      if (generation === generationRef.current) {
+        requestRef.current = null;
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `object-removed-${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !imageFile || processing) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const outputName = `object-removed-${Date.now()}.jpg`;
+      const downloadResult = await uploadBrowserDownloadResultFromUrl({
+        url: result,
+        toolSlug: 'remove-object',
+        originalName: imageFile.name,
+        outputName,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.',
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -137,7 +264,7 @@ export default function RemoveObjectPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Remove Objects</h1>
-                <p className="text-lg text-white/90">Remove unwanted objects from images using AI-powered inpainting.</p>
+                <p className="text-lg text-white/90">Remove unwanted objects from images using Mask-based image inpainting.</p>
               </div>
             </div>
           </div>
@@ -175,7 +302,7 @@ export default function RemoveObjectPage() {
                     <input
                       id="imageInput"
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       hidden
                       onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0])}
                     />
@@ -191,6 +318,7 @@ export default function RemoveObjectPage() {
                       imageWidth={imageDimensions.width}
                       imageHeight={imageDimensions.height}
                       onMaskGenerated={handleMaskGenerated}
+                      onMaskChanged={handleMaskChanged}
                       brushSize={brushSize}
                       setBrushSize={setBrushSize}
                     />
@@ -241,11 +369,11 @@ export default function RemoveObjectPage() {
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <h3 className="font-semibold text-blue-900 mb-3">Features</h3>
                       <ul className="text-sm text-blue-800 space-y-1">
-                        <li>• Smart inpainting algorithms</li>
+                        <li>• Telea and Navier-Stokes inpainting methods</li>
                         <li>• Multiple removing methods</li>
                         <li>• Adjustable parameters</li>
                         <li>• Real-time preview</li>
-                        <li>• Fast processing</li>
+                        <li>• Mask-guided processing</li>
                       </ul>
                     </div>
                   )}
@@ -260,7 +388,12 @@ export default function RemoveObjectPage() {
                         <label className="text-sm font-medium text-gray-700 block mb-2">Algorithm</label>
                         <select
                           value={method}
-                          onChange={(e) => setMethod(e.target.value as 'telea' | 'ns')}
+                          onChange={(e) => {
+                            invalidateProcessing();
+                            clearResult();
+                            setProcessingTime(null);
+                            setMethod(e.target.value as 'telea' | 'ns');
+                          }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="telea">Telea (Fast)</option>
@@ -276,9 +409,14 @@ export default function RemoveObjectPage() {
                         <input
                           type="range"
                           min="1"
-                          max="15"
+                          max="20"
                           value={radius}
-                          onChange={(e) => setRadius(parseInt(e.target.value))}
+                          onChange={(e) => {
+                             invalidateProcessing();
+                             clearResult();
+                             setProcessingTime(null);
+                             setRadius(parseInt(e.target.value, 10));
+                           }}
                           className="w-full"
                         />
                         <p className="text-xs text-gray-600 mt-1">Higher = smoother results (5-10 recommended)</p>
@@ -327,6 +465,7 @@ export default function RemoveObjectPage() {
                   {result && (
                     <button
                       onClick={handleDownload}
+                      disabled={processing}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
@@ -347,19 +486,225 @@ export default function RemoveObjectPage() {
                   {/* Supported Formats */}
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                     <h3 className="font-semibold text-amber-900 mb-2">Supported Formats</h3>
-                    <p className="text-sm text-amber-800">JPG, PNG, WebP and all common image formats</p>
+                    <p className="text-sm text-amber-800">Common browser-supported image formats</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-10">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How to remove an object from an image
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Upload an image, paint over the area you want to remove, and
+                confirm the mask. Choose an inpainting method and radius, then
+                start processing. The image and mask are sent to the server,
+                where OpenCV fills the painted region using surrounding image
+                information.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  How the painted mask works
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The mask tells the processor exactly which pixels should be
+                  replaced. White painted areas mark regions to remove, while
+                  black areas are kept. The mask is generated at the original
+                  image dimensions before it is sent for processing.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Paint slightly beyond the object edge
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Cover the complete object and a small amount of its boundary.
+                  The backend expands and smooths the mask before inpainting,
+                  which helps avoid leaving thin fragments of the selected
+                  object around its edges.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Telea vs Navier-Stokes inpainting
+              </h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-2">
+                    Telea
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Telea is the default method. It fills the masked region by
+                    propagating nearby image information inward from the mask
+                    boundary. It is generally a practical first choice for
+                    relatively small unwanted areas.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-2">
+                    Navier-Stokes
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-6">
+                    Navier-Stokes inpainting uses a different OpenCV method for
+                    continuing nearby image structure into the selected region.
+                    If Telea leaves an obvious artifact, compare the
+                    Navier-Stokes result on the same mask.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                What the inpaint radius controls
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The radius determines how far around each masked pixel OpenCV
+                looks for neighboring image information. The current tool
+                accepts values from 1 to 20 pixels. A small radius may work well
+                around fine details, while a larger radius uses a wider
+                neighborhood. Bigger values do not automatically produce a
+                better result.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Best suited to smaller removal areas
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Classical inpainting works best when the masked region is
+                  reasonably small and surrounded by useful nearby texture.
+                  Small blemishes, wires, marks, isolated objects, and simple
+                  background interruptions are generally easier than large
+                  complex subjects.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Large or complex objects can be difficult
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The processor does not invent a new scene or understand hidden
+                  background content. Large masks, faces, detailed architecture,
+                  repeated patterns, or objects covering important structures
+                  may produce visible smearing or reconstructed textures that do
+                  not match the original scene.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the mask is prepared before removal
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Before inpainting, the server converts the mask to a binary
+                image, performs morphological closing and opening, expands the
+                selected region, smooths mask edges, and thresholds it again.
+                This preprocessing helps create a cleaner removal boundary before
+                the selected inpainting algorithm runs.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better object removal
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  'Keep the painted area as small as practical',
+                  'Cover the entire unwanted object',
+                  'Include a small margin around difficult edges',
+                  'Try Telea first and compare Navier-Stokes if needed',
+                  'Use a moderate radius before increasing it',
+                  'Inspect patterns, edges, faces, and text after processing',
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="border border-gray-200 rounded-lg p-4 text-sm text-gray-600"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Output and processing details
+              </h2>
+              <p className="text-gray-600 leading-7">
+                The image and mask are processed on the server. The current
+                backend returns the finished result as a JPEG image. Temporary
+                input, mask, and output files used by the API are deleted after
+                processing completes.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Remove Object FAQ
+              </FAQHeading>
+
+              <FAQList>
+                {[
+                  [
+                    'Does the tool automatically detect the object?',
+                    'No. You manually paint a mask over the area you want removed, giving you direct control over which part of the image is processed.',
+                  ],
+                  [
+                    'Is this AI object removal?',
+                    'The current implementation uses classical OpenCV inpainting rather than an object-detection or generative AI model.',
+                  ],
+                  [
+                    'Which inpainting method should I choose?',
+                    'Telea is a good first choice. If the result is not satisfactory, compare Navier-Stokes using the same mask and radius.',
+                  ],
+                  [
+                    'What radius should I use?',
+                    'Start with a moderate value. The radius controls the neighboring area used during inpainting, and values from 1 to 20 pixels are supported.',
+                  ],
+                  [
+                    'Can it remove a very large object?',
+                    'It may process the mask, but large removal areas are more likely to show artifacts because classical inpainting depends on nearby visible image information.',
+                  ],
+                  [
+                    'What format is the result?',
+                    'The current server route returns the processed image as JPEG.',
+                  ],
+                ].map(([question, answer]) => (
+                  <FAQCard key={question}>
+                    <FAQStaticQuestion>{question}</FAQStaticQuestion>
+                    <FAQAnswer>{answer}</FAQAnswer>
+                  </FAQCard>
+                ))}
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
       <Footer />
     </>
   );
 }
-
 
 
 

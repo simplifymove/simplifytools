@@ -1,8 +1,9 @@
 import { Metadata } from 'next';
+import { HomeHeader } from '@/app/components/HomeHeader';
 
 export const metadata: Metadata = {
-  title: 'Blog - SimplifyConvert | Free Online Tools Guides & Tutorials',
-  description: 'Learn how to use free online tools effectively. Discover helpful guides, tips, and tutorials on image conversion, PDF editing, video processing, and data transformation.',
+  title: 'SimplifyConvert Blog - Practical File and Format Guides',
+  description: 'Read practical SimplifyConvert guides about file formats, conversion tradeoffs, and using online utilities for everyday tasks.',
   keywords: [
     'image conversion guide',
     'PDF tools tutorial',
@@ -14,14 +15,14 @@ export const metadata: Metadata = {
     'video compression',
     'PDF extraction',
   ],
-  authors: [{ name: 'SimplifyConvert Team' }],
+  authors: [{ name: 'SimplifyConvert' }],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://simplifyconvert.com/blog',
     siteName: 'SimplifyConvert',
-    title: 'Blog - SimplifyConvert | Free Online Tools Guides',
-    description: 'Learn how to use our free online tools effectively with comprehensive guides and tutorials.',
+    title: 'SimplifyConvert Guides - File Formats and Conversion Decisions',
+    description: 'Practical guides to choosing file formats and understanding PDF, image, data, and video conversion tradeoffs.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',
@@ -33,8 +34,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Blog - SimplifyConvert',
-    description: 'Free online tools tips and tutorials',
+    title: 'SimplifyConvert Guides',
+    description: 'Practical file-format and conversion decision guides.',
     images: ['https://simplifyconvert.com/og-image.jpg'],
     creator: '@simplifyconvert',
   },
@@ -48,5 +49,10 @@ export default function BlogLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <HomeHeader />
+      {children}
+    </>
+  );
 }

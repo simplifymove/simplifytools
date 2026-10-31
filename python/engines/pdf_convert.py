@@ -51,13 +51,32 @@ class PdfConvertEngine:
             pages_to_convert = []
             if page_mode == 'all':
                 pages_to_convert = list(range(len(doc)))
-            else:
+            elif page_mode == 'selected':
+                if not isinstance(page_range, str) or not page_range.strip():
+                    raise ValueError("Please enter a page range for selected pages.")
+
+                import re
+
                 for part in page_range.split(','):
-                    if '-' in part:
-                        start, end = map(int, part.split('-'))
-                        pages_to_convert.extend(range(start-1, end))
-                    else:
-                        pages_to_convert.append(int(part)-1)
+                    match = re.fullmatch(r'\s*(\d+)(?:\s*-\s*(\d+))?\s*', part)
+
+                    if not match:
+                        raise ValueError(f"Invalid page range: {part!r}")
+
+                    start = int(match.group(1))
+                    end = int(match.group(2)) if match.group(2) else start
+
+                    if start < 1 or end < start or end > len(doc):
+                        raise ValueError(
+                            f"Invalid page range {part!r}: PDF contains {len(doc)} pages."
+                        )
+
+                    pages_to_convert.extend(range(start - 1, end))
+            else:
+                raise ValueError(f"Invalid page selection mode: {page_mode!r}")
+
+            if not pages_to_convert:
+                raise ValueError("No PDF pages selected for conversion.")
             
             print(f"[PDF_TO_IMAGE] Pages to convert: {pages_to_convert}")
             
@@ -94,7 +113,9 @@ class PdfConvertEngine:
                 
                 if output_format_lower == 'jpeg':
                     img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                    img.save(out_file, "JPEG", quality=95)
+                    jpeg_quality = int(options.get('quality', 95))
+                    jpeg_quality = max(1, min(95, jpeg_quality))
+                    img.save(out_file, "JPEG", quality=jpeg_quality)
                 elif output_format_lower == 'tiff':
                     img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
                     img.save(out_file, "TIFF", compression='lzw')
@@ -209,13 +230,10 @@ class PdfConvertEngine:
     def image_to_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Convert images to PDF with proper scaling and orientation"""
         try:
-            # Use higher DPI for better quality (300 DPI instead of 72 DPI)
-            # This provides 4x more detail when scaling
-            dpi_factor = 300 / 72  # 4.167x scale factor
-            
-            # Standard PDF page size (8.5 x 11 inches at 300 DPI = 2550 x 3300 points)
-            page_width = 612 * dpi_factor
-            page_height = 792 * dpi_factor
+            # PDF dimensions are measured in points (72 points per inch).
+            # Use standard US Letter pages.
+            page_width = 612
+            page_height = 792
             
             doc = fitz.open()
             
@@ -266,59 +284,66 @@ class PdfConvertEngine:
                         else:
                             raise Exception(f"Cannot open image file ({file_ext}). Supported formats: JPG, PNG, GIF, WebP, TIFF, HEIC, PDF, EPS. Error: {str(open_err)}")
                     
-                    # Convert RGBA to RGB if needed (for JPEG compatibility)
-                    if img.mode in ('RGBA', 'LA', 'P'):
-                        bg = Image.new('RGB', img.size, (255, 255, 255))
-                        if img.mode == 'P':
-                            img = img.convert('RGBA')
-                        bg.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
-                        img = bg
-                    elif img.mode != 'RGB':
-                        img = img.convert('RGB')
-                    
-                    # Get image dimensions
-                    img_width, img_height = img.size
-                    aspect_ratio = img_width / img_height
-                    page_aspect = page_width / page_height
-                    
-                    # Scale image to fit page while maintaining aspect ratio with margin
-                    margin = 20 * dpi_factor
-                    if aspect_ratio > page_aspect:
-                        # Image is wider
-                        new_width = page_width - margin
-                        new_height = int(new_width / aspect_ratio)
+                    # Process every frame of multipage TIFF files only.
+                    # Other image formats retain first-frame behavior.
+                    if file_ext in ('.tif', '.tiff'):
+                        frame_count = getattr(img, 'n_frames', 1)
                     else:
-                        # Image is taller
-                        new_height = page_height - margin
-                        new_width = int(new_height * aspect_ratio)
+                        frame_count = 1
+
+                    for frame_index in range(frame_count):
+                        if file_ext in ('.tif', '.tiff'):
+                            img.seek(frame_index)
+                            frame_img = img.copy()
+                        else:
+                            frame_img = img
+
+                        # Convert RGBA to RGB if needed (for JPEG compatibility)
+                        if frame_img.mode in ('RGBA', 'LA', 'P'):
+                            bg = Image.new('RGB', frame_img.size, (255, 255, 255))
+                            if frame_img.mode == 'P':
+                                frame_img = frame_img.convert('RGBA')
+                            bg.paste(frame_img, mask=frame_img.split()[-1] if frame_img.mode in ('RGBA', 'LA') else None)
+                            frame_img = bg
+                        elif frame_img.mode != 'RGB':
+                            frame_img = frame_img.convert('RGB')
                     
-                    # Only resize if image is larger than target
-                    if img.size[0] > new_width or img.size[1] > new_height:
-                        img = img.resize((int(new_width), int(new_height)), Image.Resampling.LANCZOS)
+                        # Fit images within standard page margins.
+                        img_width, img_height = frame_img.size
+                        margin = 20
+                        available_width = page_width - (2 * margin)
+                        available_height = page_height - (2 * margin)
+                        scale = min(
+                            available_width / img_width,
+                            available_height / img_height,
+                            1.0
+                        )
+                        new_width = img_width * scale
+                        new_height = img_height * scale
+
+
+                        page = doc.new_page(width=page_width, height=page_height)
+
+                        # Center the image on the page.
+                        x = (page_width - new_width) / 2
+                        y = (page_height - new_height) / 2
                     
-                    # Create page with high-DPI dimensions
-                    page = doc.new_page(width=page_width, height=page_height)
+                        # Save image temporarily with high quality
+                        import tempfile
+                        temp_dir = tempfile.gettempdir()
+                        temp_img_path = os.path.join(temp_dir, f'temp_img_{idx}_{frame_index}_{int(time.time() * 1000)}.jpg')
+                        # Save as JPEG with high quality to preserve details
+                        frame_img.save(temp_img_path, 'JPEG', quality=95)
                     
-                    # Center the image on the page
-                    x = (page_width - new_width) / 2
-                    y = (page_height - new_height) / 2
+                        # Insert image at full dimensions for maximum quality
+                        rect = fitz.Rect(x, y, x + new_width, y + new_height)
+                        page.insert_image(rect, filename=temp_img_path)
                     
-                    # Save image temporarily with high quality
-                    import tempfile
-                    temp_dir = tempfile.gettempdir()
-                    temp_img_path = os.path.join(temp_dir, f'temp_img_{idx}_{int(time.time() * 1000)}.jpg')
-                    # Save as JPEG with high quality to preserve details
-                    img.save(temp_img_path, 'JPEG', quality=95)
-                    
-                    # Insert image at full dimensions for maximum quality
-                    rect = fitz.Rect(x, y, x + new_width, y + new_height)
-                    page.insert_image(rect, filename=temp_img_path)
-                    
-                    # Clean up temp file
-                    try:
-                        os.remove(temp_img_path)
-                    except:
-                        pass
+                        # Clean up temp file
+                        try:
+                            os.remove(temp_img_path)
+                        except:
+                            pass
                         
                 except Exception as img_err:
                     raise Exception(f"Failed to process image {idx + 1} ({Path(img_path).name}): {str(img_err)}")
@@ -985,45 +1010,110 @@ class PdfConvertEngine:
     @staticmethod
     def url_to_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
         """Convert URL to PDF using full-page screenshot (higher quality output)"""
+        browser = None
+        context = None
+        page = None
         try:
             url = options.get('url', '')
             if not url:
                 raise ValueError("URL not provided")
             
             # Use Playwright for headless browser
+            from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
             from playwright.sync_api import sync_playwright
             from PIL import Image
+            from security.url_safety import (
+                UnsafeUrlError,
+                validate_public_http_url,
+            )
             import io
-            
+
+            validate_public_http_url(url)
+            blocked_destinations = []
+
             with sync_playwright() as p:
                 browser = p.chromium.launch()
-                
-                # Set a standard viewport for consistent capture
-                page = browser.new_page(viewport={'width': 1920, 'height': 1080})
-                
-                # Navigate to URL and wait for network idle
-                page.goto(url, wait_until='networkidle')
-                
-                # Wait for any dynamic content to load
-                page.wait_for_load_state('domcontentloaded')
-                
-                # Capture full page screenshot
-                screenshot_bytes = page.screenshot(full_page=True)
-                
-                # Convert screenshot to PDF using PIL
-                image = Image.open(io.BytesIO(screenshot_bytes))
-                
-                # Convert RGBA to RGB if necessary
-                if image.mode in ('RGBA', 'LA', 'P'):
-                    # Create white background
-                    background = Image.new('RGB', image.size, (255, 255, 255))
-                    background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
-                    image = background
-                
-                # Save as PDF with high quality
-                image.save(output_path, 'PDF', quality=95)
-                
-                browser.close()
+                try:
+                    context = browser.new_context(
+                        viewport={'width': 1920, 'height': 1080},
+                        accept_downloads=False,
+                        service_workers='block',
+                        ignore_https_errors=False,
+                        permissions=[],
+                    )
+                    context.set_default_timeout(15_000)
+                    context.set_default_navigation_timeout(30_000)
+
+                    def guard_request(route):
+                        request_url = route.request.url
+                        try:
+                            validate_public_http_url(request_url)
+                        except UnsafeUrlError as unsafe_error:
+                            blocked_destinations.append(str(unsafe_error))
+                            route.abort("blockedbyclient")
+                            return
+                        route.continue_()
+
+                    def guard_websocket(websocket):
+                        try:
+                            validate_public_http_url(websocket.url)
+                        except UnsafeUrlError as unsafe_error:
+                            blocked_destinations.append(str(unsafe_error))
+                            websocket.close(code=1008, reason="Blocked unsafe destination")
+                            return
+                        websocket.connect_to_server()
+
+                    context.route("**/*", guard_request)
+                    context.route_web_socket("**/*", guard_websocket)
+
+                    page = context.new_page()
+                    try:
+                        try:
+                            page.goto(url, wait_until='domcontentloaded', timeout=30_000)
+                        except Exception as navigation_error:
+                            if blocked_destinations:
+                                raise UnsafeUrlError(
+                                    "Browser navigation to a non-public destination was blocked."
+                                ) from navigation_error
+                            raise
+                        try:
+                            page.wait_for_load_state('networkidle', timeout=5_000)
+                        except PlaywrightTimeoutError:
+                            # Continuously active pages may never become idle. The
+                            # bounded render delay below still gives them time to paint.
+                            pass
+                        page.wait_for_timeout(1_000)
+
+                        validate_public_http_url(page.url)
+                        screenshot_bytes = page.screenshot(
+                            full_page=True,
+                            timeout=30_000,
+                        )
+
+                        image = Image.open(io.BytesIO(screenshot_bytes))
+                        if image.mode in ('RGBA', 'LA', 'P'):
+                            background = Image.new('RGB', image.size, (255, 255, 255))
+                            background.paste(
+                                image,
+                                mask=image.split()[-1] if image.mode == 'RGBA' else None,
+                            )
+                            image = background
+                        image.save(output_path, 'PDF', quality=95)
+                    finally:
+                        if page is not None:
+                            page.close()
+                            page = None
+                finally:
+                    try:
+                        if context is not None:
+                            context.close()
+                    finally:
+                        context = None
+                        if browser is not None:
+                            try:
+                                browser.close()
+                            finally:
+                                browser = None
             
             return output_path
         except Exception as e:
@@ -1031,19 +1121,198 @@ class PdfConvertEngine:
     
     @staticmethod
     def outlook_to_pdf(input_paths: List[str], output_path: str, options: Dict[str, Any]) -> str:
-        """Convert Outlook MSG file to PDF"""
+        """Convert an Outlook MSG file to PDF without requiring Outlook."""
+        message = None
+        html_path = None
         try:
+            from email import policy
+            from email.parser import BytesParser
+            from html import escape
+            import re
+            import tempfile
+            import uuid
+
+            from bs4 import BeautifulSoup
+
             msg_path = input_paths[0]
-            
-            # Try to use win32com on Windows for native support
-            try:
-                from win32com.client import Dispatch
-                outlook = Dispatch("Outlook.Application")
-                msg = outlook.CreateItemFromTemplate(msg_path)
-                msg.SaveAs(output_path, 4)  # 4 = olSaveAsPDF
-                return output_path
-            except ImportError:
-                # Fallback: extract text and create simple PDF
-                raise Exception("outlook_to_pdf requires win32com on Windows")
+            if not os.path.isfile(msg_path):
+                raise ValueError("Outlook MSG input file does not exist")
+
+            def as_text(value) -> str:
+                if value is None:
+                    return ""
+                if isinstance(value, bytes):
+                    for encoding in ("utf-8", "utf-16", "windows-1252"):
+                        try:
+                            return value.decode(encoding)
+                        except UnicodeDecodeError:
+                            continue
+                    return value.decode("utf-8", errors="replace")
+                return str(value)
+
+            def attachment_name(attachment) -> str:
+                for attribute in (
+                    "longFilename",
+                    "shortFilename",
+                    "name",
+                    "displayName",
+                ):
+                    value = getattr(attachment, attribute, None)
+                    if value:
+                        return as_text(value)
+                getter = getattr(attachment, "getFilename", None)
+                if callable(getter):
+                    value = getter()
+                    if value:
+                        return as_text(value)
+                return "Unnamed attachment"
+
+            with open(msg_path, "rb") as source:
+                signature = source.read(8)
+
+            if signature == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
+                try:
+                    import extract_msg
+                except ImportError as import_error:
+                    raise RuntimeError(
+                        "extract-msg is required to convert Outlook MSG files"
+                    ) from import_error
+
+                message = extract_msg.openMsg(msg_path)
+                subject = as_text(getattr(message, "subject", ""))
+                sender = as_text(getattr(message, "sender", ""))
+                recipients_to = as_text(getattr(message, "to", ""))
+                recipients_cc = as_text(getattr(message, "cc", ""))
+                recipients_bcc = as_text(getattr(message, "bcc", ""))
+                date = as_text(getattr(message, "date", ""))
+                html_body = as_text(getattr(message, "htmlBody", ""))
+                text_body = as_text(getattr(message, "body", ""))
+                attachments = [
+                    attachment_name(attachment)
+                    for attachment in (getattr(message, "attachments", None) or [])
+                ]
+            else:
+                # Preserve compatibility with RFC822-style message fixtures while
+                # genuine OLE Compound File MSG input always uses extract-msg.
+                with open(msg_path, "rb") as source:
+                    mime_message = BytesParser(policy=policy.default).parse(source)
+                subject = as_text(mime_message.get("Subject", ""))
+                sender = as_text(mime_message.get("From", ""))
+                recipients_to = as_text(mime_message.get("To", ""))
+                recipients_cc = as_text(mime_message.get("Cc", ""))
+                recipients_bcc = as_text(mime_message.get("Bcc", ""))
+                date = as_text(mime_message.get("Date", ""))
+                html_part = mime_message.get_body(preferencelist=("html",))
+                text_part = mime_message.get_body(preferencelist=("plain",))
+                html_body = html_part.get_content() if html_part else ""
+                text_body = text_part.get_content() if text_part else ""
+                attachments = [
+                    part.get_filename() or "Unnamed attachment"
+                    for part in mime_message.iter_attachments()
+                ]
+
+            if html_body:
+                body_soup = BeautifulSoup(html_body, "html.parser")
+                for dangerous_tag in body_soup.find_all(
+                    ["script", "style", "iframe", "object", "embed", "base", "link", "meta"]
+                ):
+                    dangerous_tag.decompose()
+                for form_tag in body_soup.find_all("form"):
+                    form_tag.unwrap()
+                for tag in body_soup.find_all(True):
+                    for attribute in list(tag.attrs):
+                        lowered = attribute.lower()
+                        if lowered.startswith("on") or lowered in {
+                            "src",
+                            "srcset",
+                            "poster",
+                            "background",
+                            "action",
+                            "formaction",
+                        }:
+                            del tag.attrs[attribute]
+                    if tag.has_attr("style"):
+                        tag["style"] = re.sub(
+                            r"url\s*\([^)]*\)",
+                            "none",
+                            str(tag["style"]),
+                            flags=re.IGNORECASE,
+                        )
+                if body_soup.body:
+                    rendered_body = "".join(str(child) for child in body_soup.body.contents)
+                else:
+                    rendered_body = str(body_soup)
+            else:
+                rendered_body = (
+                    f'<div class="plain-body">{escape(text_body).replace(chr(10), "<br>")}</div>'
+                )
+
+            metadata = [
+                ("Subject", subject),
+                ("From", sender),
+                ("To", recipients_to),
+                ("CC", recipients_cc),
+                ("BCC", recipients_bcc),
+                ("Date", date),
+            ]
+            metadata_rows = "".join(
+                "<tr>"
+                f'<th scope="row">{escape(label)}</th>'
+                f"<td>{escape(value)}</td>"
+                "</tr>"
+                for label, value in metadata
+            )
+            attachment_items = "".join(
+                f"<li>{escape(name)}</li>" for name in attachments
+            ) or "<li>None</li>"
+
+            rendered_html = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{escape(subject or "Outlook message")}</title>
+  <style>
+    @page {{ size: A4; margin: 18mm; }}
+    body {{ color: #202124; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.45; }}
+    h1 {{ font-size: 18pt; margin: 0 0 14px; overflow-wrap: anywhere; }}
+    table {{ border-collapse: collapse; margin-bottom: 20px; width: 100%; }}
+    th {{ color: #5f6368; text-align: left; vertical-align: top; white-space: nowrap; width: 72px; }}
+    th, td {{ border-bottom: 1px solid #dadce0; padding: 5px 8px; overflow-wrap: anywhere; }}
+    .message-body {{ margin-top: 18px; overflow-wrap: anywhere; }}
+    .plain-body {{ white-space: normal; }}
+    .attachments {{ border-top: 1px solid #dadce0; margin-top: 24px; padding-top: 12px; }}
+  </style>
+</head>
+<body>
+  <h1>{escape(subject or "(No subject)")}</h1>
+  <table aria-label="Email headers">{metadata_rows}</table>
+  <main class="message-body">{rendered_body}</main>
+  <section class="attachments">
+    <strong>Attachments</strong>
+    <ul>{attachment_items}</ul>
+  </section>
+</body>
+</html>
+"""
+
+            output_directory = str(Path(output_path).parent)
+            os.makedirs(output_directory, exist_ok=True)
+            html_path = os.path.join(
+                output_directory,
+                f"outlook_{uuid.uuid4().hex}.html",
+            )
+            with open(html_path, "w", encoding="utf-8", newline="\n") as html_file:
+                html_file.write(rendered_html)
+
+            return PdfConvertEngine.document_to_pdf([html_path], output_path, {})
         except Exception as e:
             raise Exception(f"Failed to convert Outlook to PDF: {str(e)}")
+        finally:
+            try:
+                if message is not None:
+                    close_message = getattr(message, "close", None)
+                    if callable(close_message):
+                        close_message()
+            finally:
+                if html_path and os.path.exists(html_path):
+                    os.remove(html_path)

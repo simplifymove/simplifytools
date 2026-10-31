@@ -1,26 +1,70 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function VignetteEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [vignetteStrength, setVignetteStrength] = useState(50);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const operationRef = useRef(0);
+  const resultUrlRef = useRef<string | null>(null);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const [toolError, setToolError] = useState<string | null>(null);
+
+  const clearResult = () => {
+    operationRef.current += 1;
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+    setResult(null);
+    setResultPreview(null);
+    setToolError(null);
+    setProcessing(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      operationRef.current += 1;
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current);
+      }
+    };
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      clearResult();
+      setFile(null);
+      setPreview(null);
+
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(selectedFile.type)) {
+        setToolError('Please select a JPG, PNG, or WebP image.');
+        return;
+      }
+
       setFile(selectedFile);
+      const selection = operationRef.current;
       const reader = new FileReader();
       reader.onload = (event) => {
+        if (selection !== operationRef.current) return;
         setPreview(event.target?.result as string);
+      };
+      reader.onerror = () => {
+        if (selection !== operationRef.current) return;
+        setToolError('Unable to read this image.');
       };
       reader.readAsDataURL(selectedFile);
     }
@@ -28,11 +72,14 @@ export default function VignetteEffectPage() {
 
   const applyVignette = async () => {
     if (!file || !preview) return;
+    clearResult();
+    const operation = operationRef.current;
     setProcessing(true);
 
     try {
       const img = new Image();
       img.onload = async () => {
+        if (operation !== operationRef.current) return;
         try {
           const canvas = canvasRef.current;
           if (!canvas) {
@@ -48,7 +95,7 @@ export default function VignetteEffectPage() {
           }
 
           ctx.drawImage(img, 0, 0);
-          
+
           const radialGradient = ctx.createRadialGradient(
             canvas.width / 2, canvas.height / 2, 0,
             canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height)
@@ -56,45 +103,76 @@ export default function VignetteEffectPage() {
           const strength = vignetteStrength / 100;
           radialGradient.addColorStop(0, `rgba(0, 0, 0, 0)`);
           radialGradient.addColorStop(1, `rgba(0, 0, 0, ${strength})`);
-          
+
           ctx.fillStyle = radialGradient;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           canvas.toBlob((blob) => {
             if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
+              if (operation === operationRef.current) {
+                setToolError('Unable to create the processed image.');
+                setProcessing(false);
+              }
               return;
             }
+            if (operation !== operationRef.current) return;
+            const url = URL.createObjectURL(blob);
+            resultUrlRef.current = url;
+            setResultPreview(url);
             setResult(blob);
             setProcessing(false);
           }, 'image/jpeg', 0.95);
         } catch (error) {
           console.error('Error in image onload:', error);
-          setProcessing(false);
+          if (operation === operationRef.current) {
+            setToolError('Unable to apply the vignette effect.');
+            setProcessing(false);
+          }
         }
       };
       img.onerror = () => {
-        console.error('Error loading image');
-        setProcessing(false);
+        if (operation === operationRef.current) {
+          setToolError('Unable to load the selected image.');
+          setProcessing(false);
+        }
       };
       img.src = preview;
     } catch (error) {
       console.error('Error applying vignette:', error);
-      setProcessing(false);
+      if (operation === operationRef.current) {
+        setToolError('Unable to apply the vignette effect.');
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'vignette-image.jpg';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'vignette-effect',
+            originalName: 'vignette-image.jpg',
+            outputName: 'vignette-image.jpg',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -112,10 +190,10 @@ export default function VignetteEffectPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🎬 Vignette Effect</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-4">
-              Add professional vignette borders to your photos instantly. Darken the edges to create a focal point effect and draw attention to the center of your images.
+              Add an adjustable vignette-style edge-darkening effect to your photos. Darken the edges to create a focal point effect and draw attention to the center of your images.
             </p>
             <p className="text-base text-white/80 max-w-2xl">
-              Perfect for creating professional-looking photos with enhanced visual impact.
+              Use the vignette effect to visually emphasize the center of an image.
             </p>
           </div>
         </div>
@@ -126,12 +204,12 @@ export default function VignetteEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Vignette Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   onChange={handleFileSelect}
                   className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-slate-400 transition"
                 />
@@ -146,7 +224,10 @@ export default function VignetteEffectPage() {
                       min="0"
                       max="100"
                       value={vignetteStrength}
-                      onChange={(e) => setVignetteStrength(Number(e.target.value))}
+                      onChange={(e) => {
+                        clearResult();
+                        setVignetteStrength(Number(e.target.value));
+                      }}
                       className="w-full"
                     />
                   </div>
@@ -160,6 +241,25 @@ export default function VignetteEffectPage() {
                     {processing ? 'Processing...' : 'Apply Vignette'}
                   </button>
                 </>
+              )}
+
+              {toolError && (
+                <p role="alert" className="mb-4 text-sm text-red-700">
+                  {toolError}
+                </p>
+              )}
+
+              {resultPreview && (
+                <div className="mt-6 mb-4">
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    Processed Image Preview
+                  </h3>
+                  <img
+                    src={resultPreview}
+                    alt="Image with vignette effect applied"
+                    className="w-full max-h-96 object-contain rounded-lg border border-gray-200"
+                  />
+                </div>
               )}
 
               {result && (
@@ -194,50 +294,50 @@ export default function VignetteEffectPage() {
                   <p className="text-gray-700">Draw viewer attention to the center of your image with darkened edges.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-700 mb-2">Professional Look</h3>
-                  <p className="text-gray-700">Add a polished, cinema-quality effect to your photos instantly.</p>
+                  <h3 className="font-bold text-lg text-slate-700 mb-2">Vignette Styling</h3>
+                  <p className="text-gray-700">Add a gradual edge-darkening effect to the image.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-700 mb-2">Adjustable Intensity</h3>
                   <p className="text-gray-700">Control vignette strength from subtle to dramatic for any photo.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-700 mb-2">Instant Processing</h3>
-                  <p className="text-gray-700">See results immediately with our fast, browser-based processing.</p>
+                  <h3 className="font-bold text-lg text-slate-700 mb-2">Interactive Preview</h3>
+                  <p className="text-gray-700">Review the generated image after processing, then download the JPEG result.</p>
                 </div>
               </div>
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What is a vignette effect?</summary>
-                  <p className="text-gray-700 mt-2">A vignette is a darkening or fading of the edges of an image, often creating a fade-to-black effect that draws focus to the center.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Why use vignettes in photography?</summary>
-                  <p className="text-gray-700 mt-2">Vignettes improve composition by directing viewer focus to the subject, add emotional depth, and create professional, polished results.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What vignette strength should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start with 30-50% for subtle effects. Use 50-70% for moderate vignettes, or 80-100% for dramatic, pronounced effects.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photo types?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Vignettes work beautifully on portraits, landscapes, still life, and any photo type.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I remove vignette afterward?</summary>
-                  <p className="text-gray-700 mt-2">No, vignettes are permanent once applied. Always keep your original image as backup.</p>
-                </details>
-                <details className="border-l-4 border-slate-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is the quality affected?</summary>
-                  <p className="text-gray-700 mt-2">No! Vignette application maintains full image quality throughout the process.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What is a vignette effect?</FAQQuestion>
+                  <FAQAnswer>A vignette is a darkening or fading of the edges of an image, often creating a fade-to-black effect that draws focus to the center.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Why use vignettes in photography?</FAQQuestion>
+                  <FAQAnswer>Vignettes darken image edges and can visually draw attention toward the central area of a photo.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What vignette strength should I use?</FAQQuestion>
+                  <FAQAnswer>Start with 30-50% for subtle effects. Use 50-70% for moderate vignettes, or 80-100% for dramatic, pronounced effects.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photo types?</FAQQuestion>
+                  <FAQAnswer>Yes! Vignettes work beautifully on portraits, landscapes, still life, and any photo type.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I remove vignette afterward?</FAQQuestion>
+                  <FAQAnswer>No, vignettes are permanent once applied. Always keep your original image as backup.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is the quality affected?</FAQQuestion>
+                  <FAQAnswer>Applying the vignette changes image pixels and creates a processed result. Review the output if preserving source detail is important.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -260,8 +360,86 @@ export default function VignetteEffectPage() {
           </div>
         </div>
 
-        <Footer />
-      </main>
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Vignette Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tool adds a gradual darkening effect around the outer
+                portions of the image while leaving more of the center visible.
+                The vignette is rendered as a browser Canvas overlay.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The visual adjustment is produced with browser image and
+                  Canvas processing. The preview lets you compare the result
+                  before using the download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the adjustment changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  A vignette changes edge brightness to emphasize the center visually; it does not detect the subject or automatically determine composition.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with moderate settings and compare the preview with the
+                original. Strong adjustments can intentionally reduce subtle
+                detail or produce a more stylized appearance.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Vignette Effect Processing FAQ
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. It modifies the appearance of existing image pixels
+                    and does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview changes before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Use the preview and available controls to review the
+                    result before downloading it.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
+      <Footer />
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

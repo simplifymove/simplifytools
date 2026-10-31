@@ -1,12 +1,16 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Palette } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function DuotoneEffectPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [color1, setColor1] = useState('#ff00ff');
@@ -99,16 +103,33 @@ export default function DuotoneEffectPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `duotone-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'duotone-effect',
+            originalName: `duotone-${Date.now()}.jpg`,
+            outputName: `duotone-${Date.now()}.jpg`,
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        console.error('Download preparation failed:', caughtError);
+        window.alert(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -137,7 +158,7 @@ export default function DuotoneEffectPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Duotone Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -228,35 +249,35 @@ export default function DuotoneEffectPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What colors should I pick?</summary>
-                  <p className="text-gray-700 mt-2">Choose contrasting colors for best effect. Dark for shadows, bright for highlights.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use any color combination?</summary>
-                  <p className="text-gray-700 mt-2">Yes! Pick any two colors you like from the color picker.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Results vary based on content.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, duotone images can be used for commercial purposes.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in your browser.</p>
-                </details>
-                <details className="border-l-4 border-purple-600 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What output format?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent color preservation.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What colors should I pick?</FAQQuestion>
+                  <FAQAnswer>Choose contrasting colors for best effect. Dark for shadows, bright for highlights.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use any color combination?</FAQQuestion>
+                  <FAQAnswer>Yes! Pick any two colors you like from the color picker.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo. Results vary based on content.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>Commercial use depends on your rights to the original image and any applicable licenses or permissions. Applying a duotone effect does not grant rights to copyrighted source material.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The duotone effect runs in your browser. Downloading the result uploads the generated image to our server for temporary download preparation.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What output format?</FAQQuestion>
+                  <FAQAnswer>The processed image is exported as a JPEG at a quality setting of 0.95. The effect replaces the original colors with a gradient between your two selected colors, and JPEG compression may introduce some loss of detail.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -280,7 +301,84 @@ export default function DuotoneEffectPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Duotone Effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+Upload an image and choose the available duotone controls.
+                The browser processes the image pixels and maps tonal values
+                into a two-color style. Preview the result before downloading
+                the processed image.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The image effect is produced with browser image and Canvas
+                  processing. The preview lets you inspect the result before
+                  using the available download action.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Duotone processing remaps image tones for a stylized color treatment; it does not add detail that is missing from the source.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and compare the preview with
+                the original before downloading. Stronger effect settings can
+                intentionally remove or alter visible detail, so choose the
+                setting according to the result you need.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                the Duotone Effect works FAQ
+              </FAQHeading>
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does the effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. The tool changes the appearance of existing image
+                    pixels; it does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the result before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    Yes. Use the on-page preview and available controls to
+                    inspect the processed image before downloading it.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

@@ -1,6 +1,6 @@
 ﻿export const metadata = {
-  title: 'Free Cartoon Effect - Convert Photos to Cartoons',
-  description: 'Transform photos into cartoon and comic style instantly. Create artistic cartoon effects.',
+  title: 'Cartoon Effect - Create a Stylized Cartoon Image | SimplifyConvert',
+  description: 'Apply a cartoon-style image effect in your browser by simplifying tones and emphasizing visible edges.',
   keywords: 'cartoon effect, comic style, cartoon filter, artistic photo effect',
   openGraph: {
     title: 'Free Cartoon Effect - Create Cartoon Styles',

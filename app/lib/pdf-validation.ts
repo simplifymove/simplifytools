@@ -230,7 +230,17 @@ export function validatePdfInput(
       return { valid: false, error: 'Please enter a website URL.' };
     }
     try {
-      new URL(url);
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        return { valid: false, error: 'Only HTTP and HTTPS website URLs are allowed.' };
+      }
+      if (parsedUrl.username || parsedUrl.password) {
+        return { valid: false, error: 'Website URLs containing embedded credentials are not allowed.' };
+      }
+      const hostname = parsedUrl.hostname.replace(/^\[|\]$/g, '').replace(/\.$/, '').toLowerCase();
+      if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
+        return { valid: false, error: 'Localhost website URLs are not allowed.' };
+      }
     } catch {
       return { valid: false, error: 'Invalid URL format. Please enter a valid website URL (e.g., https://example.com).' };
     }
@@ -393,8 +403,49 @@ function validateToolSpecific(
 
     case 'pdf-to-jpg':
     case 'pdf-to-png':
-    case 'pdf-to-tiff':
+    case 'pdf-to-tiff': {
+      if (options?.pageMode === 'selected') {
+        const pageRange = options?.pageRange;
+
+        if (typeof pageRange !== 'string' || !pageRange.trim()) {
+          return {
+            valid: false,
+            error: 'Please enter a page range (e.g., "1-5" or "1,3,5").',
+          };
+        }
+
+        const parts = pageRange.split(',');
+
+        for (const part of parts) {
+          const value = part.trim();
+          const match = /^(\d+)(?:\s*-\s*(\d+))?$/.exec(value);
+
+          if (!match) {
+            return {
+              valid: false,
+              error: `Invalid page range: "${value}". Use "1-5" or "1,3,5".`,
+            };
+          }
+
+          const start = Number(match[1]);
+          const end = match[2] === undefined ? start : Number(match[2]);
+
+          if (
+            !Number.isSafeInteger(start) ||
+            !Number.isSafeInteger(end) ||
+            start < 1 ||
+            end < start
+          ) {
+            return {
+              valid: false,
+              error: `Invalid page range: "${value}". Page numbers must be positive and ranges must be ascending.`,
+            };
+          }
+        }
+      }
+
       return { valid: true };
+    }
 
     case 'jpg-to-pdf':
     case 'png-to-pdf':
@@ -413,4 +464,3 @@ function validateToolSpecific(
       return { valid: true };
   }
 }
-

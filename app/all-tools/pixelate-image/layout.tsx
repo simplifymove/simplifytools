@@ -1,6 +1,6 @@
 ﻿export const metadata = {
-  title: 'Free Pixelate Image Tool - Create Mosaic Effects',
-  description: 'Pixelate and mosaic your images for privacy or artistic effects. Adjust pixel size for perfect pixelation instantly.',
+  title: 'Pixelate Image - Create a Block Pixel Effect | SimplifyConvert',
+  description: 'Pixelate JPG, PNG, or WebP images in your browser, adjust the pixel block size, preview the effect, and download the result.',
   keywords: 'pixelate, mosaic, pixel art, blur, privacy effect',
   openGraph: {
     title: 'Free Pixelate Image Tool - Mosaic Effects',

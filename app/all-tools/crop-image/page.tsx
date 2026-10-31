@@ -1,14 +1,18 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, RotateCcw, ZoomIn, ZoomOut, Scissors, Hand } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { ImageUploader } from '../../components/ImageUploader';
 import { Footer } from '../../components/Footer';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'crop-image';
 const TOOL_NAME = 'Crop Image';
@@ -21,6 +25,7 @@ interface CropBox {
 }
 
 export default function CropImagePage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -318,14 +323,40 @@ export default function CropImagePage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `cropped-image-${Date.now()}.${outputFormat}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    clearError();
+
+    try {
+      const response = await fetch(result);
+
+      if (!response.ok) {
+        throw new Error('Failed to read the cropped image');
+      }
+
+      const blob = await response.blob();
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: TOOL_ID,
+        originalName: file.name,
+        outputName: `cropped-image.${outputFormat}`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      createError(
+        ImageToolErrorType.NETWORK_ERROR,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        { filename: file.name, size: file.size, mimeType: file.type }
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -348,7 +379,7 @@ export default function CropImagePage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Crop Image</h1>
-                <p className="text-lg text-white/90">Drag to crop, adjust with handles. Real-time preview with instant feedback.</p>
+                <p className="text-lg text-white/90">Drag the crop area, adjust its handles, and review the browser preview before creating the result.</p>
               </div>
             </div>
           </div>
@@ -508,10 +539,17 @@ export default function CropImagePage() {
                 <div className="flex gap-4">
                   <button
                     onClick={handleDownload}
-                    className="flex-1 py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    disabled={processing}
+                    className="flex-1 py-3 px-6 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                   >
-                    <Download size={20} />
-                    Download {outputFormat.toUpperCase()}
+                    {processing ? (
+                      'Preparing download...'
+                    ) : (
+                      <>
+                        <Download size={20} />
+                        Download {outputFormat.toUpperCase()}
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={handleClearPreview}
@@ -525,8 +563,10 @@ export default function CropImagePage() {
             )}
           </div>
         </div>
+        <PriorityToolGuide toolId="crop-image" />
       </main>
 
+      {false && (<>
       {/* How to Use Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
         <div className="bg-white rounded-lg border border-gray-200 p-8">
@@ -567,23 +607,23 @@ export default function CropImagePage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Real-Time Preview</h3>
-              <p className="text-gray-700">See changes instantly as you adjust. Grid overlay helps with composition and alignment.</p>
+              <p className="text-gray-700">The browser preview updates as you adjust the selection. The grid can help with composition and alignment.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Multiple Aspect Ratios</h3>
-              <p className="text-gray-700">Free crop or lock to 1:1, 4:3, 16:9, or 3:2. Perfect for social media and print.</p>
+              <p className="text-gray-700">Use free crop or choose 1:1, 4:3, 16:9, or 3:2 when the destination requires one of those proportions.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Zoom & Rotate</h3>
-              <p className="text-gray-700">Zoom in for detail and rotate by 90° for perfect composition.</p>
+              <p className="text-gray-700">Use the preview controls to inspect detail and adjust rotation while positioning the crop.</p>
             </div>
             <div>
               <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Fast Processing</h3>
-              <p className="text-gray-700">Optimized crop engine processes images instantly. Download within seconds.</p>
+              <p className="text-gray-700">The crop tool updates the selected image region in the browser before the result is prepared for download.</p>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ 100% Free & Private</h3>
-              <p className="text-gray-700">No registration required. All processing happens securely on your device.</p>
+              <h3 className="text-lg font-bold text-orange-500 mb-2">✓ Browser-Based Editing</h3>
+              <p className="text-gray-700">Cropping and preview generation are performed in the browser. The generated result is prepared for the site's download flow when you continue to download.</p>
             </div>
           </div>
         </div>
@@ -591,35 +631,35 @@ export default function CropImagePage() {
 
       {/* FAQ Section */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">How do I drag the crop box?</summary>
-              <p className="text-gray-700 mt-2">Click and drag any of the 8 handles around the crop box to resize it. Click inside the box to move it. The preview updates in real-time.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What aspect ratios are available?</summary>
-              <p className="text-gray-700 mt-2">We support free crop, square (1:1), standard (4:3), widescreen (16:9), and classic (3:2) aspect ratios.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Can I undo a crop?</summary>
-              <p className="text-gray-700 mt-2">Yes! Click "Start Over" to upload a new image or adjust your crop settings again.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">How fast is the processing?</summary>
-              <p className="text-gray-700 mt-2">Cropping is extremely fast! Most images process in under 1 second. Download starts immediately after clicking "Crop Now".</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">What output formats are supported?</summary>
-              <p className="text-gray-700 mt-2">We support PNG (lossless), JPG (compressed), and WebP (modern format) exports.</p>
-            </details>
-            <details className="border-l-4 border-orange-500 pl-4 py-2">
-              <summary className="font-bold text-gray-800 cursor-pointer">Is my image data safe?</summary>
-              <p className="text-gray-700 mt-2">Absolutely! All processing happens locally in your browser. Images are never uploaded or stored anywhere.</p>
-            </details>
-          </div>
-        </div>
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>How do I drag the crop box?</FAQQuestion>
+              <FAQAnswer>Click and drag any of the 8 handles around the crop box to resize it. Click inside the box to move it. The preview updates in real-time.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What aspect ratios are available?</FAQQuestion>
+              <FAQAnswer>We support free crop, square (1:1), standard (4:3), widescreen (16:9), and classic (3:2) aspect ratios.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Can I undo a crop?</FAQQuestion>
+              <FAQAnswer>Yes! Click "Start Over" to upload a new image or adjust your crop settings again.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>How fast is the processing?</FAQQuestion>
+              <FAQAnswer>Processing time depends on the image and device. After cropping, the generated result can be prepared for download.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>What output formats are supported?</FAQQuestion>
+              <FAQAnswer>We support PNG (lossless), JPG (compressed), and WebP (modern format) exports.</FAQAnswer>
+            </FAQDisclosure>
+            <FAQDisclosure>
+              <FAQQuestion>Is my image data safe?</FAQQuestion>
+              <FAQAnswer>The crop operation itself is performed in your browser. When you continue to download, the generated result is passed through the site's download-result flow.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* Related Tools Section */}
@@ -637,18 +677,19 @@ export default function CropImagePage() {
             </Link>
             <Link href="/all-tools/compress-image" className="p-4 border-2 border-orange-200 rounded-lg hover:bg-orange-50 transition">
               <h3 className="font-bold text-gray-800 mb-1">Compress Image</h3>
-              <p className="text-sm text-gray-600">Reduce file size without quality loss</p>
+              <p className="text-sm text-gray-600">Reduce image dimensions or file size when appropriate</p>
             </Link>
           </div>
         </div>
       </div>
 
+      </>)}
       <Footer />
 
       {/* Hidden canvas for final crop output */}
       <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+      {false && <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'Crop Image - Free Online Image Cropper & Resizer Tool',
@@ -668,8 +709,7 @@ export default function CropImagePage() {
           'No registration required',
           'Privacy-focused processing',
         ],
-      })}} />
+      })}} />}
     </>
   );
 }
-

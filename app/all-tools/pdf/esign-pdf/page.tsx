@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { FileUp, Download, X, ZoomIn, ZoomOut, ChevronRight } from 'lucide-react';
@@ -24,12 +25,217 @@ export const dynamic = 'force-dynamic';
 
 let pdfjsLib: any;
 
+function EsignSupportingContent() {
+  return (
+    <section className="bg-white border-t border-gray-200">
+            <div className="max-w-6xl mx-auto px-4 py-16 space-y-14">
+
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  How to sign a PDF online
+                </h2>
+                <p className="text-gray-600 leading-7 mb-6">
+                  Use the E-Sign PDF tool to place a handwritten or image-based
+                  electronic signature onto a PDF document. You can preview the
+                  document, choose the page and position, move the signature, and
+                  download the completed PDF.
+                </p>
+
+                <ol className="grid md:grid-cols-5 gap-4">
+                  {[
+                    ['1', 'Upload PDF', 'Choose the PDF document you want to sign.'],
+                    ['2', 'Choose position', 'Click the location on the PDF where the signature should appear.'],
+                    ['3', 'Add signature', 'Draw your signature or upload an existing signature image.'],
+                    ['4', 'Position it', 'Drag the signature to place it accurately on the page.'],
+                    ['5', 'Download', 'Create and download the signed PDF when you are finished.'],
+                  ].map(([number, title, description]) => (
+                    <li key={number} className="border border-gray-200 rounded-xl p-5">
+                      <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold mb-3">
+                        {number}
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+                      <p className="text-sm text-gray-600 leading-6">{description}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">
+                    Draw your signature
+                  </h2>
+                  <p className="text-gray-600 leading-7">
+                    Click the PDF where you want to sign and use the signature pad
+                    to draw your signature. After adding it, you can move the
+                    signature to improve its placement before creating the final
+                    PDF.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">
+                    Upload a signature image
+                  </h2>
+                  <p className="text-gray-600 leading-7">
+                    If you already have an image of your signature, upload a JPG,
+                    PNG, GIF, or WebP file. The image is placed on the selected PDF
+                    page while preserving its proportions.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Sign multiple PDF pages
+                </h2>
+                <p className="text-gray-600 leading-7">
+                  A signature can be copied and reused on another page when the
+                  same document requires signatures in several locations. You can
+                  also paste a copied signature onto all pages, then review the
+                  placement before downloading the finished PDF.
+                </p>
+              </div>
+
+              <div className="bg-purple-50 border border-purple-100 rounded-xl p-7">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Electronic signature vs digital signature
+                </h2>
+                <p className="text-gray-700 leading-7">
+                  This tool places a drawn or image-based electronic signature on
+                  a PDF. It does not create a certificate-based cryptographic
+                  digital signature. If a document requires identity verification,
+                  certificate validation, or a specific legally regulated signing
+                  process, confirm the recipient&apos;s requirements before using
+                  an image-based signature.
+                </p>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                  Tips for signing PDFs accurately
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {[
+                    'Review the document before adding your signature.',
+                    'Zoom the PDF when you need more precise placement.',
+                    'Use a clear signature image with minimal unnecessary background.',
+                    'Check the correct page before copying a signature to other pages.',
+                    'Review every signature position before downloading the final PDF.',
+                    'Keep the original unsigned PDF when you may need it later.',
+                  ].map((tip) => (
+                    <div
+                      key={tip}
+                      className="flex gap-3 border border-gray-200 rounded-lg p-4"
+                    >
+                      <span className="text-purple-600 font-bold">✓</span>
+                      <p className="text-gray-600">{tip}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <FAQPanel>
+                <FAQHeading>
+                  E-Sign PDF FAQ
+                </FAQHeading>
+
+                <FAQList>
+                  {[
+                    {
+                      q: 'Can I draw my signature directly on the PDF?',
+                      a: 'Yes. Click the desired position on the PDF to open the signature pad, draw your signature, and add it to the page.',
+                    },
+                    {
+                      q: 'Can I upload an existing signature image?',
+                      a: 'Yes. The signature uploader accepts JPG, PNG, GIF, and WebP images up to the supported upload limit.',
+                    },
+                    {
+                      q: 'Can I move the signature after adding it?',
+                      a: 'Yes. Select and drag the signature to reposition it before downloading the PDF.',
+                    },
+                    {
+                      q: 'Can I use the same signature on several pages?',
+                      a: 'Yes. Copy an existing signature and paste it onto a selected page or across all pages when appropriate.',
+                    },
+                    {
+                      q: 'Does this create a certificate-based digital signature?',
+                      a: 'No. The tool adds a visual electronic signature. It does not create a certificate-backed cryptographic PDF signature.',
+                    },
+                    {
+                      q: 'Should I review the PDF before sending it?',
+                      a: 'Yes. Check the document, signature placement, page selection, names, dates, and other important information before sharing the completed PDF.',
+                    },
+                  ].map((item) => (
+                    <FAQCard key={item.q}>
+                      <FAQStaticQuestion>{item.q}</FAQStaticQuestion>
+                      <FAQAnswer>{item.a}</FAQAnswer>
+                    </FAQCard>
+                  ))}
+                </FAQList>
+              </FAQPanel>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">
+                  Related PDF tools
+                </h2>
+
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Link
+                    href="/all-tools/pdf/edit-pdf"
+                    className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-sm transition"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">Edit PDF</h3>
+                    <p className="text-sm text-gray-600">
+                      Make changes to your PDF document.
+                    </p>
+                  </Link>
+
+                  <Link
+                    href="/all-tools/pdf/annotate-pdf"
+                    className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-sm transition"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">Annotate PDF</h3>
+                    <p className="text-sm text-gray-600">
+                      Add annotations and notes to PDF pages.
+                    </p>
+                  </Link>
+
+                  <Link
+                    href="/all-tools/pdf/merge-pdf"
+                    className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-sm transition"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">Merge PDF</h3>
+                    <p className="text-sm text-gray-600">
+                      Combine multiple PDF files into one document.
+                    </p>
+                  </Link>
+
+                  <Link
+                    href="/all-tools/pdf/compress-pdf"
+                    className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-sm transition"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-2">Compress PDF</h3>
+                    <p className="text-sm text-gray-600">
+                      Reduce PDF file size for easier sharing.
+                    </p>
+                  </Link>
+                </div>
+              </div>
+
+            </div>
+          </section>
+  );
+}
+
 export default function EsignPdfPage() {
   const router = useRouter();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [pdfPages, setPdfPages] = useState<HTMLCanvasElement[]>([]);
+  const [isLoadingMorePages, setIsLoadingMorePages] = useState(false);
   const [signatures, setSignatures] = useState<SignatureData[]>([]);
   const [selectedSig, setSelectedSig] = useState<number | null>(null);
   const [copiedSig, setCopiedSig] = useState<SignatureData | null>(null);
@@ -66,7 +272,7 @@ export default function EsignPdfPage() {
       const ratio = Math.max(window.devicePixelRatio || 1, 1);
       canvas.width = canvas.offsetWidth * ratio;
       canvas.height = canvas.offsetHeight * ratio;
-      
+
       // Clear with transparent background
       const ctx = canvas.getContext('2d')!;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -78,6 +284,60 @@ export default function EsignPdfPage() {
       });
     }
   }, [showSignaturePad]);
+
+  const renderPdfPages = async (
+    pdf: any,
+    startPage: number,
+    endPage: number
+  ): Promise<HTMLCanvasElement[]> => {
+    const pages: HTMLCanvasElement[] = [];
+
+    for (let i = startPage; i <= endPage; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error(`Unable to render PDF page ${i}`);
+      }
+
+      try {
+        await page.render({ canvas, viewport }).promise;
+      } catch {
+        await page.render({
+          canvasContext: context,
+          viewport,
+        } as any).promise;
+      }
+
+      pages.push(canvas);
+    }
+
+    return pages;
+  };
+
+  const loadMorePages = async () => {
+    if (!pdfDoc || isLoadingMorePages || pdfPages.length >= totalPages) {
+      return;
+    }
+
+    setIsLoadingMorePages(true);
+
+    try {
+      const startPage = pdfPages.length + 1;
+      const endPage = Math.min(startPage + 9, totalPages);
+      const nextPages = await renderPdfPages(pdfDoc, startPage, endPage);
+
+      setPdfPages((previous) => [...previous, ...nextPages]);
+    } catch (error) {
+      alert('Unable to load more PDF pages: ' + (error as Error).message);
+    } finally {
+      setIsLoadingMorePages(false);
+    }
+  };
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -94,24 +354,11 @@ export default function EsignPdfPage() {
       setPdfDoc(pdf);
       setTotalPages(pdf.numPages);
 
-      const pages: HTMLCanvasElement[] = [];
-
-      for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const context = canvas.getContext('2d');
-        if (context) {
-          try {
-            await page.render({ canvas: canvas, viewport: viewport }).promise;
-          } catch (e) {
-            await page.render({ canvasContext: context, viewport: viewport } as any).promise;
-          }
-          pages.push(canvas);
-        }
-      }
+      const pages = await renderPdfPages(
+        pdf,
+        1,
+        Math.min(pdf.numPages, 10)
+      );
 
       setPdfPages(pages);
       console.log(`[ESIGN] PDF loaded: ${pdf.numPages} pages`);
@@ -164,7 +411,7 @@ export default function EsignPdfPage() {
 
   const handleSignatureImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    
+
     console.log('[ESIGN] Image upload attempt:', {
       hasFile: !!file,
       signingPageIdx,
@@ -201,7 +448,7 @@ export default function EsignPdfPage() {
     }
 
     const reader = new FileReader();
-    
+
     reader.onerror = () => {
       alert('Error reading file. Please try again.');
       console.error('[ESIGN] FileReader error:', reader.error);
@@ -209,7 +456,7 @@ export default function EsignPdfPage() {
 
     reader.onload = (event) => {
       const imageData = event.target?.result as string;
-      
+
       if (!imageData) {
         alert('Error reading image data');
         console.error('[ESIGN] No image data from FileReader');
@@ -230,7 +477,7 @@ export default function EsignPdfPage() {
         const maxSize = 150;
         let width = maxSize;
         let height = maxSize;
-        
+
         const aspectRatio = img.naturalWidth / img.naturalHeight;
         if (aspectRatio > 1) {
           // Wider than tall
@@ -253,12 +500,12 @@ export default function EsignPdfPage() {
         };
 
         setSignatures([...signatures, newSig]);
-        
+
         // Reset file input
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-        
+
         closeSignaturePad();
       };
 
@@ -429,12 +676,12 @@ export default function EsignPdfPage() {
         } else {
           base64 = sig.imageData;
         }
-        
+
         if (!base64 || base64.length === 0) {
           console.error('[ESIGN] Invalid signature data for signature', idx);
           throw new Error(`Invalid signature data format for signature ${idx + 1}`);
         }
-        
+
         console.log(`[ESIGN] Signature ${idx + 1} extraction:`, {
           page: sig.page,
           originalDataUrlLength: sig.imageData.length,
@@ -507,7 +754,7 @@ export default function EsignPdfPage() {
             <div className="flex items-center gap-2 text-white/80 text-sm mb-6">
               <Link href="/" className="hover:text-white transition">Home</Link>
               <ChevronRight size={16} />
-              <Link href="/all-tools/pdf" className="hover:text-white transition">PDF Tools</Link>
+              <Link href="/all-tools/pdf-tools" className="hover:text-white transition">PDF Tools</Link>
               <ChevronRight size={16} />
               <span>E-Sign PDF</span>
             </div>
@@ -519,7 +766,7 @@ export default function EsignPdfPage() {
             >
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">✍️ E-Sign PDF</h1>
               <p className="text-lg text-white/90 max-w-2xl">
-                Sign, seal, and download your documents instantly with digital signatures
+                Add an electronic signature to your PDF and download the signed document
               </p>
             </motion.div>
           </div>
@@ -541,12 +788,13 @@ export default function EsignPdfPage() {
               <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 hover:border-purple-500 hover:bg-purple-50 transition">
                 <FileUp className="w-8 h-8 text-purple-500 mx-auto mb-2" />
                 <p className="text-gray-700 font-medium">Click to upload PDF</p>
-                <p className="text-gray-500 text-sm">or drag and drop</p>
+                <p className="text-gray-500 text-sm">Choose a PDF from your device</p>
               </div>
             </label>
           </div>
         </div>
-        </main>
+        <EsignSupportingContent />
+          </main>
 
         <Footer />
       </div>
@@ -556,7 +804,7 @@ export default function EsignPdfPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <HomeHeader />
-      
+
       {/* Subheader - Consistent styling */}
       <div className="bg-gradient-to-r from-purple-100 via-purple-50 to-purple-100 border-b-2 border-purple-300 px-6 py-5 shadow-md">
         <div className="max-w-7xl mx-auto">
@@ -565,11 +813,11 @@ export default function EsignPdfPage() {
             <ChevronRight size={16} />
             <span className="font-semibold">E-Sign PDF</span>
           </div>
-          <h1 className="text-3xl font-bold text-purple-900">✍️ E-Sign PDF</h1>
+          <h2 className="text-3xl font-bold text-purple-900">✍️ E-Sign PDF</h2>
           <p className="text-purple-700 text-sm mt-2">Click on PDF to add signature, drag to reposition</p>
         </div>
       </div>
-      
+
       <main className="flex-1 flex flex-col">
         <div className="flex h-[calc(100vh-180px)] gap-4 p-4">
           <div className="flex-1 bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
@@ -699,6 +947,23 @@ export default function EsignPdfPage() {
                     </div>
                   );
                 })}
+                {pdfPages.length < totalPages && (
+                  <div className="py-6 text-center">
+                    <button
+                      type="button"
+                      onClick={loadMorePages}
+                      disabled={isLoadingMorePages}
+                      className="px-5 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 font-medium"
+                    >
+                      {isLoadingMorePages
+                        ? 'Loading pages...'
+                        : `Load next ${Math.min(10, totalPages - pdfPages.length)} pages`}
+                    </button>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Showing {pdfPages.length} of {totalPages} pages
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-gray-400 text-center py-12">
@@ -712,11 +977,11 @@ export default function EsignPdfPage() {
         <div className="w-80 bg-white rounded-lg shadow-md flex flex-col overflow-hidden">
           <div className="p-4 border-b border-gray-200">
             <label className="block cursor-pointer">
-              <input type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" />
-              <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">
+              <input type="file" accept=".pdf" onChange={handlePdfUpload} className="sr-only" />
+              <span className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">
                 <FileUp className="w-5 h-5" />
                 Change PDF
-              </button>
+              </span>
             </label>
           </div>
 
@@ -845,12 +1110,12 @@ export default function EsignPdfPage() {
               >
                 📤 Upload Image
               </button>
-              <input 
+              <input
                 ref={fileInputRef}
-                type="file" 
-                accept=".jpg,.jpeg,.png,.gif,.webp" 
-                onChange={handleSignatureImageUpload} 
-                className="hidden" 
+                type="file"
+                accept=".jpg,.jpeg,.png,.gif,.webp"
+                onChange={handleSignatureImageUpload}
+                className="hidden"
               />
             </div>
 
@@ -892,10 +1157,11 @@ export default function EsignPdfPage() {
           </div>
         </div>
       )}
+      <EsignSupportingContent />
+
       </main>
 
       <Footer />
     </div>
   );
 }
-

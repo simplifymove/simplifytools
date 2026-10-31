@@ -1,63 +1,165 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Download, ChevronRight, Loader, Image } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
-import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function WebpToAvifPage() {
+    const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const conversionRef = useRef(0);
+  const selectionRef = useRef(0);
+  const resultUrlRef = useRef<string | null>(null);
+
+  const invalidateResult = () => {
+    conversionRef.current += 1;
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+    setResult(null);
+    setResultPreview(null);
+    setProcessing(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      conversionRef.current += 1;
+      selectionRef.current += 1;
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+    };
+  }, []);
 
   const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
+    selectionRef.current += 1;
+    const selection = selectionRef.current;
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
     setError(null);
+
+    if (selectedFile.type !== 'image/webp' &&
+        !/\.webp$/i.test(selectedFile.name)) {
+      setError('Please select a WebP image.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected WebP file is empty.');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+
+    reader.onload = (event) => {
+      if (selection !== selectionRef.current) return;
+      const value = event.target?.result;
+      if (typeof value !== 'string') {
+        setError('Unable to read the selected WebP image.');
+        return;
+      }
+      setFile(selectedFile);
+      setPreview(value);
     };
+
+    reader.onerror = () => {
+      if (selection === selectionRef.current) {
+        setError('Unable to read the selected WebP image.');
+      }
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    selectionRef.current += 1;
+    invalidateResult();
     setFile(null);
     setPreview(null);
-    setResult(null);
     setError(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!file || !preview || processing) return;
 
+    invalidateResult();
+    const conversion = conversionRef.current;
     setProcessing(true);
     setError(null);
     try {
-      const result = await convertImageFormat(file, 'image/webp');
-      setResult(result.blob);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('config', JSON.stringify({
+        from_format: 'webp',
+        to_format: 'avif',
+        options: {},
+      }));
+
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || 'AVIF conversion failed');
+      }
+
+      const blob = await response.blob();
+      if (conversion !== conversionRef.current) return;
+
+      if (blob.type !== 'image/avif' || blob.size === 0) {
+        throw new Error('The server did not return a valid AVIF image.');
+      }
+
+      const url = URL.createObjectURL(blob);
+      resultUrlRef.current = url;
+      setResultPreview(url);
+      setResult(blob);
     } catch (err) {
-      setError((err as Error).message || 'Error converting image');
+      if (conversion !== conversionRef.current) return;
+      setError(err instanceof Error ? err.message : 'Error converting image');
     } finally {
-      setProcessing(false);
+      if (conversion === conversionRef.current) setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.webp';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = async () => {
+      if (!result || processing) return;
+
+      setError(null);
+      setProcessing(true);
+
+      try {
+        const downloadResult =
+          await uploadBrowserDownloadResult({
+            blob: result,
+            toolSlug: 'webp-to-avif',
+            originalName: 'converted.avif',
+            outputName: 'converted.avif',
+          });
+
+        router.push(downloadResult.downloadPageUrl);
+      } catch (caughtError) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to prepare the download.',
+        );
+      } finally {
+        setProcessing(false);
+      }
+    };
 
   return (
     <>
@@ -82,7 +184,7 @@ export default function WebpToAvifPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">WebP to AVIF Converter</h1>
-                <p className="text-lg text-white/90">Convert WebP images to AVIF format for maximum compression and superior quality at smaller file sizes.</p>
+                <p className="text-lg text-white/90">Convert WebP images to AVIF format with server-assisted processing and download the converted result.</p>
               </div>
             </div>
           </div>
@@ -116,7 +218,7 @@ export default function WebpToAvifPage() {
                   {/* Convert Button */}
                   <button
                     onClick={handleConvert}
-                    disabled={!file || processing}
+                    disabled={!file || !preview || processing}
                     className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                   >
                     {processing ? (
@@ -133,6 +235,7 @@ export default function WebpToAvifPage() {
                   {result && (
                     <button
                       onClick={handleDownload}
+                      disabled={processing}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
@@ -144,10 +247,10 @@ export default function WebpToAvifPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
-                      <li>• Maximum AVIF compression</li>
-                      <li>• Smaller file sizes than WebP</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Server-assisted AVIF conversion</li>
+                      <li>AVIF encoding with results dependent on the source image</li>
+                      <li>Compare original and converted file sizes before downloading</li>
+                      <li>• Files are temporarily processed for conversion</li>
                     </ul>
                   </div>
                 </div>
@@ -176,7 +279,7 @@ export default function WebpToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Click Convert Button</h3>
-                <p className="text-gray-600 mt-2">Press "Convert to AVIF" to instantly transform your WebP using next-generation compression algorithms.</p>
+                <p className="text-gray-600 mt-2">Press "Convert to AVIF" to start the server-assisted conversion.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -185,7 +288,7 @@ export default function WebpToAvifPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Download AVIF File</h3>
-                <p className="text-gray-600 mt-2">Download your converted AVIF file instantly with superior compression compared to WebP.</p>
+                <p className="text-gray-600 mt-2">Download the converted AVIF file after processing is complete.</p>
               </div>
             </div>
           </div>
@@ -201,21 +304,21 @@ export default function WebpToAvifPage() {
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Even Better Compression</h3>
-                <p className="text-gray-600 text-sm">AVIF provides 30-40% better compression than WebP while maintaining superior image quality for optimal web performance.</p>
+                <p className="text-gray-600 text-sm">AVIF supports efficient image compression, although resulting file size and visual quality depend on the source image and conversion settings.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Future-Proof Format</h3>
-                <p className="text-gray-600 text-sm">AVIF is the next-generation standard for web images, offering superior compression and quality for the future of web.</p>
+                <p className="text-gray-600 text-sm">AVIF is a modern image format designed for efficient compression and web delivery.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 text-orange-500 pt-1">✓</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Maximized Performance</h3>
-                <p className="text-gray-600 text-sm">Significantly faster page loads, improved SEO, and better user experience across all modern devices and browsers.</p>
+                <p className="text-gray-600 text-sm">A smaller image can reduce transfer size and help page loading, but results depend on the source, encoding settings, and browser support.</p>
               </div>
             </div>
           </div>
@@ -223,36 +326,36 @@ export default function WebpToAvifPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much smaller is AVIF than WebP?</h3>
-              <p className="text-gray-700">AVIF files are typically 30-40% smaller than equivalent WebP files while maintaining or exceeding image quality, depending on content and settings.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is AVIF better than WebP?</h3>
-              <p className="text-gray-700">Yes, AVIF offers superior compression compared to WebP with excellent quality. It's the next-generation image format for modern web use.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Are both formats supported by browsers?</h3>
-              <p className="text-gray-700">Both WebP and AVIF are supported by modern browsers. AVIF support is growing rapidly with Chrome 85+, Firefox 93+, and Safari 16+.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Will quality be lost in conversion?</h3>
-              <p className="text-gray-700">No. AVIF maintains excellent quality during conversion from WebP, often with improved efficiency due to better compression algorithms.</p>
-            </div>
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Is the conversion process secure?</h3>
-              <p className="text-gray-700">Yes, all conversions happen locally in your browser. Your WebP files are never uploaded to any server and remain completely private.</p>
-            </div>
-            <div className="pb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Should I convert all WebP files to AVIF?</h3>
-              <p className="text-gray-700">For web optimization, converting WebP to AVIF is beneficial for modern browsers. Use HTML picture tags with fallbacks for maximum compatibility.</p>
-            </div>
-          </div>
-        </div>
+      <section className="">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQCard>
+              <FAQStaticQuestion>How much smaller is AVIF than WebP?</FAQStaticQuestion>
+              <FAQAnswer>File-size differences between AVIF and WebP depend on the source image, encoder, and conversion settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is AVIF better than WebP?</FAQStaticQuestion>
+              <FAQAnswer>AVIF is a modern image format that can provide efficient compression. Results vary depending on image content and encoding settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Are both formats supported by browsers?</FAQStaticQuestion>
+              <FAQAnswer>Both WebP and AVIF are supported by modern browsers. AVIF support is growing rapidly with Chrome 85+, Firefox 93+, and Safari 16+.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Will quality be lost in conversion?</FAQStaticQuestion>
+              <FAQAnswer>AVIF conversion can change image data because the source is decoded and encoded again. Visual quality depends on the source image and conversion settings.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Is the conversion process secure?</FAQStaticQuestion>
+              <FAQAnswer>The WebP file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy.</FAQAnswer>
+            </FAQCard>
+            <FAQCard>
+              <FAQStaticQuestion>Should I convert all WebP files to AVIF?</FAQStaticQuestion>
+              <FAQAnswer>Convert when the resulting AVIF offers a useful balance of file size and visual quality. Keep WebP or another supported fallback when compatibility matters.</FAQAnswer>
+            </FAQCard>
+          </FAQList>
+        </FAQPanel>
       </section>
 
       {/* JSON-LD FAQ Schema */}
@@ -266,7 +369,7 @@ export default function WebpToAvifPage() {
               "name": "How much smaller is AVIF than WebP?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "AVIF files are typically 30-40% smaller than equivalent WebP files while maintaining or exceeding image quality, depending on content and settings."
+                "text": "File-size differences between AVIF and WebP depend on the source image, encoder, and conversion settings."
               }
             },
             {
@@ -274,7 +377,7 @@ export default function WebpToAvifPage() {
               "name": "Is AVIF better than WebP?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, AVIF offers superior compression compared to WebP with excellent quality. It's the next-generation image format for modern web use."
+                "text": "AVIF is a modern image format that can provide efficient compression. Results vary depending on image content and encoding settings."
               }
             },
             {
@@ -290,7 +393,7 @@ export default function WebpToAvifPage() {
               "name": "Will quality be lost in conversion?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. AVIF maintains excellent quality during conversion from WebP, often with improved efficiency due to better compression algorithms."
+                "text": "AVIF conversion can change image data because the source is decoded and encoded again. Visual quality depends on the source image and conversion settings."
               }
             },
             {
@@ -298,7 +401,7 @@ export default function WebpToAvifPage() {
               "name": "Is the conversion process secure?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, all conversions happen locally in your browser. Your WebP files are never uploaded to any server and remain completely private."
+                "text": "The WebP file is uploaded for server-assisted AVIF conversion. Temporary processing and generated download files are handled according to the SimplifyConvert Privacy Policy."
               }
             },
             {
@@ -306,7 +409,7 @@ export default function WebpToAvifPage() {
               "name": "Should I convert all WebP files to AVIF?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "For web optimization, converting WebP to AVIF is beneficial for modern browsers. Use HTML picture tags with fallbacks for maximum compatibility."
+                "text": "Convert when the resulting AVIF offers a useful balance of file size and visual quality. Keep WebP or another supported fallback when compatibility matters."
               }
             }
           ]

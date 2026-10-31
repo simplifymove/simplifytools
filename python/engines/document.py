@@ -45,18 +45,45 @@ def document_convert(input_file: str, output_file: str, from_format: str, to_for
         return False
 
 
-def run_magick(input_path, output_path, quality):
+def run_magick(input_path, output_path, quality, output_format):
     magick_exe = get_magick_exe()
-    use_shell = magick_exe == "magick"
-    
-    if use_shell:
-        cmd_str = f'magick "{input_path}" -quality {quality} "{output_path}"'
-        logger.info(f"Executing: {cmd_str}")
-        result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
-    else:
-        cmd = [magick_exe, input_path, "-quality", str(quality), output_path]
-        logger.info(f"Executing: {' '.join(cmd)}")
-        result = subprocess.run(cmd, shell=False, capture_output=True, text=True, timeout=120)
+
+    format_names = {
+        "jpg": "JPEG",
+        "jpeg": "JPEG",
+        "png": "PNG",
+    }
+
+    image_format = format_names.get(output_format.lower())
+    if image_format is None:
+        raise ValueError("Unsupported PSD output format")
+
+    destination = f"{image_format}:{output_path}"
+    cmd = [
+        magick_exe,
+        f"PSD:{input_path}[0]",
+    ]
+
+    if image_format == "JPEG":
+        cmd.extend([
+            "-background", "white",
+            "-alpha", "remove",
+            "-alpha", "off",
+        ])
+
+    cmd.extend([
+        "-quality", str(quality),
+        destination,
+    ])
+
+    logger.info("Executing ImageMagick PSD conversion")
+    result = subprocess.run(
+        cmd,
+        shell=False,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
 
     if result.returncode != 0:
         raise RuntimeError(result.stderr)
@@ -65,7 +92,8 @@ def run_magick(input_path, output_path, quality):
 def convert_psd_to_image(input_file: str, output_file: str, output_format: str, options) -> bool:
     """Convert PSD to image format using PIL with fallback to ImageMagick"""
     try:
-        quality = options.get("quality", 85)
+        quality = int(options.get("quality", 85))
+        pillow_format = "JPEG" if output_format.lower() in ("jpg", "jpeg") else output_format.upper()
         
         # Try PIL/Pillow first (works for many PSD files)
         try:
@@ -82,18 +110,18 @@ def convert_psd_to_image(input_file: str, output_file: str, output_format: str, 
                     if img.mode == 'RGBA':
                         background = Image.new('RGB', img.size, (255, 255, 255))
                         background.paste(img, mask=img.split()[3])
-                        background.save(output_file, output_format.upper(), quality=quality)
+                        background.save(output_file, pillow_format, quality=quality)
                     elif img.mode == 'LA':
                         background = Image.new('RGB', img.size, (255, 255, 255))
                         background.paste(img, mask=img.split()[1])
-                        background.save(output_file, output_format.upper(), quality=quality)
+                        background.save(output_file, pillow_format, quality=quality)
                     else:
-                        img.convert('RGB').save(output_file, output_format.upper(), quality=quality)
+                        img.convert('RGB').save(output_file, pillow_format, quality=quality)
             else:
                 # No transparency, save directly
                 if img.mode == 'P':
                     img = img.convert('RGB')
-                img.save(output_file, output_format.upper(), quality=quality)
+                img.save(output_file, pillow_format, quality=quality)
             
             logger.info(f"✓ PSD conversion successful with PIL")
             return True
@@ -103,7 +131,7 @@ def convert_psd_to_image(input_file: str, output_file: str, output_format: str, 
             
             # Fallback to ImageMagick
             try:
-                run_magick(input_file, output_file, quality)
+                run_magick(input_file, output_file, quality, output_format)
                 
                 if not os.path.exists(output_file):
                     raise RuntimeError("ImageMagick: Output image not created")
@@ -126,7 +154,10 @@ def convert_psd_to_svg(input_file: str, output_file: str, options) -> bool:
 
     try:
         quality = options.get("quality", 85)
-        temp_png = os.path.join(tempfile.gettempdir(), f"psd_temp_{id(input_file)}.png")
+        with tempfile.NamedTemporaryFile(
+            prefix="psd_svg_", suffix=".png", delete=False
+        ) as temp_file:
+            temp_png = temp_file.name
 
         # Try PIL first
         try:
@@ -146,16 +177,15 @@ def convert_psd_to_svg(input_file: str, output_file: str, options) -> bool:
             
             # Fallback to ImageMagick
             magick_exe = get_magick_exe()
-            use_shell = magick_exe == "magick"
-            
-            if use_shell:
-                cmd_str = f'magick "{input_file}" -quality {quality} "{temp_png}"'
-                logger.info(f"[PSD→SVG] Executing: {cmd_str}")
-                result = subprocess.run(cmd_str, shell=True, capture_output=True, text=True, timeout=120)
-            else:
-                cmd = [magick_exe, input_file, "-quality", str(quality), temp_png]
-                logger.info(f"[PSD→SVG] Executing: {' '.join(cmd)}")
-                result = subprocess.run(cmd, shell=False, capture_output=True, text=True, timeout=120)
+            cmd = [magick_exe, input_file, "-quality", str(quality), temp_png]
+            logger.info("[PSD to SVG] Executing ImageMagick conversion")
+            result = subprocess.run(
+                cmd,
+                shell=False,
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
 
             if result.returncode != 0:
                 raise RuntimeError(f"ImageMagick failed: {result.stderr}")

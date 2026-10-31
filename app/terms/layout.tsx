@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Terms of Service - SimplifyConvert',
-  description: 'Read SimplifyConvert terms of service and conditions of use.',
+  description: 'Read the terms for SimplifyConvert free utilities, accounts, Premium AI Studio credits, payments, uploaded content, and AI-generated outputs.',
   keywords: ['terms of service', 'terms and conditions'],
   openGraph: {
     type: 'website',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://simplifyconvert.com/terms',
     siteName: 'SimplifyConvert',
     title: 'Terms of Service - SimplifyConvert',
-    description: 'Read our terms of service.',
+    description: 'Terms for SimplifyConvert utilities, accounts, AI Studio credits, payments, uploaded content, and generated outputs.',
     images: [
       {
         url: 'https://simplifyconvert.com/og-image.jpg',

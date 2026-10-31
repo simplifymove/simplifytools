@@ -1,18 +1,23 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Upload, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { useImageToolErrors } from '@/app/hooks/useImageToolErrors';
 import { ErrorAlert } from '@/app/components/error-components';
 import { ImageToolErrorType } from '@/app/utils/types/errors';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 const TOOL_ID = 'blur-background';
 const TOOL_NAME = 'Blur Background';
 
 export default function BlurBackgroundPage() {
+  const router = useRouter();
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [blurStrength, setBlurStrength] = useState(35);
@@ -27,6 +32,7 @@ export default function BlurBackgroundPage() {
     if (!file) return;
 
     clearError();
+    setOriginalFile(file);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -38,6 +44,7 @@ export default function BlurBackgroundPage() {
   };
 
   const handleClearPreview = () => {
+    setOriginalFile(null);
     setImage(null);
     setPreview(null);
     setResult(null);
@@ -100,15 +107,44 @@ export default function BlurBackgroundPage() {
     }
   };
 
-  const downloadResult = () => {
-    if (!result) return;
+  const downloadResult = async () => {
+    if (!result || !originalFile) return;
 
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `blur-background-${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setProcessing(true);
+    clearError();
+
+    try {
+      const response = await fetch(result);
+
+      if (!response.ok) {
+        throw new Error('Failed to read the processed image');
+      }
+
+      const blob = await response.blob();
+
+      const download = await uploadBrowserDownloadResult({
+        blob,
+        toolSlug: TOOL_ID,
+        originalName: originalFile.name,
+        outputName: 'blur-background.jpg',
+      });
+
+      router.push(download.downloadPageUrl);
+    } catch (error) {
+      createError(
+        ImageToolErrorType.NETWORK_ERROR,
+        TOOL_ID,
+        TOOL_NAME,
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        {
+          filename: originalFile.name,
+          size: originalFile.size,
+          mimeType: originalFile.type,
+        }
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -117,7 +153,7 @@ export default function BlurBackgroundPage() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
         {/* Error Display */}
         {error && <ErrorAlert error={error} onDismiss={clearError} />}
-        
+
         {/* Hero Header */}
         <div className="relative bg-orange-500 py-16 px-4 md:px-8 overflow-hidden">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -137,7 +173,7 @@ export default function BlurBackgroundPage() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Blur Background</h1>
-                <p className="text-lg text-white/90">Professional portrait mode effect with sharp subject and blurred background. Create stunning depth effect photos.</p>
+                <p className="text-lg text-white/90">Apply a portrait-style background blur while keeping the automatically detected foreground in focus. Adjust blur strength and edge feathering.</p>
               </div>
             </div>
           </div>
@@ -151,7 +187,7 @@ export default function BlurBackgroundPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Step 1: Upload Image</h2>
-                  
+
                   <div className="relative mb-6">
                     <input
                       type="file"
@@ -212,7 +248,7 @@ export default function BlurBackgroundPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Blur Settings</h3>
-                    
+
                     {/* Blur Strength */}
                     <div className="mb-4">
                       <div className="flex justify-between items-center mb-2">
@@ -277,7 +313,7 @@ export default function BlurBackgroundPage() {
                       {processing ? (
                         <>
                           <Loader size={20} className="animate-spin" />
-                          Processing (30-60s)...
+                          Processing image...
                         </>
                       ) : (
                         '✨ Apply Blur Background'
@@ -289,10 +325,20 @@ export default function BlurBackgroundPage() {
                   {result && (
                     <button
                       onClick={downloadResult}
-                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                      disabled={processing}
+                      className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                     >
-                      <Download size={20} />
-                      Download Result
+                      {processing ? (
+                        <>
+                          <Loader size={20} className="animate-spin" />
+                          Preparing download...
+                        </>
+                      ) : (
+                        <>
+                          <Download size={20} />
+                          Download Result
+                        </>
+                      )}
                     </button>
                   )}
 
@@ -310,14 +356,209 @@ export default function BlurBackgroundPage() {
                   {/* Speed Info */}
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                     <h3 className="font-semibold text-amber-900 mb-1">⚡ Processing Time</h3>
-                    <p className="text-xs text-amber-800">First run: 30-60s. Subsequent runs: 10-20s.</p>
+                    <p className="text-xs text-amber-800">Processing time varies with image size, server load, and foreground extraction. Larger or more complex images may take longer.</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+          {/* Supporting content */}
+          <section className="max-w-6xl mx-auto px-4 md:px-8 pb-16">
+            <div className="space-y-12">
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How to Blur an Image Background
+                </h2>
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">1. Upload your image</h3>
+                    <p className="text-gray-700">
+                      Choose a JPG, PNG, or WebP image. Photos with a clearly separated subject
+                      usually produce cleaner foreground edges.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">2. Adjust blur strength</h3>
+                    <p className="text-gray-700">
+                      Use the blur control from 15 to 51. Higher values apply a stronger
+                      Gaussian blur to the original background.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">3. Refine subject edges</h3>
+                    <p className="text-gray-700">
+                      Edge feathering from 3 to 7 pixels softens the transition between the
+                      extracted foreground and the blurred background.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">4. Process and download</h3>
+                    <p className="text-gray-700">
+                      The image is sent to the server for foreground extraction and background blur.
+                      Review the JPEG preview, then select Download Result to prepare the download page.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How Background Blur Processing Works
+                </h2>
+                <div className="space-y-3 text-gray-700">
+                  <p>
+                    Blur Background first separates the foreground subject from the original
+                    image. It then cleans the subject mask and applies the selected feathering
+                    amount to soften the transition around the edges.
+                  </p>
+                  <p>
+                    A blurred copy of the original photo is created using Gaussian blur. The
+                    sharp foreground is then composited back over that blurred copy, which
+                    creates the final subject-in-focus and background-out-of-focus effect.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Blur Strength and Edge Feathering
+                </h2>
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Blur strength: 15–51</h3>
+                    <p className="text-gray-700">
+                      Lower values create a lighter background blur, while higher values make
+                      background detail softer and less distinct. The default setting is 35.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-semibold text-gray-900 mb-2">Feathering: 3–7 px</h3>
+                    <p className="text-gray-700">
+                      Feathering smooths the subject-mask boundary. A larger value creates a
+                      softer transition, while a smaller value keeps the edge tighter.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  What Portrait Mode Does
+                </h2>
+                <p className="text-gray-700">
+                  Portrait Mode keeps the same blur workflow but slightly darkens the blurred
+                  background before compositing the sharp subject. This can create a little more
+                  visual separation between the subject and the surrounding scene.
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Tips for Better Background Blur
+                  </h2>
+                  <ul className="space-y-3 text-gray-700">
+                    <li>• Use a clear image where the main subject is easy to distinguish from the background.</li>
+                    <li>• Try a lower blur value first if you want a more natural-looking result.</li>
+                    <li>• Increase feathering if the subject edge looks too abrupt.</li>
+                    <li>• Check hair, transparent objects, and fine details carefully in the result preview.</li>
+                    <li>• Portrait Mode is optional and only changes the background brightness slightly.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Automatic Processing Limitations
+                  </h2>
+                  <div className="space-y-3 text-gray-700">
+                    <p>
+                      Foreground extraction is automatic, so edge quality depends on the source
+                      photo. Fine hair, motion blur, transparent materials, low contrast, or
+                      overlapping foreground and background colors can make the mask less precise.
+                    </p>
+                    <p>
+                      The tool does not recreate true camera depth data. It separates the subject
+                      and applies image processing to the background to simulate a depth-of-field
+                      style effect.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Image Processing and Download Privacy
+                </h2>
+                <div className="space-y-3 text-gray-700">
+                  <p>
+                    This tool processes images on the server rather than entirely in your
+                    browser. When you apply the effect, your selected image is uploaded
+                    for automatic foreground extraction, mask refinement, and background blur.
+                  </p>
+                  <p>
+                    The processing service uses temporary input and output files and attempts
+                    to delete them when processing finishes. Selecting Download Result also
+                    sends the generated JPEG to the download-result service to prepare
+                    a separate download page.
+                  </p>
+                  <p>
+                    The upload limit is 10 MB. Avoid submitting confidential or sensitive
+                    images unless you are comfortable with server-side processing.
+                  </p>
+                </div>
+              </div>
+
+              <FAQPanel>
+                <FAQHeading>
+                  Blur Background FAQ
+                </FAQHeading>
+                <FAQList>
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      Does the tool blur the whole image?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      No. It attempts to keep the extracted foreground subject sharp while
+                      applying the blur to the background copy of the original photo.
+                    </FAQAnswer>
+                  </FAQCard>
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      What does edge feathering change?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      Edge feathering softens the boundary of the foreground mask so the sharp
+                      subject blends more gradually into the blurred background.
+                    </FAQAnswer>
+                  </FAQCard>
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      Does Portrait Mode increase the blur?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      No. Portrait Mode does not change the selected blur strength. It slightly
+                      darkens the blurred background before the final composite is created.
+                    </FAQAnswer>
+                  </FAQCard>
+                  <FAQCard>
+                    <FAQStaticQuestion>
+                      What file format is the result?
+                    </FAQStaticQuestion>
+                    <FAQAnswer>
+                      The processed image is returned as a JPEG at the original image dimensions.
+                      JPEG does not retain transparency, and the download is prepared on a separate page.
+                    </FAQAnswer>
+                  </FAQCard>
+                </FAQList>
+              </FAQPanel>
+
+            </div>
+          </section>
+
+</main>
       <Footer />
     </>
   );

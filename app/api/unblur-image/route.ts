@@ -1,7 +1,8 @@
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { randomUUID } from "crypto";
 
 // Set max payload size
 export const maxDuration = 180;
@@ -12,12 +13,36 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024;
 export async function POST(request: Request): Promise<Response> {
   const formData = await request.formData();
   const imageFile = formData.get("image") as File;
-  const mode = (formData.get("mode") as string) || "motion"; // motion or defocus
-  const strength = parseFloat((formData.get("strength") as string) || "1.0");
-  const iterations = parseInt((formData.get("iterations") as string) || "1");
+  const modeValue = formData.get("mode");
+  const strengthValue = formData.get("strength");
+  const iterationsValue = formData.get("iterations");
+
+  const mode = modeValue === null ? "motion" : modeValue;
+  const strength =
+    strengthValue === null ? 1.0 : Number(strengthValue);
+  const iterations =
+    iterationsValue === null ? 1 : Number(iterationsValue);
+
+  if (
+    (mode !== "motion" && mode !== "defocus") ||
+    !Number.isFinite(strength) ||
+    strength < 0.5 ||
+    strength > 2.0 ||
+    !Number.isSafeInteger(iterations) ||
+    iterations < 1 ||
+    iterations > 5
+  ) {
+    return new Response(
+      JSON.stringify({ error: "Invalid deblurring parameters" }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 
   console.log(
-    `[API] Restormer deblurring: mode=${mode}, strength=${strength}, iterations=${iterations}`
+    `[API] Image deblurring: mode=${mode}, strength=${strength}, iterations=${iterations}`
   );
 
   if (!imageFile) {
@@ -41,8 +66,19 @@ export async function POST(request: Request): Promise<Response> {
 
   // Create temp files
   const tempDir = os.tmpdir();
-  const inputFile = path.join(tempDir, `unblur_input_${Date.now()}.jpg`);
-  const outputFile = path.join(tempDir, `unblur_output_${Date.now()}.jpg`);
+  const requestId = randomUUID();
+  const inputFile = path.join(tempDir, `unblur_input_${requestId}.jpg`);
+  const outputFile = path.join(tempDir, `unblur_output_${requestId}.jpg`);
+
+  const cleanup = () => {
+    for (const filePath of [inputFile, outputFile]) {
+      try {
+        fs.rmSync(filePath, { force: true });
+      } catch (error) {
+        console.warn("[API] Unblur temporary file cleanup failed:", error);
+      }
+    }
+  };
 
   try {
     // Save uploaded image
@@ -53,15 +89,30 @@ export async function POST(request: Request): Promise<Response> {
     const scriptPath = path.join(process.cwd(), "unblur_img.py");
     const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
     
-    // Restormer-based deblurring command
-    const command = `${pythonExe} "${scriptPath}" --input "${inputFile}" --output "${outputFile}" --mode ${mode} --strength ${strength} --iterations ${iterations}`;
+    // Execute the Python engine without invoking a shell.
+    const args = [
+      scriptPath,
+      "--input", inputFile,
+      "--output", outputFile,
+      "--mode", mode,
+      "--strength", String(strength),
+      "--iterations", String(iterations),
+    ];
 
-    console.log(`[API] Executing: Restormer deblurring engine (SOTA CVPR2022)`);
+    console.log(`[API] Executing image deblurring engine`);
     console.log(`[API] Script path exists: ${fs.existsSync(scriptPath)}`);
 
-    // Execute Python script
-    return new Promise((resolve) => {
-      exec(command, { timeout: 180000, maxBuffer: 10 * 1024 * 1024, cwd: process.cwd() }, (error, stdout, stderr) => {
+    return new Promise<Response>((resolve) => {
+      execFile(
+        pythonExe,
+        args,
+        {
+          timeout: 180000,
+          maxBuffer: 10 * 1024 * 1024,
+          cwd: process.cwd(),
+          windowsHide: true,
+        },
+        (error, stdout, stderr) => {
         try {
           // Log output
           if (stdout) console.log("[stdout]", stdout);
@@ -92,14 +143,6 @@ export async function POST(request: Request): Promise<Response> {
           const result = fs.readFileSync(outputFile);
           const base64 = result.toString("base64");
 
-          // Cleanup
-          try {
-            fs.unlinkSync(inputFile);
-            fs.unlinkSync(outputFile);
-          } catch (e) {
-            console.warn("Cleanup failed:", e);
-          }
-
           resolve(
             new Response(JSON.stringify({ image: base64 }), {
               headers: { "Content-Type": "application/json" },
@@ -110,10 +153,13 @@ export async function POST(request: Request): Promise<Response> {
           resolve(
             new Response(JSON.stringify({ error: "Server error" }), { status: 500 })
           );
+        } finally {
+          cleanup();
         }
       });
     });
   } catch (error) {
+    cleanup();
     console.error("Request error:", error);
     return new Response(JSON.stringify({ error: "Server error" }), { status: 500 });
   }

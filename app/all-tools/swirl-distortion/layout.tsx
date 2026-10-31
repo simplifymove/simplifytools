@@ -1,12 +1,12 @@
 ﻿import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Swirl Distortion - Free Online Twisting Vortex Tool',
-  description: 'Create twisting vortex and swirl distortion effects. Apply dynamic swirling transformations to images.',
+  title: 'Swirl Distortion - Create Image Vortex Effects | SimplifyConvert',
+  description: 'Create a swirl or vortex distortion on JPG, PNG, or WebP images by controlling the angle and radius, then download a JPEG.',
   keywords: ['swirl effect', 'distortion', 'vortex', 'twisting', 'swirl distortion', 'online tool'],
   openGraph: {
-    title: 'Swirl Distortion - Free Online Twisting Vortex Tool',
-    description: 'Create twisting vortex and swirl distortion effects instantly.',
+    title: 'Swirl Distortion - Create Image Vortex Effects',
+    description: 'Create a swirl or vortex distortion on JPG, PNG, or WebP images by controlling the angle and radius, then download a JPEG.',
     url: 'https://simplifyconvert.com/all-tools/swirl-distortion',
     type: 'website',
   },

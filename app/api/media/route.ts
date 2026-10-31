@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, unlink } from 'fs/promises';
+import { copyFile, mkdir, unlink, writeFile } from 'fs/promises';
+import { existsSync } from 'fs';
 import path from 'path';
-import { spawn, exec as execCallback } from 'child_process';
+import { spawn, spawnSync, exec as execCallback } from 'child_process';
 import { createRequire } from 'module';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,6 +11,7 @@ import { VideoToolErrorType, EmailErrorReport } from '@/app/utils/types/errors';
 import { sendErrorEmail } from '@/app/utils/error-reporting/send-error-email';
 import { parsePythonError, sanitizeErrorMessage } from '@/app/utils/error-handling/error-handler';
 import { isVerifiedAuditRequest } from '@/lib/security/audit-request';
+import { createDownloadResult } from '@/lib/services/download-result';
 
 const exec = promisify(execCallback);
 const require = createRequire(import.meta.url);
@@ -19,6 +21,7 @@ const bundledFfprobePath = (require('ffprobe-static') as { path: string }).path;
 // Temporary directory for processing
 const TEMP_DIR = path.join(process.cwd(), 'tmp');
 const OUTPUT_DIR = path.join(process.cwd(), 'tmp/output');
+const DOWNLOAD_RESULT_DIR = path.join(process.cwd(), 'tmp/download-results');
 
 // Max request execution time (seconds)
 export const maxDuration = 60;
@@ -30,8 +33,9 @@ async function runPythonEngine(
   engine: string,
   toolId: string,
   inputPath: string,
-  options: Record<string, any>
-): Promise<{ outputPath: string; outputType: string }> {
+  options: Record<string, any>,
+  timeoutMs: number
+): Promise<{ outputPath: string; outputType: string; content?: string }> {
   return new Promise((resolve, reject) => {
     const pythonScript = path.join(process.cwd(), 'python', 'media_router.py');
     const args = [
@@ -41,7 +45,10 @@ async function runPythonEngine(
       JSON.stringify(options),
     ];
 
-    const pythonExe = process.platform === 'win32' ? 'python' : '/var/www/simplifyconvertapp/venv/bin/python';
+    const windowsVenvPython = path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
+    const pythonExe = process.platform === 'win32'
+      ? (existsSync(windowsVenvPython) ? windowsVenvPython : 'python')
+      : '/var/www/simplifyconvertapp/venv/bin/python';
     
     console.log(`[Python] Executing:`, {
       pythonExe,
@@ -74,7 +81,45 @@ async function runPythonEngine(
     
     const python = spawn(pythonExe, [pythonScript, ...args], {
       env: spawnEnv,
+      detached: process.platform !== 'win32',
+      windowsHide: true,
     });
+
+    let settled = false;
+    let timedOut = false;
+
+    const timeoutHandle = setTimeout(() => {
+      if (settled) return;
+
+      timedOut = true;
+      settled = true;
+
+      const pid = python.pid;
+
+      if (pid && python.exitCode === null && python.signalCode === null) {
+        if (process.platform === 'win32') {
+          const result = spawnSync(
+            'taskkill',
+            ['/PID', String(pid), '/T', '/F'],
+            { stdio: 'ignore', windowsHide: true, timeout: 10000 }
+          );
+
+          if (result.error || result.status !== 0) {
+            python.kill('SIGKILL');
+          }
+        } else {
+          try {
+            process.kill(-pid, 'SIGKILL');
+          } catch {
+            python.kill('SIGKILL');
+          }
+        }
+      }
+
+      reject(new Error(
+        `Processing timeout (${Math.round(timeoutMs / 1000)}s)`
+      ));
+    }, timeoutMs);
 
     let stdout = '';
     let stderr = '';
@@ -93,6 +138,10 @@ async function runPythonEngine(
     });
 
     python.on('close', (code) => {
+      clearTimeout(timeoutHandle);
+      if (settled || timedOut) return;
+      settled = true;
+
       console.log(`[Python] Process closed with code:`, code);
       console.log(`[Python] Has output:`, hasOutput);
       console.log(`[Python] stdout length:`, stdout.length);
@@ -120,6 +169,10 @@ async function runPythonEngine(
     });
     
     python.on('error', (err) => {
+      clearTimeout(timeoutHandle);
+      if (settled) return;
+      settled = true;
+
       console.error(`[Python] Spawn error:`, err.message);
       reject(err);
     });
@@ -171,6 +224,18 @@ export async function POST(request: NextRequest) {
     }
 
     toolName = tool.title;
+
+    // YouTube transcription requires verified downloader network isolation.
+    // Reject before processing URLs, uploads, or launching Python.
+    if (toolId === 'youtube-to-text' || toolId === 'youtube-transcript') {
+      return createErrorResponse(
+        'YouTube transcription is temporarily unavailable while secure download isolation is being configured.',
+        VideoToolErrorType.API_ERROR,
+        toolId,
+        toolName,
+        503
+      );
+    }
 
     // Extract options from form data
     const options: Record<string, any> = {};
@@ -295,12 +360,13 @@ export async function POST(request: NextRequest) {
       // Resize/compress may take up to 10 minutes
       const timeoutMs = (toolId === 'trim-video' || toolId === 'mute-video') ? 180000 : 300000; // 3 or 5 minutes
       
-      result = await Promise.race([
-        runPythonEngine(tool.engine, toolId, inputPath, options),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Processing timeout (${Math.round(timeoutMs / 1000)}s)`)), timeoutMs)
-        ),
-      ]);
+      result = await runPythonEngine(
+        tool.engine,
+        toolId,
+        inputPath,
+        options,
+        timeoutMs
+      );
       
       console.log(`[API] Processing completed successfully`);
     } catch (processingError) {
@@ -386,8 +452,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate output
-    const { outputPath, outputType } = result;
-    if (!outputPath || !outputType) {
+    const { outputPath, outputType, content: inlineContent } = result;
+    const isTextOutput = outputType === 'text' || outputType.includes('text');
+    if (!outputType || (!outputPath && !(isTextOutput && typeof inlineContent === 'string'))) {
       return createErrorResponse(
         'Invalid processing output',
         VideoToolErrorType.API_ERROR,
@@ -399,9 +466,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle text output
-    if (outputType === 'text' || outputType.includes('text')) {
+    if (isTextOutput) {
       try {
-        const content = await import('fs/promises').then((m) => m.readFile(outputPath, 'utf-8'));
+        const content = typeof inlineContent === 'string'
+          ? inlineContent
+          : await import('fs/promises').then((m) => m.readFile(outputPath, 'utf-8'));
+        if (!content.trim()) {
+          return createErrorResponse(
+            'Processing completed without meaningful text output',
+            VideoToolErrorType.API_ERROR,
+            toolId,
+            toolName,
+            500,
+            fileMetadata
+          );
+        }
+        scheduleCleanup(uploadedFilePath, outputPath || undefined);
         return NextResponse.json({ content, type: 'text' }, { status: 200 });
       } catch (error) {
         console.error('Failed to read text output:', error);
@@ -416,29 +496,47 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle file output
+    // Persist binary output for the dedicated download-result page.
     try {
-      const fs = await import('fs');
-      const fileStream = fs.createReadStream(outputPath);
       const contentType = getContentType(outputPath);
+      const outputExtension = path.extname(outputPath).toLowerCase()
+        || (outputType.startsWith('.') ? outputType.toLowerCase() : `.${outputType.toLowerCase()}`);
+      const originalName = fileMetadata?.filename;
+      const originalStem = originalName ? path.parse(originalName).name : toolId;
+      const normalizedStem = originalStem.replace(/(?:-converted)+$/i, '') || toolId;
+      const outputName = `${normalizedStem}-converted${outputExtension}`;
+      await mkdir(DOWNLOAD_RESULT_DIR, { recursive: true });
+      const retainedPath = path.join(DOWNLOAD_RESULT_DIR, `${uuidv4()}${outputExtension}`);
+      await copyFile(outputPath, retainedPath);
 
-      // Create response with proper headers
-      const response = new NextResponse(fileStream as any, {
-        status: 200,
-        headers: {
-          'Content-Type': contentType,
-          'Content-Disposition': `attachment; filename="${path.basename(outputPath)}"`,
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        },
-      });
+      let downloadResult;
+      try {
+        downloadResult = await createDownloadResult({
+          toolSlug: toolId,
+          originalName,
+          outputName,
+          outputPath: retainedPath,
+          mimeType: contentType,
+        });
+      } catch (error) {
+        await unlink(retainedPath).catch(() => undefined);
+        throw error;
+      }
 
-      // Schedule cleanup after response is sent
-      // In production, use a job queue or cleanup service
       scheduleCleanup(uploadedFilePath, outputPath);
-
-      return response;
+      return NextResponse.json({
+        success: true,
+        type: 'download-result',
+        resultId: downloadResult.id,
+        downloadPageUrl: downloadResult.downloadPageUrl,
+        filename: downloadResult.outputName,
+        mimeType: downloadResult.mimeType,
+      });
     } catch (error) {
       console.error('Failed to send file:', error);
+      await cleanup(uploadedFilePath, outputPath).catch((cleanupError) => {
+        console.error('Failed to clean up after download-result registration error:', cleanupError);
+      });
       return createErrorResponse(
         'Failed to prepare download',
         VideoToolErrorType.API_ERROR,
@@ -587,6 +685,7 @@ function getContentType(filePath: string): string {
     '.aac': 'audio/aac',
     '.m4r': 'audio/mp4',
     '.flac': 'audio/flac',
+    '.ogg': 'audio/ogg',
     '.gif': 'image/gif',
     '.webp': 'image/webp',
     '.txt': 'text/plain',

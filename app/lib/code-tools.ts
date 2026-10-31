@@ -19,7 +19,7 @@ export interface CodeTool {
 export interface ToolOption {
   name: string;
   label: string;
-  type: 'select' | 'number' | 'checkbox' | 'text';
+  type: 'select' | 'number' | 'checkbox' | 'text' | 'textarea';
   default?: string | number | boolean;
   choices?: { value: string; label: string }[];
 }
@@ -54,7 +54,7 @@ export const codeTools: Record<string, CodeTool> = {
   'code-beautifier': {
     id: 'code-beautifier',
     title: '✨ Code Beautifier',
-    description: 'Format and beautify code',
+    description: 'Format JavaScript, HTML, CSS, JSON, XML, and SQL for easier reading',
     engine: 'formatter',
     inputMode: 'textarea',
     outputMode: 'textarea',
@@ -162,7 +162,7 @@ export const codeTools: Record<string, CodeTool> = {
   'xml-formatter': {
     id: 'xml-formatter',
     title: '📋 XML Formatter',
-    description: 'Format and beautify XML code',
+    description: 'Indent simple XML structures while preserving text, CDATA, and whitespace-sensitive content',
     engine: 'formatter',
     inputMode: 'textarea',
     outputMode: 'textarea',
@@ -180,7 +180,7 @@ export const codeTools: Record<string, CodeTool> = {
   'xml-minifier': {
     id: 'xml-minifier',
     title: '📦 XML Minifier',
-    description: 'Minify XML to reduce file size',
+    description: 'Conservatively reduce XML tag whitespace while preserving text and attribute values',
     engine: 'formatter',
     inputMode: 'textarea',
     outputMode: 'textarea',
@@ -297,14 +297,7 @@ export const codeTools: Record<string, CodeTool> = {
     inputMode: 'textarea',
     outputMode: 'textarea',
     icon: 'Braces',
-    options: [
-      {
-        name: 'hasHeader',
-        label: 'First row is header',
-        type: 'checkbox',
-        default: true,
-      },
-    ],
+    options: [],
   },
 
   'json-to-xml': {
@@ -421,7 +414,7 @@ export const codeTools: Record<string, CodeTool> = {
   'yaml-validator': {
     id: 'yaml-validator',
     title: '✓ YAML Validator',
-    description: 'Validate YAML formatting',
+    description: 'Check YAML syntax and report parsing errors',
     engine: 'validator',
     inputMode: 'textarea',
     outputMode: 'validation',
@@ -432,7 +425,7 @@ export const codeTools: Record<string, CodeTool> = {
   'markdown-validator': {
     id: 'markdown-validator',
     title: '✓ Markdown Validator',
-    description: 'Validate Markdown syntax',
+    description: 'Check Markdown for possible code fence and link issues',
     engine: 'validator',
     inputMode: 'textarea',
     outputMode: 'validation',
@@ -460,6 +453,12 @@ export const codeTools: Record<string, CodeTool> = {
     outputMode: 'validation',
     icon: 'SearchCheck',
     options: [
+      {
+        name: 'text',
+        label: 'Sample Text',
+        type: 'text',
+        default: '',
+      },
       {
         name: 'flags',
         label: 'Regex Flags',
@@ -868,7 +867,14 @@ export const codeTools: Record<string, CodeTool> = {
     inputMode: 'dual',
     outputMode: 'validation',
     icon: 'CheckCircle2',
-    options: [],
+    options: [
+      {
+        name: 'data',
+        label: 'JSON Data',
+        type: 'textarea',
+        default: '',
+      },
+    ],
   },
 
   'csv-json-converter': {

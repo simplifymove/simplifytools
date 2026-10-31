@@ -3,6 +3,7 @@
  */
 
 "use client";
+import { FAQAnswer, FAQCard, FAQHeading, FAQList, FAQPanel, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
@@ -87,7 +88,7 @@ export default function PricingPage() {
           </Link>
           <h1 className="text-4xl font-bold text-gray-900 mt-4">Simple, Transparent Pricing</h1>
           <p className="text-xl text-gray-600 mt-2">
-            Choose a plan that fits your coding needs
+            Review current access options and credit limits. AI requests are processed by SimplifyConvert's server-side service.
           </p>
         </div>
       </div>
@@ -125,38 +126,38 @@ export default function PricingPage() {
           <div className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition border border-gray-200">
             <div className="px-8 py-6">
               <h3 className="text-2xl font-bold text-gray-900">Starter</h3>
-              <p className="text-gray-600 mt-2">Perfect for trying it out</p>
+              <p className="text-gray-600 mt-2">Not currently offered</p>
             </div>
             <div className="px-8 py-4 bg-gray-50 border-b border-gray-200">
               <p className="text-4xl font-bold text-gray-900">
-                Free
+                Unavailable
               </p>
-              <p className="text-gray-600 text-sm mt-2">Trial period</p>
+              <p className="text-gray-600 text-sm mt-2">No active free trial</p>
             </div>
             <div className="px-8 py-8">
               <ul className="space-y-4">
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  10 credits to start
+                  Starter access is disabled
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  Basic support
+                  No trial credits are currently issued
                 </li>
                 <li className="flex items-center gap-3 text-gray-500">
                   <div className="w-5 h-5 flex-shrink-0" />
-                  No auto-renewal
+                  Review this page for future availability
                 </li>
                 <li className="flex items-center gap-3 text-gray-500">
                   <div className="w-5 h-5 flex-shrink-0" />
-                  Limited API usage
+                  API access requires active credentials
                 </li>
               </ul>
               <button
                 disabled
                 className="w-full mt-8 bg-gray-300 text-gray-600 px-6 py-3 rounded-lg font-semibold cursor-not-allowed"
               >
-                Coming Soon
+                Currently Unavailable
               </button>
             </div>
           </div>
@@ -185,11 +186,11 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  Unlimited requests
+                  Requests subject to available credits
                 </li>
-                <li className="flex items-center gap-3 text-gray-700">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  VS Code extension access
+                <li className="flex items-center gap-3 text-gray-500">
+                  <div className="w-5 h-5 flex-shrink-0" />
+                  VS Code extension - Coming soon
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -205,14 +206,14 @@ export default function PricingPage() {
                 </li>
               </ul>
               <button
-                onClick={handleBuyNow}
-                disabled={loading}
-                className="w-full mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+                aria-disabled="true"
+                className="w-full mt-8 bg-gray-300 text-gray-600 px-6 py-3 rounded-lg font-semibold cursor-not-allowed"
               >
-                {loading ? "Processing..." : "Get Started Now"}
+                Payments Temporarily Unavailable
               </button>
               <p className="text-xs text-gray-600 text-center mt-3">
-                No commitment. Cancel anytime.
+                Checkout depends on payment-service availability. Access is provisioned only after a completed payment is processed.
               </p>
             </div>
           </div>
@@ -247,7 +248,7 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  SLA guarantee
+                  Service terms by agreement
                 </li>
                 <li className="flex items-center gap-3 text-gray-700">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -265,13 +266,13 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ */}
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-6">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
             {[
               {
                 q: "What are credits?",
-                a: "Credits determine how much you can use the API based on code length. Smaller requests use 1 credit, medium requests use 3, and large requests use 5.",
+                a: "Credits are charged according to prompt length. By default, requests up to 8,000 characters cost 1 credit, 8,001?20,000 characters cost 2 credits, and 20,001?40,000 characters cost 4 credits. Larger requests are rejected. Server limits may vary by configuration.",
               },
               {
                 q: "Do credits expire?",
@@ -287,20 +288,20 @@ export default function PricingPage() {
               },
               {
                 q: "Is there a free trial?",
-                a: "Starter plan (free) with 10 credits is coming soon. For now, try our API with a monthly subscription.",
+                a: "No. The Starter plan is not currently available. The paid monthly plan is listed separately, and checkout availability is confirmed when an order can be created.",
               },
               {
                 q: "What if I run out of credits?",
                 a: "You can request more credits or wait for your monthly refresh. We'll send you reminders as you approach your limit.",
               },
             ].map((faq, index) => (
-              <div key={index} className="bg-white rounded-lg p-6 border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-3">{faq.q}</h3>
-                <p className="text-gray-600">{faq.a}</p>
-              </div>
+              <FAQCard key={index}>
+                <FAQStaticQuestion>{faq.q}</FAQStaticQuestion>
+                <FAQAnswer>{faq.a}</FAQAnswer>
+              </FAQCard>
             ))}
-          </div>
-        </div>
+          </FAQList>
+        </FAQPanel>
       </div>
     </div>
   );

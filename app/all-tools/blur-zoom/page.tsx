@@ -1,17 +1,22 @@
 'use client';
+import { FAQAnswer, FAQCard, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion, FAQStaticQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, Zap } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function BlurZoomPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [strength, setStrength] = useState(10);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [downloadError, setDownloadError] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +67,7 @@ export default function BlurZoomPage() {
                 const dx = x - centerX;
                 const dy = y - centerY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                
+
                 const sampleX = Math.floor(x + (dx / maxDist) * blurRadius);
                 const sampleY = Math.floor(y + (dy / maxDist) * blurRadius);
 
@@ -104,14 +109,30 @@ export default function BlurZoomPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `blur-zoom-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file) return;
+
+    setProcessing(true);
+    setDownloadError('');
+
+    try {
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'blur-zoom',
+        originalName: file.name,
+        outputName: 'blur-zoom.jpg',
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      console.error('Error preparing blur zoom download:', error);
+      setDownloadError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -131,7 +152,7 @@ export default function BlurZoomPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">⚡ Blur Zoom</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Apply radial zoom blur effects from center. Create dynamic motion blur and speed effects.
+              Create a center-based zoom blur by blending image pixels along outward directions. Adjust strength from 1 to 20 and export a JPEG.
             </p>
           </div>
         </div>
@@ -142,7 +163,7 @@ export default function BlurZoomPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Apply Blur Zoom Effect</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
@@ -181,13 +202,29 @@ export default function BlurZoomPage() {
                 </>
               )}
 
+              {downloadError && (
+                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  {downloadError}
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
-                  className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  disabled={processing}
+                  className="w-full mt-4 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                 >
-                  <Download size={20} />
-                  Download Zoomed Image
+                  {processing ? (
+                    <>
+                      <Loader className="animate-spin" size={20} />
+                      Preparing download...
+                    </>
+                  ) : (
+                    <>
+                      <Download size={20} />
+                      Download Zoomed Image
+                    </>
+                  )}
                 </button>
               )}
             </div>
@@ -199,7 +236,7 @@ export default function BlurZoomPage() {
                 <li><strong>1. Upload Photo:</strong> Select a JPG, PNG, or WebP image.</li>
                 <li><strong>2. Adjust Strength:</strong> Control zoom blur intensity (1-20).</li>
                 <li><strong>3. Apply Effect:</strong> Click "Apply Blur Zoom".</li>
-                <li><strong>4. Download:</strong> Save your zoomed image.</li>
+                <li><strong>4. Download:</strong> Select Download to prepare the generated JPEG on a separate download page.</li>
               </ol>
             </div>
 
@@ -209,7 +246,7 @@ export default function BlurZoomPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-lg text-blue-600 mb-2">Motion Effect</h3>
-                  <p className="text-gray-700">Create dynamic speed and motion.</p>
+                  <p className="text-gray-700">Simulate outward movement using a center-based blur effect.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-blue-600 mb-2">Customizable</h3>
@@ -217,7 +254,7 @@ export default function BlurZoomPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-blue-600 mb-2">Radial Blur</h3>
-                  <p className="text-gray-700">Blur from center outward effect.</p>
+                  <p className="text-gray-700">Blend image details along directions extending from the center.</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-blue-600 mb-2">100% Free</h3>
@@ -227,35 +264,35 @@ export default function BlurZoomPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-blue-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What strength should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 5-10 for balanced effect. Higher for more dramatic.</p>
-                </details>
-                <details className="border-l-4 border-blue-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all images?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Action photos work best.</p>
-                </details>
-                <details className="border-l-4 border-blue-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, blur zoom images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-blue-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent blur effect.</p>
-                </details>
-                <details className="border-l-4 border-blue-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is data private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, local browser processing only.</p>
-                </details>
-                <details className="border-l-4 border-blue-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Real zoom blur?</summary>
-                  <p className="text-gray-700 mt-2">Simulates radial zoom blur from image center.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What strength should I use?</FAQQuestion>
+                  <FAQAnswer>Try 5-10 for a moderate effect. Lower settings produce subtler changes, while higher settings blend more image detail and may take longer to process.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all images?</FAQQuestion>
+                  <FAQAnswer>The tool works with images your browser can decode, such as JPG, PNG, and WebP. Very large images may process slowly or exceed browser memory limits.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>The effect itself does not grant rights to an image. Commercial use depends on the license or permissions for your original image and any other applicable rights.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Output quality?</FAQQuestion>
+                  <FAQAnswer>The tool exports a JPEG at 95% quality using the original image dimensions. JPEG compression may change image detail and does not preserve transparency.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is data private?</FAQQuestion>
+                  <FAQAnswer>The visual effect is processed locally in your browser. When you select Download, the generated JPEG is uploaded to the download-result service to prepare your download page.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Real zoom blur?</FAQQuestion>
+                  <FAQAnswer>It simulates a radial zoom effect by repeatedly sampling and blending pixels along outward directions from the center. It does not change the image dimensions.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">
@@ -279,7 +316,80 @@ export default function BlurZoomPage() {
         </div>
 
         <Footer />
-      </main>
+
+        <section className="bg-white border-t border-gray-200 px-4 md:px-8 py-14">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                How the Zoom Blur effect works
+              </h2>
+              <p className="text-gray-600 leading-7">
+The tool repeatedly samples and blends image pixels along outward directions from the image center. The strength setting controls the number of processing passes, creating a simulated zoom or speed effect rather than a camera-generated motion blur.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Browser-based processing
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  The effect is generated with browser image and Canvas
+                  processing. No server conversion is used for the visual effect itself. Selecting Download uploads the generated JPEG to prepare a download page.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  What the effect changes
+                </h3>
+                <p className="text-sm text-gray-600 leading-6">
+                  Zoom blur intentionally softens and stretches visible detail along radial directions; stronger settings produce a more pronounced effect.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Tips for better results
+              </h2>
+              <p className="text-gray-600 leading-7">
+                Start with a clear source image and a moderate strength setting. The upload preview shows the original image, not the processed result. Higher strengths blend more detail and can take longer, especially with large images.
+              </p>
+            </div>
+
+            <FAQPanel>
+              <FAQHeading>
+                Zoom Blur: Additional Questions
+              </FAQHeading>
+
+              <FAQList>
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Does this effect increase image resolution?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    No. The tool changes or overlays existing image pixels and
+                    does not reconstruct missing source detail.
+                  </FAQAnswer>
+                </FAQCard>
+
+                <FAQCard>
+                  <FAQStaticQuestion>
+                    Can I preview the effect before downloading?
+                  </FAQStaticQuestion>
+                  <FAQAnswer>
+                    The page previews the uploaded original image. It does not currently display a separate preview of the processed zoom-blur result.
+                  </FAQAnswer>
+                </FAQCard>
+              </FAQList>
+            </FAQPanel>
+
+          </div>
+        </section>
+
+</main>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

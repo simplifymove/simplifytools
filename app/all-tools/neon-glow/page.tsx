@@ -1,4 +1,5 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
@@ -6,100 +7,221 @@ import { Download, ChevronRight, Loader, Sparkles } from 'lucide-react';
 import { HomeHeader } from '../../components/HomeHeader';
 import { Footer } from '../../components/Footer';
 import { RelatedToolsSection } from '@/app/components/RelatedToolsSection';
+import { useRouter } from 'next/navigation';
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 
 export default function NeonGlowPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(50);
   const [processing, setProcessing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const generationRef = useRef(0);
+  const processingRef = useRef(false);
+
+  React.useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  React.useEffect(() => {
+    if (!result) {
+      setResultPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(result);
+    setResultPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [result]);
+
+  React.useEffect(() => {
+    return () => {
+      generationRef.current += 1;
+    };
+  }, []);
+
+  const clearResult = () => {
+    generationRef.current += 1;
+    setResult(null);
+    setError(null);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (processingRef.current || downloading) return;
+
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+    e.target.value = '';
+
+    if (!selectedFile) return;
+
+    clearResult();
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(selectedFile.type)) {
+      setFile(null);
+      setError('Please choose a JPG, PNG, or WebP image.');
+      return;
     }
+
+    if (selectedFile.size > 20 * 1024 * 1024) {
+      setFile(null);
+      setError('Please choose an image smaller than 20 MB.');
+      return;
+    }
+
+    setFile(selectedFile);
   };
 
   const applyNeonGlow = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || processingRef.current || downloading) return;
+
+    processingRef.current = true;
     setProcessing(true);
+    setError(null);
+    setResult(null);
+
+    const generation = ++generationRef.current;
 
     try {
-      const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setProcessing(false);
-            return;
-          }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setProcessing(false);
-            return;
-          }
+      const image = new Image();
 
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
-          const factor = intensity / 50;
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error('Unable to decode this image.'));
+        image.src = preview;
+      });
 
-          for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
+      if (generation !== generationRef.current) return;
 
-            const gray = r * 0.299 + g * 0.587 + b * 0.114;
-            const brightness = gray / 255;
+      const width = image.naturalWidth;
+      const height = image.naturalHeight;
 
-            data[i] = Math.min(255, r + (255 - r) * brightness * factor * 0.6);
-            data[i + 1] = Math.min(255, g * (1 - factor * 0.3));
-            data[i + 2] = Math.min(255, b + (255 - b) * brightness * factor * 0.8);
-          }
+      if (!width || !height || width * height > 16000000) {
+        throw new Error('Image dimensions are too large. Maximum: 16 megapixels.');
+      }
 
-          ctx.putImageData(imageData, 0, 0);
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error('Failed to create blob');
-              setProcessing(false);
-              return;
-            }
-            setResult(blob);
-            setProcessing(false);
-          }, 'image/jpeg', 0.95);
-        } catch (error) {
-          console.error('Error in image onload:', error);
-          setProcessing(false);
-        }
-      };
-      img.onerror = () => {
-        console.error('Error loading image');
-        setProcessing(false);
-      };
-      img.src = preview;
-    } catch (error) {
-      console.error('Error applying neon glow:', error);
+      const canvas = canvasRef.current;
+
+      if (!canvas) {
+        throw new Error('Image editor is unavailable.');
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext('2d');
+
+      if (!context) {
+        throw new Error('Canvas rendering is unavailable.');
+      }
+
+      const base = document.createElement('canvas');
+      base.width = width;
+      base.height = height;
+
+      const baseContext = base.getContext('2d');
+
+      if (!baseContext) {
+        throw new Error('Unable to initialize image processing.');
+      }
+
+      baseContext.drawImage(image, 0, 0);
+
+      const glow = document.createElement('canvas');
+      glow.width = width;
+      glow.height = height;
+
+      const glowContext = glow.getContext('2d');
+
+      if (!glowContext) {
+        throw new Error('Unable to initialize glow processing.');
+      }
+
+      const strength = intensity / 100;
+      const blurRadius = Math.max(2, Math.round(Math.min(width, height) * 0.018));
+
+      glowContext.filter =
+        `brightness(${1.15 + strength * 0.65}) saturate(${1.4 + strength * 1.4}) blur(${blurRadius}px)`;
+
+      glowContext.drawImage(base, 0, 0);
+      glowContext.filter = 'none';
+
+      context.fillStyle = '#08091a';
+      context.fillRect(0, 0, width, height);
+
+      context.globalCompositeOperation = 'screen';
+      context.globalAlpha = 0.25 + strength * 0.65;
+      context.drawImage(glow, 0, 0);
+
+      context.globalAlpha = 1;
+      context.drawImage(base, 0, 0);
+
+      context.globalCompositeOperation = 'source-over';
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (value) => {
+            if (value) resolve(value);
+            else reject(new Error('Unable to create the edited image.'));
+          },
+          'image/jpeg',
+          0.92
+        );
+      });
+
+      if (generation !== generationRef.current) return;
+
+      setResult(blob);
+    } catch (caughtError) {
+      if (generation === generationRef.current) {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Unable to apply the neon glow effect.'
+        );
+      }
+    } finally {
+      processingRef.current = false;
       setProcessing(false);
     }
   };
 
-  const handleDownload = () => {
-    if (result) {
-      const url = URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `neon-glow-${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || processingRef.current || downloading) return;
+
+    setDownloading(true);
+    setError(null);
+
+    try {
+      const filename = `neon-glow-${Date.now()}.jpg`;
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'neon-glow',
+        originalName: filename,
+        outputName: filename,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to prepare the download.'
+      );
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -130,14 +252,15 @@ export default function NeonGlowPage() {
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Neon Glow</h2>
-              
+
               <div className="mb-6">
                 <label className="block text-gray-700 font-semibold mb-3">Upload Image</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleFileSelect}
-                  className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-cyan-400 transition"
+                  disabled={processing || downloading}
+                  className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-cyan-400 transition disabled:opacity-50"
                 />
               </div>
 
@@ -152,15 +275,19 @@ export default function NeonGlowPage() {
                       min="0"
                       max="100"
                       value={intensity}
-                      onChange={(e) => setIntensity(Number(e.target.value))}
+                      onChange={(e) => {
+                        setIntensity(Number(e.target.value));
+                        clearResult();
+                      }}
+                      disabled={processing || downloading}
                       className="w-full"
                     />
-                    <p className="text-sm text-gray-600 mt-2">0 = subtle, 100 = intense neon glow</p>
+                    <p className="text-sm text-gray-600 mt-2">0 = gentle glow, 100 = stronger neon-style lighting</p>
                   </div>
 
                   <button
                     onClick={applyNeonGlow}
-                    disabled={processing}
+                    disabled={processing || downloading}
                     className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
                   >
                     {processing ? <Loader className="animate-spin" size={20} /> : <Sparkles size={20} />}
@@ -169,13 +296,33 @@ export default function NeonGlowPage() {
                 </>
               )}
 
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+
+              {resultPreview && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    Your Neon Glow Result
+                  </h3>
+                  <img
+                    src={resultPreview}
+                    alt="Edited image with neon-style glow"
+                    className="w-full max-h-96 object-contain rounded-lg border border-gray-200"
+                  />
+                </div>
+              )}
+
               {result && (
                 <button
                   onClick={handleDownload}
-                  className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  disabled={processing || downloading}
+                  className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Download size={20} />
-                  Download Neon Image
+                  {downloading ? 'Preparing download...' : 'Download Neon Image'}
                 </button>
               )}
             </div>
@@ -248,35 +395,35 @@ export default function NeonGlowPage() {
             </div>
 
             {/* FAQ Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What intensity should I use?</summary>
-                  <p className="text-gray-700 mt-2">Start at 50 for balanced effect. Higher for stronger glow.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Works on all photos?</summary>
-                  <p className="text-gray-700 mt-2">Yes, works on any photo. Results vary by image content.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I use commercially?</summary>
-                  <p className="text-gray-700 mt-2">Yes, neon glowed images can be used commercially.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">What's the output quality?</summary>
-                  <p className="text-gray-700 mt-2">High-quality JPEG with excellent color preservation.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Is my image private?</summary>
-                  <p className="text-gray-700 mt-2">Yes, all processing happens locally in browser.</p>
-                </details>
-                <details className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <summary className="font-bold text-gray-800 cursor-pointer">Can I apply multiple times?</summary>
-                  <p className="text-gray-700 mt-2">Yes, download and upload again for stronger effects.</p>
-                </details>
-              </div>
-            </div>
+            <FAQPanel>
+              <FAQHeading>Frequently Asked Questions</FAQHeading>
+              <FAQList>
+                <FAQDisclosure>
+                  <FAQQuestion>What intensity should I use?</FAQQuestion>
+                  <FAQAnswer>Start at 50 for balanced effect. Higher for stronger glow.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Works on all photos?</FAQQuestion>
+                  <FAQAnswer>Yes, works on any photo. Results vary by image content.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I use commercially?</FAQQuestion>
+                  <FAQAnswer>You can use the edited image commercially if you have the necessary rights to the original image and its contents.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>What's the output quality?</FAQQuestion>
+                  <FAQAnswer>The tool exports a JPEG at 92% quality. Neon-style lighting intentionally changes colors, and JPEG compression may introduce some detail loss.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Is my image private?</FAQQuestion>
+                  <FAQAnswer>Yes, all processing happens locally in browser.</FAQAnswer>
+                </FAQDisclosure>
+                <FAQDisclosure>
+                  <FAQQuestion>Can I apply multiple times?</FAQQuestion>
+                  <FAQAnswer>Yes, download and upload again for stronger effects.</FAQAnswer>
+                </FAQDisclosure>
+              </FAQList>
+            </FAQPanel>
 
             {/* Related Tools */}
             <div className="bg-white rounded-lg shadow-lg p-8">

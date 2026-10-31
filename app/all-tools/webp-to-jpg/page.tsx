@@ -1,65 +1,174 @@
 'use client';
+import { FAQAnswer, FAQDisclosure, FAQHeading, FAQList, FAQPanel, FAQQuestion } from '@/app/components/FAQDesign';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Download, ChevronRight, Loader, FileUp, CheckCircle } from 'lucide-react';
 import { ImageUploader } from '../../components/ImageUploader';
 import { convertImageFormat } from '../../lib/imageTools';
 import { HomeHeader } from '../../components/HomeHeader';
-import { Footer } from '../../components/Footer';
+import { PriorityToolGuide } from '@/app/components/PriorityToolGuide';
 
+import { uploadBrowserDownloadResult } from '@/app/lib/download-result-client';
 export default function WebpToJpgPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [quality, setQuality] = useState(85);
+  const [resultPreview, setResultPreview] = useState<string | null>(null);
+  const conversionRef = useRef(0);
+  const selectionRef = useRef(0);
+  const resultUrlRef = useRef<string | null>(null);
+
+  const invalidateResult = () => {
+    conversionRef.current += 1;
+
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
+
+    setResult(null);
+    setResultPreview(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      conversionRef.current += 1;
+      selectionRef.current += 1;
+
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current);
+      }
+    };
+  }, []);
 
   const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile);
+    selectionRef.current += 1;
+    const selection = selectionRef.current;
+
+    invalidateResult();
+    setFile(null);
+    setPreview(null);
     setError(null);
+
+    if (
+      selectedFile.type !== 'image/webp' &&
+      !/\.webp$/i.test(selectedFile.name)
+    ) {
+      setError('Please select a WebP image.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setError('The selected WebP file is empty.');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+
+    reader.onload = (event) => {
+      if (selection !== selectionRef.current) return;
+
+      const value = event.target?.result;
+      if (typeof value !== 'string') {
+        setError('Unable to read the selected WebP image.');
+        return;
+      }
+
+      setFile(selectedFile);
+      setPreview(value);
     };
+
+    reader.onerror = () => {
+      if (selection === selectionRef.current) {
+        setError('Unable to read the selected WebP image.');
+      }
+    };
+
     reader.readAsDataURL(selectedFile);
   };
 
   const handleClearPreview = () => {
+    selectionRef.current += 1;
+    invalidateResult();
     setFile(null);
     setPreview(null);
-    setResult(null);
     setError(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!file || !preview || processing) return;
+
+    invalidateResult();
+    const conversion = conversionRef.current;
 
     setProcessing(true);
     setError(null);
+
     try {
-      const result = await convertImageFormat(file, 'image/jpeg', {
-        quality: quality,
+      const converted = await convertImageFormat(file, 'image/jpeg', {
+        quality,
       });
-      setResult(result.blob);
+
+      if (conversion !== conversionRef.current) return;
+
+      if (
+        !converted.blob ||
+        converted.blob.size === 0 ||
+        converted.blob.type !== 'image/jpeg'
+      ) {
+        throw new Error('Conversion did not produce a valid JPEG image.');
+      }
+
+      const url = URL.createObjectURL(converted.blob);
+      resultUrlRef.current = url;
+      setResultPreview(url);
+      setResult(converted.blob);
     } catch (err) {
-      setError((err as Error).message || 'Error converting file');
+      if (conversion !== conversionRef.current) return;
+
+      setError(
+        err instanceof Error ? err.message : 'Error converting file'
+      );
     } finally {
-      setProcessing(false);
+      if (conversion === conversionRef.current) {
+        setProcessing(false);
+      }
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const url = URL.createObjectURL(result);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'converted.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!result || !file || processing) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseName =
+        file.name.replace(/\.[^.]+$/, '').trim() || 'converted-image';
+
+      const downloadResult = await uploadBrowserDownloadResult({
+        blob: result,
+        toolSlug: 'webp-to-jpg',
+        originalName: file.name,
+        outputName: `${baseName}.jpg`,
+      });
+
+      router.push(downloadResult.downloadPageUrl);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the download. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -119,7 +228,7 @@ export default function WebpToJpgPage() {
                   {/* Options */}
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Options</h3>
-                    
+
                     {/* Quality */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -131,7 +240,10 @@ export default function WebpToJpgPage() {
                         max="95"
                         step="5"
                         value={quality}
-                        onChange={(e) => setQuality(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          invalidateResult();
+                          setQuality(parseInt(e.target.value, 10));
+                        }}
                         className="w-full"
                       />
                       <p className="text-xs text-gray-500 mt-1">Higher quality = larger file size</p>
@@ -141,7 +253,7 @@ export default function WebpToJpgPage() {
                   {/* Convert Button */}
                   <button
                     onClick={handleConvert}
-                    disabled={!file || processing}
+                    disabled={!file || !preview || processing}
                     className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                   >
                     {processing ? (
@@ -154,14 +266,37 @@ export default function WebpToJpgPage() {
                     )}
                   </button>
 
+                  {/* Converted result */}
+                  {resultPreview && result && file && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3">
+                        Converted JPG Preview
+                      </h3>
+                      <img
+                        src={resultPreview}
+                        alt="Converted JPG result"
+                        className="w-full max-h-64 object-contain rounded-lg"
+                      />
+                      <p className="text-sm text-gray-600 mt-3">
+                        Original: {(file.size / 1024).toFixed(1)} KB
+                        {' | '}
+                        JPG: {(result.size / 1024).toFixed(1)} KB
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        JPEG does not support transparency. Review the
+                        converted image for changes to transparent areas.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Download Button */}
                   {result && (
                     <button
                       onClick={handleDownload}
                       className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-                    >
+                      disabled={processing}>
                       <Download size={20} />
-                      Download JPG
+                      {processing ? 'Preparing Download...' : 'Continue to Download'}
                     </button>
                   )}
 
@@ -169,11 +304,11 @@ export default function WebpToJpgPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-2">About</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Instant conversion in your browser</li>
+                      <li>• Browser-based image conversion</li>
                       <li>• Adjustable quality settings</li>
-                      <li>• Perfect for older system compatibility</li>
+                      <li>• Useful for older system compatibility</li>
                       <li>• Supports WebP format</li>
-                      <li>• Secure - files never uploaded</li>
+                      <li>• Conversion processing runs in your browser</li>
                     </ul>
                   </div>
                 </div>
@@ -181,8 +316,10 @@ export default function WebpToJpgPage() {
             </div>
           </div>
         </div>
+        <PriorityToolGuide toolId="webp-to-jpg" />
       </main>
 
+      {false && (<>
       {/* How To Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto">
@@ -198,7 +335,7 @@ export default function WebpToJpgPage() {
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">3</div>
-              <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> Processing happens instantly in your browser</p></div>
+              <div><p className="text-gray-700"><strong>Click Convert to JPG:</strong> The browser decodes the WebP and creates a JPEG using the selected quality setting</p></div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm">4</div>
@@ -224,64 +361,64 @@ export default function WebpToJpgPage() {
 
       {/* FAQ Section */}
       <div className="py-12 px-4 md:px-8 bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+        <FAQPanel>
+          <FAQHeading>Frequently Asked Questions</FAQHeading>
+          <FAQList>
+            <FAQDisclosure>
+              <FAQQuestion>
                 What is WebP format?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">WebP is a modern image format developed by Google that provides superior compression compared to JPG and PNG. It's smaller in file size but not all older systems support it yet.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>WebP is an image format developed by Google with lossy and lossless encoding options. File-size differences compared with JPG or PNG depend on image content, dimensions, encoder, and selected settings.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Will converting WebP to JPG affect image quality?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Quality depends on your settings. Using 85-90% quality preserves excellent visual quality. Lower settings (60-70%) are acceptable for web use but show more compression artifacts.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The JPEG result is re-encoded, so visible quality depends on the WebP source and selected JPEG setting. Lower settings generally apply stronger compression and can make artifacts more visible.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 What quality should I use?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">For best results: 85-90% for general use, 75-80% for web sharing, 90-95% for professional or print use. Higher quality = larger file size.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>There is no universal best setting. Start with a moderate-to-high value, inspect the converted image, and adjust according to the required file size and visible detail.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Can JPG handle transparency like WebP?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. JPG doesn't support transparency. If your WebP has a transparent background, it will be filled with white in the JPG conversion.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>No. JPG doesn't support transparency. If your WebP has a transparent background, it will be filled with white in the JPG conversion.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Is the converter secure and private?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">Yes. Conversion happens entirely in your browser. Images are never uploaded to servers or stored anywhere. Complete privacy guaranteed.</p>
-            </details>
 
-            <details className="p-4 bg-white border border-gray-200 rounded-lg cursor-pointer group">
-              <summary className="font-semibold text-gray-900 flex justify-between items-center">
+
+              </FAQQuestion>
+              <FAQAnswer>The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared.</FAQAnswer>
+            </FAQDisclosure>
+
+            <FAQDisclosure>
+              <FAQQuestion>
                 Do I need to pay or sign up?
-                <span className="text-gray-500 group-open:hidden">+</span>
-                <span className="text-gray-500 hidden group-open:inline">−</span>
-              </summary>
-              <p className="text-gray-700 mt-3 text-sm">No. Completely free with no limits, no signup required, and no hidden costs. Convert as many WebP files as you want.</p>
-            </details>
-          </div>
-        </div>
+
+
+              </FAQQuestion>
+              <FAQAnswer>You can use the WebP-to-JPG converter without creating an account.</FAQAnswer>
+            </FAQDisclosure>
+          </FAQList>
+        </FAQPanel>
       </div>
 
       {/* FAQ Schema */}
@@ -294,7 +431,7 @@ export default function WebpToJpgPage() {
             "name": "What is WebP format?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "WebP is a modern image format developed by Google that provides superior compression. It's smaller than JPG and PNG but not all older systems support it."
+              "text": "WebP is an image format developed by Google with lossy and lossless encoding options. Relative file size depends on image content, dimensions, encoder, and settings."
             }
           },
           {
@@ -302,7 +439,7 @@ export default function WebpToJpgPage() {
             "name": "Will converting WebP to JPG affect image quality?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Quality depends on settings. 85-90% preserves excellent quality. Lower settings (60-70%) acceptable for web but show more compression artifacts."
+              "text": "The JPEG result is re-encoded, so visible quality depends on the source and selected JPEG setting. Lower settings generally apply stronger compression and can make artifacts more visible."
             }
           },
           {
@@ -310,7 +447,7 @@ export default function WebpToJpgPage() {
             "name": "What quality should I use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Use 85-90% for general use, 75-80% for web, 90-95% for professional/print. Higher quality means larger file size."
+              "text": "There is no universal best JPEG quality setting. Inspect the converted image and adjust according to the required file size and visible detail."
             }
           },
           {
@@ -326,7 +463,7 @@ export default function WebpToJpgPage() {
             "name": "Is the converter secure and private?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. Conversion happens in your browser. Images never uploaded to servers. Complete privacy guaranteed."
+              "text": "The image conversion itself happens in your browser. The converted result may be sent to SimplifyConvert when you choose the download flow so the download result can be prepared."
             }
           },
           {
@@ -334,7 +471,7 @@ export default function WebpToJpgPage() {
             "name": "Do I need to pay or sign up?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Completely free with no limits, no signup, no hidden costs."
+              "text": "You can use the WebP-to-JPG converter without creating an account."
             }
           }
         ]
@@ -351,9 +488,9 @@ export default function WebpToJpgPage() {
             </Link>
             <Link href="/all-tools/jpg-to-png" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
-              <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Add transparency to images</p></div>
+              <div><span className="text-gray-900 font-medium hover:text-orange-600">JPG to PNG Converter</span><p className="text-xs text-gray-600">Convert JPG to PNG format</p></div>
             </Link>
-            <Link href="/all-tools/image-compressor" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
+            <Link href="/all-tools/compress-image" className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-orange-500 hover:shadow-md transition">
               <span className="text-orange-600 font-bold">→</span>
               <div><span className="text-gray-900 font-medium hover:text-orange-600">Image Compressor</span><p className="text-xs text-gray-600">Reduce file size</p></div>
             </Link>
@@ -365,6 +502,7 @@ export default function WebpToJpgPage() {
         </div>
       </div>
 
+      </>)}
       <footer className="bg-slate-900 text-gray-300 px-4 md:px-8 py-16 md:py-24">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
@@ -385,11 +523,17 @@ export default function WebpToJpgPage() {
             <div>
               <h4 className="font-semibold text-white mb-4">Categories</h4>
               <ul className="space-y-2 text-sm">
-                {['PDF Tools', 'Image Tools', 'Video Tools', 'AI Write', 'Code Tools'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
+                {[
+                  { label: 'PDF Tools', href: '/all-tools/pdf-tools' },
+                  { label: 'Image Tools', href: '/all-tools/image-tools' },
+                  { label: 'Video Tools', href: '/all-tools/video-tools' },
+                  { label: 'AI Write', href: '/all-tools/ai-tools' },
+                  { label: 'Code Tools', href: '/all-tools/code-tools' },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -399,11 +543,17 @@ export default function WebpToJpgPage() {
             <div>
               <h4 className="font-semibold text-white mb-4">Popular</h4>
               <ul className="space-y-2 text-sm">
-                {['PDF to JPG', 'Remove BG', 'Compress Image', 'JSON Formatter', 'CSV to Excel'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">
-                      {item}
-                    </a>
+                {[
+                  { label: 'PDF to JPG', href: '/all-tools/pdf/pdf-to-jpg' },
+                  { label: 'Remove BG', href: '/all-tools/remove-background' },
+                  { label: 'Compress Image', href: '/all-tools/compress-image' },
+                  { label: 'JSON Formatter', href: '/all-tools/code-tools/json-formatter' },
+                  { label: 'CSV to Excel', href: '/all-tools/data/csv-to-excel' },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -440,10 +590,6 @@ export default function WebpToJpgPage() {
     </>
   );
 }
-
-
-
-
 
 
 

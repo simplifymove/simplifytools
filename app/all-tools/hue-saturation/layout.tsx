@@ -1,6 +1,6 @@
 ﻿export const metadata = {
-  title: 'Free Hue Saturation Tool - Adjust Colors',
-  description: 'Adjust hue, saturation, and lightness independently. Fine-tune colors with precision.',
+  title: 'Hue & Saturation - Adjust Image Colors | SimplifyConvert',
+  description: 'Adjust image hue, saturation, and HSL lightness in your browser. Apply color changes and download the processed JPG.',
   keywords: 'hue, saturation, lightness, color adjustment, image editor',
   openGraph: {
     title: 'Free Hue Saturation Tool - Color Adjustment',
