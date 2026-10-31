@@ -4,38 +4,37 @@ import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import {
   ArrowRight,
-  BarChart3,
-  Check,
   CreditCard,
   FileText,
+  Film,
+  ImageIcon,
+  Lightbulb,
+  Music2,
+  Youtube,
   Presentation,
-  ShieldCheck,
   Sparkles,
   Table2,
-  WalletCards,
 } from 'lucide-react';
 import { HomeHeader } from '@/app/components/HomeHeader';
 import { Footer } from '@/app/components/Footer';
 import { authOptions } from '@/lib/auth/config';
-import { findAiStudioUserByEmail } from '@/lib/ai-studio/user';
 import { getOrCreateWallet, serializeAiStudioWallet } from '@/lib/ai-studio/wallet';
 import { prisma } from '@/lib/prisma';
 import { AiStudioNav } from './components/AiStudioNav';
-import { AiStudioOutputGallery } from './components/AiStudioOutputGallery';
 import { AiStudioProductCard } from './components/AiStudioProductCard';
 import { ProtectedAiStudioLink } from './components/ProtectedAiStudioLink';
 
 export const metadata: Metadata = {
-  title: 'AI Presentation, Document & Spreadsheet Maker | SimplifyConvert',
+  title: 'AI Studio â€“ Presentations, Documents, Images & Videos | SimplifyConvert',
   description:
-    'Turn a brief into an editable PowerPoint presentation, Word document, or Excel workbook with SimplifyConvert AI Studio.',
+    'Create presentations, documents, spreadsheets, images, videos, and music with focused AI tools in SimplifyConvert AI Studio.',
   alternates: {
     canonical: 'https://simplifyconvert.com/ai-studio',
   },
   openGraph: {
-    title: 'AI Studio: Editable Presentations, Documents & Spreadsheets',
+    title: 'AI Studio: Presentations, Documents, Images, Video & Music',
     description:
-      'Create polished, editable PPTX, DOCX, and XLSX files from a clear brief.',
+      'Create editable office files or explore focused AI image, video, and music workflows from one studio.',
     url: 'https://simplifyconvert.com/ai-studio',
     siteName: 'SimplifyConvert',
     type: 'website',
@@ -44,80 +43,108 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SimplifyConvert AI Studio',
     description:
-      'Create editable presentations, documents, and spreadsheets with AI.',
+      'Create presentations, documents, spreadsheets, images, videos, and music with AI.',
   },
 };
 
 export const dynamic = 'force-dynamic';
 
-const products = [
+const productivityTools = [
   {
-    title: 'Presentation Maker',
-    description:
-      'Plan a clear story, organize slide content, and create a professionally structured PowerPoint deck.',
-    useCases: ['Sales decks', 'Training', 'Strategy'],
-    format: 'Editable PPTX',
+    title: 'Presentation',
+    description: 'Create an editable presentation from your brief.',
+    format: 'PPTX',
     href: '/ai-studio/presentation-maker',
     cta: 'Create Presentation',
     icon: Presentation,
   },
   {
-    title: 'Document Maker',
-    description:
-      'Turn a detailed brief into a structured report, proposal, plan, letter, or long-form document.',
-    useCases: ['Proposals', 'Reports', 'Business plans'],
-    format: 'Editable DOCX',
+    title: 'Document',
+    description: 'Create reports, proposals, plans, and documents.',
+    format: 'DOCX',
     href: '/ai-studio/document-maker',
     cta: 'Create Document',
     icon: FileText,
   },
   {
-    title: 'Spreadsheet Maker',
-    description:
-      'Build an organized workbook with useful sheets, sample data, formulas, summaries, and formatting.',
-    useCases: ['Trackers', 'Budgets', 'Planning'],
-    format: 'Editable XLSX',
+    title: 'Spreadsheet',
+    description: 'Create structured sheets, tables, formulas, and summaries.',
+    format: 'XLSX',
     href: '/ai-studio/spreadsheet-maker',
     cta: 'Create Spreadsheet',
     icon: Table2,
   },
 ];
 
-const useCases = [
-  'Sales presentations',
-  'Business proposals',
-  'Executive reports',
-  'Training material',
-  'Project plans',
-  'Operational trackers',
-  'Financial planning sheets',
+const creativeTools = [
+  {
+    title: 'Image Generator',
+    description: 'Create original images from a text prompt.',
+    format: 'Preview',
+    href: '/ai-studio/image-generator',
+    cta: 'Explore Image Generator',
+    icon: ImageIcon,
+    protectLink: false,
+  },
+  {
+    title: 'Video Generator',
+    description: 'Create AI videos from text or an image.',
+    format: 'Preview',
+    href: '/ai-studio/video-generator',
+    cta: 'Explore Video Generator',
+    icon: Film,
+    protectLink: false,
+  },
+  {
+    title: 'Music Generator',
+    description: 'Create original instrumental or vocal music from your ideas.',
+    format: 'Preview',
+    href: '/ai-studio/music-generator',
+    cta: 'Explore Music Generator',
+    icon: Music2,
+    protectLink: false,
+  },
+  {
+    title: 'YouTube Thumbnail Maker',
+    description: 'Design high-impact 16:9 thumbnail concepts for YouTube videos.',
+    format: 'Preview',
+    href: '/ai-studio/youtube-thumbnail-maker',
+    cta: 'Explore Thumbnail Maker',
+    icon: Youtube,
+    protectLink: false,
+  },
+];
+
+const inspiration = [
+  ['Presentation ideas', 'Pitch deck Â· Training outline'],
+  ['Document ideas', 'Proposal Â· Project plan'],
+  ['Spreadsheet ideas', 'Budget Â· Operations tracker'],
+  ['Image ideas', 'Product visual Â· Social graphic'],
+  ['Video ideas', 'Campaign concept Â· Product demo'],
+  ['Music ideas', 'Cinematic score · Vocal song'],
+  ['Thumbnail ideas', 'Tutorial | Product review'],
 ];
 
 const faqs = [
   {
     question: 'What can I create with AI Studio?',
     answer:
-      'AI Studio creates presentation drafts, structured documents, and organized spreadsheets that can be exported as PPTX, DOCX, or XLSX files.',
+      'Choose focused workflows for presentations, documents, spreadsheets, images, videos, music, and YouTube thumbnail concepts. Office-file outputs support editable PPTX, DOCX, and XLSX files.',
   },
   {
-    question: 'Can I edit the downloaded files?',
+    question: 'Are the office files editable?',
     answer:
-      'Yes. The exported PowerPoint, Word, and Excel files remain editable in compatible desktop or web applications.',
+      'Yes. Exported PowerPoint, Word, and Excel files remain editable in compatible desktop or web applications.',
   },
   {
     question: 'How do AI Studio credits work?',
     answer:
-      'AI Studio uses one-time credit packs. Credits are charged after a successful generation, and usage can vary with output size and complexity.',
+      'Credits are used when supported generations complete successfully. Usage varies by tool and generation requirements.',
   },
   {
-    question: 'Which payment methods are available?',
+    question: 'Are the Image, Video, Music, and YouTube Thumbnail tools available?',
     answer:
-      'INR credit packs use Razorpay and USD credit packs use PayPal. The pricing page lets you select the supported currency for your purchase.',
-  },
-  {
-    question: 'Do I need an account to explore AI Studio?',
-    answer:
-      'No. You can view the product and pricing publicly. Sign-in is required when you create a file, purchase credits, or open billing.',
+      'Image Generator, Video Generator, Music Generator, and YouTube Thumbnail Maker are currently Preview experiences being prepared for broader availability. Commercial pricing remains under calibration.',
   },
 ];
 
@@ -125,7 +152,18 @@ async function getWorkspace(email: string | null | undefined) {
   if (!email) return null;
 
   try {
-    const user = await findAiStudioUserByEmail(email);
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: email.trim().toLowerCase(),
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
     if (!user) return null;
 
     const [wallet, recentUsage] = await Promise.all([
@@ -177,7 +215,7 @@ export default async function AIStudioPage() {
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     description:
-      'Create editable presentations, documents, and spreadsheets from a brief.',
+      'Create presentations, documents, spreadsheets, images, videos, and music with focused AI workflows.',
     url: 'https://simplifyconvert.com/ai-studio',
   };
 
@@ -185,7 +223,7 @@ export default async function AIStudioPage() {
     <>
       <HomeHeader />
       <AiStudioNav />
-      <main className="overflow-hidden bg-white text-slate-950">
+      <main className="bg-white text-slate-950">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(applicationSchema) }}
@@ -195,366 +233,231 @@ export default async function AIStudioPage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
 
-        <section className="relative border-b border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_100%)] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <div className="pointer-events-none absolute left-1/2 top-0 h-80 w-[46rem] -translate-x-1/2 rounded-full bg-cyan-100/60 blur-3xl" />
-          <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.8fr_1.2fr]">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-cyan-900">
-                <Sparkles size={14} aria-hidden="true" />
-                AI Studio
-              </div>
-              <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                Turn a brief into an editable presentation, document, or spreadsheet
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-                Describe the outcome you need. AI Studio structures the content,
-                prepares the file, and gives you an editable PPTX, DOCX, or XLSX
-                to review and refine.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">
-                <ProtectedAiStudioLink
-                  href="/ai-studio/presentation-maker"
-                  isAuthenticated={isAuthenticated}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-cyan-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-                >
-                  Create a presentation
-                  <ArrowRight size={17} aria-hidden="true" />
-                </ProtectedAiStudioLink>
-                <Link
-                  href="#examples"
-                  className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-800 transition hover:border-cyan-400 hover:text-cyan-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-                >
-                  See examples
-                </Link>
-              </div>
-              <p className="mt-4 text-sm text-slate-500">
-                Explore freely. Sign in only when you are ready to create.
-              </p>
-            </div>
-
-            <div className="relative">
-              <div className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-cyan-100 via-indigo-50 to-white blur-2xl" />
-              <div className="relative rounded-[2rem] border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-300/45 sm:p-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                  </div>
-                  <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                    Editable output
-                  </span>
-                </div>
-                <div className="mt-5 grid gap-4 sm:grid-cols-[1.35fr_0.65fr]">
-                  <div className="min-h-64 rounded-2xl bg-slate-950 p-6 text-white">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-300">
-                      Strategy deck
-                    </p>
-                    <p className="mt-10 max-w-sm text-3xl font-bold">
-                      From market signal to focused action
-                    </p>
-                    <p className="mt-4 text-sm leading-6 text-slate-300">
-                      Clear narrative, structured slide intent, and an editable PowerPoint file.
-                    </p>
-                    <div className="mt-8 flex gap-2">
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs">PPTX</span>
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs">12 slides</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
-                    <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
-                      <FileText className="text-indigo-700" aria-hidden="true" />
-                      <p className="mt-5 font-bold">Proposal</p>
-                      <p className="mt-1 text-xs text-slate-600">DOCX</p>
-                    </div>
-                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-                      <BarChart3 className="text-emerald-700" aria-hidden="true" />
-                      <p className="mt-5 font-bold">Forecast</p>
-                      <p className="mt-1 text-xs text-slate-600">XLSX</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section aria-label="AI Studio assurances" className="border-b border-slate-200 bg-white px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-4 text-sm font-semibold text-slate-700 sm:grid-cols-2 lg:grid-cols-5">
-            {[
-              'Editable PPTX, DOCX & XLSX',
-              'Charged after successful generation',
-              'Razorpay for INR',
-              'PayPal for USD',
-              'Edit files after download',
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-2">
-                <Check size={17} className="shrink-0 text-emerald-700" aria-hidden="true" />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="product" className="scroll-mt-32 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="product" className="scroll-mt-28 border-b border-slate-200 bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <div className="mx-auto max-w-7xl">
-            <div className="max-w-3xl">
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-800">Three focused makers</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-                Choose the file you need, not a generic chat response
-              </h2>
-              <p className="mt-4 text-lg leading-8 text-slate-600">
-                Each maker uses a workflow designed for its final format and keeps
-                the result ready for further editing.
-              </p>
-            </div>
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
-              {products.map((product) => (
-                <AiStudioProductCard
-                  key={product.title}
-                  {...product}
-                  isAuthenticated={isAuthenticated}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="examples" className="scroll-mt-32 bg-slate-50 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-10 max-w-3xl">
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-800">Sample outputs</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-                Structured for real work after download
-              </h2>
-              <p className="mt-4 text-lg leading-8 text-slate-600">
-                These lightweight previews illustrate the editable structure AI Studio prepares. They do not contain user data.
-              </p>
-            </div>
-            <AiStudioOutputGallery />
-          </div>
-        </section>
-
-        <section id="how-it-works" className="scroll-mt-32 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="text-center">
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-800">How it works</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">From brief to editable file</h2>
-            </div>
-            <ol className="mt-12 grid gap-6 md:grid-cols-3">
-              {[
-                ['01', 'Describe what you need', 'Add the purpose, audience, tone, and important details for the file.'],
-                ['02', 'Generate and review', 'AI Studio organizes the content and presents a structured result for review.'],
-                ['03', 'Export and edit', 'Download a PPTX, DOCX, or XLSX and continue editing in compatible software.'],
-              ].map(([number, title, description]) => (
-                <li key={number} className="rounded-3xl border border-slate-200 bg-white p-6">
-                  <span className="text-sm font-bold text-cyan-800">{number}</span>
-                  <h3 className="mt-5 text-xl font-bold">{title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        <section className="bg-slate-950 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-300">Built for everyday business work</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-                Start with the outcome, then refine the details
-              </h2>
-              <p className="mt-4 leading-7 text-slate-300">
-                Use AI Studio for a first structured draft, then apply your judgment,
-                brand, data, and final review.
-              </p>
-            </div>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {useCases.map((useCase) => (
-                <li key={useCase} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <Check size={18} className="shrink-0 text-cyan-300" aria-hidden="true" />
-                  <span className="font-semibold">{useCase}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        <section aria-labelledby="ai-studio-guide-title" className="border-b border-slate-200 bg-slate-50 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="max-w-3xl">
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-800">
-                Practical creation guide
-              </p>
-              <h2 id="ai-studio-guide-title" className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-                Get more useful results from your first draft
-              </h2>
-              <p className="mt-4 text-lg leading-8 text-slate-600">
-                AI Studio works best when you explain the purpose of your file, who will use it,
-                and which information must be included. A specific brief makes the generated
-                structure easier to review and customize.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
-              <article className="rounded-2xl border border-slate-200 bg-white p-6">
-                <h3 className="text-xl font-bold">For presentations</h3>
-                <p className="mt-3 leading-7 text-slate-600">
-                  Specify the audience, objective, approximate slide count, key messages,
-                  and preferred tone. For example, request a ten-slide project update
-                  covering progress, milestones, risks, and next steps.
-                </p>
-                <p className="mt-4 text-sm leading-6 text-slate-600">
-                  After export, check the slide sequence, supporting facts, visual hierarchy,
-                  and whether each slide communicates one clear idea.
-                </p>
-              </article>
-
-              <article className="rounded-2xl border border-slate-200 bg-white p-6">
-                <h3 className="text-xl font-bold">For documents</h3>
-                <p className="mt-3 leading-7 text-slate-600">
-                  Identify the document type, intended reader, required sections, and
-                  source information. A proposal brief might include the problem,
-                  proposed approach, deliverables, timeline, and assumptions.
-                </p>
-                <p className="mt-4 text-sm leading-6 text-slate-600">
-                  Review names, dates, quotations, claims, and commitments before
-                  sharing the editable Word document.
-                </p>
-              </article>
-
-              <article className="rounded-2xl border border-slate-200 bg-white p-6">
-                <h3 className="text-xl font-bold">For spreadsheets</h3>
-                <p className="mt-3 leading-7 text-slate-600">
-                  Describe the records you want to track, the columns you need,
-                  expected calculations, and any summary sheets. For example,
-                  outline a monthly expense tracker with categories and totals.
-                </p>
-                <p className="mt-4 text-sm leading-6 text-slate-600">
-                  Check formulas, units, sample values, and calculations using
-                  your own data before relying on workbook results.
-                </p>
-              </article>
-            </div>
-
-            <div className="mt-8 rounded-2xl border border-cyan-100 bg-cyan-50 p-6 sm:p-8">
-              <h3 className="text-xl font-bold text-slate-950">
-                What to check before using an AI-generated file
-              </h3>
-              <p className="mt-3 leading-7 text-slate-700">
-                Generated content is a starting point, not a verified source of truth.
-                Check important facts against reliable sources, replace illustrative
-                examples with your own information, and review formatting in your
-                preferred application. Financial calculations, legal wording, and
-                other consequential material require particular care.
-              </p>
-              <p className="mt-4 leading-7 text-slate-700">
-                PowerPoint files use PPTX, Word documents use DOCX, and Excel
-                workbooks use XLSX. These editable formats let you continue
-                working after download instead of treating the first output as final.
-              </p>
-            </div>
-          </div>
-        </section>
-        <section id="pricing" className="scroll-mt-32 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto max-w-5xl rounded-[2rem] border border-slate-200 bg-[linear-gradient(135deg,#ecfeff_0%,#ffffff_52%,#eef2ff_100%)] p-7 sm:p-10 lg:p-12">
-            <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-cyan-200">
-                  <CreditCard size={22} aria-hidden="true" />
+                <div className="inline-flex items-center gap-2 text-sm font-bold text-orange-700">
+                  <Sparkles size={16} aria-hidden="true" />
+                  AI Studio
                 </div>
-                <h2 className="mt-6 text-3xl font-bold tracking-tight">One-time credit packs, in your preferred currency</h2>
-                <p className="mt-4 max-w-2xl leading-7 text-slate-600">
-                  Credits work across the three makers. Actual usage can depend on output size and complexity.
-                  Choose INR with Razorpay or USD with PayPal on the pricing page.
+                <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+                  What do you want to create?
+                </h1>
+                <p className="mt-2 text-base text-slate-600">
+                  Choose a focused AI tool for documents, data, images, video, music, and YouTube thumbnails.
                 </p>
               </div>
-              <Link
-                href="/ai-studio/pricing"
-                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-slate-950 px-6 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:bg-cyan-950 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
+
+              <aside
+                className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center"
+                aria-label="AI Studio credit summary"
               >
-                View pricing
-                <ArrowRight size={17} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {isAuthenticated && (
-          <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8" aria-labelledby="workspace-title">
-            <div className="mx-auto max-w-7xl">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-800">Your workspace</p>
-                  <h2 id="workspace-title" className="mt-2 text-3xl font-bold">Continue creating</h2>
-                </div>
-                <ProtectedAiStudioLink
-                  href="/ai-studio/billing"
-                  isAuthenticated
-                  className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold transition hover:border-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-                >
-                  <WalletCards size={17} aria-hidden="true" />
-                  View Billing
-                </ProtectedAiStudioLink>
-              </div>
-
-              <div className="mt-8 grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-                <div className="rounded-3xl border border-slate-200 bg-white p-6">
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">AI credit balance</p>
-                  <p className="mt-3 text-3xl font-bold">
-                    {workspace ? workspace.wallet.balanceCredits.toLocaleString() : 'Unavailable'}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    {workspace
-                      ? `${workspace.wallet.reservedCredits.toLocaleString()} credits currently reserved`
-                      : 'Your workspace summary could not be loaded.'}
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-white p-6">
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Recent activity</p>
-                  {workspace?.recentUsage.length ? (
-                    <ul className="mt-3 divide-y divide-slate-100">
-                      {workspace.recentUsage.map((item) => (
-                        <li key={item.id} className="flex items-center justify-between gap-4 py-3 text-sm">
-                          <div className="min-w-0">
-                            <p className="truncate font-semibold text-slate-950">{item.topic || 'Untitled generation'}</p>
-                            <p className="mt-1 capitalize text-slate-500">{item.toolType} · {item.status}</p>
-                          </div>
-                          <time className="shrink-0 text-xs text-slate-500" dateTime={item.createdAt.toISOString()}>
-                            {new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(item.createdAt)}
-                          </time>
-                        </li>
-                      ))}
-                    </ul>
+                <div className="min-w-44">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">AI credits</p>
+                  {isAuthenticated ? (
+                    <>
+                      <p className="mt-1 text-2xl font-bold" aria-live="polite">
+                        {workspace ? workspace.wallet.balanceCredits.toLocaleString() : 'Unavailable'}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {workspace
+                          ? `${workspace.wallet.reservedCredits.toLocaleString()} currently reserved`
+                          : 'Credit summary could not be loaded.'}
+                      </p>
+                    </>
                   ) : (
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                      Your latest successful and in-progress generations will appear here.
-                    </p>
+                    <p className="mt-1 text-sm font-medium text-slate-600">Sign in to view your balance.</p>
                   )}
                 </div>
-              </div>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {products.map((product) => (
-                  <ProtectedAiStudioLink
-                    key={product.title}
-                    href={product.href}
-                    isAuthenticated
-                    className="inline-flex min-h-12 items-center justify-between rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold transition hover:border-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-                  >
-                    {product.title}
-                    <ArrowRight size={16} aria-hidden="true" />
-                  </ProtectedAiStudioLink>
+                <Link
+                  href="/ai-studio/pricing"
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 text-sm font-semibold text-slate-800 transition hover:border-orange-300 hover:text-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-2"
+                >
+                  View pricing
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+              </aside>
+            </div>
+
+            <div className="mt-8">
+              <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-slate-600">
+                Work &amp; Productivity
+              </h2>
+              <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {productivityTools.map((tool) => (
+                  <AiStudioProductCard
+                    key={tool.title}
+                    {...tool}
+                    isAuthenticated={isAuthenticated}
+                  />
                 ))}
               </div>
             </div>
-          </section>
-        )}
 
-        <section id="faq" className="scroll-mt-32">
+            <div className="mt-6">
+              <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-slate-600">Creative</h2>
+              <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {creativeTools.map((tool) => (
+                  <AiStudioProductCard
+                    key={tool.title}
+                    {...tool}
+                    isAuthenticated={isAuthenticated}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="recent" className="scroll-mt-28 px-4 py-10 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-orange-700">Your workspace</p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight">Recent creations</h2>
+            </div>
+
+            {isAuthenticated ? (
+              workspace?.recentUsage.length ? (
+                <ul className="mt-5 grid gap-3 md:grid-cols-3">
+                  {workspace.recentUsage.map((item) => (
+                    <li key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <p className="truncate font-semibold text-slate-950">{item.topic || 'Untitled creation'}</p>
+                      <div className="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                        <span className="capitalize">{item.toolType} Â· {item.status}</span>
+                        <time dateTime={item.createdAt.toISOString()}>
+                          {new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(item.createdAt)}
+                        </time>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">
+                  Your recent AI Studio creations will appear here.
+                </p>
+              )
+            ) : (
+              <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-slate-600">Sign in to view your recent AI Studio creations.</p>
+                <ProtectedAiStudioLink
+                  href="/ai-studio#recent"
+                  isAuthenticated={false}
+                  className="inline-flex min-h-10 items-center justify-center rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-2"
+                >
+                  Sign in
+                </ProtectedAiStudioLink>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="border-y border-slate-200 bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
+                <Lightbulb size={20} aria-hidden="true" />
+              </span>
+              <div>
+                <h2 className="text-xl font-bold">Need inspiration?</h2>
+                <p className="text-sm text-slate-600">Start with a familiar task and make the details your own.</p>
+              </div>
+            </div>
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {inspiration.map(([title, examples]) => (
+                <li key={title} className="rounded-xl border border-slate-200 bg-white p-4">
+                  <h3 className="text-sm font-bold">{title}</h3>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">{examples}</p>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 border-t border-slate-200 pt-7">
+              <h2 className="text-lg font-bold">How AI Studio works</h2>
+              <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+                {['Choose a tool', 'Describe what you need', 'Generate and refine'].map((step, index) => (
+                  <li key={step} className="flex items-center gap-3 rounded-xl bg-white p-3 text-sm font-semibold ring-1 ring-slate-200">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xs text-white">
+                      {index + 1}
+                    </span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-4 py-10 sm:px-6 lg:px-8" aria-labelledby="credits-title">
+          <div className="mx-auto flex max-w-7xl flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-orange-200">
+                <CreditCard size={19} aria-hidden="true" />
+              </span>
+              <div>
+                <h2 id="credits-title" className="font-bold">AI Studio credits</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Credits are used when supported generations complete successfully. Image, Video, Music, and YouTube Thumbnail pricing remains under calibration.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/ai-studio/pricing"
+              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-orange-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-2"
+            >
+              View pricing
+              <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="ai-studio-creation-guide"
+          className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
+        >
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+            <h2
+              id="ai-studio-creation-guide"
+              className="text-2xl font-bold tracking-tight text-slate-950"
+            >
+              Get more useful results from your first draft
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+              AI-generated files are starting points. Include your intended audience,
+              required information, and preferred structure in the request, then review
+              the output before sharing or publishing it.
+            </p>
+            <div className="mt-6 grid gap-5 md:grid-cols-3">
+              <article className="rounded-2xl border border-slate-200 p-5">
+                <h3 className="font-bold text-slate-950">Presentations</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Describe the audience, objective, and key points. After exporting,
+                  verify slide content, chart labels, images, and layout in PowerPoint.
+                </p>
+              </article>
+              <article className="rounded-2xl border border-slate-200 p-5">
+                <h3 className="font-bold text-slate-950">Documents</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Specify the document type, sections, tone, and important facts.
+                  Review generated wording, references, and formatting before use.
+                </p>
+              </article>
+              <article className="rounded-2xl border border-slate-200 p-5">
+                <h3 className="font-bold text-slate-950">Spreadsheets</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Explain the columns, calculations, and expected results. Check
+                  formulas, units, and data accuracy before making decisions.
+                </p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="faq" className="scroll-mt-28">
           <FAQPanel>
             <div className="text-center">
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-orange-600">FAQ</p>
-              <FAQHeading>Questions before you create</FAQHeading>
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-orange-700">Help</p>
+              <FAQHeading>AI Studio questions</FAQHeading>
             </div>
             <FAQList>
               {faqs.map((faq) => (
@@ -567,24 +470,6 @@ export default async function AIStudioPage() {
               ))}
             </FAQList>
           </FAQPanel>
-        </section>
-
-        <section className="px-4 pb-20 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-5xl rounded-[2rem] bg-slate-950 px-6 py-12 text-center text-white sm:px-10">
-            <ShieldCheck className="mx-auto text-cyan-300" size={30} aria-hidden="true" />
-            <h2 className="mt-5 text-3xl font-bold">Create the file your next task needs</h2>
-            <p className="mx-auto mt-4 max-w-2xl leading-7 text-slate-300">
-              Start with a clear brief, review the generated structure, and keep editing after export.
-            </p>
-            <ProtectedAiStudioLink
-              href="/ai-studio/presentation-maker"
-              isAuthenticated={isAuthenticated}
-              className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-            >
-              Create a presentation
-              <ArrowRight size={17} aria-hidden="true" />
-            </ProtectedAiStudioLink>
-          </div>
         </section>
       </main>
       <Footer />
